@@ -5,14 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import BottomNav from '@/components/mobile/BottomNav';
-import { useStore } from '@/context/StoreContext';
 import { Eye, EyeOff, ChevronRight, Wallet, MessageCircle, X } from 'lucide-react';
 
 export default function MobileHome() {
   const router = useRouter();
   const [isVisible, setIsVisible] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const { products, isLoggedIn } = useStore(); 
 
   const notices = [
     { id: 1, title: '🎉 신규 가입자 대상 수수료 무료 이벤트' },
@@ -58,11 +56,9 @@ export default function MobileHome() {
       {/* 메인 콘텐츠 */}
       <main className="px-5 pt-32 flex flex-col gap-4">
         
-        {/* 1. 자산 현황 카드 (화이트 박스) */}
         <section className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100">
           <div className="flex justify-between items-center mb-6 cursor-pointer rounded-lg -m-1 p-1 hover:bg-gray-50 transition-colors">
-            {/* [유지] 내 자산 (KRW) */}
-            <span className="text-[#333] font-bold text-lg">내 자산 (KRW)</span>
+            
             
             <div className="flex items-center gap-1 text-gray-500 text-sm font-medium">
               {/* [유지] KCP 표기 */}
@@ -74,7 +70,6 @@ export default function MobileHome() {
           <div className="mb-6">
              <div className="flex items-center gap-2 mb-4">
                  <div className="text-3xl font-bold text-[#191F28] tracking-tight">
-                    {isVisible ? '10,000,000 원' : '🙈 비공개'}
                  </div>
                  <button onClick={() => setIsVisible(!isVisible)} className="text-gray-400 hover:text-gray-600 transition-colors">
                     {isVisible ? <Eye size={20} /> : <EyeOff size={20} />}
@@ -93,7 +88,6 @@ export default function MobileHome() {
 
           <div className="border-t border-gray-100 pt-5">
             <div className="text-[#333] font-bold text-lg mb-4 flex justify-between items-center">
-               모든 자산 <span className="text-gray-500 text-sm font-normal bg-gray-100 px-3 py-1 rounded-full">편집</span>
             </div>
             <div className="grid grid-cols-4 gap-2 text-center">
                {['채널', '웹툰', '웹소설', '음원'].map((item, idx) => (
@@ -153,7 +147,6 @@ export default function MobileHome() {
                   <div className="flex justify-between items-center mt-2">
                     <span className="text-xs text-gray-500">{product?.category || 'K-POP'}</span>
                     <span className="text-[#ef4444] font-bold text-sm">
-                        {product ? '+15.5%' : `+${(12 + i * 1.2).toFixed(1)}%`}
                     </span>
                   </div>
                 </div>
@@ -169,7 +162,7 @@ export default function MobileHome() {
                  <h2 className="text-lg font-bold text-[#191F28]">시장 동향</h2>
                  <p className="text-xs text-gray-500 mt-1">K-콘텐츠 종합 지수 (K-CIX)</p>
              </div>
-             <span className="text-[#ef4444] font-bold bg-[#ef4444]/10 px-2.5 py-1 rounded-lg text-sm">▲ 2.4%</span>
+          
            </div>
            <div className="h-[120px] w-full bg-gradient-to-t from-[#7c3aed]/5 to-transparent rounded-xl border-b border-[#7c3aed]/20 relative overflow-hidden">
              <svg className="absolute bottom-0 left-0 w-full h-full overflow-visible" preserveAspectRatio="none">
