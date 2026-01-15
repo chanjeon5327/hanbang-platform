@@ -1,0 +1,22 @@
+﻿/** @type {import('next').NextConfig} */
+const nextConfig = {
+  allowedDevOrigins: ['http://127.0.0.1:3000','http://localhost:3000'],
+    /* ??낆뒪?щ┰???먮윭 臾댁떆 */
+    typescript: {
+      ignoreBuildErrors: true,
+    },
+    /* ESLint ?먮윭 臾댁떆 */
+    
+    /* ?몃? ?대?吏 ?덉슜 */
+    images: {
+      remotePatterns: [
+        {
+          protocol: 'https',
+          hostname: 'images.unsplash.com',
+          pathname: '**',
+        },
+      ],
+    },
+  };
+  
+  module.exports = nextConfig;
