@@ -1,13 +1,4 @@
-import type { Metadata } from "next";
-import { Header } from "@/components/Header";
-import Providers from "./providers";
-import "./globals.css";
-
-export const metadata: Metadata = {
-  title: "HANBANG",
-  description: "HANBANG Platform",
-};
-
+// app/layout.tsx
 export default function RootLayout({
   children,
 }: {
@@ -15,12 +6,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body>
-        <Providers>
-          <Header />
-          <main>{children}</main>
-        </Providers>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
