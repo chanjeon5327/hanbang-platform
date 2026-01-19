@@ -1,72 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useUserAuth } from "@/context/UserAuthContext";
+// ✅ 기존 코드 호환용: 이제 Header.tsx는 TopHeader를 그대로 재수출만 합니다.
+// - import TopHeader from "@/components/Header"  (기존 방식) 유지 가능
+// - import { Header } from "@/components/Header" (기존 방식) 유지 가능
+// - 실제 구현은 "@/components/TopHeader" 단 한 군데만 사용
 
-export default function TopHeader() {
-  const router = useRouter();
-  const { user, loading } = useUserAuth();
-
-  if (loading) return null;
-
-  return (
-    <header
-      style={{
-        position: "fixed",
-        top: "48px",
-        width: "100%",
-        zIndex: 40,
-        padding: "15px 5%",
-        backgroundColor: "rgba(255,255,255,0.9)",
-        backdropFilter: "blur(20px)",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        {/* 로고 */}
-        <Link href="/" style={{ fontWeight: 800, fontSize: 20 }}>
-          HANBANG
-        </Link>
-
-        {/* 우측 영역 */}
-        {user ? (
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <span style={{ fontWeight: 600 }}>
-              {user.email}
-            </span>
-
-            <button
-              onClick={() => router.push("/wallet")}
-              style={{ fontWeight: 600 }}
-            >
-              내 지갑
-            </button>
-
-            <button
-              onClick={() => router.push("/logout")}
-              style={{ fontWeight: 600 }}
-            >
-              로그아웃
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => router.push("/login")}
-            style={{ fontWeight: 600 }}
-          >
-            로그인
-          </button>
-        )}
-      </div>
-    </header>
-  );
-}
+export { default } from "./TopHeader";
+export { default as Header } from "./TopHeader";

@@ -1,43 +1,56 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { Session, User } from "@supabase/supabase-js";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { supabase } from "@/lib/supabase/client";
 
-const UserAuthContext = createContext<any>(undefined);
+type UserAuthContextType = {
+  user: any;
+  loading: boolean;
+  signOut: () => Promise<void>;
+};
 
-export function UserAuthProvider({ children }: { children: ReactNode }) {
-  const supabase = createClient();
+const UserAuthContext = createContext<UserAuthContextType | undefined>(
+  undefined
+);
 
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+export function UserAuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user ?? null);
       setLoading(false);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
       setUser(session?.user ?? null);
     });
 
-    return () => subscription.unsubscribe();
-  }, [supabase]);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
 
   return (
-    <UserAuthContext.Provider value={{ user, session, loading }}>
+    <UserAuthContext.Provider value={{ user, loading, signOut }}>
       {children}
     </UserAuthContext.Provider>
   );
 }
 
-/* 👇 이 부분을 추가 */
 export function useUserAuth() {
   const ctx = useContext(UserAuthContext);
   if (!ctx) {

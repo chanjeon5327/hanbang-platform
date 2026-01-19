@@ -1,32 +1,47 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
-export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next();
+  const pathname = req.nextUrl.pathname;
 
-  // admin 경로만 보호
-  if (!pathname.startsWith("/admin")) {
-    return NextResponse.next();
+  // 로그인 페이지는 항상 허용
+  if (pathname === "/login" || pathname === "/admin/login") {
+    return res;
   }
 
-  // admin/login 은 통과
-  if (pathname === "/admin/login") {
-    return NextResponse.next();
+  // Supabase client (서버용)
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      auth: { persistSession: false },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // 🔐 관리자 보호
+  if (pathname.startsWith("/admin")) {
+    if (!user) {
+      return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
   }
 
-  // Supabase 로그인 시 생성되는 쿠키
-  const accessToken =
-    req.cookies.get("sb-access-token")?.value ||
-    req.cookies.get("supabase-auth-token")?.value;
-
-  // 로그인 안 돼 있으면 관리자 로그인으로
-  if (!accessToken) {
-    return NextResponse.redirect(new URL("/admin/login", req.url));
+  // 🔐 일반 사용자 보호 (홈 포함)
+  const protectedPaths = ["/", "/wallet"];
+  if (protectedPaths.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+    if (!user) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
   }
 
-  return NextResponse.next();
+  return res;
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/", "/wallet/:path*", "/admin/:path*"],
 };
