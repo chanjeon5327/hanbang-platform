@@ -1,101 +1,72 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { LoginModal } from "@/components/auth/LoginModal";
-import { User, Sun, Moon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useUserAuth } from "@/context/UserAuthContext";
 
-export function Header() {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [isDark, setIsDark] = useState(false);
+export default function TopHeader() {
+  const router = useRouter();
+  const { user, loading } = useUserAuth();
 
-  useEffect(() => {
-    // 다크모드 상태 확인
-    const isDarkMode = document.documentElement.classList.contains("dark");
-    setIsDark(isDarkMode);
-
-    // 로그인 상태 확인
-    const checkUser = () => {
-      const userData = localStorage.getItem("hb_user");
-      if (userData) {
-        try {
-          const parsed = JSON.parse(userData);
-          setUser({ name: parsed.name, email: parsed.email });
-        } catch {
-          setUser({ name: userData });
-        }
-      } else {
-        setUser(null);
-      }
-    };
-
-    checkUser();
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "hb_user") checkUser();
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    const interval = setInterval(checkUser, 1000);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      clearInterval(interval);
-    };
-  }, []);
-
-  const toggleTheme = () => {
-    const root = document.documentElement;
-    root.classList.toggle("dark");
-    const dark = root.classList.contains("dark");
-    setIsDark(dark);
-    localStorage.setItem("theme", dark ? "dark" : "light");
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("hb_user");
-    setUser(null);
-  };
+  if (loading) return null;
 
   return (
-    <>
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-14 items-center justify-between px-4">
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold">
-              H
-            </div>
-            <span className="text-xl font-bold">HANBANG</span>
-          </Link>
+    <header
+      style={{
+        position: "fixed",
+        top: "48px",
+        width: "100%",
+        zIndex: 40,
+        padding: "15px 5%",
+        backgroundColor: "rgba(255,255,255,0.9)",
+        backdropFilter: "blur(20px)",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "1200px",
+          margin: "0 auto",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        {/* 로고 */}
+        <Link href="/" style={{ fontWeight: 800, fontSize: 20 }}>
+          HANBANG
+        </Link>
 
-          <div className="flex items-center gap-2">
-          {user ? (
-  <>
-    <Link href="/wallet">
-      <Button variant="ghost" size="sm">
-        내 지갑
-      </Button>
-    </Link>
+        {/* 우측 영역 */}
+        {user ? (
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <span style={{ fontWeight: 600 }}>
+              {user.email}
+            </span>
 
-    <Button variant="outline" size="sm" onClick={handleLogout}>
-      로그아웃
-    </Button>
-  </>
-) : (
-  <Button onClick={() => setIsLoginModalOpen(true)}>
-    로그인 / 회원가입
-  </Button>
-)}
+            <button
+              onClick={() => router.push("/wallet")}
+              style={{ fontWeight: 600 }}
+            >
+              내 지갑
+            </button>
+
+            <button
+              onClick={() => router.push("/logout")}
+              style={{ fontWeight: 600 }}
+            >
+              로그아웃
+            </button>
           </div>
-        </div>
-      </header>
-
-      <LoginModal
-        open={isLoginModalOpen}
-        onOpenChange={setIsLoginModalOpen}
-      />
-    </>
+        ) : (
+          <button
+            onClick={() => router.push("/login")}
+            style={{ fontWeight: 600 }}
+          >
+            로그인
+          </button>
+        )}
+      </div>
+    </header>
   );
 }

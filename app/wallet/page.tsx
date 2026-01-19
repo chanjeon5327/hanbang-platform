@@ -15,9 +15,14 @@ export default function WalletPage() {
     }
   }, [loading, user, router]);
 
-  if (loading || !user) {
-    return null;
+  if (loading) {
+    return <div style={{ padding: 40 }}>로딩중...</div>;
   }
 
+  if (!user) {
+    return <div style={{ padding: 40 }}>로그인이 필요합니다.</div>;
+  }
+
+  // ✅ 여기 중요
   return <WalletView />;
 }
