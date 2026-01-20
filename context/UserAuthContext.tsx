@@ -1,12 +1,13 @@
 "use client";
 
-import React, {
+import {
   createContext,
   useContext,
   useEffect,
   useState,
+  ReactNode,
 } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { supabaseClient } from "@/lib/supabase/client";
 
 type UserAuthContextType = {
   user: any;
@@ -18,30 +19,50 @@ const UserAuthContext = createContext<UserAuthContextType | undefined>(
   undefined
 );
 
-export function UserAuthProvider({ children }: { children: React.ReactNode }) {
+export function UserAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user ?? null);
+    let mounted = true;
+
+    // ✅ 초기 세션 확인 (권장)
+    const initSession = async () => {
+      const { data, error } = await supabaseClient.auth.getSession();
+
+      if (!mounted) return;
+
+      if (error) {
+        console.error("getSession error", error);
+        setUser(null);
+      } else {
+        setUser(data.session?.user ?? null);
+      }
+
+      setLoading(false);
+    };
+
+    initSession();
+
+    // ✅ 이후 로그인/로그아웃 감지
+    const {
+      data: { subscription },
+    } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    setLoading(true);
+    await supabaseClient.auth.signOut();
     setUser(null);
+    setLoading(false);
   };
 
   return (

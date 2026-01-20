@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
+import { supabaseClient } from "@/lib/supabase/client";
 import { useUserAuth } from "@/context/UserAuthContext";
 
 export default function LoginPage() {
@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  // ✅ 이미 로그인 상태면 홈으로 보내기
+  // 이미 로그인된 경우 이동
   useEffect(() => {
     if (!loading && user) {
       router.replace("/");
@@ -29,7 +29,7 @@ export default function LoginPage() {
     setSending(true);
     setMessage(null);
 
-    const { error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabaseClient.auth.signInWithOtp({
       email,
       options: {
         emailRedirectTo: `${window.location.origin}/`,
@@ -45,9 +45,25 @@ export default function LoginPage() {
     setSending(false);
   };
 
-  // 로딩 중이거나 이미 로그인 상태면 화면 숨김
-  if (loading || user) return null;
+  // 🔑 렌더 분기 (핵심)
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        로그인 상태 확인 중…
+      </div>
+    );
+  }
+  
+  if (user) return null;
+   {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        이동 중...
+      </div>
+    );
+  }
 
+  // ✅ 여기서만 로그인 UI 표시
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow">
