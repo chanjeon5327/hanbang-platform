@@ -1,20 +1,13 @@
-import type { Metadata } from "next"
-import { Providers } from "./providers"
+import { Providers } from "./providers";
 
-export const metadata: Metadata = {
-  title: "HANBANG",
-}
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }) {
   return (
     <html lang="ko">
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
-  )
+  );
 }

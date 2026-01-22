@@ -9,7 +9,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // ✅ 이미 로그인된 사용자 차단
+  // 🔐 이미 로그인된 경우 자동 리다이렉트
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
@@ -36,6 +36,8 @@ export default function LoginPage() {
 
   return (
     <div style={{ padding: 20 }}>
+      <h2>로그인</h2>
+
       <input
         type="email"
         placeholder="email"
@@ -43,6 +45,7 @@ export default function LoginPage() {
         onChange={(e) => setEmail(e.target.value)}
       />
       <br />
+
       <input
         type="password"
         placeholder="password"
@@ -50,6 +53,7 @@ export default function LoginPage() {
         onChange={(e) => setPassword(e.target.value)}
       />
       <br />
+
       <button onClick={onLogin}>로그인</button>
     </div>
   );
