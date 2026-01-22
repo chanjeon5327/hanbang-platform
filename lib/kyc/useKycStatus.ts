@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabaseClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
-const supabase = supabaseClient;
+
+await supabase.auth.getSession();
 
 
 export type KycStatus =

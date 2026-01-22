@@ -1,8 +1,7 @@
-"use client"
+"use client";
 
-import { WagmiProvider } from "wagmi"
-import { wagmiConfig } from "@/lib/wagmi"
+import { AuthProvider } from "@/context/UserAuthContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <WagmiProvider config={wagmiConfig}>{children}</WagmiProvider>
+  return <AuthProvider>{children}</AuthProvider>;
 }

@@ -1,31 +1,30 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabaseClient } from "@/lib/supabase/client";
-
-const supabase = supabaseClient;
-
+import { supabase } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      alert("이메일과 비밀번호를 입력해주세요.");
-      return;
-    }
+  // ✅ 이미 로그인된 사용자 차단
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        router.replace("/");
+      }
+    };
+    checkSession();
+  }, [router]);
 
-    setLoading(true);
+  const onLogin = async () => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    setLoading(false);
 
     if (error) {
       alert(error.message);
@@ -36,16 +35,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1>Login</h1>
-
+    <div style={{ padding: 20 }}>
       <input
+        type="email"
         placeholder="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
       <br />
-
       <input
         type="password"
         placeholder="password"
@@ -53,10 +50,7 @@ export default function LoginPage() {
         onChange={(e) => setPassword(e.target.value)}
       />
       <br />
-
-      <button onClick={handleLogin} disabled={loading}>
-        {loading ? "로그인 중..." : "로그인"}
-      </button>
+      <button onClick={onLogin}>로그인</button>
     </div>
   );
 }

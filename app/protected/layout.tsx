@@ -1,11 +1,25 @@
 "use client";
 
-import AuthGuard from "@/components/AuthGuard";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { getSession } from "@/lib/auth/session";
 
 export default function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <AuthGuard>{children}</AuthGuard>;
+  const router = useRouter();
+
+  useEffect(() => {
+    const check = async () => {
+      const session = await getSession();
+      if (!session) {
+        router.replace("/login?next=/protected");
+      }
+    };
+    check();
+  }, [router]);
+
+  return <>{children}</>;
 }

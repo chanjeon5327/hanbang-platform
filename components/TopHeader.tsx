@@ -1,37 +1,35 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { isAuthenticated } from "@/lib/auth/session";
-import { hardLogout } from "@/lib/auth/logout";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/UserAuthContext";
+import { supabase } from "@/lib/supabase/client";
 
 export default function TopHeader() {
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
-  const [authed, setAuthed] = useState<boolean | null>(null);
 
-  // 로그인 페이지에서는 헤더 숨김
-  if (pathname === "/login") return null;
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.replace("/login");
+  };
 
-  useEffect(() => {
-    isAuthenticated().then(setAuthed);
-  }, []);
-
-  if (authed === null) return null;
+  if (loading) return null;
 
   return (
-    <header className="flex items-center justify-between px-4 py-2 border-b">
-      <div className="font-bold">HANBANG</div>
+    <header className="w-full h-12 flex items-center justify-between px-4 border-b">
+      <Link href="/">HANBANG</Link>
 
-      {authed && (
-        <button
-          onClick={async () => {
-            await hardLogout();
-          }}
-        >
-          로그아웃
-        </button>
-      )}
+      <nav className="flex gap-4">
+        {user ? (
+          <>
+            <Link href="/protected">내 페이지</Link>
+            <button onClick={handleLogout}>로그아웃</button>
+          </>
+        ) : (
+          <Link href="/login">로그인</Link>
+        )}
+      </nav>
     </header>
   );
 }

@@ -1,73 +1,51 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
-import { supabaseClient } from "@/lib/supabase/client";
+import { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase/client";
+import type { Session, User } from "@supabase/supabase-js";
 
-type UserAuthContextType = {
-  user: any;
+interface AuthContextValue {
+  user: User | null;
+  session: Session | null;
   loading: boolean;
-  signOut: () => Promise<void>;
-};
+}
 
-const UserAuthContext = createContext<UserAuthContextType | undefined>(
-  undefined
-);
+const AuthContext = createContext<AuthContextValue>({
+  user: null,
+  session: null,
+  loading: true,
+});
 
-export function UserAuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<any>(null);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-
-    // ✅ 1. App Router 안전장치: 로딩 즉시 해제
-    setLoading(false);
-
-    // ✅ 2. 실제 세션은 비동기로 갱신
-    const initSession = async () => {
-      const { data } = await supabaseClient.auth.getSession();
-      if (!mounted) return;
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
       setUser(data.session?.user ?? null);
-    };
-
-    initSession();
-
-    // ✅ 3. 이후 로그인/로그아웃 반영
-    const {
-      data: { subscription },
-    } = supabaseClient.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
-      setUser(session?.user ?? null);
+      setLoading(false);
     });
 
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+
     return () => {
-      mounted = false;
-      subscription.unsubscribe();
+      listener.subscription.unsubscribe();
     };
   }, []);
 
-  const signOut = async () => {
-    await supabaseClient.auth.signOut();
-    setUser(null);
-  };
-
   return (
-    <UserAuthContext.Provider value={{ user, loading, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading }}>
       {children}
-    </UserAuthContext.Provider>
+    </AuthContext.Provider>
   );
 }
 
-export function useUserAuth() {
-  const ctx = useContext(UserAuthContext);
-  if (!ctx) {
-    throw new Error("useUserAuth must be used within UserAuthProvider");
-  }
-  return ctx;
-}
+export const useAuth = () => useContext(AuthContext);
