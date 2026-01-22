@@ -2,30 +2,51 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { logout as supabaseLogout } from "@/lib/auth/logout";
 
-const UserAuthContext = createContext<any>(null);
+type UserAuthContextType = {
+  user: any | null;
+  loading: boolean;
+  logout: () => Promise<void>;
+};
+
+const UserAuthContext = createContext<UserAuthContextType | undefined>(undefined);
 
 export function UserAuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadUser = async () => {
+    const init = async () => {
       const { data } = await supabase.auth.getUser();
-      setUser(data.user);
+      setUser(data.user ?? null);
       setLoading(false);
     };
-    loadUser();
+    init();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
+  const logout = async () => {
+    await supabaseLogout();
+    setUser(null);
+  };
+
   return (
-    <UserAuthContext.Provider value={{ user, loading }}>
+    <UserAuthContext.Provider value={{ user, loading, logout }}>
       {children}
     </UserAuthContext.Provider>
   );
 }
 
-// ✅ 이게 핵심
 export function useUserAuth() {
-  return useContext(UserAuthContext);
+  const ctx = useContext(UserAuthContext);
+  if (!ctx) throw new Error("useUserAuth must be used within UserAuthProvider");
+  return ctx;
 }
