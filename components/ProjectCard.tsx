@@ -9,7 +9,7 @@ import { Database } from "@/lib/supabase/types"
 import { ArrowRight, TrendingUp } from "lucide-react"
 import Image from "next/image"
 import { LoginModal } from "@/components/auth/LoginModal"
-import { createClient } from "@/lib/supabase/client"
+import { supabaseClient } from "@/lib/supabase/client"
 
 type Project = Database["public"]["Tables"]["projects"]["Row"]
 
@@ -19,7 +19,7 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-  const supabase = createClient()
+  const supabase = supabaseClient
 
   const handleInvestClick = async (e: React.MouseEvent) => {
     e.preventDefault()

@@ -1,6 +1,7 @@
 'use client';
 
-import { createClient } from '@supabase/supabase-js';
+import { supabaseClient } from '@/lib/supabase/client';
+
 
 export default function KakaoLogin() {
   const handleKakaoLogin = async () => {
@@ -12,13 +13,14 @@ export default function KakaoLogin() {
       return;
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = supabaseClient
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'kakao',
       options: {
-        redirectTo: 'http://localhost:3000/auth/callback',
+        redirectTo: `${location.origin}/lobby`,
       },
+      
     });
 
     if (error) {

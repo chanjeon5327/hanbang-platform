@@ -199,12 +199,12 @@ a[href]:active,
 @layer utilities {
   /* 모든 버튼에 적용될 "쫀득한" 터치감 */
   .btn-press {
-    @apply active:scale-95 transition-transform duration-75 cursor-pointer touch-manipulation;
+    @apply transition-transform duration-75 cursor-pointer touch-manipulation;
   }
   
   /* 탭이나 리스트 아이템에 적용될 "부드러운" 터치감 */
   .list-press {
-    @apply active:bg-gray-100 dark:active:bg-gray-800 transition-colors duration-75 cursor-pointer;
+    @apply transition-colors duration-75 cursor-pointer;
   }
 }
 @keyframes chatIn {

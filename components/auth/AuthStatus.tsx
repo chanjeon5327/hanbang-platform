@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { supabaseClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
 export function AuthStatus() {
@@ -11,7 +11,9 @@ export function AuthStatus() {
   const router = useRouter()
 
   useEffect(() => {
-    const supabase = createClient()
+    const supabase = supabaseClient
+    ...
+  
     let mounted = true
 
     const init = async () => {
@@ -53,7 +55,10 @@ export function AuthStatus() {
   }, [])
 
   const handleLogout = async () => {
-    const supabase = createClient()
+    const supabase = supabaseClient
+    ...
+  }
+  
     try {
       await supabase.auth.signOut()
       setUser(null)

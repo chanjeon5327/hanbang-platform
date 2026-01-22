@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { supabaseClient } from "@/lib/supabase/client";
+
+const supabase = supabaseClient;
+
 
 export type KycStatus =
   | "not_started"
@@ -11,7 +14,6 @@ export type KycStatus =
   | "rejected";
 
 export function useKycStatus() {
-  const supabase = createClient();
   const [status, setStatus] = useState<KycStatus>("not_started");
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +35,15 @@ export function useKycStatus() {
         .eq("user_id", user.id)
         .single();
 
-      setStatus((data?.status as KycStatus) ?? "not_started");
+      const raw = (data?.status as string | undefined) ?? undefined;
+      const mapped: KycStatus =
+        raw === "pending" ? "under_review" :
+        raw === "submitted" ? "submitted" :
+        raw === "approved" ? "approved" :
+        raw === "rejected" ? "rejected" :
+        "not_started";
+
+      setStatus(mapped);
       setLoading(false);
     };
 

@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { supabaseClient } from '@/lib/supabase/client'
+
+const supabase = supabaseClient
 
 export default function LobbyPage() {
   const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
     const checkSession = async () => {

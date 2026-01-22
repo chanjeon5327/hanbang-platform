@@ -1,10 +1,10 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
-export async function updateSession(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
-  })
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,35 +12,25 @@ export async function updateSession(request: NextRequest) {
     {
       cookies: {
         getAll() {
-          return request.cookies.getAll()
+          return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          for (const { name, value, options } of cookiesToSet) {
-            supabaseResponse.cookies.set(name, value, options)
-          }
+        setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            supabaseResponse.cookies.set(name, value, options);
+          });
         },
       },
     }
-  )
+  );
 
-  const { data: { session }, error } = await supabase.auth.getSession()
-  const user = session?.user ?? null
+  // 세션 갱신 (필수)
+  await supabase.auth.getUser();
 
-  // 공개 페이지는 인증 없이 접근 가능
-  const publicPaths = ['/', '/login', '/signup', '/auth', '/projects', '/active-invest', '/notice']
-  const isPublicPath = publicPaths.some((path) => {
-    return request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(path + '/')
-  })
-
-  // 공개 페이지가 아니고 로그인하지 않은 경우에만 리다이렉트
-  if (!user && !isPublicPath) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
-  }
-
-  return supabaseResponse
+  return supabaseResponse;
 }
+
+export const config = {
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+  ],
+};

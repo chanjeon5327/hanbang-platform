@@ -1,7 +1,8 @@
 // STEP 1: KYC 승인 UI (JSON 출력 대체)
 // 서버 컴포넌트 유지 / service role 사용
 
-import { adminSupabase } from "@/lib/supabase/admin";
+
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 type KycRow = {
   id: string;
@@ -12,10 +13,10 @@ type KycRow = {
 };
 
 export default async function AdminKycPage() {
-  const { data, error } = await adminSupabase
-    .from("kyc_requests")
-    .select("id, user_id, status, provider, created_at")
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabaseAdmin
+  .from("kyc_requests")
+  .select("id, user_id, status, provider, created_at")
+  .order("created_at", { ascending: false });
 
   if (error) {
     return <pre>에러: {error.message}</pre>;

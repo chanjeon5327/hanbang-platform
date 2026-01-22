@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabaseClient } from '@/lib/supabase/client'
 
 // profiles 테이블 최소 타입 정의
 type Profile = {
@@ -28,7 +28,7 @@ export function EnsureProfile({ children }: { children: React.ReactNode }) {
     if (didRunRef.current) return
     didRunRef.current = true
 
-    const supabase = createClient()
+    const supabase = supabaseClient
 
     const run = async () => {
       // 1) 세션 먼저 확인 (세션 없으면 조용히 종료)

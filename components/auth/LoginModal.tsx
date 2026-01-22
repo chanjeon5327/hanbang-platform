@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { supabaseClient } from "@/lib/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,7 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ open, onOpenChange }: LoginModalProps) {
-  const supabase = createClient();
+  const supabase = supabaseClient;
 
   // 로그인 성공 시 모달 닫기만 담당
   useEffect(() => {

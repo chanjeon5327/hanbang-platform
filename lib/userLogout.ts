@@ -1,5 +1,7 @@
-import { supabase } from "@/lib/supabaseClient";
+"use client";
+
+import { supabaseClient } from "@/lib/supabase/client";
 
 export async function userLogout() {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
 }

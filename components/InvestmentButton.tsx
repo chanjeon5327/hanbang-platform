@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { LoginModal } from "@/components/auth/LoginModal"
-import { createClient } from "@/lib/supabase/client"
+import { supabaseClient } from "@/lib/supabase/client"
 import { TrendingUp } from "lucide-react"
 import { useRouter } from "next/navigation"
 
@@ -13,7 +13,7 @@ interface InvestmentButtonProps {
 
 export function InvestmentButton({ projectId }: InvestmentButtonProps) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-  const supabase = createClient()
+  const supabase = supabaseClient
   const router = useRouter()
 
   const handleInvest = async () => {

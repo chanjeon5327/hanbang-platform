@@ -1,48 +1,127 @@
-// app/kyc/start/page.tsx
-'use client';
+/* app/kyc/start/page.tsx */
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabaseClient } from "@/lib/supabase/client";
+import { useKycStatus } from "@/lib/kyc/useKycStatus";
+
+const supabase = supabaseClient;
 
 export default function KycStartPage() {
   const router = useRouter();
-  const supabase = createClient();
+  const { status, loading } = useKycStatus();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const onStart = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      alert('로그인이 필요합니다.');
-      router.push('/login');
+  const statusLabel = useMemo(() => {
+    if (loading) return "확인 중…";
+    if (status === "not_started") return "미진행";
+    if (status === "submitted") return "제출 완료";
+    if (status === "under_review") return "검토 중";
+    if (status === "approved") return "승인 완료";
+    return "반려";
+  }, [loading, status]);
+
+  useEffect(() => {
+    const init = async () => {
+      const { data } = await supabase.auth.getUser();
+      const user = data.user ?? null;
+      if (!user) {
+        router.replace("/login");
+        return;
+      }
+      setUserId(user.id);
+
+      // 이미 승인 상태면 시작 화면을 거치지 않도록 처리
+      if (!loading && status === "approved") {
+        router.replace("/");
+      }
+    };
+
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router, loading, status]);
+
+  const handleStart = async () => {
+    if (!userId) {
+      router.replace("/login");
       return;
     }
 
-    await supabase
-      .from('kyc_requests')
-      .upsert({
-        user_id: user.id,
-        status: 'pending',
-        provider: 'mock',
+    setSubmitting(true);
+
+    // MVP: KYC 레코드가 없으면 생성하고, 있으면 submitted로 갱신 후 더미 verify 화면으로 이동
+    const { data: existing, error: existingError } = await supabase
+      .from("kyc_verifications")
+      .select("id, status")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (existingError) {
+      console.error("KYC 상태 조회 실패:", existingError);
+      alert("KYC 상태 확인 중 오류가 발생했습니다.");
+      setSubmitting(false);
+      return;
+    }
+
+    const submittedAt = new Date().toISOString();
+
+    if (!existing) {
+      const { error } = await supabase.from("kyc_verifications").insert({
+        user_id: userId,
+        status: "submitted",
+        submitted_at: submittedAt,
       });
 
-    router.push('/kyc/verify');
+      if (error) {
+        console.error("KYC 생성 실패:", error);
+        alert("KYC 요청 생성에 실패했습니다.");
+        setSubmitting(false);
+        return;
+      }
+    } else if (existing.status !== "approved") {
+      const { error } = await supabase
+        .from("kyc_verifications")
+        .update({ status: "submitted", submitted_at: submittedAt })
+        .eq("user_id", userId);
+
+      if (error) {
+        console.error("KYC 갱신 실패:", error);
+        alert("KYC 요청 갱신에 실패했습니다.");
+        setSubmitting(false);
+        return;
+      }
+    }
+
+    setSubmitting(false);
+    router.push("/kyc/verify");
   };
 
   return (
     <div className="max-w-md mx-auto p-6">
-      <h1 className="text-xl font-bold mb-4">본인인증(KYC) 안내</h1>
+      <h1 className="text-xl font-bold mb-2">본인인증(KYC) 시작</h1>
 
-      <ul className="text-sm text-gray-600 space-y-2 mb-6">
-        <li>• 법적 의무에 따라 1회만 진행합니다</li>
-        <li>• 인증 완료 시 거래·출금이 가능합니다</li>
-        <li>• 소요 시간: 약 1분</li>
-      </ul>
+      <p className="text-sm text-gray-600 mb-6">
+        현재 상태: <span className="font-semibold">{statusLabel}</span>
+      </p>
 
-      <button
-        onClick={onStart}
-        className="w-full bg-black text-white py-3 rounded"
-      >
-        본인인증 시작
-      </button>
+      <div className="space-y-3">
+        <button
+          onClick={handleStart}
+          disabled={loading || submitting}
+          className="w-full bg-black text-white py-4 rounded-xl disabled:opacity-50"
+        >
+          {submitting ? "요청 중…" : "KYC 진행하기"}
+        </button>
+
+        <button
+          onClick={() => router.back()}
+          className="w-full border py-4 rounded-xl"
+        >
+          뒤로가기
+        </button>
+      </div>
     </div>
   );
 }

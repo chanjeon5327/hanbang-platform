@@ -1,47 +1,47 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-  const pathname = req.nextUrl.pathname;
+  let res = NextResponse.next()
 
-  // 로그인 페이지는 항상 허용
-  if (pathname === "/login" || pathname === "/admin/login") {
-    return res;
-  }
-
-  // Supabase client (서버용)
-  const supabase = createClient(
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      auth: { persistSession: false },
+      cookies: {
+        get(name: string) {
+          return req.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: any) {
+          res.cookies.set({ name, value, ...options })
+        },
+        remove(name: string, options: any) {
+          res.cookies.set({ name, value: '', ...options })
+        },
+      },
     }
-  );
+  )
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession()
 
-  // 🔐 관리자 보호
-  if (pathname.startsWith("/admin")) {
-    if (!user) {
-      return NextResponse.redirect(new URL("/admin/login", req.url));
-    }
+  // 🔒 보호할 경로
+  const protectedPaths = ['/']
+
+  if (
+    protectedPaths.includes(req.nextUrl.pathname) &&
+    !session
+  ) {
+    const redirectUrl = req.nextUrl.clone()
+    redirectUrl.pathname = '/login'
+    return NextResponse.redirect(redirectUrl)
   }
 
-  // 🔐 일반 사용자 보호 (홈 포함)
-  const protectedPaths = ["/", "/wallet"];
-  if (protectedPaths.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
-    if (!user) {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
-  }
-
-  return res;
+  return res
 }
 
 export const config = {
-  matcher: ["/", "/wallet/:path*", "/admin/:path*"],
-};
+  matcher: ['/', '/((?!login|_next|favicon.ico).*)'],
+}

@@ -26,30 +26,24 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // ✅ 초기 세션 확인 (권장)
+    // ✅ 1. App Router 안전장치: 로딩 즉시 해제
+    setLoading(false);
+
+    // ✅ 2. 실제 세션은 비동기로 갱신
     const initSession = async () => {
-      const { data, error } = await supabaseClient.auth.getSession();
-
+      const { data } = await supabaseClient.auth.getSession();
       if (!mounted) return;
-
-      if (error) {
-        console.error("getSession error", error);
-        setUser(null);
-      } else {
-        setUser(data.session?.user ?? null);
-      }
-
-      setLoading(false);
+      setUser(data.session?.user ?? null);
     };
 
     initSession();
 
-    // ✅ 이후 로그인/로그아웃 감지
+    // ✅ 3. 이후 로그인/로그아웃 반영
     const {
       data: { subscription },
     } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
       setUser(session?.user ?? null);
-      setLoading(false);
     });
 
     return () => {
@@ -59,10 +53,8 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => {
-    setLoading(true);
     await supabaseClient.auth.signOut();
     setUser(null);
-    setLoading(false);
   };
 
   return (
