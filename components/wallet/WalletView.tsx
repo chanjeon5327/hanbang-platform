@@ -1,82 +1,39 @@
 "use client";
 
-import React from "react";
+import { useState } from "react";
 
 export default function WalletView() {
+  // ✅ 지금 단계에서는 실제 Wagmi 대신 UX 검증용 상태
+  const [walletConnected, setWalletConnected] = useState(false);
+
+  // 로그인 여부는 page.tsx에서 이미 보장됨
+
+  // 지갑 미연결 → CTA
+  if (!walletConnected) {
+    return (
+      <section style={{ padding: 16 }}>
+        <h2>지갑 연결</h2>
+        <p>자산을 확인하려면 지갑을 연결하세요.</p>
+
+        <button
+          onClick={() => setWalletConnected(true)}
+          style={{
+            marginTop: 12,
+            padding: "10px 14px",
+            border: "1px solid #000",
+          }}
+        >
+          지갑 연결하기
+        </button>
+      </section>
+    );
+  }
+
+  // 지갑 연결됨 → 자산 요약
   return (
-    <div
-      style={{
-        padding: 40,
-        maxWidth: 1200,
-        margin: "0 auto",
-      }}
-    >
-      {/* 페이지 타이틀 */}
-      <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>
-        내 지갑
-      </h1>
-
-      {/* 잔액 카드 */}
-      <div
-        style={{
-          padding: 24,
-          borderRadius: 16,
-          background: "linear-gradient(135deg, #3182F6, #8B5CF6)",
-          color: "white",
-          marginBottom: 32,
-          boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-        }}
-      >
-        <div style={{ fontSize: 14, opacity: 0.9 }}>보유 현금 (KRW)</div>
-        <div style={{ fontSize: 32, fontWeight: 900, marginTop: 8 }}>
-          ₩ 12,340,000
-        </div>
-        <div style={{ fontSize: 12, opacity: 0.8, marginTop: 6 }}>
-          * 테스트용 더미 데이터
-        </div>
-      </div>
-
-      {/* 보유 자산 */}
-      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
-        보유 자산
-      </h2>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-          gap: 16,
-        }}
-      >
-        {[
-          { name: "유튜브 채널 A", rate: "+12.4%" },
-          { name: "웹툰 IP B", rate: "-3.1%" },
-          { name: "콘서트 프로젝트 C", rate: "+8.9%" },
-        ].map((item, idx) => (
-          <div
-            key={idx}
-            style={{
-              padding: 20,
-              borderRadius: 14,
-              border: "1px solid #e5e7eb",
-              backgroundColor: "white",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-            }}
-          >
-            <div style={{ fontWeight: 700, marginBottom: 8 }}>
-              {item.name}
-            </div>
-            <div
-              style={{
-                fontWeight: 700,
-                color: item.rate.startsWith("+") ? "#16a34a" : "#dc2626",
-              }}
-            >
-              {item.rate}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+    <section style={{ padding: 16 }}>
+      <h2>내 자산 요약</h2>
+      <div>총 자산: ₩0</div>
+    </section>
   );
 }

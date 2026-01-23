@@ -1,60 +1,49 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
-  // 🔐 이미 로그인된 경우 자동 리다이렉트
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        router.replace("/");
-      }
-    };
-    checkSession();
-  }, [router]);
-
-  const onLogin = async () => {
-    const { error } = await supabase.auth.signInWithPassword({
+  const handleLogin = async () => {
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      alert(error.message);
+      alert(error.message); // ❌ 실패
       return;
     }
 
-    router.replace("/");
+    // ✅ 성공분기 (여기!!)
+    router.replace("/sell/new");
   };
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 24 }}>
       <h2>로그인</h2>
 
       <input
-        type="email"
-        placeholder="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        placeholder="email"
       />
-      <br />
 
       <input
         type="password"
-        placeholder="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        placeholder="password"
       />
-      <br />
 
-      <button onClick={onLogin}>로그인</button>
+      <button type="button" onClick={handleLogin}>
+        로그인
+      </button>
     </div>
   );
 }

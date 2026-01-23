@@ -1,47 +1,29 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export async function middleware(req: NextRequest) {
-  let res = NextResponse.next()
+export function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return req.cookies.get(name)?.value
-        },
-        set(name: string, value: string, options: any) {
-          res.cookies.set({ name, value, ...options })
-        },
-        remove(name: string, options: any) {
-          res.cookies.set({ name, value: '', ...options })
-        },
-      },
-    }
-  )
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  // 🔒 보호할 경로
-  const protectedPaths = ['/']
-
+  // ✅ 미들웨어 완전 제외 경로
   if (
-    protectedPaths.includes(req.nextUrl.pathname) &&
-    !session
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/sell") // ⭐ 출품 경로 허용
   ) {
-    const redirectUrl = req.nextUrl.clone()
-    redirectUrl.pathname = '/login'
-    return NextResponse.redirect(redirectUrl)
+    return NextResponse.next();
   }
 
-  return res
+  // 예시: 쿠키 기반 세션 체크 (프로젝트 기존 로직 유지)
+  const isLoggedIn = req.cookies.get("sb-access-token");
+
+  if (!isLoggedIn) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/', '/((?!login|_next|favicon.ico).*)'],
-}
+  matcher: ["/((?!_next|api).*)"],
+};

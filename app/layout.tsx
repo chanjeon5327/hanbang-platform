@@ -1,5 +1,6 @@
 import Providers from "./providers";
 import TopHeader from "@/components/TopHeader";
+import { UserAuthProvider } from "@/context/UserAuthContext";
 
 export default function RootLayout({
   children,
@@ -10,8 +11,11 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <Providers>
-          <TopHeader />
-          {children}
+          {/* ⭐ 여기 */}
+          <UserAuthProvider>
+            <TopHeader />
+            {children}
+          </UserAuthProvider>
         </Providers>
       </body>
     </html>
