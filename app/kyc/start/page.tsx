@@ -3,10 +3,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabaseClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { useKycStatus } from "@/lib/kyc/useKycStatus";
 
-const supabase = supabaseClient;
+await supabase.auth.getSession();
 
 export default function KycStartPage() {
   const router = useRouter();

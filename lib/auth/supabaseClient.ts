@@ -1,3 +1,3 @@
-import { supabaseClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
-export const supabase = supabaseClient;
+await supabase.auth.getSession();

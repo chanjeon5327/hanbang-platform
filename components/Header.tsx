@@ -1,9 +1,34 @@
-"use client";
+'use client';
 
-// ✅ 기존 코드 호환용: 이제 Header.tsx는 TopHeader를 그대로 재수출만 합니다.
-// - import TopHeader from "@/components/Header"  (기존 방식) 유지 가능
-// - import { Header } from "@/components/Header" (기존 방식) 유지 가능
-// - 실제 구현은 "@/components/TopHeader" 단 한 군데만 사용
+import Link from 'next/link';
+import { useUserAuth } from '@/context/UserAuthContext';
 
-export { default } from "./TopHeader";
-export { default as Header } from "./TopHeader";
+export default function Header() {
+  const { user, loading, signOut } = useUserAuth();
+
+  if (loading) return null;
+
+  return (
+    <header className="flex items-center justify-between px-4 py-3 border-b">
+      <Link href="/">HANBANG</Link>
+
+      <nav className="flex gap-4 items-center">
+        {user ? (
+          <>
+            <span className="text-sm text-gray-600">
+              {user.email}
+            </span>
+            <button
+              onClick={signOut}
+              className="text-sm text-red-600"
+            >
+              로그아웃
+            </button>
+          </>
+        ) : (
+          <Link href="/login">로그인</Link>
+        )}
+      </nav>
+    </header>
+  );
+}

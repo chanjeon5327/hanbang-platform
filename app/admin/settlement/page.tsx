@@ -1,112 +1,68 @@
-"use client";
+// app/admin/settlement/page.tsx
+import Link from "next/link";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 
-import { useState } from "react";
-import { DollarSign, CheckCircle } from "lucide-react";
-
-interface Settlement {
-  id: string;
-  project: string;
-  creator: string;
-  amount: number;
-  status: "pending" | "completed";
-  dueDate: string;
+function supabaseServer() {
+  const cookieStore = cookies();
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} },
+  });
 }
 
-export default function AdminSettlement() {
-  const [settlements] = useState<Settlement[]>([
-    {
-      id: "1",
-      project: "웹툰 <나 혼자 만렙>",
-      creator: "김창작자",
-      amount: 5000000,
-      status: "pending",
-      dueDate: "2024-01-20",
-    },
-    {
-      id: "2",
-      project: "드라마 <한방의 추억>",
-      creator: "이드라마",
-      amount: 3000000,
-      status: "completed",
-      dueDate: "2024-01-15",
-    },
-  ]);
+function isAdminEmail(email?: string | null) {
+  const allow = (process.env.ADMIN_EMAILS || "").split(",").map(s => s.trim()).filter(Boolean);
+  return !!email && allow.includes(email);
+}
+
+export default async function AdminSettlementPage() {
+  const supabase = supabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  const email = user?.email ?? null;
+
+  if (!isAdminEmail(email)) {
+    return (
+      <div style={{ padding: 24 }}>
+        <h2>관리자 전용</h2>
+        <p>권한이 없습니다.</p>
+        <Link href="/">홈으로</Link>
+      </div>
+    );
+  }
+
+  // “정산” = 일단 집계만 (product_id 별 투자합)
+  const { data, error } = await supabase
+    .from("trades")
+    .select("product_id, amount_krw")
+    .limit(1000);
+
+  const map = new Map<string, number>();
+  for (const row of data ?? []) {
+    const k = String((row as any).product_id);
+    const v = Number((row as any).amount_krw ?? 0);
+    map.set(k, (map.get(k) ?? 0) + v);
+  }
+
+  const summary = Array.from(map.entries()).map(([product_id, total_amount_krw]) => ({
+    product_id,
+    total_amount_krw,
+  }));
 
   return (
-    <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
-      <div style={{ marginBottom: "30px" }}>
-        <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "var(--text-primary)", marginBottom: "8px" }}>
-          정산 관리
-        </h1>
-        <p style={{ fontSize: "14px", color: "var(--text-secondary)" }}>출품자 정산 내역을 관리하세요.</p>
+    <div style={{ padding: 24 }}>
+      <h1>관리자: 정산(집계)</h1>
+      <p style={{ opacity: 0.8 }}>지금은 “집계만” 합니다. (실지급/송금은 PG/정산 붙을 때)</p>
+      <div style={{ marginTop: 12 }}>
+        <Link href="/admin/ledger">← 원장/거래/지갑으로</Link>
       </div>
+      <hr style={{ margin: "20px 0" }} />
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        {settlements.map((settlement) => (
-          <div
-            key={settlement.id}
-            style={{
-              backgroundColor: "var(--card-bg)",
-              padding: "24px",
-              borderRadius: "16px",
-              border: "1px solid var(--border-color)",
-              backdropFilter: "blur(10px)",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ flex: 1 }}>
-                <h3 style={{ fontSize: "18px", fontWeight: "bold", color: "var(--text-primary)", marginBottom: "8px" }}>
-                  {settlement.project}
-                </h3>
-                <div style={{ display: "flex", gap: "16px", fontSize: "14px", color: "var(--text-secondary)" }}>
-                  <span>출품자: {settlement.creator}</span>
-                  <span>정산일: {settlement.dueDate}</span>
-                </div>
-              </div>
-              <div style={{ textAlign: "right", marginRight: "24px" }}>
-                <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "4px" }}>정산 금액</p>
-                <p style={{ fontSize: "24px", fontWeight: "bold", color: "var(--text-primary)" }}>
-                  {settlement.amount.toLocaleString()}원
-                </p>
-              </div>
-              <div>
-                {settlement.status === "completed" ? (
-                  <span
-                    style={{
-                      padding: "8px 16px",
-                      borderRadius: "8px",
-                      backgroundColor: "rgba(34, 197, 94, 0.1)",
-                      color: "rgb(34, 197, 94)",
-                      fontSize: "12px",
-                      fontWeight: "bold",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                    }}
-                  >
-                    <CheckCircle size={14} />
-                    완료
-                  </span>
-                ) : (
-                  <span
-                    style={{
-                      padding: "8px 16px",
-                      borderRadius: "8px",
-                      backgroundColor: "rgba(234, 179, 8, 0.1)",
-                      color: "rgb(234, 179, 8)",
-                      fontSize: "12px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    대기중
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <h2>Product 별 투자 합계</h2>
+      <pre style={{ background: "#111", color: "#0f0", padding: 12, overflow: "auto" }}>
+        {JSON.stringify(summary ?? error, null, 2)}
+      </pre>
     </div>
   );
 }
-
