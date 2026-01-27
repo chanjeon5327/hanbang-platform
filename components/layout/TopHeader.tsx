@@ -1,69 +1,50 @@
-// components/layout/TopHeader.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function TopHeader() {
-  const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setIsLoggedIn(!!data.session);
-    });
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setIsLoggedIn(!!session);
-      }
-    );
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, [supabase]);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem('hb_user'); // 보조 캐시 제거
-    router.push('/login');
-  };
-
   return (
-    <header className="flex items-center justify-between border-b px-4 py-3">
-      <div
-        className="cursor-pointer font-bold"
-        onClick={() => router.push('/')}
-      >
+    <header
+      style={{
+        height: 56,
+        padding: '0 16px',
+        borderBottom: '1px solid #e5e7eb',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        background: '#fff',
+      }}
+    >
+      {/* 좌측: 로고 */}
+      <Link href="/" style={{ fontWeight: 'bold' }}>
         HANBANG
-      </div>
+      </Link>
 
-      <div className="flex items-center gap-3">
-        {isLoggedIn ? (
-          <>
-            <button
-              onClick={() => router.push('/wallet')}
-              className="text-sm"
-            >
-              지갑
-            </button>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-red-600"
-            >
-              로그아웃
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={() => router.push('/login')}
-            className="text-sm"
-          >
-            로그인
-          </button>
-        )}
+      {/* 우측: 액션 버튼 */}
+      <div style={{ display: 'flex', gap: 12 }}>
+        <Link
+          href="/sell/new"
+          style={{
+            padding: '6px 12px',
+            borderRadius: 6,
+            border: '1px solid #ddd',
+            fontSize: 14,
+          }}
+        >
+          출품하기
+        </Link>
+
+        <Link
+          href="/wallet"
+          style={{
+            padding: '6px 12px',
+            borderRadius: 6,
+            border: '1px solid #ddd',
+            fontSize: 14,
+          }}
+        >
+          지갑
+        </Link>
       </div>
     </header>
   );
