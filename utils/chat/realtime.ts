@@ -1,5 +1,6 @@
+import { supabase } from '@/lib/supabase/client';
 // utils/chat/realtime.ts
-import { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js';
+import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js';
 
 const channelMap = new Map<string, RealtimeChannel>();
 

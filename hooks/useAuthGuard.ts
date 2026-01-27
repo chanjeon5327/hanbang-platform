@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/client';
 
 export function useAuthGuard() {
   const router = useRouter();
@@ -13,7 +13,7 @@ export function useAuthGuard() {
       const { data } = await supabase.auth.getSession();
 
       if (!data.session) {
-        alert('로그인이 필요합니다.');
+        alert('濡쒓렇?몄씠 ?꾩슂?⑸땲??');
         router.replace('/login');
         return;
       }
@@ -26,3 +26,4 @@ export function useAuthGuard() {
 
   return { checking };
 }
+

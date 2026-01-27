@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import type { createClient } from '@supabase/supabase-js';
 
 // env
 const SUPABASE_URL = process.env.SUPABASE_URL || "";

@@ -2,11 +2,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
 export default function TopHeader() {
-  const supabase = createClient();
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 

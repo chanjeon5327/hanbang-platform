@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from '@/lib/supabase/client';
 import Link from "next/link";
 
 type Product = {
@@ -25,8 +25,8 @@ export default function SellListPage() {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("❌ 목록 조회 실패:", error);
-        alert("출품 목록 조회 실패");
+        console.error("??紐⑸줉 議고쉶 ?ㅽ뙣:", error);
+        alert("異쒗뭹 紐⑸줉 議고쉶 ?ㅽ뙣");
       } else {
         setProducts(data || []);
       }
@@ -37,13 +37,13 @@ export default function SellListPage() {
     fetchProducts();
   }, []);
 
-  if (loading) return <div>로딩 중...</div>;
+  if (loading) return <div>濡쒕뵫 以?..</div>;
 
   return (
     <div style={{ padding: 24 }}>
-      <h2>출품 목록</h2>
+      <h2>異쒗뭹 紐⑸줉</h2>
 
-      {products.length === 0 && <p>출품된 상품이 없습니다.</p>}
+      {products.length === 0 && <p>異쒗뭹???곹뭹???놁뒿?덈떎.</p>}
 
       {products.map((p) => (
         <Link key={p.id} href={`/sell/${p.id}`}>
@@ -55,10 +55,10 @@ export default function SellListPage() {
               cursor: "pointer",
             }}
           >
-            <div><strong>상품명:</strong> {p.name}</div>
-            <div><strong>가격:</strong> {p.price.toLocaleString()}원</div>
+            <div><strong>?곹뭹紐?</strong> {p.name}</div>
+            <div><strong>媛寃?</strong> {p.price.toLocaleString()}??/div>
             <div style={{ fontSize: 12, color: "#666" }}>
-              작성자: {p.user_id}
+              ?묒꽦?? {p.user_id}
             </div>
           </div>
         </Link>
@@ -66,3 +66,4 @@ export default function SellListPage() {
     </div>
   );
 }
+

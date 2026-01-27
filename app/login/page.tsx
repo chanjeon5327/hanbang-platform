@@ -1,35 +1,35 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { supabase } from '@/lib/supabase/client';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from') || '/';
 
   const handleLogin = async () => {
-    if (loading) return; // ✅ 중복 클릭 방지
+    if (loading) return;
 
-    console.log('[HB][LOGIN] 클릭');
     setLoading(true);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      console.log('[HB][LOGIN] 실패', error.message);
       alert(error.message);
       setLoading(false);
       return;
     }
 
-    console.log('[HB][LOGIN] 성공', data);
-    router.replace('/sell/new');
+    router.replace(from);
   };
 
   return (
