@@ -1,163 +1,89 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { useUserAuth } from "@/context/UserAuthContext";
-
-type Product = {
-  id: string;
-  title: string;
-  category: string;
-  price: number;
-  status: "draft" | "pending" | "approved" | "rejected";
-  created_at: string;
-};
+import { useEffect, useState } from 'react';
+import { listMyProducts, closeProduct, reopenProduct } from '@/lib/products/sellerProducts';
+import type { ProductRow } from '@/lib/products/types';
 
 export default function SellerProductsPage() {
-  const router = useRouter();
-  const { user, loading } = useUserAuth();
+  const [items, setItems] = useState<ProductRow[]>([]);
+  const [err, setErr] = useState<string>('');
+  const [msg, setMsg] = useState<string>('');
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [fetching, setFetching] = useState(true);
-
-  // 🔐 로그인 필수
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/login");
+  const load = async () => {
+    try {
+      setErr('');
+      const data = await listMyProducts();
+      setItems(data);
+    } catch (e: any) {
+      setErr(e?.message ?? '로드 실패');
     }
-  }, [loading, user, router]);
+  };
 
-  // 📦 내 출품 조회
   useEffect(() => {
-    if (!user) return;
+    load();
+  }, []);
 
-    const fetchProducts = async () => {
-      setFetching(true);
+  const onClose = async (id: string) => {
+    try {
+      setMsg('');
+      await closeProduct(id);
+      setMsg('closed 처리 완료');
+      await load();
+    } catch (e: any) {
+      setErr(e?.message ?? '실패');
+    }
+  };
 
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, title, category, price, status, created_at")
-        .eq("seller_id", user.id)
-        .order("created_at", { ascending: false });
-
-      setFetching(false);
-
-      if (error) {
-        console.error(error);
-        alert("출품 목록을 불러오지 못했습니다.");
-        return;
-      }
-
-      setProducts(data ?? []);
-    };
-
-    fetchProducts();
-  }, [user]);
-
-  if (loading || fetching) {
-    return <div className="p-6">불러오는 중...</div>;
-  }
+  const onReopen = async (id: string) => {
+    try {
+      setMsg('');
+      await reopenProduct(id);
+      setMsg('open 처리 완료');
+      await load();
+    } catch (e: any) {
+      setErr(e?.message ?? '실패');
+    }
+  };
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">내 출품 목록</h1>
+    <div style={{ padding: 24 }}>
+      <h1>판매자 상품 관리</h1>
 
-        <button
-          onClick={() => router.push("/seller/products/new")}
-          className="bg-black text-white px-4 py-2 rounded-lg font-bold"
-        >
-          + 새 출품
-        </button>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+        <a href="/seller/products/new">+ 새 상품</a>
+        <a href="/products">구매자 상품 목록 보기</a>
       </div>
 
-      {products.length === 0 ? (
-        <div className="text-gray-500">
-          아직 등록한 출품이 없습니다.
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {products.map((p) => (
-            <div
-              key={p.id}
-              className="border rounded-xl p-4 flex justify-between items-center"
-            >
+      {msg && <p>{msg}</p>}
+      {err && <p style={{ color: 'crimson' }}>{err}</p>}
+
+      <div style={{ display: 'grid', gap: 12 }}>
+        {items.map((p) => (
+          <div key={p.id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+              <strong>{p.title}</strong>
+              <span>{p.status}</span>
+            </div>
+
+            <div style={{ marginTop: 8, fontSize: 13, opacity: 0.85 }}>
+              <div>가격(원): {p.price_krw ?? '-'}</div>
               <div>
-                <div className="font-bold">{p.title}</div>
-                <div className="text-sm text-gray-500">
-                  {p.category} · {p.price.toLocaleString()}원
-                </div>
-                <div className="text-xs text-gray-400 mt-1">
-                  상태:{" "}
-                  <StatusBadge status={p.status} />
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                {p.status === "draft" && (
-                  <button
-                    onClick={() =>
-                      router.push(`/seller/products/${p.id}/edit`)
-                    }
-                    className="border px-3 py-1 rounded-md text-sm"
-                  >
-                    수정
-                  </button>
-                )}
-
-                {p.status === "pending" && (
-                  <span className="text-sm text-gray-500">
-                    승인 대기 중
-                  </span>
-                )}
-
-                {p.status === "approved" && (
-                  <span className="text-sm text-green-600 font-medium">
-                    승인 완료
-                  </span>
-                )}
-
-                {p.status === "rejected" && (
-                  <span className="text-sm text-red-600 font-medium">
-                    반려됨
-                  </span>
-                )}
+                잔여/총수량: {p.remaining_quantity ?? '-'} / {p.total_quantity ?? '-'}
               </div>
             </div>
-          ))}
-        </div>
-      )}
+
+            <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+              <a href={`/seller/products/${p.id}/edit`}>수정</a>
+              {p.status !== 'ended' && p.status !== 'closed' && (
+                <button onClick={() => onClose(p.id)}>닫기(closed)</button>
+              )}
+              {p.status === 'closed' && (
+                <button onClick={() => onReopen(p.id)}>다시열기(open)</button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
-  );
-}
-
-/* =====================
-   상태 뱃지
-===================== */
-
-function StatusBadge({
-  status,
-}: {
-  status: "draft" | "pending" | "approved" | "rejected";
-}) {
-  const map = {
-    draft: "초안",
-    pending: "승인 대기",
-    approved: "승인됨",
-    rejected: "반려",
-  };
-
-  const colorMap = {
-    draft: "text-gray-600",
-    pending: "text-yellow-600",
-    approved: "text-green-600",
-    rejected: "text-red-600",
-  };
-
-  return (
-    <span className={`font-medium ${colorMap[status]}`}>
-      {map[status]}
-    </span>
   );
 }

@@ -1,12 +1,25 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useUserAuth } from '@/context/UserAuthContext';
+import { logout } from '@/lib/auth/logout';
 
 export default function Header() {
-  const { user, loading, signOut } = useUserAuth();
+  const { user, loading } = useUserAuth();
+  const router = useRouter();
 
   if (loading) return null;
+
+  const handleLogin = () => {
+    console.log('[HB][HEADER] 로그인 진입 → /login');
+    router.push('/login');
+  };
+
+  const handleLogout = async () => {
+    console.log('[HB][HEADER] 로그아웃 (Supabase 기준)');
+    await logout();
+  };
 
   return (
     <header className="flex items-center justify-between px-4 py-3 border-b">
@@ -19,14 +32,21 @@ export default function Header() {
               {user.email}
             </span>
             <button
-              onClick={signOut}
+              type="button"
+              onClick={handleLogout}
               className="text-sm text-red-600"
             >
               로그아웃
             </button>
           </>
         ) : (
-          <Link href="/login">로그인</Link>
+          <button
+            type="button"
+            onClick={handleLogin}
+            className="text-sm text-blue-600"
+          >
+            로그인
+          </button>
         )}
       </nav>
     </header>

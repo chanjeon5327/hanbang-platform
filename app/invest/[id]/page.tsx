@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { useParams } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,39 +11,27 @@ const supabase = createClient(
 
 export default function InvestPage() {
   const params = useParams();
-  const productId = params.id as string; // ✅ URL의 실제 UUID
+  const productId = params.id as string;
 
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState('50000');
   const [message, setMessage] = useState('');
 
   const handleInvest = async () => {
     setMessage('');
 
-    // 1️⃣ 현재 로그인 유저 가져오기 (Supabase Auth)
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const { data: userData, error: userErr } = await supabase.auth.getUser();
+    if (userErr || !userData.user) {
       setMessage('로그인이 필요합니다.');
       return;
     }
 
-    const userId = user.id; // ✅ 이게 p_user_id
-
-    // 2️⃣ RPC 호출 (인자 3개 정확히)
-    const { error } = await supabase.rpc(
-      'invest_trade_amount_krw_p_product_id',
-      {
-        p_product_id: productId,          // UUID (URL에서)
-        p_amount_krw: Number(amount),     // 숫자
-        p_user_id: userId,                // Auth에서 가져온 UUID
-      }
-    );
+    const { error } = await supabase.rpc('invest_trade_amount_krw_p_product_id', {
+      p_product_id: productId,
+      p_amount_krw: Number(amount),
+      p_user_id: userData.user.id,
+    });
 
     if (error) {
-      console.error('RPC ERROR FULL:', error);
       setMessage(`에러: ${error.message}`);
       return;
     }
@@ -53,20 +41,20 @@ export default function InvestPage() {
 
   return (
     <div style={{ padding: 24 }}>
-      <h1>투자 테스트 페이지</h1>
+      <h1>투자</h1>
+      <p>product_id: {productId}</p>
 
       <input
         type="number"
-        placeholder="금액 입력"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
+        placeholder="금액"
       />
-
       <button onClick={handleInvest} style={{ marginLeft: 8 }}>
         투자하기
       </button>
 
-      {message && <p>{message}</p>}
+      {message && <p style={{ marginTop: 12 }}>{message}</p>}
     </div>
   );
 }
