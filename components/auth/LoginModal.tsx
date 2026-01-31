@@ -1,87 +1,120 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Globe, Mail } from "lucide-react";
+import { useState } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
 
-interface LoginModalProps {
+type LoginModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
+};
 
-export function LoginModal({ open, onOpenChange }: LoginModalProps) {
-  const supabase = createClient();
+export default function LoginModal({
+  open,
+  onOpenChange,
+}: LoginModalProps) {
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
-  // 로그인 성공 시 모달 닫기만 담당
-  useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (session?.user) {
-          onOpenChange(false);
-        }
-      }
-    );
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    return () => {
-      sub.subscription.unsubscribe();
-    };
-  }, [onOpenChange]);
+  if (!open) return null;
 
-  const handleKakaoLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "kakao",
-      options: { redirectTo: `${location.origin}/lobby` },
+  const handleLogin = async () => {
+    setLoading(true);
+    setError(null);
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
-  };
 
-  const handleGoogleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${location.origin}/lobby` },
-    });
-  };
+    setLoading(false);
 
-  const handleEmailLogin = async () => {
-    // 예: 이메일 로그인 / 매직링크
-    // await supabase.auth.signInWithOtp({ email })
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    onOpenChange(false); // ✅ 로그인 성공 → 모달 닫힘
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>로그인 / 회원가입</DialogTitle>
-        </DialogHeader>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.6)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          width: 360,
+          background: '#fff',
+          padding: 24,
+          borderRadius: 8,
+        }}
+      >
+        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>
+          로그인
+        </h2>
 
-        <div className="space-y-3">
-          <Button onClick={handleKakaoLogin} className="w-full">
-            카카오로 로그인
-          </Button>
+        <input
+          type="email"
+          placeholder="이메일"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={{ width: '100%', padding: 10, marginBottom: 8 }}
+        />
 
-          <button
-            onClick={handleGoogleLogin}
-            className="flex w-full items-center justify-center gap-3 rounded-lg bg-white border-2 border-gray-200 py-4 font-bold text-gray-700 hover:bg-gray-50"
-          >
-            <Globe className="w-5 h-5" />
-            구글로 시작하기
-          </button>
+        <input
+          type="password"
+          placeholder="비밀번호"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{ width: '100%', padding: 10, marginBottom: 12 }}
+        />
 
-          <button
-            onClick={handleEmailLogin}
-            className="flex w-full items-center justify-center gap-3 rounded-lg bg-gray-100 py-4 font-bold text-gray-700 hover:bg-gray-200"
-          >
-            <Mail className="w-5 h-5" />
-            이메일로 시작하기
-          </button>
-        </div>
-      </DialogContent>
-    </Dialog>
+        {error && (
+          <div style={{ color: 'red', fontSize: 13, marginBottom: 8 }}>
+            {error}
+          </div>
+        )}
+
+        <button
+          onClick={handleLogin}
+          disabled={loading}
+          style={{
+            width: '100%',
+            padding: 12,
+            background: '#000',
+            color: '#fff',
+            fontWeight: 600,
+          }}
+        >
+          {loading ? '로그인 중...' : '이메일로 로그인'}
+        </button>
+
+        <button
+          onClick={() => onOpenChange(false)}
+          style={{
+            width: '100%',
+            padding: 10,
+            marginTop: 8,
+            background: '#eee',
+          }}
+        >
+          닫기
+        </button>
+      </div>
+    </div>
   );
 }

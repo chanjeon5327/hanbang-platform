@@ -6,7 +6,6 @@
 
 @layer base {
   :root {
-    /* [Light Mode] - MZ 세대 타겟 화사한 라이트 모드 (Toss/Kakao Style) */
     --bg-primary: #F3F4F6;
     --bg-secondary: #FFFFFF;
     --bg-tertiary: #F9FAFB;
@@ -21,12 +20,10 @@
     --down-color: #3182F6;
     --header-bg: rgba(255, 255, 255, 0.8);
 
-    /* 그림자 시스템 (Claymorphism) */
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
     --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.12);
 
-    /* shadcn/ui light mode variables (Toss Style) */
     --background: 210 20% 95%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -50,7 +47,6 @@
   }
 
   .dark {
-    /* [Dark Mode] - 다크 모드가 명시적으로 선택된 경우에만 적용 */
     --bg-primary: #0F172A;
     --bg-secondary: #1E293B;
     --bg-tertiary: #334155;
@@ -63,11 +59,11 @@
     --up-color: #ef4444;
     --down-color: #3b82f6;
     --header-bg: rgba(15, 23, 42, 0.8);
+
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.5);
 
-    /* shadcn/ui dark mode variables */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
@@ -99,7 +95,6 @@ body {
   font-weight: 500;
 }
 
-/* 기본 텍스트 스타일 조정 */
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   color: var(--text-primary);
@@ -110,51 +105,57 @@ p {
   color: var(--text-primary);
 }
 
-.text-muted, .text-secondary {
+.text-muted,
+.text-secondary {
   color: var(--text-muted);
   font-weight: 500;
 }
 
-::-webkit-scrollbar { display: none; }
-
-@keyframes zoomIn { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
-.cinematic-bg { animation: zoomIn 20s infinite alternate linear; }
-
-@keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-.animate-ticker { animation: ticker 30s linear infinite; white-space: nowrap; }
-
-@keyframes popUp { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-.animate-pop { animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-@keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(124, 58, 237, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); } }
-.animate-pulse-custom { animation: pulse 2s infinite; }
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+::-webkit-scrollbar {
+  display: none;
 }
 
-.btn-action:active { transform: scale(0.95); }
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+@keyframes zoomIn {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
 }
 
-@keyframes ticker {
-  0% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
+.cinematic-bg {
+  animation: zoomIn 20s infinite alternate linear;
 }
 
-/* 터치 피드백 및 반응감 개선 */
+@keyframes popUp {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-pop {
+  animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* ===== 터치 피드백 (Tailwind-safe) ===== */
+
+.btn-press {
+  transition: transform 0.075s ease;
+}
+
+.btn-press:active {
+  transform: scale(0.95);
+}
+
+.list-press {
+  transition: background-color 0.075s ease;
+}
+
+.list-press:active {
+  background-color: #f3f4f6;
+}
+
+.dark .list-press:active {
+  background-color: #1f2937;
+}
+
+/* 링크/버튼 공통 */
 button,
 [role="button"],
 a[href],
@@ -172,22 +173,7 @@ a[href]:active,
   transition: transform 0.1s ease-out;
 }
 
-/* 스크롤바 숨기기 (모바일) */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-/* 스크롤 스냅 */
-.scroll-snap-start {
-  scroll-snap-align: start;
-}
-
-/* 안전 영역 (노치 대응) */
+/* 안전 영역 */
 .pt-safe {
   padding-top: env(safe-area-inset-top);
 }
@@ -196,17 +182,6 @@ a[href]:active,
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-@layer utilities {
-  /* 모든 버튼에 적용될 "쫀득한" 터치감 */
-  .btn-press {
-    @apply active:scale-95 transition-transform duration-75 cursor-pointer touch-manipulation;
-  }
-  
-  /* 탭이나 리스트 아이템에 적용될 "부드러운" 터치감 */
-  .list-press {
-    @apply active:bg-gray-100 dark:active:bg-gray-800 transition-colors duration-75 cursor-pointer;
-  }
-}
 @keyframes chatIn {
   0% {
     transform: translateY(20px) scale(0.98);
