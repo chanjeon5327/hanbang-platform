@@ -1,108 +1,159 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { useEffect, useMemo, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
 
-type Row = {
-  settlement_date: string;
-  seller_id: string;
-  gross_amount: number | null;
-  platform_fee: number | null;
-  net_amount: number | null;
-  finalized_at: string | null;
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+type SettlementRow = {
+  seller_id: string;            // view: products.seller_id
+  settlement_date: string;      // view: date(o.completed_at)
+  order_count: number;
+  gross_amount: number;
+  platform_fee: number;
+  net_amount: number;
+  is_settled: boolean;
+  first_completed_at?: string | null;
+  last_completed_at?: string | null;
 };
 
-export default function AdminSettlementsPage() {
-  const supabase = createClient();
+function formatMoney(n: number | null | undefined) {
+  const v = Number(n ?? 0);
+  if (Number.isNaN(v)) return '0';
+  return v.toLocaleString();
+}
 
-  const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [busyDate, setBusyDate] = useState<string | null>(null);
+export default function AdminSettlementsPage() {
+  const [rows, setRows] = useState<SettlementRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [confirmingKey, setConfirmingKey] = useState<string | null>(null);
+
+  const disabledAll = useMemo(() => loading, [loading]);
 
   useEffect(() => {
-    load();
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function load() {
     setLoading(true);
+
     const { data, error } = await supabase
-      .from('seller_daily_settlement_net')
+      .from('admin_settlement_daily')
       .select('*')
       .order('settlement_date', { ascending: false });
 
-    if (error) {
-      alert(error.message);
-    } else {
-      setRows(data ?? []);
-    }
     setLoading(false);
+
+    if (error) {
+      alert(`정산 목록 로드 실패: ${error.message}`);
+      return;
+    }
+
+    setRows((data ?? []) as SettlementRow[]);
   }
 
-  async function finalize(settlement_date: string) {
-    if (!confirm(`${settlement_date} 정산을 확정하시겠습니까?`)) return;
+  async function onConfirmSettlement(row: SettlementRow) {
+    const key = `${row.seller_id}-${row.settlement_date}`;
+    if (!window.confirm('정산을 확정하시겠습니까? (되돌릴 수 없습니다)')) return;
 
-    setBusyDate(settlement_date);
-    const { error } = await supabase.rpc('finalize_daily_settlement', {
-      p_settlement_date: settlement_date,
+    setConfirmingKey(key);
+    setLoading(true);
+
+    const { data, error } = await supabase.rpc('rpc_admin_confirm_settlement', {
+      p_seller_id: row.seller_id,
+      p_settlement_date: row.settlement_date, // date string OK
     });
 
-    if (error) alert(error.message);
+    setLoading(false);
+    setConfirmingKey(null);
+
+    if (error) {
+      // Supabase 에러 메시지 정리
+      const msg =
+        error.message?.includes('ALREADY_SETTLED')
+          ? '이미 확정된 정산입니다.'
+          : error.message?.includes('NO_SETTLEMENT_TARGET')
+          ? '정산 대상 주문이 없습니다.'
+          : error.message;
+
+      alert(`정산 확정 실패: ${msg}`);
+      return;
+    }
+
+    // 성공
+    alert('정산 확정 완료');
+    // 결과(JSONB)를 쓰고 싶으면 여기서 data 확인 가능
+    // console.log('rpc result:', data);
+
     await load();
-    setBusyDate(null);
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">관리자 정산</h1>
+    <div style={{ padding: 24 }}>
+      <h1 style={{ fontSize: 24, fontWeight: 700 }}>관리자 정산</h1>
 
-      {loading ? (
-        <p>로딩 중…</p>
-      ) : (
-        <table className="w-full border text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="border p-2">정산일</th>
-              <th className="border p-2">판매자</th>
-              <th className="border p-2">총매출</th>
-              <th className="border p-2">수수료</th>
-              <th className="border p-2">정산액</th>
-              <th className="border p-2">상태</th>
-              <th className="border p-2">액션</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={`${r.seller_id}-${r.settlement_date}`}>
-                <td className="border p-2">{r.settlement_date}</td>
-                <td className="border p-2">{r.seller_id}</td>
-                <td className="border p-2 text-right">
-                  {r.gross_amount?.toLocaleString() ?? '-'}
-                </td>
-                <td className="border p-2 text-right">
-                  {r.platform_fee?.toLocaleString() ?? '-'}
-                </td>
-                <td className="border p-2 text-right font-semibold">
-                  {r.net_amount?.toLocaleString() ?? '-'}
-                </td>
-                <td className="border p-2">
-                  {r.finalized_at ? '확정' : '대기'}
-                </td>
-                <td className="border p-2">
-                  {!r.finalized_at && (
+      <div style={{ marginTop: 12, opacity: 0.7, fontSize: 13 }}>
+        {loading ? '로딩 중…' : `총 ${rows.length}건`}
+      </div>
+
+      <table style={{ width: '100%', marginTop: 16, borderCollapse: 'collapse' }}>
+        <thead>
+          <tr style={{ textAlign: 'left', borderBottom: '1px solid #ddd' }}>
+            <th style={{ padding: 8 }}>판매자</th>
+            <th style={{ padding: 8 }}>정산일</th>
+            <th style={{ padding: 8 }}>주문수</th>
+            <th style={{ padding: 8 }}>총액</th>
+            <th style={{ padding: 8 }}>수수료</th>
+            <th style={{ padding: 8 }}>정산금</th>
+            <th style={{ padding: 8 }}></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {rows.map((r) => {
+            const key = `${r.seller_id}-${r.settlement_date}`;
+            const isRowBusy = disabledAll || confirmingKey === key;
+
+            return (
+              <tr key={key} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                <td style={{ padding: 8 }}>{r.seller_id.slice(0, 8)}…</td>
+                <td style={{ padding: 8 }}>{r.settlement_date}</td>
+                <td style={{ padding: 8 }}>{r.order_count}</td>
+                <td style={{ padding: 8 }}>{formatMoney(r.gross_amount)}</td>
+                <td style={{ padding: 8 }}>{formatMoney(r.platform_fee)}</td>
+                <td style={{ padding: 8 }}>{formatMoney(r.net_amount)}</td>
+
+                <td style={{ padding: 8, textAlign: 'right' }}>
+                  {r.is_settled ? (
+                    <button disabled style={{ padding: '6px 10px', opacity: 0.6 }}>
+                      확정 완료
+                    </button>
+                  ) : (
                     <button
-                      className="px-3 py-1 bg-black text-white rounded"
-                      disabled={busyDate === r.settlement_date}
-                      onClick={() => finalize(r.settlement_date)}
+                      disabled={isRowBusy}
+                      onClick={() => void onConfirmSettlement(r)}
+                      style={{
+                        padding: '6px 10px',
+                        background: isRowBusy ? '#999' : 'red',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: 6,
+                        cursor: isRowBusy ? 'not-allowed' : 'pointer',
+                      }}
                     >
-                      정산 확정
+                      {confirmingKey === key ? '확정 중…' : '정산 확정'}
                     </button>
                   )}
                 </td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }

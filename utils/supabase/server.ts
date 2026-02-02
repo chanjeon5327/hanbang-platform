@@ -1,26 +1,24 @@
-import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
+import { cookies, headers } from 'next/headers';
 
-export async function createClient() {
-  const cookieStore = await cookies();
+export function createClient() {
+  const cookieStore = cookies();
+  const headerStore = headers();
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-  return createServerClient(url, anon, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
       },
-      setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
-          });
-        } catch {
-          // Server Component에서 set이 막히는 케이스가 있어도 무시(정상)
-        }
+      headers: {
+        get(name: string) {
+          return headerStore.get(name) ?? undefined;
+        },
       },
-    },
-  });
+    }
+  );
 }
