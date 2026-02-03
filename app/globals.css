@@ -1,12 +1,20 @@
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* 외부 폰트는 반드시 tailwind 뒤 */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+
+/* 기본 HTML */
+html, body {
+  height: 100%;
+}
+
+/* ===============================
+   Base Layer (디자인 토대)
+================================ */
 @layer base {
   :root {
-    /* [Light Mode] - MZ 세대 타겟 화사한 라이트 모드 (Toss/Kakao Style) */
     --bg-primary: #F3F4F6;
     --bg-secondary: #FFFFFF;
     --bg-tertiary: #F9FAFB;
@@ -21,36 +29,14 @@
     --down-color: #3182F6;
     --header-bg: rgba(255, 255, 255, 0.8);
 
-    /* 그림자 시스템 (Claymorphism) */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.12);
-
-    /* shadcn/ui light mode variables (Toss Style) */
+    /* shadcn */
     --background: 210 20% 95%;
     --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
     --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 262 83% 58%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 262 83% 58%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 210 20% 98%;
-    --ring: 217 91% 60%;
     --radius: 1.5rem;
   }
 
   .dark {
-    /* [Dark Mode] - 다크 모드가 명시적으로 선택된 경우에만 적용 */
     --bg-primary: #0F172A;
     --bg-secondary: #1E293B;
     --bg-tertiary: #334155;
@@ -60,167 +46,50 @@
     --accent-color: #7c3aed;
     --border-color: #334155;
     --card-bg: #1E293B;
-    --up-color: #ef4444;
-    --down-color: #3b82f6;
-    --header-bg: rgba(15, 23, 42, 0.8);
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.5);
+  }
 
-    /* shadcn/ui dark mode variables */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-weight: 500;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+  }
+
+  p {
+    font-weight: 500;
   }
 }
 
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  transition: background-color 0.3s, color 0.3s;
-  font-feature-settings: 'tnum';
-  font-weight: 500;
-}
-
-/* 기본 텍스트 스타일 조정 */
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-p {
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.text-muted, .text-secondary {
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-::-webkit-scrollbar { display: none; }
-
-@keyframes zoomIn { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
-.cinematic-bg { animation: zoomIn 20s infinite alternate linear; }
-
-@keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-.animate-ticker { animation: ticker 30s linear infinite; white-space: nowrap; }
-
-@keyframes popUp { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-.animate-pop { animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-@keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(124, 58, 237, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); } }
-.animate-pulse-custom { animation: pulse 2s infinite; }
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.btn-action:active { transform: scale(0.95); }
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-@keyframes ticker {
-  0% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
-
-/* 터치 피드백 및 반응감 개선 */
-button,
-[role="button"],
-a[href],
-.clickable {
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-button:active,
-[role="button"]:active,
-a[href]:active,
-.clickable:active {
-  transform: scale(0.95);
-  transition: transform 0.1s ease-out;
-}
-
-/* 스크롤바 숨기기 (모바일) */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-/* 스크롤 스냅 */
-.scroll-snap-start {
-  scroll-snap-align: start;
-}
-
-/* 안전 영역 (노치 대응) */
-.pt-safe {
-  padding-top: env(safe-area-inset-top);
-}
-
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
+/* ===============================
+   Utilities Layer
+================================ */
 @layer utilities {
-  /* 모든 버튼에 적용될 "쫀득한" 터치감 */
   .btn-press {
     @apply transition-transform duration-75 cursor-pointer touch-manipulation;
   }
-  
-  /* 탭이나 리스트 아이템에 적용될 "부드러운" 터치감 */
+
   .list-press {
     @apply transition-colors duration-75 cursor-pointer;
   }
 }
-@keyframes chatIn {
-  0% {
-    transform: translateY(20px) scale(0.98);
-    opacity: 0;
-  }
-  60% {
-    transform: translateY(-4px) scale(1.01);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0) scale(1);
-  }
+
+/* ===============================
+   Animations / Effects
+================================ */
+@keyframes popUp {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-.animate-chat-in {
-  animation: chatIn 0.35s ease-out;
+.animate-pop {
+  animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+::-webkit-scrollbar {
+  display: none;
 }
