@@ -2,114 +2,147 @@ import { NextResponse } from "next/server";
 import { createClient as createCookieClient } from "@/utils/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 
+/**
+ * GATE-0 최종 목표:
+ * - 어떤 경우에도 500 금지(항상 200 JSON)
+ * - settled/paid/completed 등 최종상태는 되돌림 금지(멱등 NOOP)
+ * - paid_at 컬럼 없어도 동작(status만 업데이트)
+ */
 export async function POST(req: Request) {
-  // ✅ 어떤 환경이든 "schema cache" 에러는 500 금지(개발 막힘 방지)
-  // ✅ 대신 JSON으로 원인 힌트를 내려준다.
   const nodeEnv = process.env.NODE_ENV ?? "(undefined)";
   const schema = process.env.SUPABASE_DB_SCHEMA ?? "public";
 
+  const ok = (payload: any) => NextResponse.json(payload, { status: 200 });
+
   try {
     const body = await req.json().catch(() => ({}));
-    const orderId = body.order_id ?? body.orderId;
+    const orderId: string | undefined = body.order_id ?? body.orderId;
 
     if (!orderId) {
-      return NextResponse.json(
-        { success: false, error: "MISSING_ORDER_ID", nodeEnv, schema },
-        { status: 200 }
-      );
+      return ok({ success: false, code: "MISSING_ORDER_ID", nodeEnv, schema });
     }
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     if (!url) {
-      return NextResponse.json(
-        { success: false, error: "MISSING_ENV_NEXT_PUBLIC_SUPABASE_URL", nodeEnv, schema },
-        { status: 200 }
-      );
+      return ok({
+        success: false,
+        code: "MISSING_ENV_NEXT_PUBLIC_SUPABASE_URL",
+        nodeEnv,
+        schema,
+      });
     }
 
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    // ✅ service_role이 있으면 우선 사용(결제 콜백/서버 호출 정석)
     const supabase = serviceKey
       ? createServiceClient(url, serviceKey, { auth: { persistSession: false } })
       : createCookieClient();
 
-    const { data, error } = await supabase
+    // 1) 주문 상태 조회
+    const { data: order, error: readErr } = await supabase
       .schema(schema)
       .from("orders")
-      .update({ status: "paid", paid_at: new Date().toISOString() })
+      .select("id,status")
       .eq("id", orderId)
-      .select("id");
+      .maybeSingle();
 
-    if (error) {
-      const msg = error.message ?? "";
-      const isSchemaCache = msg.includes("schema cache");
-
-      // ✅ schema cache 에러는 "항상 200"으로 내려서 막히지 않게
-      if (isSchemaCache) {
-        return NextResponse.json(
-          {
-            success: false,
-            code: "ORDERS_NOT_IN_SCHEMA_CACHE",
-            error: msg,
-            nodeEnv,
-            schema,
-            used: serviceKey ? "service_role" : "cookie_session",
-            next: [
-              "1) Supabase Dashboard → Settings → API → Exposed Schemas에 public 포함 확인",
-              "2) 포함돼도 동일하면 public 체크 해제→Save→다시 체크→Save (캐시 강제 갱신)",
-              "3) SQL Editor에서 notify pgrst, 'reload schema'; 실행",
-              "4) 그래도 동일하면 Project Restart(설정에서 Restart project)로 PostgREST 재기동",
-            ],
-          },
-          { status: 200 }
-        );
-      }
-
-      // 그 외 DB 에러는 정상적으로 500
-      return NextResponse.json(
-        {
-          success: false,
-          code: "DB_ERROR",
-          error: msg,
-          nodeEnv,
-          schema,
-          used: serviceKey ? "service_role" : "cookie_session",
-        },
-        { status: 500 }
-      );
-    }
-
-    const updated = Array.isArray(data) ? data.length : 0;
-
-    if (updated === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          code: "ORDER_NOT_FOUND_OR_NOT_VISIBLE",
-          nodeEnv,
-          schema,
-          used: serviceKey ? "service_role" : "cookie_session",
-        },
-        { status: 200 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        success: true,
-        updated,
+    if (readErr) {
+      const msg = readErr.message ?? "";
+      return ok({
+        success: false,
+        code: msg.includes("schema cache") ? "SCHEMA_CACHE_ERROR" : "ORDER_READ_ERROR",
+        error: msg,
+        order_id: orderId,
         nodeEnv,
         schema,
         used: serviceKey ? "service_role" : "cookie_session",
-      },
-      { status: 200 }
-    );
+      });
+    }
+
+    if (!order) {
+      return ok({
+        success: false,
+        code: "ORDER_NOT_FOUND",
+        order_id: orderId,
+        nodeEnv,
+        schema,
+        used: serviceKey ? "service_role" : "cookie_session",
+      });
+    }
+
+    const currentStatus = String((order as any).status ?? "").toLowerCase();
+
+    // 2) 최종상태는 되돌림 금지(멱등)
+    if (["paid", "completed", "settled", "cancelled", "canceled"].includes(currentStatus)) {
+      return ok({
+        success: true,
+        code: `NOOP_ALREADY_${currentStatus.toUpperCase()}`,
+        order_id: orderId,
+        status: currentStatus,
+        updated: 0,
+        nodeEnv,
+        schema,
+        used: serviceKey ? "service_role" : "cookie_session",
+      });
+    }
+
+    // 3) markable 상태만 paid로 전환
+    const markable = ["pending", "unpaid", "created"];
+    if (!markable.includes(currentStatus)) {
+      return ok({
+        success: true,
+        code: "NOOP_STATUS_NOT_MARKABLE",
+        order_id: orderId,
+        status: currentStatus,
+        updated: 0,
+        nodeEnv,
+        schema,
+        used: serviceKey ? "service_role" : "cookie_session",
+      });
+    }
+
+    // 4) 업데이트 (paid_at 없음 → status만)
+    const { data: updatedRows, error: upErr } = await supabase
+      .schema(schema)
+      .from("orders")
+      .update({ status: "paid" })
+      .eq("id", orderId)
+      .select("id");
+
+    if (upErr) {
+      const msg = upErr.message ?? "";
+      return ok({
+        success: false,
+        code: msg.includes("schema cache") ? "SCHEMA_CACHE_ERROR" : "ORDER_UPDATE_ERROR",
+        error: msg,
+        order_id: orderId,
+        prev_status: currentStatus,
+        nodeEnv,
+        schema,
+        used: serviceKey ? "service_role" : "cookie_session",
+      });
+    }
+
+    const updated = Array.isArray(updatedRows) ? updatedRows.length : 0;
+
+    return ok({
+      success: true,
+      code: updated === 1 ? "MARK_PAID_OK" : "MARK_PAID_NO_ROWS_UPDATED",
+      order_id: orderId,
+      prev_status: currentStatus,
+      updated,
+      nodeEnv,
+      schema,
+      used: serviceKey ? "service_role" : "cookie_session",
+    });
   } catch (e: any) {
-    // 런타임 파싱/예외는 500 유지
-    return NextResponse.json(
-      { success: false, code: "RUNTIME_ERROR", error: e?.message ?? "UNKNOWN", nodeEnv, schema },
-      { status: 500 }
-    );
+    // ✅ 여기까지도 500 금지
+    return ok({
+      success: false,
+      code: "RUNTIME_ERROR",
+      error: e?.message ?? "UNKNOWN",
+      nodeEnv,
+      schema,
+    });
   }
 }
