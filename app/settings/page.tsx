@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, ChevronRight, User } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, ChevronRight, User } from "lucide-react";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -11,21 +11,25 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-[#F2F4F6] pb-[90px]">
-      {/* 헤더 */}
-      <header className="sticky top-0 bg-white z-50 border-b border-gray-200">
-        <div className="px-4 py-3 flex items-center">
+      <main className="px-5 pt-4 pb-8">
+        {/* ✅ 내부 sticky 헤더 제거 (전역 Header만 사용) */}
+        {/* 상단 타이틀/뒤로가기 UI는 main 안으로 이동 */}
+        <div className="mb-4 flex items-center">
           <button
             onClick={() => router.back()}
             className="w-10 h-10 flex items-center justify-center active:bg-gray-100 rounded-full transition-colors"
+            aria-label="뒤로가기"
           >
             <ArrowLeft className="w-6 h-6 text-slate-800" />
           </button>
-          <h1 className="flex-1 text-center text-lg font-bold text-slate-800">설정</h1>
-          <div className="w-10"></div> {/* 중앙 정렬을 위한 더미 */}
-        </div>
-      </header>
 
-      <main className="px-5 pt-4 pb-8">
+          <h1 className="flex-1 text-center text-lg font-bold text-slate-800">
+            설정
+          </h1>
+
+          <div className="w-10" />
+        </div>
+
         {/* 프로필 섹션 */}
         <div className="bg-white rounded-2xl p-4 mb-4 active:bg-gray-50 transition-colors">
           <div className="flex items-center justify-between">
@@ -80,12 +84,13 @@ export default function SettingsPage() {
             <button
               onClick={() => setBiometricEnabled(!biometricEnabled)}
               className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-                biometricEnabled ? 'bg-[#7c3aed]' : 'bg-gray-300'
+                biometricEnabled ? "bg-[#7c3aed]" : "bg-gray-300"
               }`}
+              aria-label="생체인증 토글"
             >
               <div
                 className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200 ${
-                  biometricEnabled ? 'translate-x-5' : 'translate-x-0'
+                  biometricEnabled ? "translate-x-5" : "translate-x-0"
                 }`}
               />
             </button>
@@ -95,12 +100,13 @@ export default function SettingsPage() {
             <button
               onClick={() => setBlockOverseasLogin(!blockOverseasLogin)}
               className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-                blockOverseasLogin ? 'bg-[#7c3aed]' : 'bg-gray-300'
+                blockOverseasLogin ? "bg-[#7c3aed]" : "bg-gray-300"
               }`}
+              aria-label="해외 로그인 차단 토글"
             >
               <div
                 className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200 ${
-                  blockOverseasLogin ? 'translate-x-5' : 'translate-x-0'
+                  blockOverseasLogin ? "translate-x-5" : "translate-x-0"
                 }`}
               />
             </button>

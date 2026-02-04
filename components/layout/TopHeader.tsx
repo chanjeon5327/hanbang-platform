@@ -1,51 +1,10 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-
+/**
+ * ✅ GATE-2: 헤더 단일화
+ * - 과거 페이지/컴포넌트에 남아있는 <TopHeader />는 "중복 헤더" 원인이므로 비활성 처리
+ * - 전역 헤더는 app/layout.tsx의 <Header /> 1개만 사용
+ */
 export default function TopHeader() {
-  return (
-    <header
-      style={{
-        height: 56,
-        padding: '0 16px',
-        borderBottom: '1px solid #e5e7eb',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        background: '#fff',
-      }}
-    >
-      {/* 좌측: 로고 */}
-      <Link href="/" style={{ fontWeight: 'bold' }}>
-        HANBANG
-      </Link>
-
-      {/* 우측: 액션 버튼 */}
-      <div style={{ display: 'flex', gap: 12 }}>
-        <Link
-          href="/sell/new"
-          style={{
-            padding: '6px 12px',
-            borderRadius: 6,
-            border: '1px solid #ddd',
-            fontSize: 14,
-          }}
-        >
-          출품하기
-        </Link>
-
-        <Link
-          href="/wallet"
-          style={{
-            padding: '6px 12px',
-            borderRadius: 6,
-            border: '1px solid #ddd',
-            fontSize: 14,
-          }}
-        >
-          지갑
-        </Link>
-      </div>
-    </header>
-  );
+  return null;
 }

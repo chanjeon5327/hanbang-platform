@@ -23,14 +23,22 @@ export default function Header() {
 
   return (
     <header className="flex items-center justify-between px-4 py-3 border-b">
-      <Link href="/">HANBANG</Link>
+      <Link href="/" className="font-semibold">
+        HANBANG
+      </Link>
 
       <nav className="flex gap-4 items-center">
         {user ? (
           <>
+            {/* 👇 로그인 상태 표시 (GATE-2 기준) */}
+            <span className="text-xs text-gray-400">
+              눈팅중
+            </span>
+
             <span className="text-sm text-gray-600">
               {user.email}
             </span>
+
             <button
               type="button"
               onClick={handleLogout}

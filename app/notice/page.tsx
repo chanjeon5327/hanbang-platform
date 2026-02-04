@@ -1,18 +1,35 @@
 "use client";
-import React from 'react';
-import TopHeader from '../../components/TopHeader';
-import BottomNav from '../../components/BottomNav';
+
+import React from "react";
+import BottomNav from "../../components/BottomNav";
 
 export default function Notice() {
   return (
-    <div style={{ paddingBottom: '100px' }}>
-      <TopHeader />
-      <div style={{ marginTop: '80px', padding: '20px', maxWidth: '800px', margin: '80px auto' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '30px' }}>공지사항 & 가이드</h1>
-        
-        <div style={{ marginBottom: '40px', padding: '20px', backgroundColor: 'var(--bg-secondary)', borderRadius: '12px' }}>
-          <h3 style={{ marginBottom: '10px' }}>📘 초보 투자자 가이드</h3>
-          <ul style={{ lineHeight: '1.8', fontSize: '14px', color: 'var(--text-secondary)' }}>
+    <div style={{ paddingBottom: "100px" }}>
+      {/* ✅ TopHeader 제거: 전역 Header(app/layout.tsx)만 사용 */}
+
+      <div
+        style={{
+          marginTop: "80px",
+          padding: "20px",
+          maxWidth: "800px",
+          margin: "80px auto",
+        }}
+      >
+        <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "30px" }}>
+          공지사항 & 가이드
+        </h1>
+
+        <div
+          style={{
+            marginBottom: "40px",
+            padding: "20px",
+            backgroundColor: "var(--bg-secondary)",
+            borderRadius: "12px",
+          }}
+        >
+          <h3 style={{ marginBottom: "10px" }}>📘 초보 투자자 가이드</h3>
+          <ul style={{ lineHeight: "1.8", fontSize: "14px", color: "var(--text-secondary)" }}>
             <li>1. 회원가입 후 [내 자산]에서 가상 계좌를 발급받으세요.</li>
             <li>2. 원하는 콘텐츠(K-POP, 드라마 등)를 선택해 상세 정보를 확인하세요.</li>
             <li>3. [매수] 버튼을 눌러 원하는 수량만큼 지분을 구매하세요.</li>
@@ -26,6 +43,7 @@ export default function Notice() {
           </ul>
         </div>
       </div>
+
       <BottomNav />
     </div>
   );
