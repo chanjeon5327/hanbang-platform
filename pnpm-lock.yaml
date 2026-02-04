@@ -26,9 +26,6 @@ importers:
       '@prisma/client':
         specifier: ^5.10.2
         version: 5.22.0
-      '@supabase/auth-helpers-nextjs':
-        specifier: ^0.15.0
-        version: 0.15.0(@supabase/supabase-js@2.93.3(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@supabase/ssr':
         specifier: ^0.8.0
         version: 0.8.0(@supabase/supabase-js@2.93.3(bufferutil@4.1.0)(utf-8-validate@5.0.10))
@@ -1052,12 +1049,6 @@ packages:
 
   '@solana/web3.js@1.98.4':
     resolution: {integrity: sha512-vv9lfnvjUsRiq//+j5pBdXig0IQdtzA0BRZ3bXEP4KaIyF1CcaydWqgyzQgfZMNIsWNWmG+AUHwPy4AHOD6gpw==}
-
-  '@supabase/auth-helpers-nextjs@0.15.0':
-    resolution: {integrity: sha512-VtXz3GGnxluoxks1g3SaCoYr2OZ7PgRukDl+pLWrDfD2dPDaG8hmkp5iBZsU+lmsDYALGNO2dgbymgpAfD8eCQ==}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
-    peerDependencies:
-      '@supabase/supabase-js': ^2.76.1
 
   '@supabase/auth-js@2.93.3':
     resolution: {integrity: sha512-JdnkHZPKexVGSNONtu89RHU4bxz3X9kxx+f5ZnR5osoCIX+vs/MckwWRPZEybAEvlJXt5xjomDb3IB876QCxWQ==}
@@ -4488,11 +4479,6 @@ snapshots:
       - encoding
       - typescript
       - utf-8-validate
-
-  '@supabase/auth-helpers-nextjs@0.15.0(@supabase/supabase-js@2.93.3(bufferutil@4.1.0)(utf-8-validate@5.0.10))':
-    dependencies:
-      '@supabase/supabase-js': 2.93.3(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      cookie: 1.1.1
 
   '@supabase/auth-js@2.93.3':
     dependencies:

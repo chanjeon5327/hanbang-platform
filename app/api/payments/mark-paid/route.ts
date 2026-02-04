@@ -1,43 +1,47 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient as createCookieClient } from '@/utils/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 
 export async function POST(req: Request) {
-  const supabase = createClient();
-
   try {
-    const { order_id } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const orderId = body.order_id ?? body.orderId;
 
-    if (!order_id) {
+    if (!orderId) {
       return NextResponse.json(
-        { error: 'order_id missing' },
+        { success: false, error: 'MISSING_ORDER_ID' },
         { status: 400 }
       );
     }
 
-    // 1️⃣ 주문 paid 처리
-    const { error: updateError } = await supabase
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!url) throw new Error('Missing env: NEXT_PUBLIC_SUPABASE_URL');
+
+    // ✅ (1) 결제사 콜백/서버 내부 호출: service role 있으면 그걸로 처리
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabase = serviceKey
+      ? createServiceClient(url, serviceKey, { auth: { persistSession: false } })
+      : createCookieClient(); // ✅ (2) 일반 호출: 세션 쿠키 기반
+
+    const { error } = await supabase
       .from('orders')
       .update({
         status: 'paid',
         paid_at: new Date().toISOString(),
       })
-      .eq('id', order_id)
-      .eq('status', 'pending');
+      .eq('id', orderId);
 
-    if (updateError) throw updateError;
-
-    // 2️⃣ 투자 RPC 실행
-    const { error: rpcError } = await supabase.rpc('rpc_invest', {
-      p_order_id: order_id,
-    });
-
-    if (rpcError) throw rpcError;
+    if (error) {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ success: true });
   } catch (e: any) {
-    console.error('[mark-paid]', e);
     return NextResponse.json(
-      { error: e.message ?? 'unknown error' },
+      { success: false, error: e?.message ?? 'UNKNOWN_ERROR' },
       { status: 500 }
     );
   }
