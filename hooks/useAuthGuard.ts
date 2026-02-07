@@ -1,29 +1,21 @@
 ﻿'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { createBrowserClient } from '@supabase/ssr';
 
 export function useAuthGuard() {
   const router = useRouter();
-  const [checking, setChecking] = useState(true);
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-
+    supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
-        alert('濡쒓렇?몄씠 ?꾩슂?⑸땲??');
         router.replace('/login');
-        return;
       }
-
-      setChecking(false);
-    };
-
-    checkAuth();
-  }, [router]);
-
-  return { checking };
+    });
+  }, []);
 }
-

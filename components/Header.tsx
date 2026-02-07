@@ -2,59 +2,49 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useUserAuth } from '@/context/UserAuthContext';
-import { logout } from '@/lib/auth/logout';
+import { createBrowserClient } from '@supabase/ssr';
+import { useEffect, useState } from 'react';
 
 export default function Header() {
-  const { user, loading } = useUserAuth();
   const router = useRouter();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
-  if (loading) return null;
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const handleLogin = () => {
-    console.log('[HB][HEADER] 로그인 진입 → /login');
-    router.push('/login');
-  };
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setIsLoggedIn(!!data.session);
+    });
+  }, []);
 
   const handleLogout = async () => {
-    console.log('[HB][HEADER] 로그아웃 (Supabase 기준)');
-    await logout();
+    await supabase.auth.signOut();
+    router.replace('/login');
+    router.refresh();
   };
 
   return (
     <header className="flex items-center justify-between px-4 py-3 border-b">
-      <Link href="/" className="font-semibold">
+      <Link href="/" className="font-bold text-lg">
         HANBANG
       </Link>
 
       <nav className="flex gap-4 items-center">
-        {user ? (
+        {isLoggedIn ? (
           <>
-            {/* 👇 로그인 상태 표시 (GATE-2 기준) */}
-            <span className="text-xs text-gray-400">
-              눈팅중
-            </span>
-
-            <span className="text-sm text-gray-600">
-              {user.email}
-            </span>
-
+            <Link href="/wallet">지갑</Link>
             <button
-              type="button"
               onClick={handleLogout}
-              className="text-sm text-red-600"
+              className="text-red-600 font-semibold"
             >
               로그아웃
             </button>
           </>
         ) : (
-          <button
-            type="button"
-            onClick={handleLogin}
-            className="text-sm text-blue-600"
-          >
-            로그인
-          </button>
+          <Link href="/login">로그인</Link>
         )}
       </nav>
     </header>
