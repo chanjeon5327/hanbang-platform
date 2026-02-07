@@ -3,120 +3,107 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
+type LedgerEntry = {
+  entry_type: 'CASH_CREDIT' | 'CASH_DEBIT';
+  amount: number;
+  created_at: string;
+};
+
 export default function WalletPage() {
   const supabase = createClient();
 
   const [userId, setUserId] = useState<string | null>(null);
-  const [balance, setBalance] = useState(0);
-  const [entries, setEntries] = useState<any[]>([]);
+  const [balance, setBalance] = useState<number>(0);
+  const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initAuth = async () => {
-      // 1️⃣ 현재 세션 확인
+    const loadWallet = async () => {
+      // 1️⃣ 로그인 유저 확인
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      console.log('[wallet] session', session);
-
-      if (!session?.user) {
-        setUserId(null);
+      if (!user) {
+        console.warn('❌ 로그인 유저 없음');
         setLoading(false);
         return;
       }
 
-      setUserId(session.user.id);
-    };
+      // 🔥 결정타: 로그인 유저 ID 고정 출력
+      console.log('🔥 로그인 유저 ID:', user.id);
+      setUserId(user.id);
 
-    initAuth();
-
-    // 2️⃣ 이후 로그인/로그아웃 변화 감지
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('[wallet] auth change', session);
-
-      setUserId(session?.user?.id ?? null);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!userId) return;
-
-    const loadWallet = async () => {
-      setLoading(true);
-
-      console.log('[wallet] load ledger for', userId);
-
-      const { data: rows, error } = await supabase
+      // 2️⃣ 원장 조회 (RLS: user_id = auth.uid())
+      const { data, error } = await supabase
         .from('ledger_entries')
         .select('entry_type, amount, created_at')
-        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('[wallet] ledger error', error);
+        console.error('❌ ledger fetch error', error);
         setLoading(false);
         return;
       }
 
+      // 3️⃣ 잔액 계산
       let sum = 0;
-      rows?.forEach((r) => {
-        if (r.entry_type === 'CASH_CREDIT') sum += r.amount;
-        if (r.entry_type === 'CASH_DEBIT') sum -= r.amount;
+      data?.forEach((row) => {
+        if (row.entry_type === 'CASH_CREDIT') sum += Number(row.amount);
+        if (row.entry_type === 'CASH_DEBIT') sum -= Number(row.amount);
       });
 
+      setEntries(data ?? []);
       setBalance(sum);
-      setEntries(rows ?? []);
       setLoading(false);
     };
 
     loadWallet();
-  }, [userId]);
+  }, [supabase]);
 
-  if (loading) {
-    return <div className="p-6">로딩중…</div>;
-  }
-
-  if (!userId) {
-    return (
-      <div className="p-6 text-center text-gray-500">
-        로그인이 필요합니다.
-      </div>
-    );
-  }
+  if (loading) return <div className="p-4">로딩 중…</div>;
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="rounded-xl border p-6">
-        <div className="text-gray-500 text-sm">보유 현금</div>
+    <div className="p-4 space-y-6">
+      {/* 🔎 디버그용 로그인 유저 ID */}
+      <div className="text-xs text-gray-500">
+        로그인 유저 ID: {userId}
+      </div>
+
+      {/* 잔액 카드 */}
+      <div className="rounded-xl bg-black text-white p-6">
+        <div className="text-sm opacity-70">내 자산 (KRW)</div>
         <div className="text-2xl font-bold">
           {balance.toLocaleString()} 원
         </div>
       </div>
 
-      <div className="rounded-xl border p-6">
-        <div className="font-semibold mb-4">최근 거래</div>
+      {/* 원장 내역 */}
+      <div>
+        <h2 className="font-semibold mb-2">원장 내역</h2>
 
-        {entries.length === 0 ? (
-          <div className="text-gray-400 text-sm">
+        {entries.length === 0 && (
+          <div className="text-sm text-gray-500">
             거래 내역이 없습니다.
           </div>
-        ) : (
-          <ul className="space-y-2 text-sm">
-            {entries.slice(0, 5).map((e, i) => (
-              <li key={i} className="flex justify-between">
-                <span>{e.entry_type}</span>
-                <span>{e.amount.toLocaleString()} 원</span>
-              </li>
-            ))}
-          </ul>
         )}
+
+        <ul className="space-y-2">
+          {entries.map((e, i) => (
+            <li
+              key={i}
+              className="flex justify-between text-sm border-b pb-1"
+            >
+              <span>
+                {e.entry_type === 'CASH_CREDIT' ? '충전' : '차감'}
+              </span>
+              <span>
+                {e.entry_type === 'CASH_CREDIT' ? '+' : '-'}
+                {Number(e.amount).toLocaleString()} 원
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
