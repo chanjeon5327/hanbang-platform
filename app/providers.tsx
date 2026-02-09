@@ -1,12 +1,12 @@
 'use client';
 
-import { WagmiProvider } from 'wagmi';
-import { wagmiConfig } from '@/lib/wagmi/config';
+import { ReactNode } from 'react';
+import { StoreProvider } from '@/context/StoreContext';
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({ children }: { children: ReactNode }) {
   return (
-    <WagmiProvider config={wagmiConfig}>
+    <StoreProvider>
       {children}
-    </WagmiProvider>
+    </StoreProvider>
   );
 }

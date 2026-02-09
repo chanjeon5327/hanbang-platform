@@ -32,8 +32,11 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { adminUser, logout } = useAuth();
 
-  // 로그인 페이지는 레이아웃 없이 렌더링
-  if (pathname === "/admin/login") {
+  // 🔓 로그인 / 주문 상세는 가드 없이 렌더
+  if (
+    pathname === "/admin/login" ||
+    pathname.startsWith("/admin/orders/")
+  ) {
     return <>{children}</>;
   }
 
@@ -64,7 +67,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           }}
         >
           {sidebarOpen && (
-            <h1 style={{ fontSize: "20px", fontWeight: "bold", color: "var(--text-primary)" }}>HANBANG Admin</h1>
+            <h1 style={{ fontSize: "20px", fontWeight: "bold", color: "var(--text-primary)" }}>
+              HANBANG Admin
+            </h1>
           )}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -102,17 +107,6 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                   cursor: "pointer",
                   fontSize: "14px",
                   fontWeight: isActive ? "bold" : "normal",
-                  transition: "all 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }
                 }}
               >
                 <Icon size={20} />
@@ -145,96 +139,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {/* 메인 컨텐츠 */}
-      <div style={{ flex: 1, marginLeft: sidebarOpen ? "260px" : "80px", transition: "margin-left 0.3s ease" }}>
-        {/* 탑바 */}
-        <div
-          style={{
-            height: "70px",
-            backgroundColor: "var(--card-bg)",
-            borderBottom: "1px solid var(--border-color)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "0 24px",
-            position: "sticky",
-            top: 0,
-            zIndex: 50,
-            backdropFilter: "blur(10px)",
-            backgroundColor: "rgba(17, 17, 17, 0.8)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <div
-              style={{
-                padding: "8px 16px",
-                borderRadius: "8px",
-                backgroundColor: "rgba(124, 58, 237, 0.1)",
-                color: "var(--accent-color)",
-                fontSize: "14px",
-                fontWeight: "bold",
-              }}
-            >
-              {adminUser?.name} ({adminUser?.roleName})
-            </div>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            {/* 긴급 공지사항 Ticker */}
-            <div
-              style={{
-                overflow: "hidden",
-                width: "300px",
-                height: "30px",
-                backgroundColor: "rgba(239, 68, 68, 0.1)",
-                borderRadius: "6px",
-                display: "flex",
-                alignItems: "center",
-                padding: "0 12px",
-              }}
-            >
-              <div
-                style={{
-                  whiteSpace: "nowrap",
-                  animation: "ticker 20s linear infinite",
-                  color: "rgb(239, 68, 68)",
-                  fontSize: "12px",
-                  fontWeight: "bold",
-                }}
-              >
-                🚨 긴급 공지: 오늘 오후 3시 전체 회의 예정입니다. 🚨 긴급 공지: 오늘 오후 3시 전체 회의 예정입니다.
-              </div>
-            </div>
-
-            {/* 알림 벨 */}
-            <button
-              style={{
-                padding: "8px",
-                borderRadius: "8px",
-                border: "none",
-                backgroundColor: "var(--bg-secondary)",
-                color: "var(--text-primary)",
-                cursor: "pointer",
-                position: "relative",
-              }}
-            >
-              <Bell size={20} />
-              <span
-                style={{
-                  position: "absolute",
-                  top: "4px",
-                  right: "4px",
-                  width: "8px",
-                  height: "8px",
-                  backgroundColor: "var(--up-color)",
-                  borderRadius: "50%",
-                }}
-              />
-            </button>
-          </div>
-        </div>
-
-        {/* 페이지 컨텐츠 */}
+      {/* 메인 */}
+      <div style={{ flex: 1, marginLeft: sidebarOpen ? "260px" : "80px" }}>
         <div style={{ padding: "24px" }}>{children}</div>
       </div>
     </div>
@@ -250,4 +156,3 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     </AuthProvider>
   );
 }
-

@@ -15,6 +15,7 @@ interface AdminUser {
 interface AuthContextType {
   adminUser: AdminUser | null;
   isAuthenticated: boolean;
+  loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   hasPermission: (requiredRole: AdminRole) => boolean;
@@ -22,7 +23,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// 마스터 계정 정보
 const MASTER_ACCOUNT = {
   email: "chanjeon5327@gmail.com",
   password: "love54175327!!",
@@ -31,7 +31,6 @@ const MASTER_ACCOUNT = {
   roleName: "마스터",
 };
 
-// 역할 이름 매핑
 const ROLE_NAMES: Record<AdminRole, string> = {
   1: "인턴",
   2: "사원",
@@ -42,23 +41,22 @@ const ROLE_NAMES: Record<AdminRole, string> = {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    // localStorage에서 로그인 상태 확인
     const saved = localStorage.getItem("admin_auth");
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        setAdminUser(parsed);
+        setAdminUser(JSON.parse(saved));
       } catch (e) {
         console.error("Failed to load admin auth:", e);
       }
     }
+    setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // 마스터 계정 확인
+  const login = async (email: string, password: string) => {
     if (email === MASTER_ACCOUNT.email && password === MASTER_ACCOUNT.password) {
       const user: AdminUser = {
         email: MASTER_ACCOUNT.email,
@@ -70,10 +68,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("admin_auth", JSON.stringify(user));
       return true;
     }
-
-    // 다른 관리자 계정은 여기서 추가 가능
-    // 예: localStorage에서 관리자 리스트를 불러와서 확인
-
     return false;
   };
 
@@ -83,23 +77,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/");
   };
 
-  const hasPermission = (requiredRole: AdminRole): boolean => {
-    if (!adminUser) return false;
-    return adminUser.role >= requiredRole;
+  const hasPermission = (requiredRole: AdminRole) => {
+    return !!adminUser && adminUser.role >= requiredRole;
   };
 
   return (
-    <AuthContext.Provider value={{ adminUser, isAuthenticated: !!adminUser, login, logout, hasPermission }}>
+    <AuthContext.Provider
+      value={{
+        adminUser,
+        isAuthenticated: !!adminUser,
+        loading,
+        login,
+        logout,
+        hasPermission,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 }
-

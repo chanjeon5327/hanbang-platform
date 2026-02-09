@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
-import Header from "@/components/Header"; // ✅ default import로 수정
-import Providers from "./providers";
-import "./globals.css";
+import type { Metadata } from 'next';
+import './globals.css';
+
+import ClientLayout from './ClientLayout';
 
 export const metadata: Metadata = {
-  title: "HANBANG",
-  description: "HANBANG Platform",
+  title: 'HANBANG',
+  description: 'HANBANG Platform',
 };
 
 export default function RootLayout({
@@ -16,10 +16,9 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
-        <Providers>
-          <Header />
-          <main>{children}</main>
-        </Providers>
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   );
