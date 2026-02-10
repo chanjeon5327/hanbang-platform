@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 
 type Order = {
@@ -24,8 +25,6 @@ type LedgerEntry = {
 
 /**
  * 💣 절대 안 터지는 금액 포맷
- * - null / undefined / string / number 전부 안전
- * - toLocaleString은 number일 때만 호출
  */
 function formatAmount(value: any): string {
   const n = Number(value);
@@ -34,7 +33,7 @@ function formatAmount(value: any): string {
 }
 
 /**
- * 날짜 포맷 (사람이 읽을 수 있게)
+ * 날짜 포맷
  */
 function formatDate(value: any): string {
   if (!value) return '-';
@@ -97,7 +96,7 @@ export default function AdminOrderDetailPage() {
       {/* 주문 */}
       <section>
         <h1 className="text-xl font-bold mb-3">관리자 주문 상세</h1>
-        <table className="border w-full text-sm">
+        <table className="border w-full text-sm border-collapse">
           <tbody>
             <Row label="주문 ID" value={order.id} />
             <Row label="구매자" value={order.user_id} />
@@ -105,7 +104,21 @@ export default function AdminOrderDetailPage() {
             <Row label="상태" value={order.status} />
             <Row label="결제수단" value={order.payment_method ?? '-'} />
             <Row label="결제시각" value={formatDate(order.paid_at)} />
-            <Row label="정산 배치" value={order.settlement_batch_id ?? '미정산'} />
+            <Row
+              label="정산 배치"
+              value={
+                order.settlement_batch_id ? (
+                  <Link
+                    href={`/admin/settlement/${order.settlement_batch_id}`}
+                    style={{ color: '#2563eb', textDecoration: 'underline' }}
+                  >
+                    {order.settlement_batch_id}
+                  </Link>
+                ) : (
+                  '미정산'
+                )
+              }
+            />
             <Row label="생성일" value={formatDate(order.created_at)} />
           </tbody>
         </table>
@@ -114,7 +127,7 @@ export default function AdminOrderDetailPage() {
       {/* 원장 */}
       <section>
         <h2 className="font-semibold mb-2">원장 흐름</h2>
-        <table className="border w-full text-sm">
+        <table className="border w-full text-sm border-collapse">
           <thead>
             <tr className="bg-gray-100">
               <th className="border px-2 py-1">타입</th>
@@ -144,7 +157,7 @@ export default function AdminOrderDetailPage() {
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <tr>
       <th className="border px-2 py-1 bg-gray-50 w-48 text-left">
