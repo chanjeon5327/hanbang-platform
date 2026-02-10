@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import MobilePriceChart from '@/components/market/MobilePriceChart';
+import { OrderBookSummary, OrderBookPanel } from '@/components/market/OrderBook';
+import MobileOrderStickyBar from '@/components/market/MobileOrderStickyBar';
+import MobileOrderPanel from '@/components/market/MobileOrderPanel';
 
 /* ===============================
    Header
@@ -21,147 +24,129 @@ function MobileProductHeader() {
 }
 
 /* ===============================
-   Order Book (Summary)
+   Funnel Join (v3.0)
 ================================ */
 
-function MobileOrderBookSummary({ onOpen }: { onOpen: () => void }) {
-  const sell = [12350, 12340, 12330];
-  const buy = [12290, 12280, 12270];
+function JoinFunnelButton({ contentId }: { contentId: string }) {
+  const [loading, setLoading] = useState(false);
+
+  const join = async () => {
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      await fetch('/api/funnel/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content_id: contentId,
+          source: 'detail',
+        }),
+      });
+      alert('합류 완료. 이후 업데이트를 받아보실 수 있습니다.');
+    } catch {
+      alert('잠시 후 다시 시도해주세요.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <section className="px-4 mt-6">
-      <div
-        onClick={onOpen}
-        className="border rounded-xl overflow-hidden cursor-pointer"
+    <section className="px-4 mt-4">
+      <button
+        onClick={join}
+        disabled={loading}
+        className="w-full rounded-xl border border-gray-300 bg-white py-3 text-sm font-semibold"
       >
-        {sell.map((p) => (
-          <div
-            key={p}
-            className="flex justify-between px-3 py-1 text-sm text-red-600"
-          >
-            <span>매도</span>
-            <span>₩{p.toLocaleString()}</span>
-          </div>
-        ))}
-
-        <div className="text-center py-2 font-bold bg-gray-100">
-          ₩12,300
-        </div>
-
-        {buy.map((p) => (
-          <div
-            key={p}
-            className="flex justify-between px-3 py-1 text-sm text-blue-600"
-          >
-            <span>매수</span>
-            <span>₩{p.toLocaleString()}</span>
-          </div>
-        ))}
-      </div>
-
-      <p className="text-xs text-center text-gray-400 mt-2">
-        탭하여 전체 호가 보기
-      </p>
+        {loading ? '처리 중…' : '👀 관심 콘텐츠로 합류하기'}
+      </button>
     </section>
   );
 }
 
 /* ===============================
-   Order Book (Full Panel)
+   Side Toggle
 ================================ */
 
-function MobileOrderBookPanel({
-  open,
-  onClose,
+function SideToggle({
+  side,
+  onChange,
 }: {
-  open: boolean;
-  onClose: () => void;
+  side: 'BUY' | 'SELL';
+  onChange: (s: 'BUY' | 'SELL') => void;
 }) {
-  if (!open) return null;
-
-  const sell = Array.from({ length: 10 }, (_, i) => 12350 - i * 10);
-  const buy = Array.from({ length: 10 }, (_, i) => 12290 - i * 10);
-
   return (
-    <div className="fixed inset-0 z-[300] bg-black/40 flex items-end">
-      <div className="w-full h-[80vh] bg-white rounded-t-2xl px-4 py-4 overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="font-bold text-lg">호가</h2>
-          <button onClick={onClose} className="text-sm text-gray-500">
-            닫기
-          </button>
-        </div>
-
-        {sell.map((p) => (
-          <div
-            key={`s-${p}`}
-            className="flex justify-between py-1 text-red-600"
-          >
-            <span>매도</span>
-            <span>₩{p.toLocaleString()}</span>
-          </div>
-        ))}
-
-        <div className="text-center py-2 font-bold bg-gray-100 my-2">
-          ₩12,300
-        </div>
-
-        {buy.map((p) => (
-          <div
-            key={`b-${p}`}
-            className="flex justify-between py-1 text-blue-600"
-          >
-            <span>매수</span>
-            <span>₩{p.toLocaleString()}</span>
-          </div>
-        ))}
+    <section className="px-4 mt-4">
+      <div className="grid grid-cols-2 rounded-xl border overflow-hidden">
+        <button
+          onClick={() => onChange('BUY')}
+          className={`py-2 text-sm font-semibold ${
+            side === 'BUY' ? 'bg-blue-600 text-white' : 'bg-white'
+          }`}
+        >
+          매수
+        </button>
+        <button
+          onClick={() => onChange('SELL')}
+          className={`py-2 text-sm font-semibold ${
+            side === 'SELL' ? 'bg-red-600 text-white' : 'bg-white'
+          }`}
+        >
+          매도
+        </button>
       </div>
-    </div>
+    </section>
   );
 }
 
 /* ===============================
-   Sticky Order Bar
+   Page
 ================================ */
 
-function MobileOrderStickyBar({ onOpen }: { onOpen: () => void }) {
-  return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] border-t bg-white px-4 py-3">
-      <button
-        onClick={onOpen}
-        className="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold"
-      >
-        매수하기
-      </button>
-    </div>
-  );
-}
+export default function MarketDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const [side, setSide] = useState<'BUY' | 'SELL'>('BUY');
 
-/* ===============================
-   Page (C-1 안정화 버전)
-================================ */
-
-export default function MarketDetailPage() {
   const [orderBookOpen, setOrderBookOpen] = useState(false);
+  const [orderOpen, setOrderOpen] = useState(false);
+
+  // 더미 현재가(나중에 실데이터로 교체)
+  const lastPrice = 12300;
 
   return (
     <main className="relative pb-32">
       <MobileProductHeader />
 
-      {/* ✅ 차트는 단독 렌더 (이 페이지에서는 이벤트 관여 X) */}
+      {/* ✅ 가격 차트 */}
       <MobilePriceChart />
 
-      <MobileOrderBookSummary
-        onOpen={() => setOrderBookOpen(true)}
-      />
+      {/* ✅ v3.0 퍼널 합류 (매수 이전 단계) */}
+      <JoinFunnelButton contentId={params.id} />
 
+      {/* ✅ 매수/매도 토글 */}
+      <SideToggle side={side} onChange={setSide} />
+
+      {/* ✅ 호가 요약/전체 */}
+      <OrderBookSummary onOpen={() => setOrderBookOpen(true)} />
+      <OrderBookPanel open={orderBookOpen} onClose={() => setOrderBookOpen(false)} />
+
+      {/* ✅ 하단 스티키 버튼 (매수/매도 진입) */}
       <MobileOrderStickyBar
-        onOpen={() => setOrderBookOpen(true)}
+        side={side}
+        price={lastPrice}
+        change={3.2}
+        onOpen={() => setOrderOpen(true)}
       />
 
-      <MobileOrderBookPanel
-        open={orderBookOpen}
-        onClose={() => setOrderBookOpen(false)}
+      {/* ✅ 주문 바텀시트 */}
+      <MobileOrderPanel
+        open={orderOpen}
+        side={side}
+        price={lastPrice}
+        onClose={() => setOrderOpen(false)}
       />
     </main>
   );
