@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import YouTubeEmbed from '@/components/common/YouTubeEmbed';
 
-type HeroItem = {
+export type HeroItem = {
   id: string;
   title: string;
   subtitle?: string;
@@ -16,34 +17,47 @@ const DEFAULT_HERO: HeroItem = {
   id: 'hero-default',
   title: '디지털 IP 수익권',
   subtitle: '수익을 조각으로 투자·거래',
-  thumbUrl: '',
 };
 
 const TOSS = { card: '#ffffff', border: '#e5e8eb', blue: '#3182f6', text: '#191f28', dim: '#6b7684' } as const;
+
+/** 내 자산 카드 높이(~200px) 대비 1.7배 ≈ 338px — 쿠팡플레이형 영상 추천 배너 (관리자 설정) */
+const HERO_H = 338;
+
+const YT_VIDEO_ID = 'HosW0gulISQ';
+const YT_START_SEC = 25;
 
 export default function HomeHero({ item }: Props) {
   const hero = item ?? DEFAULT_HERO;
   const href = hero.id !== 'hero-default' ? `/market/${hero.id}` : '/';
 
   return (
-    <section className="pt-2">
+    <section>
       <Link
         href={href}
-        className="block relative w-full h-[140px] overflow-hidden rounded-2xl border border-black/5 active:scale-[0.99] transition-transform duration-200"
-        style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+        className="block relative w-full overflow-hidden rounded-2xl border border-black/5 active:scale-[0.99] transition-transform duration-200"
+        style={{ height: HERO_H, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
       >
-        {hero.thumbUrl && (
-          <div className="absolute inset-0">
-            <img src={hero.thumbUrl} alt="" className="h-full w-full object-cover opacity-30" />
-            <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/60 to-transparent" />
-          </div>
-        )}
-        <div className="absolute inset-0 flex items-center px-5">
-          <div>
-            <h1 className="text-[18px] font-bold leading-tight" style={{ color: TOSS.text }}>{hero.title}</h1>
-            {hero.subtitle && <p className="mt-0.5 text-[13px]" style={{ color: TOSS.dim }}>{hero.subtitle}</p>}
-            <div className="mt-3 inline-flex items-center gap-1 rounded-full px-4 py-1.5 text-[12px] font-bold text-white" style={{ backgroundColor: TOSS.blue }}>
-              살펴보기 →
+        <div className="absolute inset-0">
+          <YouTubeEmbed
+            videoId={YT_VIDEO_ID}
+            className="!rounded-none h-full w-full"
+            title={hero.title}
+            autoplay
+            mute
+            controls={false}
+            loop
+            start={YT_START_SEC}
+            fill
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 flex items-end pb-5 px-5 pointer-events-none">
+          <div className="pointer-events-auto">
+            <h1 className="text-[20px] font-bold leading-tight text-white drop-shadow-md">{hero.title}</h1>
+            {hero.subtitle && <p className="mt-1 text-[14px] text-white/90">{hero.subtitle}</p>}
+            <div className="mt-3 inline-flex items-center gap-1 rounded-lg px-5 py-2.5 text-[14px] font-bold text-white" style={{ backgroundColor: TOSS.blue }}>
+              지금투자 추천
             </div>
           </div>
         </div>
