@@ -1,17 +1,49 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
-  const supabase = createClient();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: '로그인이 필요합니다.' },
+      { status: 401 }
+    );
+  }
+
   const body = await req.json();
+  const { productId, marketId, side, price, quantity } = body;
 
-  const { marketId, side, price, quantity } = body;
+  const productIdResolved = productId ?? marketId;
+  if (!productIdResolved) {
+    return NextResponse.json(
+      { success: false, error: 'productId 또는 marketId가 필요합니다.' },
+      { status: 400 }
+    );
+  }
 
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  let productUuid = String(productIdResolved);
+  if (!uuidRegex.test(productUuid)) {
+    productUuid = process.env.STUB_PRODUCT_ID ?? 'a1b2c3d4-e5f6-4789-a012-345678901234';
+  }
+
+  const pPrice = Number(price);
+  const pQty = Number(quantity);
+  if (!Number.isFinite(pPrice) || pPrice < 0 || !Number.isFinite(pQty) || pQty <= 0) {
+    return NextResponse.json(
+      { success: false, error: '가격과 수량이 올바르지 않습니다.' },
+      { status: 400 }
+    );
+  }
+
+  // @ts-expect-error - rpc_place_order는 migration으로 추가됨, types에 미반영 시
   const { data, error } = await supabase.rpc('rpc_place_order', {
-    p_market_id: marketId,
-    p_side: side,
-    p_price: price,
-    p_quantity: quantity,
+    p_product_id: productUuid,
+    p_side: side ?? 'BUY',
+    p_price: pPrice,
+    p_quantity: pQty,
   });
 
   if (error) {

@@ -1,22 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { createClient } from '@/utils/supabase/client';
+
+/* 업비트 사용법 레퍼런스: 단계형 스텝퍼 + 상태 배지 + CTA */
+const UPBIT = { bg: '#0d0d0d', panel: '#161616', border: '#2b2b2b', bid: '#1e88e5', text: '#e0e0e0', dim: '#8e8e8e' };
 
 type LoginModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-export default function LoginModal({
-  open,
-  onOpenChange,
-}: LoginModalProps) {
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
+export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,96 +20,72 @@ export default function LoginModal({
 
   if (!open) return null;
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     setError(null);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      setError(error.message);
-      return;
+    const supabase = createClient();
+    try {
+      const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+      if (err) throw err;
+      onOpenChange(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '로그인 실패');
+    } finally {
+      setLoading(false);
     }
-
-    onOpenChange(false); // ✅ 로그인 성공 → 모달 닫힘
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.6)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
-    >
-      <div
-        style={{
-          width: 360,
-          background: '#fff',
-          padding: 24,
-          borderRadius: 8,
-        }}
-      >
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>
-          로그인
-        </h2>
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
+      <div className="w-full max-w-[360px] rounded-[16px] overflow-hidden" style={{ backgroundColor: UPBIT.panel, border: `1px solid ${UPBIT.border}` }}>
+        <div className="px-4 py-3 border-b flex justify-between items-center" style={{ borderColor: UPBIT.border }}>
+          <h2 className="font-bold text-[16px]" style={{ color: UPBIT.text }}>로그인</h2>
+          <button onClick={() => onOpenChange(false)} className="text-[14px]" style={{ color: UPBIT.dim }}>닫기</button>
+        </div>
 
-        <input
-          type="email"
-          placeholder="이메일"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ width: '100%', padding: 10, marginBottom: 8 }}
-        />
-
-        <input
-          type="password"
-          placeholder="비밀번호"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ width: '100%', padding: 10, marginBottom: 12 }}
-        />
-
-        {error && (
-          <div style={{ color: 'red', fontSize: 13, marginBottom: 8 }}>
-            {error}
+        <div className="p-4">
+          <div className="flex gap-2 mb-4">
+            {[1, 2, 3].map((s) => (
+              <div
+                key={s}
+                className="flex-1 h-1 rounded-full transition"
+                style={{ backgroundColor: step >= s ? UPBIT.bid : UPBIT.border }}
+              />
+            ))}
           </div>
-        )}
+          <p className="text-[13px] mb-4" style={{ color: UPBIT.dim }}>1. 로그인 → 2. 고객확인 → 3. 원화입금</p>
 
-        <button
-          onClick={handleLogin}
-          disabled={loading}
-          style={{
-            width: '100%',
-            padding: 12,
-            background: '#000',
-            color: '#fff',
-            fontWeight: 600,
-          }}
-        >
-          {loading ? '로그인 중...' : '이메일로 로그인'}
-        </button>
-
-        <button
-          onClick={() => onOpenChange(false)}
-          style={{
-            width: '100%',
-            padding: 10,
-            marginTop: 8,
-            background: '#eee',
-          }}
-        >
-          닫기
-        </button>
+          <form onSubmit={handleLogin} className="space-y-3">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="이메일"
+              required
+              className="w-full rounded-lg px-4 py-3 text-[15px] focus:outline-none border"
+              style={{ backgroundColor: UPBIT.bg, borderColor: UPBIT.border, color: UPBIT.text }}
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호"
+              required
+              className="w-full rounded-lg px-4 py-3 text-[15px] focus:outline-none border"
+              style={{ backgroundColor: UPBIT.bg, borderColor: UPBIT.border, color: UPBIT.text }}
+            />
+            {error && <p className="text-[13px]" style={{ color: '#e53935' }}>{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 rounded-lg text-white text-[16px] font-bold transition disabled:opacity-50"
+              style={{ backgroundColor: UPBIT.bid }}
+            >
+              {loading ? '처리 중…' : '이메일로 로그인'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

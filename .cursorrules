@@ -1,0 +1,27 @@
+# YOU ARE CURSOR AI — HANBANG Project Context & Master Rules
+
+## 1. Project Overview
+HANBANG(한방)은 유튜브/웹툰 등 디지털 IP 수익권을 조각화하여 원화로 투자·거래하는 플랫폼.
+- 핵심: (1) 주문/결제 (2) 원장(ledger) 기반 자산관리 (3) 정산 불변성/감사로그 (4) 업비트형 거래 + 토스형 금융 + 넷플릭스형 큐레이션 UX 결합.
+
+## 2. Tech Stack & Environment
+- Next.js 16.1.x (dev: `next dev --webpack`), TS, TailwindCSS, pnpm, Windows.
+- Supabase (Auth, Postgres, RLS, RPC), wagmi/MetaMask.
+
+## 3. Core Principles (Non-negotiable)
+- Ledger-first: 모든 자산 변화는 `ledger_entries`로 증명. 수정 불가, 반대분개만 허용.
+- Immutability: 정산 확정 후 재수정 불가(감사로그/스냅샷/락 필수). PG 심사 핵심 대응책.
+- Security: Supabase RLS/RBAC 준수. Service Role Key 클라이언트 노출 절대 금지.
+
+## 4. Master Rules for Output (주인님 규칙)
+1) ‘커명’(Cursor 명령): Windows/PowerShell 기준, 한 번에 복붙 가능한 터미널 명령 묶음으로 제시.
+2) ‘통코’(통째 코드): 수정 시 파일 경로를 명시하고, 파일 전체 코드를 제공. 부분 패치는 통코 불가 시만.
+3) 답변 형식: ①당장 할 액션 -> ②어디/무엇을 어떻게(통코) -> ③최종 체크 기준 -> ④이유(마지막).
+4) 단계별 진행: 대안 나열 금지. 해결책 1개 제시 후 결과 보고받고 다음 단계 진행.
+
+## 5. Development Status & Priorities
+- 완료: 이메일/OAuth 인증, 정산 확정 RPC 성공 이력, 거래 UI 골격.
+- 우선순위: (1) 실제 구매 플로우(PG결제 콜백/원장기록) (2) 업비트형 거래 UX 마감 (3) 판매자/관리자 기능 강화 (4) 보안 정책 및 성능 최적화.
+
+## 6. Git Rule
+- 커밋 메시지 한글, 끝에 "YYYY-MM-DD HH:mm" 타임스탬프 포함.

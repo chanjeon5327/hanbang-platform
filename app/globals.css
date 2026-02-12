@@ -1,18 +1,69 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+@import "tailwindcss";
+
 @layer base {
   :root {
-    /* HANBANG Design Tokens */
-    --bg-app: #f7f8fa;
+    /* ===== 토스 Toss (정적 페이지: 첫화면, 마이페이지, 관리자) ===== */
+    --toss-bg: #f2f4f6;
+    --toss-card: #ffffff;
+    --toss-blue: #3182f6;
+    --toss-blue-hover: #1b64da;
+    --toss-text: #191f28;
+    --toss-text-secondary: #6b7684;
+    --toss-border: #e5e8eb;
+    --toss-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    --toss-radius: 16px;
 
-    --card-bg: #0f1115;
-    --card-border: rgba(0,0,0,0.12);
+    /* ===== 업비트 Upbit (주문/호가/차트) - 라이트 기본 ===== */
+    --upbit-bg: #f2f4f6;
+    --upbit-panel: #ffffff;
+    --upbit-border: #e5e8eb;
+    --upbit-bid: #1e88e5;
+    --upbit-bid-bg: rgba(30,136,229,0.12);
+    --upbit-ask: #e53935;
+    --upbit-ask-bg: rgba(229,57,53,0.12);
+    --upbit-text: #191f28;
+    --upbit-text-dim: #6b7684;
+    --upbit-positive: #00c48c;
+    --upbit-radius: 12px;
 
-    --text-primary: #ffffff;
-    --text-secondary: rgba(255,255,255,0.72);
-    --text-muted: rgba(255,255,255,0.55);
+    /* Legacy (호환) */
+    --bg-app: var(--toss-bg);
+    --accent-positive: #00c48c;
+    --accent-negative: #e53935;
+  }
 
-    --accent-positive: #3ddc97;
-    --accent-negative: #ff6b6b;
+  html.dark {
+    --toss-bg: #0d0d0d;
+    --toss-card: #161616;
+    --toss-blue: #3182f6;
+    --toss-text: #e0e0e0;
+    --toss-text-secondary: #8e8e8e;
+    --toss-border: #2b2b2b;
+    --toss-shadow: 0 2px 12px rgba(0,0,0,0.4);
 
-    --overlay-dim: rgba(0,0,0,0.45);
+    /* 업비트 Upbit - 다크 모드 */
+    --upbit-bg: #0d0d0d;
+    --upbit-panel: #161616;
+    --upbit-border: #2b2b2b;
+    --upbit-text: #e0e0e0;
+    --upbit-text-dim: #8e8e8e;
+    --upbit-positive: #00c48c;
+  }
+
+  html, body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background-color: var(--toss-bg);
+    color: var(--toss-text);
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

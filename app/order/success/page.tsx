@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 type Order = {
   id: string;
   amount: number;
+  quantity?: number;
+  status?: string;
   created_at: string;
 };
 
@@ -17,50 +20,82 @@ export default function OrderSuccessPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const isDemo = orderId === 'demo' || orderId === 'preview';
+
   useEffect(() => {
     if (!orderId) {
       setLoading(false);
       return;
     }
-
+    if (isDemo) {
+      setOrder({
+        id: 'demo',
+        amount: 12_300,
+        quantity: 1,
+        status: 'completed',
+        created_at: new Date().toISOString(),
+      });
+      setLoading(false);
+      return;
+    }
     fetch(`/api/orders/${orderId}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         setOrder(data);
         setLoading(false);
       });
-  }, [orderId]);
+  }, [orderId, isDemo]);
 
   if (loading) {
-    return <div className="p-6 text-center">확인 중…</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--toss-bg)]">
+        <div className="text-[14px] text-[var(--toss-text-secondary)]">확인 중…</div>
+      </div>
+    );
   }
 
   if (!order) {
     return (
-      <div className="p-6 text-center text-red-500">
-        주문 정보를 찾을 수 없습니다.
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-[var(--toss-bg)]">
+        <div className="text-[16px] font-semibold mb-4" style={{ color: '#eb4d3d' }}>주문 정보를 찾을 수 없습니다.</div>
+        <Link href="/" className="text-[14px] font-medium text-[var(--toss-blue)]">홈으로</Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col justify-center px-6 text-center space-y-4">
-      <h1 className="text-3xl font-bold">🎉 매수 완료</h1>
-
-      <div className="text-lg font-semibold">
-        {order.amount.toLocaleString()}원
+    <div className="min-h-screen flex flex-col px-6 pt-12 pb-8 bg-[var(--toss-bg)]">
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <div className="text-[48px] mb-4">✓</div>
+        <h1 className="text-[22px] font-bold mb-1 text-[var(--toss-text)]">매수 완료</h1>
+        <div className="text-[28px] font-bold tracking-tight mb-2 text-[var(--toss-text)]" style={{ fontVariantNumeric: 'tabular-nums' }}>
+          ₩{order.amount.toLocaleString()}
+        </div>
+        <div className="text-[13px] mb-1 text-[var(--toss-text-secondary)]">
+          {new Date(order.created_at).toLocaleString('ko-KR')}
+        </div>
+        {order.status && (
+          <span className="text-[11px] px-2.5 py-1 rounded-full font-medium text-[var(--toss-blue)]" style={{ backgroundColor: 'rgba(49,130,246,0.12)' }}>
+            {order.status}
+          </span>
+        )}
       </div>
 
-      <div className="text-sm text-gray-500">
-        {new Date(order.created_at).toLocaleString()}
+      <div className="space-y-3 mt-auto">
+        <button
+          onClick={() => router.push('/wallet')}
+          className="w-full py-4 rounded-2xl text-[16px] font-bold text-white bg-[var(--toss-blue)]"
+          style={{ boxShadow: '0 4px 12px rgba(49,130,246,0.35)' }}
+        >
+          내 지갑 보기
+        </button>
+        <Link
+          href="/"
+          className="block w-full py-4 rounded-2xl text-[16px] font-semibold text-center bg-[var(--toss-card)] border border-[var(--toss-border)] text-[var(--toss-text)]"
+        >
+          홈으로
+        </Link>
       </div>
-
-      <button
-        onClick={() => router.push('/wallet')}
-        className="mt-6 w-full h-12 rounded-xl bg-black text-white font-semibold"
-      >
-        내 지갑 보기
-      </button>
     </div>
   );
 }

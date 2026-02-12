@@ -20,7 +20,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from('orders')
-    .select('id, price, quantity, filled_quantity, created_at')
+    .select('id, total_amount_krw, quantity, status, created_at')
     .eq('id', id)
     .single();
 
@@ -28,13 +28,14 @@ export async function GET(
     return NextResponse.json({ error: 'ORDER_NOT_FOUND' }, { status: 404 });
   }
 
-  const qty = Number(data.filled_quantity ?? data.quantity ?? 0);
-  const price = Number(data.price ?? 0);
-  const amount = price * qty;
+  const amount = Number(data.total_amount_krw ?? 0);
+  const qty = Number(data.quantity ?? 0);
 
   return NextResponse.json({
     id: data.id,
     amount,
+    quantity: qty,
+    status: data.status,
     created_at: data.created_at,
   });
 }

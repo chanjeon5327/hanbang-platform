@@ -1,8 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { InterestCardData } from './InterestCard';
 import { Star } from 'lucide-react';
+
+export type InterestCardData = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  thumbUrl?: string;
+};
 
 type Props = {
   data: InterestCardData;
