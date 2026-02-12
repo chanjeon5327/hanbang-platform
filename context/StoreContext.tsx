@@ -7,6 +7,8 @@ import React, {
   useState,
   ReactNode,
 } from "react";
+import { useRouter } from "next/navigation";
+import { getYtThumb } from "@/lib/thumbnails";
 
 /* =====================
    타입 정의
@@ -46,6 +48,9 @@ interface StoreContextType {
   holdings: Holding[];
   history: Transaction[];
   products: Product[];
+  isLoggedIn: boolean;
+  openLoginModal: () => void;
+  closeLoginModal: () => void;
 
   buyStock: (
     item: { name: string; price: number },
@@ -90,8 +95,7 @@ export const products: Product[] = [
     category: "웹툰",
     yield: "15.5%",
     price: 10000,
-    image:
-      "https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=800",
+    image: getYtThumb(0),
     description: "글로벌 히트 웹툰 투자",
   },
   {
@@ -100,8 +104,7 @@ export const products: Product[] = [
     category: "드라마",
     yield: "8.2%",
     price: 15000,
-    image:
-      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800",
+    image: getYtThumb(1),
     description: "매달 발생하는 저작권 수익",
   },
 ];
@@ -111,6 +114,7 @@ export const products: Product[] = [
 ===================== */
 
 export function StoreProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [userCash, setUserCash] = useState(defaultState.userCash);
   const [holdings, setHoldings] = useState<Holding[]>(defaultState.holdings);
   const [history, setHistory] = useState<Transaction[]>(defaultState.history);
@@ -284,6 +288,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         holdings,
         history,
         products,
+        isLoggedIn: false,
+        openLoginModal: () => router.push("/login"),
+        closeLoginModal: () => {},
         buyStock,
         sellStock,
         getTotalAssets,

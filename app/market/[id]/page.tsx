@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Moon, Sun, Heart, Bell, Zap } from 'lucide-react';
@@ -124,7 +124,8 @@ function SideToggle({ side, onChange }: { side: 'BUY' | 'SELL'; onChange: (s: 'B
   );
 }
 
-export default function MarketDetailPage({ params }: { params: { id: string } }) {
+export default function MarketDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [side, setSide] = useState<'BUY' | 'SELL'>('BUY');
   const [orderBookOpen, setOrderBookOpen] = useState(false);
@@ -154,12 +155,12 @@ export default function MarketDetailPage({ params }: { params: { id: string } })
     fetch('/api/ab/assign-buy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content_id: params.id }),
+      body: JSON.stringify({ content_id: id }),
     })
       .then((res) => res.json())
       .then((json) => { if (json?.variant) setBuyVariant(json.variant); })
       .catch(() => {});
-  }, [params.id]);
+  }, [id]);
 
   useEffect(() => {
     fetch('/api/ab/assign-cohort', { method: 'POST' })
@@ -172,7 +173,7 @@ export default function MarketDetailPage({ params }: { params: { id: string } })
     <main className="min-h-screen pb-32" style={{ backgroundColor: 'var(--upbit-bg)' }}>
       <MarketHeader />
       <MobilePriceChart />
-      <JoinFunnelButton contentId={params.id} />
+      <JoinFunnelButton contentId={id} />
 
       {buyVariant === 'B' && (
         <section className="px-4 mt-2">
@@ -206,7 +207,7 @@ export default function MarketDetailPage({ params }: { params: { id: string } })
         open={orderOpen}
         side={side}
         price={lastPrice}
-        productId={params.id}
+        productId={id}
         onClose={() => setOrderOpen(false)}
         requireLogin={requireLogin}
       />

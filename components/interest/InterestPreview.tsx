@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useInterestPreview } from '@/stores/interestPreview';
 import SharedThumb from './SharedThumb';
 import { logEvent } from '@/utils/logEvent';
+import { getYtThumb } from '@/lib/thumbnails';
 
 export default function InterestPreview() {
   const { openId, openData, close } = useInterestPreview();
@@ -59,7 +60,7 @@ export default function InterestPreview() {
           >
             <div className="h-[190px] overflow-hidden rounded-xl">
               <SharedThumb
-                src={openData.thumbUrl}
+                src={openData.thumbUrl || getYtThumb(parseInt(openId, 10) || 0)}
                 anchorId={`thumb-${openId}`}
                 className="h-full w-full"
               />

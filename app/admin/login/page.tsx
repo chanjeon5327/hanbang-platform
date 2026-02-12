@@ -1,10 +1,11 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
-export default function AdminLoginPage() {
+function AdminLoginContent() {
   const supabase = createClient();
   const router = useRouter();
   const params = useSearchParams();
@@ -32,7 +33,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <main className="p-4">
+    <main className="p-4" data-testid="admin-login-page">
       <h1 className="mb-4 text-[20px] font-bold">관리자 로그인</h1>
 
       <input
@@ -58,5 +59,13 @@ export default function AdminLoginPage() {
         {loading ? '로그인 중…' : '관리자 로그인'}
       </button>
     </main>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<main className="p-4"><p>로딩 중...</p></main>}>
+      <AdminLoginContent />
+    </Suspense>
   );
 }

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import TopHeader from '../../../components/TopHeader';
 import BottomNav from '../../../components/BottomNav';
 import { ArrowLeft, Shield, Lock, Database } from 'lucide-react';
+import { getYtThumb } from '@/lib/thumbnails';
 
 export default function BlockchainPage() {
   return (
@@ -12,7 +13,7 @@ export default function BlockchainPage() {
       
       <div style={{ marginTop: '80px', position: 'relative', height: '400px', overflow: 'hidden' }}>
         <img 
-          src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3" 
+          src={getYtThumb(2)} 
           style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}
         />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, var(--bg-primary))' }}></div>

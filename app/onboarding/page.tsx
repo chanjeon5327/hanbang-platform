@@ -4,6 +4,7 @@ import InterestRail from '@/components/interest/InterestRail';
 import { useUserTaste } from '@/stores/userTaste';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { getYtThumb } from '@/lib/thumbnails';
 
 /* 업비트 사용법 레퍼런스: 단계형 스텝퍼 + CTA */
 const UPBIT = { bg: '#0d0d0d', panel: '#161616', border: '#2b2b2b', bid: '#1e88e5', text: '#e0e0e0', dim: '#8e8e8e' };
@@ -12,7 +13,7 @@ const items = Array.from({ length: 12 }).map((_, i) => ({
   id: String(i),
   title: i % 2 ? '유튜브 <여행가 제이>' : '전지적 독자 시점 웹툰',
   subtitle: i % 2 ? '여행 / 브이로그' : '웹툰 / IP',
-  thumbUrl: 'https://images.unsplash.com/photo-1526481280695-3c687fd5432c?auto=format&fit=crop&w=800&q=70',
+  thumbUrl: getYtThumb(i),
 }));
 
 export default function OnboardingPage() {

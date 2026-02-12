@@ -42,6 +42,7 @@ export default function MobileOrderStickyBar({
       <button
         onClick={disabled ? undefined : onOpen}
         disabled={disabled}
+        data-testid="trade-primary-action"
         className="w-full py-3 rounded-lg text-white text-base font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ backgroundColor: isBuy ? 'var(--upbit-bid)' : 'var(--upbit-ask)' }}
       >

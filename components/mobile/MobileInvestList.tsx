@@ -1,6 +1,8 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ArrowLeft, Search } from 'lucide-react';
+import { getYtThumb } from '@/lib/thumbnails';
 
 export default function MobileInvestList() {
   const router = useRouter();
@@ -12,17 +14,17 @@ export default function MobileInvestList() {
     summary: i % 2 === 0 ? '글로벌 3억 뷰 달성 예정 대작' : '구독자 50만 달성 임박 채널',
     investors: 1200 + i * 15,
     investee: i % 2 === 0 ? '박태준 만화회사' : '크리에이터 제이',
-    image: `https://source.unsplash.com/random/400x500/?webtoon,creator&sig=${i}`,
-    badge: i < 5 ? '마감임박 🔥' : ''
+    image: getYtThumb(i),
+    badge: i < 5 ? '마감임박' : ''
   }));
 
   return (
     <div className="bg-white min-h-screen">
       {/* 헤더 */}
       <header className="sticky top-0 bg-white z-50 px-4 h-[50px] flex items-center justify-between border-b border-gray-100">
-        <button onClick={() => router.back()} className="text-2xl text-slate-800 btn-press">←</button>
+        <button onClick={() => router.back()} className="p-2 text-slate-800 btn-press"><ArrowLeft size={26} strokeWidth={2} /></button>
         <h1 className="text-lg font-bold text-slate-800">투자 상품 전체</h1>
-        <button className="text-2xl text-slate-800 btn-press">🔍</button>
+        <button className="p-2 text-slate-800 btn-press"><Search size={26} strokeWidth={2} /></button>
       </header>
 
       {/* 필터 탭 (옵션) */}

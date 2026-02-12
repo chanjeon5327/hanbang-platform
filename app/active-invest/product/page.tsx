@@ -16,6 +16,7 @@ import {
 import { useStore } from "@/context/StoreContext";
 import MobileProductDetail from "@/components/mobile/MobileProductDetail";
 import Image from "next/image";
+import { getYtThumb } from "@/lib/thumbnails";
 
 export default function ProductDetail() {
   const router = useRouter();
@@ -163,7 +164,7 @@ export default function ProductDetail() {
 
     const success = buyStock({ name: productName, price: orderPrice }, quantity);
     if (success) {
-      setToastMessage(`💰 ${quantity}주 매수 체결!`);
+      setToastMessage(`${quantity}주 매수 체결!`);
       setShowToast(true);
       updateChartData();
       setTimeout(() => router.push("/wallet"), 1500);
@@ -186,7 +187,7 @@ export default function ProductDetail() {
 
     if (success) {
       const newCash = userCash + totalAmount;
-      setToastMessage(`💰 매도 체결! 잔액: ${newCash.toLocaleString()}원`);
+      setToastMessage(`매도 체결! 잔액: ${newCash.toLocaleString()}원`);
       setShowToast(true);
       updateChartData();
     } else {
@@ -299,7 +300,7 @@ export default function ProductDetail() {
 
   if (!isDesktop) {
     // ✅ 모바일만 렌더
-    return <MobileProductDetail id={String(productId)} />;
+    return <MobileProductDetail productId={String(productId)} />;
   }
 
   // ✅ PC인데 product 없으면 404
@@ -349,7 +350,7 @@ export default function ProductDetail() {
           <Image
             src={
               product.image ||
-              "https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=1000"
+              getYtThumb(0)
             }
             alt={productName}
             fill

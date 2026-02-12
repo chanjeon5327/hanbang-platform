@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { LoginModal } from "@/components/auth/LoginModal"
-import { createClient } from "@/lib/supabase/client"
+import LoginModal from "@/components/auth/LoginModal"
+import { createClient } from "@/utils/supabase/client"
 import { TrendingUp } from "lucide-react"
 import { useRouter } from "next/navigation"
 

@@ -1,9 +1,10 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
+import { getYtThumb } from '@/lib/thumbnails';
 
 type Product = {
   id: string;
@@ -92,19 +93,19 @@ export default function MobileProductDetail({ productId }: { productId: string }
 
   const soldOut = product.remaining_supply <= 0;
 
+  const thumbSrc = product.thumbnail_url || getYtThumb(0);
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {product.thumbnail_url && (
-        <div className="relative w-full h-[360px]">
-          <Image
-            src={product.thumbnail_url}
-            alt={product.title}
-            fill
-            className="object-cover"
-            priority
-          />
-        </div>
-      )}
+      <div className="relative w-full h-[360px]">
+        <Image
+          src={thumbSrc}
+          alt={product.title}
+          fill
+          className="object-cover"
+          priority
+        />
+      </div>
 
       <div className="flex-1 px-5 py-6 space-y-4">
         <h1 className="text-xl font-bold">{product.title}</h1>

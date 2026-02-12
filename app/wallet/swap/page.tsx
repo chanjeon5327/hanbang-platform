@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import { ArrowLeftRight } from 'lucide-react';
 import { TOKENS, TokenId } from '@/lib/tokens';
 
 /* 토큰 교환/스왑 — KRW, USDT, USDC, BTC, ETH 간 환전 */
@@ -121,7 +122,7 @@ export default function SwapPage() {
               style={{ backgroundColor: 'var(--upbit-bg)' }}
               aria-label="From/To 토큰 교체"
             >
-              <span className="text-[18px]">⇅</span>
+              <ArrowLeftRight size={24} strokeWidth={2} />
             </button>
           </div>
 

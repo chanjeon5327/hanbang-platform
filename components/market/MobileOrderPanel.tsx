@@ -168,6 +168,7 @@ export default function MobileOrderPanel({
         <button
           disabled={loading}
           onClick={placeOrder}
+          data-testid="trade-primary-action"
           className="w-full py-3.5 rounded-lg text-white text-[16px] font-semibold transition disabled:opacity-60"
           style={{ backgroundColor: isBuy ? 'var(--upbit-bid)' : 'var(--upbit-ask)' }}
         >

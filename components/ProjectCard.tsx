@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge"
 import { Database } from "@/lib/supabase/types"
 import { ArrowRight, TrendingUp } from "lucide-react"
 import Image from "next/image"
-import { LoginModal } from "@/components/auth/LoginModal"
-import { createClient } from "@/lib/supabase/client"
+import LoginModal from "@/components/auth/LoginModal"
+import { createClient } from "@/utils/supabase/client"
+import { getYtThumb } from "@/lib/thumbnails"
 
 type Project = Database["public"]["Tables"]["projects"]["Row"]
 
@@ -51,18 +52,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
       <Card className="group h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer rounded-3xl border-none shadow-md">
         <Link href={`/projects/${project.id}`}>
           <div className="relative aspect-video w-full overflow-hidden rounded-t-3xl">
-            {project.thumbnail_url ? (
-              <Image
-                src={project.thumbnail_url}
-                alt={project.title}
-                fill
-                className="object-cover transition-transform group-hover:scale-110"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center bg-muted">
-                <TrendingUp className="h-12 w-12 text-muted-foreground" />
-              </div>
-            )}
+            <Image
+              src={project.thumbnail_url || getYtThumb(project.id?.length ?? 0)}
+              alt={project.title}
+              fill
+              className="object-cover transition-transform group-hover:scale-110"
+            />
             <div className="absolute top-3 right-3">
               <Badge variant="secondary">
                 {categoryLabels[project.category] || project.category}

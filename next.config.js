@@ -1,4 +1,6 @@
-﻿/** @type {import('next').NextConfig} */
+const { withSentryConfig } = require('@sentry/nextjs');
+
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   // 외부 이미지 허용
   images: {
@@ -8,9 +10,9 @@ const nextConfig = {
 
       // 이번에 바꾼 이미지(Picsum)
       { protocol: "https", hostname: "picsum.photos", pathname: "/**" },
-
-      // (혹시 next/image로 쓰는 곳이 있으면 안전하게)
       { protocol: "https", hostname: "api.dicebear.com", pathname: "/**" },
+      { protocol: "https", hostname: "img.youtube.com", pathname: "/**" },
+      { protocol: "https", hostname: "i.ytimg.com", pathname: "/**" },
     ],
   },
 
@@ -19,4 +21,9 @@ const nextConfig = {
   allowedDevOrigins: ["127.0.0.1", "localhost"],
 };
 
-module.exports = nextConfig;
+module.exports = withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+});

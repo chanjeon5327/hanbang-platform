@@ -4,6 +4,7 @@ import Link from 'next/link';
 import TopHeader from '../../../components/TopHeader';
 import BottomNav from '../../../components/BottomNav';
 import { ArrowLeft, Share2, TrendingUp, Users, Zap } from 'lucide-react';
+import { getYtThumb } from '@/lib/thumbnails';
 
 export default function AssetsPage() {
   return (
@@ -12,7 +13,7 @@ export default function AssetsPage() {
       
       <div style={{ marginTop: '80px', position: 'relative', height: '400px', overflow: 'hidden' }}>
         <img 
-          src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3" 
+          src={getYtThumb(0)} 
           style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}
         />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, var(--bg-primary))' }}></div>
@@ -65,7 +66,7 @@ export default function AssetsPage() {
         </div>
 
         <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '40px', borderRadius: '24px', marginBottom: '40px' }}>
-          <h3 style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '20px' }}>📈 활동 기반 수익 구조</h3>
+          <h3 style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '20px' }}>활동 기반 수익 구조</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ padding: '20px', backgroundColor: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '10px' }}>

@@ -1,5 +1,4 @@
-import { supabase } from '@/lib/supabase/client';
-import { supabase } from './supabaseClient';
+import { supabase } from '@/lib/supabase';
 
 export async function isAuthenticated(): Promise<boolean> {
   const { data, error } = await supabase.auth.getSession();

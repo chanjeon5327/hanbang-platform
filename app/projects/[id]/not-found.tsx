@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Header } from "@/components/Header"
+import Header from "@/components/Header"
 
 export default function NotFound() {
   return (

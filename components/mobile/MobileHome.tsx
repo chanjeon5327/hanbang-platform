@@ -7,6 +7,7 @@ import Image from 'next/image';
 import BottomNav from '@/components/mobile/BottomNav';
 import { useStore } from '@/context/StoreContext';
 import { Eye, EyeOff, ChevronRight, Wallet, MessageCircle, X } from 'lucide-react';
+import { getYtThumb } from '@/lib/thumbnails';
 
 export default function MobileHome() {
   const router = useRouter();
@@ -139,7 +140,7 @@ export default function MobileHome() {
               >
                 <div className="h-[160px] bg-gray-100 relative">
                    <Image 
-                     src={product?.image || `https://source.unsplash.com/random/300x300/?kpop,concert&sig=${i}`} 
+                     src={product?.image || getYtThumb(i)} 
                      alt="product"
                      fill
                      className="object-cover"

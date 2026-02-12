@@ -1,15 +1,16 @@
 'use client';
 import React, { useState } from 'react';
+import { Home, Trophy, TrendingUp, Wallet, LayoutGrid } from 'lucide-react';
 
 export default function BottomNav() {
   const [activeMenu, setActiveMenu] = useState('홈');
 
   const menus = [
-    { id: '홈', icon: '🏠' },
-    { id: '랭킹', icon: '🏆' },
-    { id: '투자', icon: '📈' },
-    { id: '지갑', icon: '💳' },
-    { id: '전체', icon: '☰' },
+    { id: '홈', Icon: Home },
+    { id: '랭킹', Icon: Trophy },
+    { id: '투자', Icon: TrendingUp },
+    { id: '지갑', Icon: Wallet },
+    { id: '전체', Icon: LayoutGrid },
   ];
 
   return (
@@ -20,7 +21,7 @@ export default function BottomNav() {
           onClick={() => setActiveMenu(menu.id)}
           className="flex flex-col items-center justify-center w-full h-full btn-press"
         >
-          <span className="text-2xl mb-1">{menu.icon}</span>
+          <menu.Icon size={26} strokeWidth={2} className="mb-1" />
           <span
             className={`text-[10px] font-medium ${
               activeMenu === menu.id ? 'text-black' : 'text-gray-300'

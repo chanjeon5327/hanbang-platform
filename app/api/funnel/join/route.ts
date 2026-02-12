@@ -21,13 +21,14 @@ export async function POST(req: Request) {
   }
 
   // 2) 합류 신호를 metrics로도 반영 (INTEREST와 분리된 강한 신호)
+  // 합류는 관심보다 강한 신호로 동일 필드 가중
   const today = new Date().toISOString().slice(0,10);
   await supabase.rpc("rpc_increment_content_metric", {
     p_content_id: content_id,
     p_day: today,
     p_impressions: 0,
     p_clicks: 0,
-    p_interests: 1,        -- 합류는 관심보다 강한 신호로 동일 필드 가중
+    p_interests: 1,
     p_watch_seconds: 0,
   });
 

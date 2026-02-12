@@ -48,6 +48,7 @@ function MarketCard({ item, index }: { item: Item; index: number }) {
   return (
     <Link
       href={`/market/${item.id}`}
+      data-testid="market-card"
       className="flex gap-4 p-4 rounded-2xl border border-black/5 active:scale-[0.99] transition-all"
       style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
       aria-label={`${item.title} 수익권 보기`}

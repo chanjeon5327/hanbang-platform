@@ -61,6 +61,31 @@ const TOSS = {
   negative: '#eb4d3d',
 } as const;
 
+/** 레벨 1~5: 일 거래량 기준 (만원) → 얼굴 이모지 */
+const LEVEL_CONFIG = [
+  { minVolume: 1000, icon: '🐰', label: '토끼' },
+  { minVolume: 10000, icon: '🐴', label: '말' },
+  { minVolume: 100000, icon: '🐯', label: '표범' },
+  { minVolume: 1000000, icon: '🦁', label: '사자' },
+  { minVolume: 10000000, icon: '🦅', label: '독수리' },
+] as const;
+
+function LevelCard({ level }: { level: 1 | 2 | 3 | 4 | 5 }) {
+  const cfg = LEVEL_CONFIG[level - 1];
+  return (
+    <div
+      className="rounded-2xl p-4 flex items-center justify-between border min-h-[88px]"
+      style={{ backgroundColor: TOSS.card, borderColor: 'var(--toss-border)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+    >
+      <div>
+        <div className="text-[11px] font-medium mb-0.5" style={{ color: 'var(--toss-text-secondary)' }}>나의 레벨</div>
+        <span className="text-[15px] font-bold" style={{ color: 'var(--toss-text)' }}>LV{level}</span>
+      </div>
+      <span className="shrink-0" style={{ fontSize: 36 }} title={cfg.label} aria-hidden>{cfg.icon}</span>
+    </div>
+  );
+}
+
 const RAIL_CARD_W = 140;
 const RAIL_GAP = 16;
 
@@ -151,7 +176,10 @@ export default function HomeView({ assetData, demoMode = false, showBottomNav = 
   return (
     <div className="min-h-screen pb-24" style={{ backgroundColor: 'var(--toss-bg)' }}>
       <main className="max-w-lg mx-auto px-4 pt-4 pb-6 space-y-4">
-        {/* Above the fold 1: 내 자산 카드 (2x2 그리드) */}
+        {/* Above the fold 1: 영상 추천 배너 (관리자 설정, 내 자산 대비 1.3배) */}
+        <HomeHero item={heroItem} />
+
+        {/* Above the fold 2: 내 자산 카드 (2x2 그리드) */}
         <div className="rounded-2xl p-5 border border-black/5" style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
           <div className="text-[13px] font-medium mb-2" style={{ color: 'var(--toss-text-secondary)' }}>내 자산</div>
           <div className="text-[26px] font-bold tracking-tight tabular-nums" style={{ color: 'var(--toss-text)' }}>
@@ -181,32 +209,36 @@ export default function HomeView({ assetData, demoMode = false, showBottomNav = 
           </div>
         </div>
 
-        {/* Above the fold 2: CTA 2개 */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Above the fold 3: CTA 2개 */}
+        <div className="grid grid-cols-2 gap-3" data-testid={demoMode ? 'demo-cta-area' : undefined}>
           {demoMode ? (
             <>
-              <Link
-                href="/login"
-                className="rounded-2xl p-4 flex items-center gap-3 transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2"
-                style={{ backgroundColor: TOSS.blue, color: TOSS.card, boxShadow: '0 4px 12px rgba(49,130,246,0.35)' }}
-              >
-                <LogIn size={29} strokeWidth={2} aria-hidden />
-                <div className="text-left">
-                  <div className="text-[15px] font-bold">로그인</div>
-                  <div className="text-[12px] opacity-90">시작하기</div>
-                </div>
-              </Link>
-              <Link
-                href="/market"
-                className="rounded-2xl p-4 flex items-center gap-3 transition active:scale-[0.98] border border-black/5 focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-2"
-                style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
-              >
-                <TrendingUp size={29} strokeWidth={2} aria-hidden />
-                <div className="text-left">
-                  <div className="text-[15px] font-bold" style={{ color: 'var(--toss-text)' }}>둘러보기</div>
-                  <div className="text-[12px]" style={{ color: 'var(--toss-text-secondary)' }}>마켓 둘러보기</div>
-                </div>
-              </Link>
+              <div data-testid="cta-login">
+                <Link
+                  href="/login"
+                  className="block rounded-2xl p-4 flex items-center gap-3 transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2"
+                  style={{ backgroundColor: TOSS.blue, color: TOSS.card, boxShadow: '0 4px 12px rgba(49,130,246,0.35)' }}
+                >
+                  <LogIn size={29} strokeWidth={2} aria-hidden />
+                  <div className="text-left">
+                    <div className="text-[15px] font-bold">로그인</div>
+                    <div className="text-[12px] opacity-90">시작하기</div>
+                  </div>
+                </Link>
+              </div>
+              <div data-testid="cta-explore">
+                <Link
+                  href="/market"
+                  className="block rounded-2xl p-4 flex items-center gap-3 transition active:scale-[0.98] border border-black/5 focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-2"
+                  style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+                >
+                  <TrendingUp size={29} strokeWidth={2} aria-hidden />
+                  <div className="text-left">
+                    <div className="text-[15px] font-bold" style={{ color: 'var(--toss-text)' }}>둘러보기</div>
+                    <div className="text-[12px]" style={{ color: 'var(--toss-text-secondary)' }}>마켓 둘러보기</div>
+                  </div>
+                </Link>
+              </div>
             </>
           ) : (
             <>
@@ -236,8 +268,8 @@ export default function HomeView({ assetData, demoMode = false, showBottomNav = 
           )}
         </div>
 
-        {/* Above the fold 3: 짧은 배너 */}
-        <HomeHero item={heroItem} />
+        {/* 나의 레벨 (입금창 밑, 데모: LV3) */}
+        <LevelCard level={3} />
 
         {/* 레일들 */}
         {loading ? (

@@ -18,7 +18,8 @@ export type WalletStatus =
  */
 export async function getWalletStatus(): Promise<WalletStatus> {
   const authed = await isAuthenticated();
-  const account = getAccount(config);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const account = getAccount(config as any);
 
   if (!authed && !account.isConnected) return "ANON";
   if (authed && !account.isConnected) return "AUTH_ONLY";

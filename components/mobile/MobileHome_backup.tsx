@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import Header from '@/components/layout/Header';
+import Header from '@/components/Header';
 import BottomNav from '@/components/mobile/BottomNav';
 
 export default function MobileHome() {

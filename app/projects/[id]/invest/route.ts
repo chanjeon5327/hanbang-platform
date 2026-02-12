@@ -34,7 +34,8 @@ export async function POST(
     )
   }
 
-  if (project.status !== "recruiting") {
+  const p = project as { status?: string }
+  if (p.status !== "recruiting") {
     return NextResponse.json(
       { error: "모집 중인 프로젝트가 아닙니다" },
       { status: 400 }

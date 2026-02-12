@@ -2,7 +2,7 @@ export default function ApprovalQueue() {
   return (
     <section className="bg-white rounded-[16px] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-[var(--toss-border)]">
       <h2 className="text-[17px] font-bold text-[var(--toss-text)] mb-4">
-        ⚠️ 내가 처리해야 할 승인
+        내가 처리해야 할 승인
       </h2>
       <ul className="space-y-3">
         {[

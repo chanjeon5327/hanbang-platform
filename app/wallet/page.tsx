@@ -4,6 +4,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Link from 'next/link';
+import { Download, ArrowLeftRight, Upload } from 'lucide-react';
 
 /* 토스형 정적 UI + 업비트형 동적 UI */
 const TOSS = {
@@ -39,6 +40,31 @@ type LedgerEntry = {
 };
 
 const SECTION_GAP = 'mb-6';
+
+/** 레벨 1~5: 일 거래량 기준 (만원) → 얼굴 이모지 */
+const LEVEL_CONFIG = [
+  { minVolume: 1000, icon: '🐰', label: '토끼' },
+  { minVolume: 10000, icon: '🐴', label: '말' },
+  { minVolume: 100000, icon: '🐯', label: '표범' },
+  { minVolume: 1000000, icon: '🦁', label: '사자' },
+  { minVolume: 10000000, icon: '🦅', label: '독수리' },
+] as const;
+
+function LevelCard({ level, className = '' }: { level: 1 | 2 | 3 | 4 | 5; className?: string }) {
+  const cfg = LEVEL_CONFIG[level - 1];
+  return (
+    <div
+      className={`rounded-2xl p-4 flex items-center justify-between border min-h-[88px] ${className}`}
+      style={{ backgroundColor: 'var(--toss-card)', borderColor: 'var(--toss-border)', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
+    >
+      <div>
+        <div className="text-[11px] font-medium mb-0.5" style={{ color: 'var(--toss-text-secondary)' }}>나의 레벨</div>
+        <span className="text-[15px] font-bold" style={{ color: 'var(--toss-text)' }}>LV{level}</span>
+      </div>
+      <span className="shrink-0" style={{ fontSize: 36 }} title={cfg.label} aria-hidden>{cfg.icon}</span>
+    </div>
+  );
+}
 
 export default function Wallet() {
   const { userCash, holdings, history, sellStock } = useStore();
@@ -157,7 +183,7 @@ export default function Wallet() {
             className="rounded-2xl p-4 flex flex-col gap-1 transition active:scale-[0.98]"
             style={{ backgroundColor: 'var(--toss-blue)', color: 'var(--toss-card)', boxShadow: '0 4px 12px rgba(49,130,246,0.35)' }}
           >
-            <span className="text-[18px]">📥</span>
+            <Download size={26} strokeWidth={2} />
             <span className="text-[14px] font-bold">입금</span>
             <span className="text-[11px] opacity-90">KRW 충전</span>
           </Link>
@@ -166,7 +192,7 @@ export default function Wallet() {
             className="rounded-2xl p-4 flex flex-col gap-1 transition active:scale-[0.98] border"
             style={{ backgroundColor: 'var(--toss-card)', borderColor: 'var(--toss-border)', color: 'var(--toss-text)' }}
           >
-            <span className="text-[18px]">🔄</span>
+            <ArrowLeftRight size={26} strokeWidth={2} />
             <span className="text-[14px] font-bold">교환</span>
             <span className="text-[11px]" style={{ color: 'var(--toss-text-secondary)' }}>토큰 스왑</span>
           </Link>
@@ -175,11 +201,14 @@ export default function Wallet() {
             className="rounded-2xl p-4 flex flex-col gap-1 transition active:scale-[0.98] border"
             style={{ backgroundColor: 'var(--toss-card)', borderColor: 'var(--toss-border)', color: 'var(--toss-text)' }}
           >
-            <span className="text-[18px]">📤</span>
+            <Upload size={26} strokeWidth={2} />
             <span className="text-[14px] font-bold">출금</span>
             <span className="text-[11px]" style={{ color: 'var(--toss-text-secondary)' }}>계좌 이체</span>
           </Link>
         </div>
+
+        {/* 2-1. 나의 레벨 (데모: LV3) */}
+        <LevelCard level={3} className={SECTION_GAP} />
 
         {/* 3. 수익률 그래프 (holdings 있을 때만) */}
         {holdings.length > 0 && (

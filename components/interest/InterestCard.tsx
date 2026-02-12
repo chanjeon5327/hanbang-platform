@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Star } from 'lucide-react';
+import { getYtThumb } from '@/lib/thumbnails';
 
 export type InterestCardData = {
   id: string;
@@ -40,10 +41,14 @@ export default function InterestCard({
     onRate?.(data.id, score);
   };
 
+  const thumbSrc = data.thumbUrl || getYtThumb(parseInt(data.id, 10) || 0);
+
   return (
     <div className="w-[160px] shrink-0">
-      {/* 썸네일 등 기존 UI 유지 */}
-
+      <div className="aspect-[4/5] rounded-xl overflow-hidden bg-black/20">
+        <img src={thumbSrc} alt="" className="w-full h-full object-cover" loading="lazy" />
+      </div>
+      <div className="mt-1 text-sm font-semibold truncate">{data.title}</div>
       {mode === 'onboarding' && (
         <div className="mt-2 flex justify-between">
           {[1, 2, 3, 4, 5].map((n) => (

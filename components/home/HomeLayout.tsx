@@ -1,5 +1,7 @@
 'use client';
 
+import { Bell, User } from 'lucide-react';
+
 export default function HomeLayout({
   children,
 }: {
@@ -10,8 +12,8 @@ export default function HomeLayout({
       <header className="h-14 px-4 flex items-center justify-between border-b">
         <div className="font-bold text-lg">HANBANG</div>
         <div className="flex gap-3 text-sm text-gray-500">
-          <span>🔔</span>
-          <span>👤</span>
+          <Bell size={22} strokeWidth={2} />
+          <User size={22} strokeWidth={2} />
         </div>
       </header>
 

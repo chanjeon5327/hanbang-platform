@@ -1,3 +1,3 @@
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 await supabase.auth.getSession();

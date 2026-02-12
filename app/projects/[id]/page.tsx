@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { Header } from "@/components/Header"
+import type { Database } from "@/lib/supabase/types"
+import Header from "@/components/Header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -8,6 +9,7 @@ import { ArrowLeft, TrendingUp, Play } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { InvestmentButton } from "@/components/InvestmentButton"
+import { getYtThumb } from "@/lib/thumbnails"
 
 export default async function ProjectDetailPage({
   params,
@@ -27,9 +29,10 @@ export default async function ProjectDetailPage({
     notFound()
   }
 
+  const p = project as Database["public"]["Tables"]["projects"]["Row"]
   const progressPercentage =
-    project.target_amount > 0
-      ? Math.min((project.current_amount / project.target_amount) * 100, 100)
+    p.target_amount > 0
+      ? Math.min((p.current_amount / p.target_amount) * 100, 100)
       : 0
 
   const categoryLabels: Record<string, string> = {
@@ -58,27 +61,23 @@ export default async function ProjectDetailPage({
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Video/Thumbnail */}
-            {project.video_url ? (
+            {p.video_url ? (
               <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
                 <iframe
-                  src={project.video_url}
+                  src={p.video_url}
                   className="h-full w-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
               </div>
-            ) : project.thumbnail_url ? (
+            ) : (
               <div className="relative aspect-video w-full overflow-hidden rounded-lg">
                 <Image
-                  src={project.thumbnail_url}
-                  alt={project.title}
+                  src={p.thumbnail_url || getYtThumb(p.id?.length ?? 0)}
+                  alt={p.title}
                   fill
                   className="object-cover"
                 />
-              </div>
-            ) : (
-              <div className="flex aspect-video items-center justify-center rounded-lg bg-muted">
-                <Play className="h-16 w-16 text-muted-foreground" />
               </div>
             )}
 
@@ -89,32 +88,32 @@ export default async function ProjectDetailPage({
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <Badge variant="secondary">
-                        {categoryLabels[project.category] || project.category}
+                        {categoryLabels[p.category] || p.category}
                       </Badge>
                       <Badge
                         variant={
-                          project.status === "recruiting"
+                          p.status === "recruiting"
                             ? "default"
                             : "secondary"
                         }
                       >
-                        {project.status === "recruiting"
+                        {p.status === "recruiting"
                           ? "모집중"
-                          : project.status === "closed"
+                          : p.status === "closed"
                             ? "마감"
                             : "완료"}
                       </Badge>
                     </div>
-                    <CardTitle className="text-3xl">{project.title}</CardTitle>
+                    <CardTitle className="text-3xl">{p.title}</CardTitle>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                {project.description && (
+                {p.description && (
                   <div>
                     <h3 className="mb-2 font-semibold">프로젝트 소개</h3>
                     <p className="text-muted-foreground whitespace-pre-line">
-                      {project.description}
+                      {p.description}
                     </p>
                   </div>
                 )}
@@ -125,7 +124,7 @@ export default async function ProjectDetailPage({
                       예상 수익률
                     </p>
                     <p className="text-2xl font-bold text-red-500">
-                      {Number(project.yield_rate).toFixed(1)}%
+                      {Number(p.yield_rate).toFixed(1)}%
                     </p>
                   </div>
                   <div>
@@ -133,7 +132,7 @@ export default async function ProjectDetailPage({
                       최소 투자금액
                     </p>
                     <p className="text-2xl font-bold">
-                      {project.min_investment.toLocaleString()}원
+                      {p.min_investment.toLocaleString()}원
                     </p>
                   </div>
                 </div>
@@ -155,10 +154,10 @@ export default async function ProjectDetailPage({
                   </div>
                   <div className="mt-2 flex items-center justify-between text-sm text-muted-foreground">
                     <span>
-                      {project.current_amount.toLocaleString()}원 모집됨
+                      {p.current_amount.toLocaleString()}원 모집됨
                     </span>
                     <span>
-                      목표: {project.target_amount.toLocaleString()}원
+                      목표: {p.target_amount.toLocaleString()}원
                     </span>
                   </div>
                 </div>
@@ -179,7 +178,7 @@ export default async function ProjectDetailPage({
                       예상 수익률
                     </span>
                     <span className="text-xl font-bold text-red-500">
-                      {Number(project.yield_rate).toFixed(1)}%
+                      {Number(p.yield_rate).toFixed(1)}%
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -187,16 +186,16 @@ export default async function ProjectDetailPage({
                       최소 투자금액
                     </span>
                     <span className="font-semibold">
-                      {project.min_investment.toLocaleString()}원
+                      {p.min_investment.toLocaleString()}원
                     </span>
                   </div>
                 </div>
 
-                {project.status === "recruiting" ? (
-                  <InvestmentButton projectId={project.id} />
+                {p.status === "recruiting" ? (
+                  <InvestmentButton projectId={p.id} />
                 ) : (
                   <Button disabled className="w-full" variant="secondary">
-                    {project.status === "closed"
+                    {p.status === "closed"
                       ? "모집 마감"
                       : "투자 불가"}
                   </Button>

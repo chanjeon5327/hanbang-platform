@@ -33,6 +33,7 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
   if (!isAuthenticated) {
     return (
       <div
+        data-testid="admin-forbidden"
         style={{
           height: '100vh',
           display: 'flex',

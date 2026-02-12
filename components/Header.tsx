@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Moon, Sun, Search, Bell, User, LogOut, LogIn } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useTheme } from '@/context/ThemeContext';
 
@@ -63,15 +64,15 @@ export default function Header() {
             aria-label={theme === 'light' ? '다크 모드로 전환' : '라이트 모드로 전환'}
             title={theme === 'light' ? '다크' : '라이트'}
           >
-            {theme === 'light' ? '🌙' : '☀️'}
+            {theme === 'light' ? <Moon size={22} strokeWidth={2} /> : <Sun size={22} strokeWidth={2} />}
           </button>
-          <Link href="/" className="p-2.5 rounded-xl text-[var(--toss-text-secondary)] hover:bg-[var(--toss-bg)] transition focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-1" aria-label="검색">🔍</Link>
-          <button type="button" className="p-2.5 rounded-xl text-[var(--toss-text-secondary)] hover:bg-[var(--toss-bg)] transition focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-1" aria-label="알림">🔔</button>
+          <Link href="/" className="p-2.5 rounded-xl text-[var(--toss-text-secondary)] hover:bg-[var(--toss-bg)] transition focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-1" aria-label="검색"><Search size={22} strokeWidth={2} /></Link>
+          <button type="button" className="p-2.5 rounded-xl text-[var(--toss-text-secondary)] hover:bg-[var(--toss-bg)] transition focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-1" aria-label="알림"><Bell size={22} strokeWidth={2} /></button>
           {loading ? (
             <span className="p-2.5 rounded-xl text-[var(--toss-text-secondary)] animate-pulse" aria-hidden>⋯</span>
           ) : user ? (
             <>
-              <Link href="/mypage" className="p-2.5 rounded-xl text-[var(--toss-text-secondary)] hover:bg-[var(--toss-bg)] hover:text-[var(--toss-blue)] transition focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-1" aria-label="마이페이지">👤</Link>
+              <Link href="/mypage" className="p-2.5 rounded-xl text-[var(--toss-text-secondary)] hover:bg-[var(--toss-bg)] hover:text-[var(--toss-blue)] transition focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-1" aria-label="마이페이지"><User size={22} strokeWidth={2} /></Link>
               <button
                 type="button"
                 onClick={handleLogout}
@@ -79,11 +80,11 @@ export default function Header() {
                 aria-label="로그아웃"
                 title="로그아웃"
               >
-                🚪
+                <LogOut size={22} strokeWidth={2} />
               </button>
             </>
           ) : (
-            <Link href="/login" className="p-2.5 rounded-xl text-[var(--toss-text-secondary)] hover:bg-[var(--toss-bg)] transition focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-1" aria-label="로그인">🔐</Link>
+            <Link href="/login" className="p-2.5 rounded-xl text-[var(--toss-text-secondary)] hover:bg-[var(--toss-bg)] transition focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-1" aria-label="로그인"><LogIn size={22} strokeWidth={2} /></Link>
           )}
         </div>
       </div>

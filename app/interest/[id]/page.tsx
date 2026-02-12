@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import SharedThumb from '@/components/interest/SharedThumb';
 import { logEvent } from '@/utils/logEvent';
+import { getYtThumb } from '@/lib/thumbnails';
 
 export default function InterestDetailPage({
   params,
@@ -11,6 +12,7 @@ export default function InterestDetailPage({
   params: { id: string };
 }) {
   const id = params.id;
+  const idx = parseInt(id, 10) || 0;
 
   useEffect(() => {
     logEvent('detail_viewed', { item_id: id });
@@ -25,7 +27,7 @@ export default function InterestDetailPage({
       <div className="mx-auto max-w-[520px] p-4">
         <div className="h-[240px] overflow-hidden rounded-2xl">
           <SharedThumb
-            src="https://images.unsplash.com/photo-1526481280695-3c687fd5432c?auto=format&fit=crop&w=800&q=70"
+            src={getYtThumb(idx)}
             anchorId={`thumb-${id}`}
             className="h-full w-full"
           />

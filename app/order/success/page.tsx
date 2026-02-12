@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { CheckCircle } from 'lucide-react';
 
 type Order = {
   id: string;
@@ -12,7 +13,7 @@ type Order = {
   created_at: string;
 };
 
-export default function OrderSuccessPage() {
+function OrderSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('order_id');
@@ -66,7 +67,7 @@ export default function OrderSuccessPage() {
   return (
     <div className="min-h-screen flex flex-col px-6 pt-12 pb-8 bg-[var(--toss-bg)]">
       <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="text-[48px] mb-4">✓</div>
+        <CheckCircle size={58} strokeWidth={2} className="mb-4 text-[var(--toss-blue)]" />
         <h1 className="text-[22px] font-bold mb-1 text-[var(--toss-text)]">매수 완료</h1>
         <div className="text-[28px] font-bold tracking-tight mb-2 text-[var(--toss-text)]" style={{ fontVariantNumeric: 'tabular-nums' }}>
           ₩{order.amount.toLocaleString()}
@@ -97,5 +98,17 @@ export default function OrderSuccessPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[var(--toss-bg)]">
+        <div className="text-[14px] text-[var(--toss-text-secondary)]">확인 중…</div>
+      </div>
+    }>
+      <OrderSuccessContent />
+    </Suspense>
   );
 }

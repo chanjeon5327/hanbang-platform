@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Check } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
 /* 업비트 사용법 레퍼런스: 단계형(스텝퍼) + 상태 배지 + CTA */
@@ -55,7 +56,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen pb-24" style={{ backgroundColor: UPBIT.bg }}>
+    <div className="min-h-screen pb-24" style={{ backgroundColor: UPBIT.bg }} data-testid="login-page">
       <header className="sticky top-0 z-50 border-b px-4 py-3 flex items-center justify-between" style={{ backgroundColor: UPBIT.bg, borderColor: UPBIT.border }}>
         <Link href="/" className="text-sm" style={{ color: UPBIT.dim }}>‹ 뒤로</Link>
         <span className="text-[12px] px-2 py-1 rounded" style={{ backgroundColor: UPBIT.panel, color: UPBIT.dim }}>KRW 마켓</span>
@@ -78,7 +79,7 @@ export default function LoginPage() {
                     color: step >= s.id ? '#fff' : UPBIT.dim,
                   }}
                 >
-                  {step > s.id ? '✓' : s.id}
+                  {step > s.id ? <Check size={17} strokeWidth={3} /> : s.id}
                 </div>
                 <div className="flex-1">
                   <div className="text-[14px] font-semibold" style={{ color: UPBIT.text }}>{s.label}</div>
@@ -136,6 +137,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
+              data-testid="login-submit"
               className="w-full py-3.5 rounded-lg text-white text-[16px] font-bold transition disabled:opacity-50"
               style={{ backgroundColor: UPBIT.bid }}
             >
