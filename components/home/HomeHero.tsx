@@ -1,80 +1,53 @@
 'use client';
 
-import { useInterestPreview } from '@/stores/interestPreview';
-import SharedThumb from '@/components/interest/SharedThumb';
-import { logEvent } from '@/utils/logEvent';
+import Link from 'next/link';
 
-type Item = {
+type HeroItem = {
   id: string;
   title: string;
   subtitle?: string;
-  thumbUrl: string;
+  thumbUrl?: string;
   score?: number;
 };
 
-export default function HomeHero({
-  item,
-  variant,
-}: {
-  item: Item;
-  variant: 'A' | 'B';
-}) {
-  const { open } = useInterestPreview();
+type Props = { item?: HeroItem | null };
 
-  const handleClick = () => {
-    logEvent('hero_clicked', {
-      variant,
-      item_id: item.id,
-      score: item.score ?? null,
-    });
-    open(item.id, item);
-  };
+const DEFAULT_HERO: HeroItem = {
+  id: 'hero-default',
+  title: '디지털 IP 수익권',
+  subtitle: '수익을 조각으로 투자·거래',
+  thumbUrl: '',
+};
+
+const TOSS = { card: '#ffffff', border: '#e5e8eb', blue: '#3182f6', text: '#191f28', dim: '#6b7684' } as const;
+
+export default function HomeHero({ item }: Props) {
+  const hero = item ?? DEFAULT_HERO;
+  const href = hero.id !== 'hero-default' ? `/market/${hero.id}` : '/';
 
   return (
-    <section className="px-4 pt-3">
-      <button
-        onClick={handleClick}
-        className="
-          relative w-full
-          h-[300px] sm:h-[340px]
-          overflow-hidden rounded-[26px]
-          bg-[var(--card-bg)]
-          ring-1 ring-[var(--card-border)]
-          active:scale-[0.99]
-        "
+    <section className="pt-2">
+      <Link
+        href={href}
+        className="block relative w-full h-[140px] overflow-hidden rounded-2xl border border-black/5 active:scale-[0.99] transition-transform duration-200"
+        style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
       >
-        <SharedThumb
-          src={item.thumbUrl}
-          anchorId={`thumb-${item.id}`}
-          className="absolute inset-0 h-full w-full"
-        />
-
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/5" />
-
-        <div className="absolute inset-x-0 bottom-0 p-4 text-left">
-          <div className="text-[20px] font-extrabold text-white leading-tight">
-            {item.title}
+        {hero.thumbUrl && (
+          <div className="absolute inset-0">
+            <img src={hero.thumbUrl} alt="" className="h-full w-full object-cover opacity-30" />
+            <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/60 to-transparent" />
           </div>
-
-          {item.subtitle && (
-            <div className="mt-1 text-[13px] text-white/75">
-              {item.subtitle}
+        )}
+        <div className="absolute inset-0 flex items-center px-5">
+          <div>
+            <h1 className="text-[18px] font-bold leading-tight" style={{ color: TOSS.text }}>{hero.title}</h1>
+            {hero.subtitle && <p className="mt-0.5 text-[13px]" style={{ color: TOSS.dim }}>{hero.subtitle}</p>}
+            <div className="mt-3 inline-flex items-center gap-1 rounded-full px-4 py-1.5 text-[12px] font-bold text-white" style={{ backgroundColor: TOSS.blue }}>
+              살펴보기 →
             </div>
-          )}
-
-          <div className="mt-3 flex items-center gap-2">
-            <span className="inline-block rounded-full bg-white/15 px-4 py-2 text-[12px] font-semibold text-white">
-              {variant === 'A' ? '지금 살펴보기' : '수익 구조 보기'}
-            </span>
-
-            {typeof item.score === 'number' && item.score > 0 && (
-              <span className="text-[12px] text-white/70">
-                취향 적합도 ★{item.score}
-              </span>
-            )}
           </div>
         </div>
-      </button>
+      </Link>
     </section>
   );
 }

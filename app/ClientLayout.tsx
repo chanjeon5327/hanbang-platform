@@ -11,7 +11,7 @@ export default function ClientLayout({
   return (
     <Providers>
       <Header />
-      <main>{children}</main>
+      <div>{children}</div>
     </Providers>
   );
 }

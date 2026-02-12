@@ -1,15 +1,18 @@
 'use client';
 
+import Link from 'next/link';
 import InterestCard from './InterestCard';
+import SectionHeader from './SectionHeader';
 
 export default function CurationSection({ title }: { title: string }) {
   return (
-    <section className="px-4 mt-10">
-      <h2 className="font-semibold text-[15px] mb-3">{title}</h2>
-
+    <section className="mt-2">
+      <SectionHeader title={title} viewAllHref="/market" />
       <div className="flex gap-3 overflow-x-auto no-scrollbar">
         {[1, 2, 3, 4].map((i) => (
-          <InterestCard key={i} />
+          <Link key={i} href={`/market/curation-${i}`} className="flex-shrink-0">
+            <InterestCard />
+          </Link>
         ))}
       </div>
     </section>
