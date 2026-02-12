@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Moon, Sun, Heart, Bell, Zap } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { useToken } from '@/context/TokenContext';
+import { createClient } from '@/utils/supabase/client';
 import MobilePriceChart from '@/components/market/MobilePriceChart';
 import { OrderBookSummary, OrderBookPanel } from '@/components/market/OrderBook';
 import MobileOrderStickyBar from '@/components/market/MobileOrderStickyBar';
@@ -23,7 +26,7 @@ function MarketHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--upbit-border)]" style={{ backgroundColor: 'var(--upbit-bg)' }}>
       <div className="px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="text-sm" style={{ color: 'var(--upbit-text-dim)' }}>‹ 뒤로</Link>
+        <Link href="/market" className="text-sm" style={{ color: 'var(--upbit-text-dim)' }}>‹ 뒤로</Link>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -33,7 +36,7 @@ function MarketHeader() {
             aria-label={theme === 'light' ? '다크 모드로 전환' : '라이트 모드로 전환'}
             title={theme === 'light' ? '다크' : '라이트'}
           >
-            {theme === 'light' ? '🌙' : '☀️'}
+            {theme === 'light' ? <Moon size={22} strokeWidth={2} /> : <Sun size={22} strokeWidth={2} />}
           </button>
           <TokenSelector />
         </div>
@@ -86,7 +89,7 @@ function JoinFunnelButton({ contentId }: { contentId: string }) {
         className="w-full rounded-lg border py-3 text-[14px] font-medium transition"
         style={{ borderColor: 'var(--upbit-border)', backgroundColor: 'var(--upbit-panel)', color: 'var(--upbit-text)' }}
       >
-        {loading ? '처리 중…' : '👀 관심 콘텐츠로 합류하기'}
+        {loading ? '처리 중…' : (<><Heart size={19} strokeWidth={2} className="inline mr-1.5 align-middle" />관심 콘텐츠로 합류하기</>)}
       </button>
     </section>
   );
@@ -122,12 +125,30 @@ function SideToggle({ side, onChange }: { side: 'BUY' | 'SELL'; onChange: (s: 'B
 }
 
 export default function MarketDetailPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
   const [side, setSide] = useState<'BUY' | 'SELL'>('BUY');
   const [orderBookOpen, setOrderBookOpen] = useState(false);
   const [orderOpen, setOrderOpen] = useState(false);
   const [buyVariant, setBuyVariant] = useState<'A' | 'B' | 'C'>('A');
   const [cohort, setCohort] = useState<'ANON' | 'NEW' | 'ACTIVE' | 'POWER'>('ANON');
+  const [hasSession, setHasSession] = useState<boolean | null>(null);
   const lastPrice = 12300;
+
+  useEffect(() => {
+    createClient().auth.getSession().then(({ data }) => {
+      setHasSession(!!data.session?.user);
+    });
+  }, []);
+
+  const handleOrderOpen = () => {
+    if (hasSession === false) {
+      router.push('/login');
+      return;
+    }
+    setOrderOpen(true);
+  };
+
+  const requireLogin = hasSession !== true;
 
   useEffect(() => {
     fetch('/api/ab/assign-buy', {
@@ -156,7 +177,7 @@ export default function MarketDetailPage({ params }: { params: { id: string } })
       {buyVariant === 'B' && (
         <section className="px-4 mt-2">
           <div className="rounded-lg text-[12px] px-3 py-2" style={{ backgroundColor: 'var(--upbit-ask-bg)', color: 'var(--upbit-ask)' }}>
-            🔔 최근 합류와 매수 전환이 빠르게 증가하고 있습니다
+            <Bell size={17} strokeWidth={2} className="inline mr-1.5 align-middle" />최근 합류와 매수 전환이 빠르게 증가하고 있습니다
           </div>
         </section>
       )}
@@ -164,7 +185,7 @@ export default function MarketDetailPage({ params }: { params: { id: string } })
       {cohort === 'POWER' && buyVariant === 'B' && (
         <section className="px-4 mt-2">
           <div className="rounded-lg text-[12px] px-3 py-2" style={{ backgroundColor: 'var(--upbit-bid-bg)', color: 'var(--upbit-bid)' }}>
-            ⚡ 숙련 투자자에게는 지금이 진입 타이밍일 수 있습니다
+            <Zap size={17} strokeWidth={2} className="inline mr-1.5 align-middle" />숙련 투자자에게는 지금이 진입 타이밍일 수 있습니다
           </div>
         </section>
       )}
@@ -178,7 +199,7 @@ export default function MarketDetailPage({ params }: { params: { id: string } })
         side={side}
         price={lastPrice}
         change={3.2}
-        onOpen={() => setOrderOpen(true)}
+        onOpen={handleOrderOpen}
       />
 
       <MobileOrderPanel
@@ -187,6 +208,7 @@ export default function MarketDetailPage({ params }: { params: { id: string } })
         price={lastPrice}
         productId={params.id}
         onClose={() => setOrderOpen(false)}
+        requireLogin={requireLogin}
       />
     </main>
   );

@@ -29,11 +29,18 @@ export async function updateSession(request: NextRequest) {
   const { data: { session }, error } = await supabase.auth.getSession()
   const user = session?.user ?? null
 
-  // 공개 페이지는 인증 없이 접근 가능
-  const publicPaths = ['/', '/login', '/signup', '/auth', '/projects', '/active-invest', '/notice']
-  const isPublicPath = publicPaths.some((path) => {
-    return request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(path + '/')
-  })
+  // 공개 페이지: /demo, /market 하위 경로까지 인증 없이 접근 가능
+  const pathname = request.nextUrl.pathname
+  const isPublicPath =
+    pathname === '/' ||
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/signup') ||
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/projects') ||
+    pathname.startsWith('/active-invest') ||
+    pathname.startsWith('/notice') ||
+    pathname.startsWith('/demo') ||
+    pathname.startsWith('/market')
 
   // 공개 페이지가 아니고 로그인하지 않은 경우에만 리다이렉트
   if (!user && !isPublicPath) {

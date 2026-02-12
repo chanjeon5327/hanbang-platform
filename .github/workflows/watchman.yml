@@ -1,0 +1,75 @@
+name: 파수꾼 Watchman
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  watchman:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: pnpm install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Watchman E2E
+        env:
+          BASE_URL: ${{ secrets.WATCH_BASE_URL }}
+        run: |
+          if [ -z "$BASE_URL" ]; then
+            echo "::warning::WATCH_BASE_URL secret not set. Configure it in repo Settings > Secrets."
+            exit 1
+          fi
+          npx playwright test e2e --reporter=list
+
+      - name: Notify Telegram on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          WATCH_BASE_URL: ${{ secrets.WATCH_BASE_URL }}
+        run: |
+          TEXT=$(printf '🚨 HANBANG 파수꾼 실패\n\nrepo: %s\nbranch: %s\nrun link: %s\nbase url: %s' \
+            "${{ github.repository }}" \
+            "${{ github.ref_name }}" \
+            "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            "${WATCH_BASE_URL}")
+
+          curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${TEXT}" \
+            --fail-with-body || true
+
+      - name: Upload playwright-report
+        uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload test-results
+        uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 7

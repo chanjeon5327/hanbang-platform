@@ -12,12 +12,14 @@ export default function MobileOrderPanel({
   price,
   productId,
   onClose,
+  requireLogin,
 }: {
   open: boolean;
   side: 'BUY' | 'SELL';
   price: number;
   productId?: string;
   onClose: () => void;
+  requireLogin?: boolean;
 }) {
   const router = useRouter();
   const [qty, setQty] = useState<number>(1);
@@ -33,6 +35,11 @@ export default function MobileOrderPanel({
   const isBuy = side === 'BUY';
 
   const placeOrder = async () => {
+    if (requireLogin) {
+      onClose();
+      router.push('/login');
+      return;
+    }
     if (!qty || qty <= 0) {
       alert('수량을 입력하세요.');
       return;
@@ -164,7 +171,7 @@ export default function MobileOrderPanel({
           className="w-full py-3.5 rounded-lg text-white text-[16px] font-semibold transition disabled:opacity-60"
           style={{ backgroundColor: isBuy ? 'var(--upbit-bid)' : 'var(--upbit-ask)' }}
         >
-          {loading ? '주문 처리 중...' : isBuy ? '매수' : '매도'}
+          {loading ? '주문 처리 중...' : requireLogin ? '로그인 후 거래' : (isBuy ? '매수' : '매도')}
         </button>
 
         <p className="text-[11px] mt-3 leading-relaxed" style={{ color: 'var(--upbit-text-dim)' }}>
