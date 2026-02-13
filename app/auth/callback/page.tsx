@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createBrowserClient } from '@/lib/supabase/client'
+import { createClient } from '@/utils/supabase/client'
 
 function AuthCallbackContent() {
   const router = useRouter()
@@ -10,7 +10,7 @@ function AuthCallbackContent() {
 
   useEffect(() => {
     const finalizeSession = async () => {
-      const supabase = createBrowserClient()
+      const supabase = createClient()
       
       try {
         const code = searchParams.get('code')

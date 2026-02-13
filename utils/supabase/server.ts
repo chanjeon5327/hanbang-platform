@@ -1,17 +1,57 @@
-// utils/supabase/server.ts
+// utils/supabase/server.ts — Next.js App Router
+import { createServerClient } from '@supabase/ssr';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
 
-export function createClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+/**
+ * 로그인 세션 확인용 클라이언트.
+ * - cookies() 기반으로 세션이 전달됨 (App Router)
+ * - anon key 사용, RLS 적용
+ * - Route Handler / Server Component 등에서 사용
+ */
+export async function createClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) {
+    throw new Error(
+      'Missing env: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY'
+    );
+  }
 
+  const cookieStore = await cookies();
+
+  return createServerClient(url, anonKey, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options)
+          );
+        } catch {
+          // Server Component 등에서 set 불가 시 무시 (middleware에서 세션 갱신)
+        }
+      },
+    },
+  });
+}
+
+/**
+ * DB 쓰기용 클라이언트 (Service Role).
+ * - RLS 우회, 서버 전용
+ * - 로그인 세션 없이 사용
+ */
+export function createAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !serviceRoleKey) {
     throw new Error(
       'Missing env: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY'
     );
   }
 
-  // ✅ 서버 전용(Service Role) 클라이언트: RLS 우회 가능 (API Route에서만 사용)
   return createSupabaseClient(url, serviceRoleKey, {
     auth: { persistSession: false },
   });

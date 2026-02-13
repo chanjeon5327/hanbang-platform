@@ -5,11 +5,7 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "test:e2e": "playwright test e2e/watchman",
-    "test:e2e:payment": "playwright test e2e/e2e-payment-flow.spec.ts",
-    "test:e2e:payment:script": "node scripts/e2e-payment-flow.mjs"
+    "start": "next start"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",
@@ -38,7 +34,7 @@
     "framer-motion": "^12.33.0",
     "lightweight-charts": "^5.1.0",
     "lucide-react": "^0.563.0",
-    "next": "^16.1.4",
+    "next": "16.1.4",
     "porto": "^0.2.37",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",

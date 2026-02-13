@@ -63,7 +63,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   try {
     const { data, error } = await supabase.rpc('rpc_confirm_payment', {

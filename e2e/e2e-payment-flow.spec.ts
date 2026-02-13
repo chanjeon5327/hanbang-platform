@@ -113,7 +113,7 @@ test.describe('E2E 결제 플로우', () => {
       const req = await confirmReq;
       const res = await req.response();
       if (!res) failAt('4', 'confirm 응답 없음');
-      const json = await res.json().catch(() => ({}));
+      const json = await res!.json().catch(() => ({}));
       if (!json?.ok) {
         failAt('4', `confirm 실패: ${json?.error ?? JSON.stringify(json)}`);
       }
@@ -159,7 +159,7 @@ test.describe('E2E 결제 플로우', () => {
           .single();
 
         if (ordErr || !order) failAt('6', `orders 조회 실패: ${ordErr?.message ?? 'not found'}`);
-        if (!order.ledger_posted_at) failAt('6', 'orders.ledger_posted_at IS NULL');
+        if (!order!.ledger_posted_at) failAt('6', 'orders.ledger_posted_at IS NULL');
 
         steps.push('6. ledger_entries 2건, ledger_posted_at NOT NULL 확인');
       });

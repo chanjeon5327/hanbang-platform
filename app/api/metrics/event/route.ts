@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 type EventType = "IMPRESSION" | "CLICK" | "INTEREST" | "WATCH";
 
 export async function POST(req: Request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const body = await req.json();
 
   const {

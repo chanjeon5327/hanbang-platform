@@ -15,8 +15,7 @@ export async function GET(
     return NextResponse.json({ error: 'MISSING_ID' }, { status: 400 });
   }
 
-  // ✅ 서버(Service Role) 클라이언트
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from('orders')

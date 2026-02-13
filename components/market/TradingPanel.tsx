@@ -37,35 +37,30 @@ export default function TradingPanel({ mode: initialMode, price, productId, isLo
     }
     setLoading(true);
     try {
-      // 1) 주문 생성
       const placeRes = await fetch('/api/orders/place', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, side: 'BUY', price, quantity: qty }),
+        body: JSON.stringify({
+          product_id: productId,
+          amount: Math.round(amount),
+        }),
       });
       const placeJson = await placeRes.json();
-      if (!placeJson.success || !placeJson.data?.id) {
-        alert(placeJson.error || '주문 실패');
-        return;
-      }
-      const orderId = placeJson.data.id;
 
-      // 2) 결제 요청 (redirect_url 획득)
-      const requestRes = await fetch('/api/payments/request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id: orderId }),
-      });
-      const requestJson = await requestRes.json();
-      if (!requestJson.ok || !requestJson.redirect_url) {
-        alert(requestJson.error || '결제 요청 실패');
+      if (placeJson.success && placeJson.order_id) {
+        alert('구매 완료');
+        router.push('/wallet');
         return;
       }
 
-      // 3) KCP 결제창으로 리다이렉트
-      window.location.href = requestJson.redirect_url;
+      const err = placeJson.error ?? '';
+      if (err === 'INSUFFICIENT_FUNDS') {
+        alert('잔액 부족');
+      } else {
+        alert('구매 실패');
+      }
     } catch {
-      alert('오류가 발생했습니다.');
+      alert('구매 실패');
     } finally {
       setLoading(false);
     }

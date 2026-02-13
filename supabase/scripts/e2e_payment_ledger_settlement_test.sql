@@ -63,8 +63,8 @@ BEGIN
   END;
 
   IF v_order_id IS NULL OR NOT EXISTS (SELECT 1 FROM public.orders WHERE id = v_order_id::uuid) THEN
-    INSERT INTO public.orders (buyer_id, product_id, status, total_amount_krw, quantity, metadata)
-    VALUES (v_buyer_id, v_product_id, 'PENDING', v_amount, 1, '{}'::jsonb)
+    INSERT INTO public.orders (user_id, buyer_id, product_id, status, total_amount_krw, quantity, metadata)
+    VALUES (v_buyer_id, v_buyer_id, v_product_id, 'PENDING', v_amount, 1, '{}'::jsonb)
     RETURNING id::text INTO v_order_id;
     RAISE NOTICE 'STEP 3: orders direct insert (auth unavailable), order_id: %', v_order_id;
   ELSE

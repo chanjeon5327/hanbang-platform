@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: order } = await supabase
     .from('orders')
     .select('id, total_amount_krw, status')

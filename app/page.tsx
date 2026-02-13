@@ -5,6 +5,7 @@ import { useStore } from '@/context/StoreContext';
 import HomeView from '@/components/home/HomeView';
 
 export default function HomePage() {
+  console.log('HOME PAGE RENDER');
   const { user, loading: authLoading } = useAuth();
   const { userCash, holdings, getTotalAssets, getTotalReturn } = useStore();
 

@@ -2,24 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useAccount } from "wagmi";
-
-import { useAuth } from "@/components/auth/AuthProvider";
-import { AuthStatus } from "./auth/AuthStatus";
 
 export default function TopHeader() {
   const [visible, setVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const [showPhotoCard, setShowPhotoCard] = useState(false);
-
-  const router = useRouter();
-  const { user, loading, signOut, openLoginModal } = useAuth();
-  const { address } = useAccount();
-
-  const isAuthenticated = !!user;
-  const userLabel = user?.email ?? (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "사용자");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -139,122 +127,6 @@ export default function TopHeader() {
               현재 3,420명이 접속 중입니다
             </span>
           </div>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0, zIndex: 50 }}>
-          <AuthStatus />
-
-          {loading ? (
-            <span style={{ padding: "8px 16px", fontSize: "13px", color: "var(--text-muted)" }}>확인 중...</span>
-          ) : isAuthenticated ? (
-            <>
-              <button
-                disabled
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "20px",
-                  border: "1px solid var(--border-color)",
-                  backgroundColor: "transparent",
-                  color: "var(--text-muted)",
-                  fontWeight: "bold",
-                  cursor: "not-allowed",
-                  fontSize: "13px",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                지갑 연결 (준비중)
-              </button>
-
-              <div
-                onClick={() => router.push("/wallet")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  textDecoration: "none",
-                  cursor: "pointer",
-                }}
-              >
-                <div style={{ width: "36px", height: "36px", borderRadius: "50%", backgroundColor: "#e5e7eb", overflow: "hidden" }}>
-                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" />
-                </div>
-                <span style={{ fontWeight: "bold", color: "var(--text-primary)", fontSize: "14px" }}>
-                  {userLabel} 님
-                </span>
-              </div>
-
-              <button
-                onClick={signOut}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "20px",
-                  border: "1px solid var(--border-color)",
-                  backgroundColor: "transparent",
-                  color: "var(--text-primary)",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  fontSize: "13px",
-                }}
-              >
-                로그아웃
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                disabled
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "20px",
-                  border: "1px solid var(--border-color)",
-                  backgroundColor: "transparent",
-                  color: "var(--text-muted)",
-                  fontWeight: "bold",
-                  cursor: "not-allowed",
-                  fontSize: "13px",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                지갑 연결 (준비중)
-              </button>
-
-              <button
-                onClick={openLoginModal}
-                style={{
-                  padding: "10px 24px",
-                  borderRadius: "999px",
-                  border: "none",
-                  backgroundColor: "transparent",
-                  color: "var(--text-primary)",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                }}
-              >
-                로그인
-              </button>
-
-              <button
-                onClick={openLoginModal}
-                style={{
-                  padding: "10px 24px",
-                  borderRadius: "999px",
-                  backgroundColor: "var(--accent-color)",
-                  color: "white",
-                  fontWeight: "600",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  boxShadow: "0 4px 12px rgba(49, 130, 246, 0.3)",
-                  transition: "all 0.2s",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
-                onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-              >
-                가입하기
-              </button>
-            </>
-          )}
         </div>
       </div>
 

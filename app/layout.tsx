@@ -1,8 +1,11 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
-import './globals.css';
+import Header from '@/components/Header';
 
-import ClientLayout from './ClientLayout';
+if (typeof window === 'undefined') {
+  console.log('SERVER RENDER START');
+}
+import Providers from './providers';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: 'HANBANG',
@@ -15,18 +18,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko">
       <body>
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem('hanbang_theme');document.documentElement.classList.toggle('dark',t==='dark');})();`,
-          }}
-        />
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+        <Providers>
+          <Header />
+          <main>{children}</main>
+        </Providers>
       </body>
     </html>
   );

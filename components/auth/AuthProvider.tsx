@@ -24,36 +24,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
 
+  const applySession = useCallback((s: Session | null, u: User | null) => {
+    setSession(s);
+    setUser(u);
+    setLoading(false);
+  }, []);
+
   useEffect(() => {
     const supabase = createClient();
     let mounted = true;
 
     const init = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        if (!mounted) return;
-        let session = data.session ?? null;
-        let userData = session?.user ?? null;
+        // 1) 저장된 세션 먼저 읽기 (localStorage/cookie)
+        const { data: sessionData } = await supabase.auth.getSession();
+        let s = sessionData.session ?? null;
+        let u = s?.user ?? null;
 
-        // 유저 정지(SUSPENDED) 시 로그인 차단: 즉시 로그아웃
-        if (userData) {
-          const { data: profile } = await supabase.from('profiles').select('status').eq('id', userData.id).single();
-          if (profile?.status === 'SUSPENDED') {
-            await supabase.auth.signOut();
-            session = null;
-            userData = null;
+        if (!mounted) return;
+
+        // 2) 세션이 있으면 서버에 재검증 (만료 토큰 갱신)
+        if (s) {
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+          if (!mounted) return;
+          if (!refreshError && refreshData.session) {
+            s = refreshData.session;
+            u = refreshData.session.user;
           }
         }
 
-        setSession(session);
-        setUser(userData);
+        // 3) 유저 정지(SUSPENDED) 시 로그아웃
+        if (u) {
+          const { data: profile } = await supabase.from('profiles').select('status').eq('id', u.id).single();
+          if (profile?.status === 'SUSPENDED') {
+            await supabase.auth.signOut();
+            s = null;
+            u = null;
+          }
+        }
+
+        applySession(s, u);
       } catch {
         if (!mounted) return;
-        setSession(null);
-        setUser(null);
-      } finally {
-        if (!mounted) return;
-        setLoading(false);
+        applySession(null, null);
       }
     };
 
@@ -61,29 +74,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
       if (!mounted) return;
-      let session = newSession ?? null;
-      let userData = session?.user ?? null;
+      let s = newSession ?? null;
+      let u = s?.user ?? null;
 
-      // 유저 정지 시 로그아웃
-      if (userData) {
-        const { data: profile } = await supabase.from('profiles').select('status').eq('id', userData.id).single();
+      if (u) {
+        const { data: profile } = await supabase.from('profiles').select('status').eq('id', u.id).single();
         if (profile?.status === 'SUSPENDED') {
           await supabase.auth.signOut();
-          session = null;
-          userData = null;
+          s = null;
+          u = null;
         }
       }
 
-      setSession(session);
-      setUser(userData);
-      setLoading(false);
+      applySession(s, u);
     });
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [applySession]);
 
   const signOut = useCallback(async () => {
     const supabase = createClient();
