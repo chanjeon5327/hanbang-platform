@@ -2,13 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Download, LogIn, TrendingUp } from 'lucide-react';
+import { Download, LogIn, TrendingUp, Bell, Activity } from 'lucide-react';
 import { getYtThumb } from '@/lib/thumbnails';
 import BottomNavigation from '@/components/home/BottomNavigation';
 import HomeHero from '@/components/home/HomeHero';
+import GuestHero from '@/components/home/GuestHero';
+import AssetCard, { type AssetData as AssetCardData } from '@/components/home/AssetCard';
 import InterestStrip from '@/components/home/InterestStrip';
 import CurationSection from '@/components/home/CurationSection';
 import SectionHeader from '@/components/home/SectionHeader';
+import IpNewsSection from '@/components/news/IpNewsSection';
+import SupportBubble from '@/components/support/SupportBubble';
 
 export type RailItem = {
   id: string;
@@ -28,6 +32,7 @@ export type AssetData = {
   holdingsValue: number;
   returnAmount: number;
   returnRate: number;
+  dailyChange?: number;
 };
 
 export const FALLBACK_RAILS: Rail[] = [
@@ -138,20 +143,28 @@ function RailSection({ rail, railIndex }: { rail: Rail; railIndex: number }) {
   );
 }
 
+/** 로그인 시: 추천 레일 1개만 먼저 노출 (퍼널 우선순위) */
+function getFirstRail(rails: Rail[]): Rail | null {
+  const top = rails.find((r) => r.key === 'top' || r.key === 'fallback-top');
+  return top ?? rails[0] ?? null;
+}
+
 type Props = {
-  assetData: AssetData;
+  assetData: AssetData | null;
+  assetLoading?: boolean;
+  isLoggedIn: boolean;
   demoMode?: boolean;
   showBottomNav?: boolean;
 };
 
-export default function HomeView({ assetData, demoMode = false, showBottomNav = true }: Props) {
+export default function HomeView({ assetData, assetLoading = false, isLoggedIn, demoMode = false, showBottomNav = true }: Props) {
   const [rails, setRails] = useState<Rail[]>([]);
-  const [loading, setLoading] = useState(!demoMode);
+  const [railsLoading, setRailsLoading] = useState(!demoMode);
   const [heroItem, setHeroItem] = useState<{ id: string; title: string; subtitle?: string; thumbUrl?: string; score?: number } | null>(null);
 
   useEffect(() => {
     if (demoMode) {
-      setLoading(false);
+      setRailsLoading(false);
       return;
     }
     fetch('/api/home/rails', { cache: 'no-store' })
@@ -167,81 +180,45 @@ export default function HomeView({ assetData, demoMode = false, showBottomNav = 
         }
       })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => setRailsLoading(false));
   }, [demoMode]);
 
-  const displayRails = loading || rails.length === 0 ? FALLBACK_RAILS : rails;
-  const { totalAssets, userCash, holdingsValue, returnAmount, returnRate } = assetData;
+  const displayRails = railsLoading || rails.length === 0 ? FALLBACK_RAILS : rails;
+  const firstRail = getFirstRail(displayRails);
 
   return (
     <div className="min-h-screen pb-24" style={{ backgroundColor: 'var(--toss-bg)' }}>
       <main className="max-w-lg mx-auto px-4 pt-4 pb-6 space-y-4">
-        {/* Above the fold 1: 영상 추천 배너 (관리자 설정, 내 자산 대비 1.3배) */}
-        <HomeHero item={heroItem} />
-
-        {/* Above the fold 2: 내 자산 카드 (2x2 그리드) */}
-        <div className="rounded-2xl p-5 border border-black/5" style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-          <div className="text-[13px] font-medium mb-2" style={{ color: 'var(--toss-text-secondary)' }}>내 자산</div>
-          <div className="text-[26px] font-bold tracking-tight tabular-nums" style={{ color: 'var(--toss-text)' }}>
-            ₩{totalAssets.toLocaleString()}
-          </div>
-          <div className="grid grid-cols-2 gap-4 mt-4 pt-4" style={{ borderTop: '1px solid var(--toss-border)' }}>
-            <div>
-              <div className="text-[11px] font-medium" style={{ color: 'var(--toss-text-secondary)' }}>예수금</div>
-              <div className="text-[14px] font-semibold tabular-nums mt-0.5" style={{ color: 'var(--toss-text)' }}>{userCash.toLocaleString()}원</div>
+        {/* 1. 추천 작품 (레일 1개 - 언더 3초 노출) */}
+        {railsLoading ? (
+          <section className="mb-6">
+            <div className="flex justify-between items-center mb-3">
+              <div className="h-5 w-32 rounded bg-black/5 animate-pulse" />
+              <div className="h-4 w-16 rounded bg-black/5 animate-pulse" />
             </div>
-            <div>
-              <div className="text-[11px] font-medium" style={{ color: 'var(--toss-text-secondary)' }}>보유평가</div>
-              <div className="text-[14px] font-semibold tabular-nums mt-0.5" style={{ color: 'var(--toss-text)' }}>{holdingsValue.toLocaleString()}원</div>
-            </div>
-            <div>
-              <div className="text-[11px] font-medium" style={{ color: 'var(--toss-text-secondary)' }}>수익률</div>
-              <div className="text-[14px] font-semibold tabular-nums mt-0.5" style={{ color: returnRate >= 0 ? TOSS.positive : TOSS.negative }}>
-                {returnRate >= 0 ? '+' : ''}{returnRate.toFixed(2)}%
-              </div>
-            </div>
-            <div>
-              <div className="text-[11px] font-medium" style={{ color: 'var(--toss-text-secondary)' }}>손익</div>
-              <div className="text-[14px] font-semibold tabular-nums mt-0.5" style={{ color: returnAmount >= 0 ? TOSS.positive : TOSS.negative }}>
-                {returnAmount >= 0 ? '+' : ''}{returnAmount.toLocaleString()}원
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Above the fold 3: CTA 2개 */}
-        <div className="grid grid-cols-2 gap-3" data-testid={demoMode ? 'demo-cta-area' : undefined}>
-          {demoMode ? (
-            <>
-              <div data-testid="cta-login">
-                <Link
-                  href="/login"
-                  className="block rounded-2xl p-4 flex items-center gap-3 transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2"
-                  style={{ backgroundColor: TOSS.blue, color: TOSS.card, boxShadow: '0 4px 12px rgba(49,130,246,0.35)' }}
-                >
-                  <LogIn size={29} strokeWidth={2} aria-hidden />
-                  <div className="text-left">
-                    <div className="text-[15px] font-bold">로그인</div>
-                    <div className="text-[12px] opacity-90">시작하기</div>
+            <div className="flex gap-4 overflow-hidden pb-2">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex-shrink-0 w-[140px] rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--toss-card)' }}>
+                  <div className="aspect-[4/5] bg-black/5 animate-pulse" />
+                  <div className="p-3 space-y-2">
+                    <div className="h-3 w-full rounded bg-black/5 animate-pulse" />
+                    <div className="h-2.5 w-2/3 rounded bg-black/5 animate-pulse" />
                   </div>
-                </Link>
-              </div>
-              <div data-testid="cta-explore">
-                <Link
-                  href="/market"
-                  className="block rounded-2xl p-4 flex items-center gap-3 transition active:scale-[0.98] border border-black/5 focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-2"
-                  style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
-                >
-                  <TrendingUp size={29} strokeWidth={2} aria-hidden />
-                  <div className="text-left">
-                    <div className="text-[15px] font-bold" style={{ color: 'var(--toss-text)' }}>둘러보기</div>
-                    <div className="text-[12px]" style={{ color: 'var(--toss-text-secondary)' }}>마켓 둘러보기</div>
-                  </div>
-                </Link>
-              </div>
-            </>
-          ) : (
-            <>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : firstRail ? (
+          <RailSection key={firstRail.key} rail={firstRail} railIndex={0} />
+        ) : null}
+
+        {isLoggedIn ? (
+          <>
+            {/* 2. 내 자산 카드 */}
+            <AssetCard data={assetData} loading={assetLoading} />
+
+            {/* 3. 입금 / 거래하기 CTA */}
+            <div className="grid grid-cols-2 gap-3">
               <Link
                 href="/wallet/deposit"
                 className="rounded-2xl p-4 flex items-center gap-3 transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2"
@@ -264,42 +241,93 @@ export default function HomeView({ assetData, demoMode = false, showBottomNav = 
                   <div className="text-[12px]" style={{ color: 'var(--toss-text-secondary)' }}>수익권 투자</div>
                 </div>
               </Link>
-            </>
-          )}
-        </div>
-
-        {/* 나의 레벨 (입금창 밑, 데모: LV3) */}
-        <LevelCard level={3} />
-
-        {/* 레일들 */}
-        {loading ? (
-          <section className="mb-6">
-            <div className="flex justify-between items-center mb-3">
-              <div className="h-5 w-32 rounded bg-black/5 animate-pulse" />
-              <div className="h-4 w-16 rounded bg-black/5 animate-pulse" />
             </div>
-            <div className="flex gap-4 overflow-hidden pb-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex-shrink-0 w-[140px] rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--toss-card)' }}>
-                  <div className="aspect-[4/5] bg-black/5 animate-pulse" />
-                  <div className="p-3 space-y-2">
-                    <div className="h-3 w-full rounded bg-black/5 animate-pulse" />
-                    <div className="h-2.5 w-2/3 rounded bg-black/5 animate-pulse" />
-                  </div>
-                </div>
-              ))}
+
+            {/* 4. 오늘 수익 */}
+            <div className="rounded-2xl p-4 border" style={{ backgroundColor: TOSS.card, borderColor: TOSS.border }}>
+              <div className="flex justify-between items-center">
+                <span className="text-[13px] font-medium" style={{ color: TOSS.secondary }}>오늘 수익</span>
+                <span className="text-[16px] font-bold tabular-nums" style={{ color: TOSS.positive }}>+12,500원</span>
+              </div>
             </div>
-          </section>
+
+            {/* 5. 거래 상태 */}
+            <div className="rounded-2xl p-4 border flex items-center gap-3" style={{ backgroundColor: TOSS.card, borderColor: TOSS.border }}>
+              <Activity size={20} strokeWidth={2} style={{ color: TOSS.blue }} />
+              <div>
+                <div className="text-[14px] font-semibold" style={{ color: TOSS.text }}>투자 중 3건</div>
+                <div className="text-[12px]" style={{ color: TOSS.secondary }}>정산 예정: 2건</div>
+              </div>
+            </div>
+
+            {/* 6. 알림 요약 */}
+            <Link href="/notifications" className="rounded-2xl p-4 border flex items-center gap-3" style={{ backgroundColor: TOSS.card, borderColor: TOSS.border }}>
+              <Bell size={20} strokeWidth={2} style={{ color: TOSS.secondary }} />
+              <div>
+                <div className="text-[14px] font-semibold" style={{ color: TOSS.text }}>알림 2건</div>
+                <div className="text-[12px]" style={{ color: TOSS.secondary }}>새로운 수익 발생 알림</div>
+              </div>
+            </Link>
+
+            {/* 7. 뉴스 */}
+            <IpNewsSection />
+
+            {/* 나의 레벨 */}
+            <LevelCard level={3} />
+
+            {/* 나머지 레일들 (첫 레일 제외) */}
+            {displayRails.filter((r) => r.key !== firstRail?.key).map((rail, ri) => (
+              <RailSection key={rail.key} rail={rail} railIndex={ri + 1} />
+            ))}
+            <InterestStrip />
+            <CurationSection title="신뢰 추천" />
+          </>
         ) : (
-          displayRails.map((rail, ri) => <RailSection key={rail.key} rail={rail} railIndex={ri} />)
+          <>
+            {/* 2. 서비스 설명 히어로 */}
+            <GuestHero />
+
+            {/* 3. 로그인 유도 버튼 */}
+            <div className="grid grid-cols-2 gap-3" data-testid="guest-cta-area">
+              <Link
+                href="/login"
+                className="block rounded-2xl p-4 flex items-center gap-3 transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2"
+                style={{ backgroundColor: TOSS.blue, color: TOSS.card, boxShadow: '0 4px 12px rgba(49,130,246,0.35)' }}
+              >
+                <LogIn size={29} strokeWidth={2} aria-hidden />
+                <div className="text-left">
+                  <div className="text-[15px] font-bold">로그인</div>
+                  <div className="text-[12px] opacity-90">시작하기</div>
+                </div>
+              </Link>
+              <Link
+                href="/market"
+                className="block rounded-2xl p-4 flex items-center gap-3 transition active:scale-[0.98] border border-black/5 focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-2"
+                style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+              >
+                <TrendingUp size={29} strokeWidth={2} aria-hidden />
+                <div className="text-left">
+                  <div className="text-[15px] font-bold" style={{ color: 'var(--toss-text)' }}>둘러보기</div>
+                  <div className="text-[12px]" style={{ color: 'var(--toss-text-secondary)' }}>마켓 둘러보기</div>
+                </div>
+              </Link>
+            </div>
+
+            {/* 4. 뉴스 */}
+            <IpNewsSection />
+
+            {/* 나머지 레일들 */}
+            {displayRails.filter((r) => r.key !== firstRail?.key).map((rail, ri) => (
+              <RailSection key={rail.key} rail={rail} railIndex={ri + 1} />
+            ))}
+          </>
         )}
 
-        <InterestStrip />
-        <CurationSection title="신뢰 추천" />
         <div className="h-6" />
       </main>
 
       {showBottomNav && <BottomNavigation demoMode={demoMode} />}
+      <SupportBubble />
     </div>
   );
 }

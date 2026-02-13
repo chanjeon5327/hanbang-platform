@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requireActiveUser } from '@/lib/auth/requireActiveUser';
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -8,6 +9,15 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { success: false, error: '로그인이 필요합니다.' },
       { status: 401 }
+    );
+  }
+
+  try {
+    await requireActiveUser(user.id);
+  } catch (e: any) {
+    return NextResponse.json(
+      { success: false, error: e?.message ?? 'USER_SUSPENDED' },
+      { status: 403 }
     );
   }
 

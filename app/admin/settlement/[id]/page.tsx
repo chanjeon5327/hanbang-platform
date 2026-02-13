@@ -3,11 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/context/AuthContext';
+import { logAdminAction } from '@/lib/admin/auditLog';
 
 export default function AdminSettlementDetailPage() {
   const supabase = createClient();
   const router = useRouter();
   const params = useParams();
+  const { adminUser } = useAuth();
   const id = params.id as string;
 
   const [data, setData] = useState<any>(null);
@@ -28,7 +31,10 @@ export default function AdminSettlementDetailPage() {
   }, [id, supabase]);
 
   const confirmSettlement = async () => {
+    if (!confirm('이 정산 배치를 확정하시겠습니까? 확정 후에는 변경할 수 없습니다.')) return;
+
     setConfirming(true);
+    const adminId = adminUser?.email ?? 'unknown';
 
     const { error } = await supabase.rpc(
       'rpc_admin_confirm_settlement',
@@ -36,6 +42,13 @@ export default function AdminSettlementDetailPage() {
     );
 
     if (!error) {
+      await logAdminAction({
+        adminId,
+        action: 'SETTLEMENT_CONFIRM',
+        targetType: 'settlement',
+        targetId: id,
+        metadata: { settlement_date: data?.settlement_date, net_amount: data?.net_amount },
+      });
       router.push('/admin/settlement');
       router.refresh();
     } else {

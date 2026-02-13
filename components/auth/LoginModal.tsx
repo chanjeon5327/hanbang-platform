@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 
 /* 업비트 사용법 레퍼런스: 단계형 스텝퍼 + 상태 배지 + CTA */
@@ -12,6 +13,7 @@ type LoginModalProps = {
 };
 
 export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,6 +31,7 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
       const { error: err } = await supabase.auth.signInWithPassword({ email, password });
       if (err) throw err;
       onOpenChange(false);
+      router.push('/');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : '로그인 실패');
     } finally {

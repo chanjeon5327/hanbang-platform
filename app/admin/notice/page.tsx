@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Plus, Pin } from "lucide-react";
+import { logAdminAction } from "@/lib/admin/auditLog";
 
 interface Notice {
   id: string;
@@ -39,14 +40,15 @@ export default function AdminNotice() {
 
   const canWrite = hasPermission(5); // Lv.5 마스터만 글쓰기 가능
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!newNotice.title || !newNotice.content) {
       alert("제목과 내용을 입력해주세요.");
       return;
     }
 
+    const noticeId = Date.now().toString();
     const notice: Notice = {
-      id: Date.now().toString(),
+      id: noticeId,
       title: newNotice.title,
       content: newNotice.content,
       author: adminUser?.name || "관리자",
@@ -66,6 +68,14 @@ export default function AdminNotice() {
     setNewNotice({ title: "", content: "", isPinned: false });
     setShowWriteModal(false);
     alert("공지사항이 등록되었습니다.");
+
+    await logAdminAction({
+      adminId: adminUser?.email ?? "unknown",
+      action: "NOTICE_CREATE",
+      targetType: "notice",
+      targetId: noticeId,
+      metadata: { title: newNotice.title, isPinned: newNotice.isPinned },
+    });
   };
 
   const sortedNotices = [...notices].sort((a, b) => {

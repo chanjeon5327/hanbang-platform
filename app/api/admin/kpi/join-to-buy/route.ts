@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/admin/requireAdmin";
 
 export async function GET() {
-  const supabase = createClient();
+  await requireAdmin();
+
+  const supabase = supabaseAdmin;
 
   const { data, error } = await supabase
     .from("v_join_to_buy_7d")

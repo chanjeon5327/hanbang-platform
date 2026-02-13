@@ -1,19 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import BottomNav from '@/components/mobile/BottomNav';
 import { useStore } from '@/context/StoreContext';
+import { useAuth } from '@/components/auth/AuthProvider';
 import { Eye, EyeOff, ChevronRight, Wallet, MessageCircle, X } from 'lucide-react';
 import { getYtThumb } from '@/lib/thumbnails';
 
 export default function MobileHome() {
-  const router = useRouter();
   const [isVisible, setIsVisible] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const { products, isLoggedIn } = useStore(); 
+  const { products } = useStore();
+  const { user, openLoginModal } = useAuth();
+  const isLoggedIn = !!user; 
 
   const notices = [
     { id: 1, title: '🎉 신규 가입자 대상 수수료 무료 이벤트' },
@@ -32,7 +33,7 @@ export default function MobileHome() {
           {!isLoggedIn ? (
             // CASE A: 비로그인 상태 - 로그인/회원가입 버튼
             <button
-              onClick={() => router.push('/login')}
+              onClick={openLoginModal}
               className="bg-gray-100 rounded-full text-sm px-4 py-2 text-gray-700 font-medium hover:bg-gray-200 active:scale-95 transition-all"
             >
               로그인/회원가입

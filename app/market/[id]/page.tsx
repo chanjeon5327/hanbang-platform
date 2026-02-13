@@ -3,214 +3,174 @@
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Moon, Sun, Heart, Bell, Zap } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { useToken } from '@/context/TokenContext';
-import { createClient } from '@/utils/supabase/client';
-import MobilePriceChart from '@/components/market/MobilePriceChart';
-import { OrderBookSummary, OrderBookPanel } from '@/components/market/OrderBook';
-import MobileOrderStickyBar from '@/components/market/MobileOrderStickyBar';
-import MobileOrderPanel from '@/components/market/MobileOrderPanel';
-import TokenSelector from '@/components/market/TokenSelector';
+import { useAuth } from '@/components/auth/AuthProvider';
+import YouTubeEmbed from '@/components/common/YouTubeEmbed';
+import PriceChartSection from '@/components/market/PriceChartSection';
+import OrderBookPanel from '@/components/market/OrderBookPanel';
+import TradingPanel from '@/components/market/TradingPanel';
+import MobilizationInfo from '@/components/market/MobilizationInfo';
+import RevenueInfoSection from '@/components/market/RevenueInfoSection';
+import MarketChatSection from '@/components/market/MarketChatSection';
+import { triggerMobilization90 } from '@/lib/notifications/triggers';
 
-/* 업비트 KRW 거래 UX: (a)상단 가격/등락 헤더 (b)차트+타임프레임 (c)호가창 (d)주문패널 (e)스티키바 — KRW/USDT/BTC 등 다중 토큰 지원 */
+const YT_VIDEO_ID = 'HosW0gulISQ';
+const YT_START_SEC = 25;
 
 function MarketHeader() {
   const { theme, toggleTheme } = useTheme();
-  const { formatPrice } = useToken();
-  const lastPrice = 12300;
-  const change = 3.2;
-  const high52w = 13200;
-  const low52w = 11500;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--upbit-border)]" style={{ backgroundColor: 'var(--upbit-bg)' }}>
+    <header className="sticky top-0 z-50 border-b" style={{ backgroundColor: 'var(--upbit-bg)', borderColor: 'var(--upbit-border)' }}>
       <div className="px-4 py-3 flex items-center justify-between">
         <Link href="/market" className="text-sm" style={{ color: 'var(--upbit-text-dim)' }}>‹ 뒤로</Link>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="p-2 rounded-lg transition hover:opacity-80"
-            style={{ backgroundColor: 'var(--upbit-panel)', color: 'var(--upbit-text-dim)' }}
-            aria-label={theme === 'light' ? '다크 모드로 전환' : '라이트 모드로 전환'}
-            title={theme === 'light' ? '다크' : '라이트'}
-          >
-            {theme === 'light' ? <Moon size={22} strokeWidth={2} /> : <Sun size={22} strokeWidth={2} />}
-          </button>
-          <TokenSelector />
-        </div>
-      </div>
-      <div className="px-4 pb-4">
-        <h1 className="text-[18px] font-bold" style={{ color: 'var(--upbit-text)' }}>여행가 제이</h1>
-        <p className="text-[13px] mt-0.5" style={{ color: 'var(--upbit-text-dim)' }}>크리에이터 · 여행</p>
-        <div className="mt-3 flex items-baseline gap-3 flex-wrap">
-          <span className="text-[24px] font-bold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
-            {formatPrice(lastPrice)}
-          </span>
-          <span className="text-[14px] font-semibold" style={{ color: change >= 0 ? 'var(--upbit-positive)' : 'var(--upbit-ask)', fontVariantNumeric: 'tabular-nums' }}>
-            {change >= 0 ? '+' : ''}{change}%
-          </span>
-          <span className="text-[12px]" style={{ color: 'var(--upbit-text-dim)' }}>전일대비</span>
-        </div>
-        <div className="flex gap-4 mt-2 text-[12px]" style={{ color: 'var(--upbit-text-dim)' }}>
-          <span>52주高 {formatPrice(high52w)}</span>
-          <span>52주低 {formatPrice(low52w)}</span>
-        </div>
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="p-2 rounded-lg transition hover:opacity-80"
+          style={{ backgroundColor: 'var(--upbit-panel)', color: 'var(--upbit-text-dim)' }}
+          aria-label={theme === 'light' ? '다크 모드' : '라이트 모드'}
+        >
+          {theme === 'light' ? <Moon size={22} strokeWidth={2} /> : <Sun size={22} strokeWidth={2} />}
+        </button>
       </div>
     </header>
-  );
-}
-
-function JoinFunnelButton({ contentId }: { contentId: string }) {
-  const [loading, setLoading] = useState(false);
-  const join = async () => {
-    if (loading) return;
-    setLoading(true);
-    try {
-      await fetch('/api/funnel/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content_id: contentId, source: 'detail' }),
-      });
-      alert('합류 완료. 이후 업데이트를 받아보실 수 있습니다.');
-    } catch {
-      alert('잠시 후 다시 시도해주세요.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <section className="px-4 mt-4">
-      <button
-        onClick={join}
-        disabled={loading}
-        className="w-full rounded-lg border py-3 text-[14px] font-medium transition"
-        style={{ borderColor: 'var(--upbit-border)', backgroundColor: 'var(--upbit-panel)', color: 'var(--upbit-text)' }}
-      >
-        {loading ? '처리 중…' : (<><Heart size={19} strokeWidth={2} className="inline mr-1.5 align-middle" />관심 콘텐츠로 합류하기</>)}
-      </button>
-    </section>
-  );
-}
-
-function SideToggle({ side, onChange }: { side: 'BUY' | 'SELL'; onChange: (s: 'BUY' | 'SELL') => void }) {
-  return (
-    <section className="px-4 mt-4">
-      <div className="grid grid-cols-2 rounded-lg overflow-hidden border border-[var(--upbit-border)]" style={{ backgroundColor: 'var(--upbit-panel)' }}>
-        <button
-          onClick={() => onChange('BUY')}
-          className="py-2.5 text-[14px] font-semibold transition"
-          style={{
-            backgroundColor: side === 'BUY' ? 'var(--upbit-bid)' : 'transparent',
-            color: side === 'BUY' ? '#fff' : 'var(--upbit-text-dim)',
-          }}
-        >
-          매수
-        </button>
-        <button
-          onClick={() => onChange('SELL')}
-          className="py-2.5 text-[14px] font-semibold transition"
-          style={{
-            backgroundColor: side === 'SELL' ? 'var(--upbit-ask)' : 'transparent',
-            color: side === 'SELL' ? '#fff' : 'var(--upbit-text-dim)',
-          }}
-        >
-          매도
-        </button>
-      </div>
-    </section>
   );
 }
 
 export default function MarketDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const [side, setSide] = useState<'BUY' | 'SELL'>('BUY');
-  const [orderBookOpen, setOrderBookOpen] = useState(false);
-  const [orderOpen, setOrderOpen] = useState(false);
-  const [buyVariant, setBuyVariant] = useState<'A' | 'B' | 'C'>('A');
-  const [cohort, setCohort] = useState<'ANON' | 'NEW' | 'ACTIVE' | 'POWER'>('ANON');
-  const [hasSession, setHasSession] = useState<boolean | null>(null);
-  const lastPrice = 12300;
+  const { user, loading } = useAuth();
+  const { formatPrice } = useToken();
+  const [isMobilization, setIsMobilization] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  const hasSession = !!user;
+  const price = 12300;
+  const change = 3.2;
 
   useEffect(() => {
-    createClient().auth.getSession().then(({ data }) => {
-      setHasSession(!!data.session?.user);
-    });
+    const mq = window.matchMedia('(min-width: 768px)');
+    const apply = () => setIsDesktop(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
   }, []);
 
-  const handleOrderOpen = () => {
-    if (hasSession === false) {
-      router.push('/login');
-      return;
-    }
-    setOrderOpen(true);
+  const mobilizationData = {
+    progress: 72,
+    participants: 124,
+    remainingText: 'D-12',
+    targetAmount: 50000000,
+    currentAmount: 36000000,
   };
 
-  const requireLogin = hasSession !== true;
-
+  // 마감 90% 도달 시 알림 트리거
   useEffect(() => {
-    fetch('/api/ab/assign-buy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content_id: id }),
-    })
-      .then((res) => res.json())
-      .then((json) => { if (json?.variant) setBuyVariant(json.variant); })
-      .catch(() => {});
-  }, [id]);
+    if (isMobilization && mobilizationData.progress >= 90) {
+      triggerMobilization90(id, mobilizationData.progress);
+    }
+  }, [id, isMobilization, mobilizationData.progress]);
 
-  useEffect(() => {
-    fetch('/api/ab/assign-cohort', { method: 'POST' })
-      .then((res) => res.json())
-      .then((json) => { if (json?.cohort) setCohort(json.cohort); })
-      .catch(() => {});
-  }, []);
+  // 가격 변동 트리거 placeholder (실제 가격 fetch 시 연동)
+  // import { triggerPriceChange } from '@/lib/notifications/triggers';
+  // triggerPriceChange(contentId, prevPrice, newPrice);
 
   return (
-    <main className="min-h-screen pb-32" style={{ backgroundColor: 'var(--upbit-bg)' }}>
+    <main className="min-h-screen pb-32 md:pb-6" style={{ backgroundColor: 'var(--upbit-bg)' }}>
       <MarketHeader />
-      <MobilePriceChart />
-      <JoinFunnelButton contentId={id} />
 
-      {buyVariant === 'B' && (
-        <section className="px-4 mt-2">
-          <div className="rounded-lg text-[12px] px-3 py-2" style={{ backgroundColor: 'var(--upbit-ask-bg)', color: 'var(--upbit-ask)' }}>
-            <Bell size={17} strokeWidth={2} className="inline mr-1.5 align-middle" />최근 합류와 매수 전환이 빠르게 증가하고 있습니다
+      <div className="md:flex md:gap-6 md:max-w-6xl md:mx-auto md:px-4">
+        {/* 좌측: 정보 영역 */}
+        <div className="flex-1 min-w-0">
+          {/* 상단: 썸네일/영상 + 작품명 + 크리에이터 + 카테고리 + 가격 */}
+          <section className="px-4 pt-4">
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden border" style={{ borderColor: 'var(--upbit-border)' }}>
+              <YouTubeEmbed
+                videoId={YT_VIDEO_ID}
+                className="!rounded-none h-full w-full"
+                title="작품 미리보기"
+                autoplay
+                mute
+                controls
+                loop={false}
+                start={YT_START_SEC}
+                fill
+              />
+            </div>
+            <h1 className="text-[20px] font-bold mt-4" style={{ color: 'var(--upbit-text)' }}>여행가 제이</h1>
+            <p className="text-[14px] mt-1" style={{ color: 'var(--upbit-text-dim)' }}>크리에이터 · 여행</p>
+            <div className="flex gap-2 mt-2">
+              <span className="text-[12px] px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--upbit-bid)', color: '#fff' }}>유튜브</span>
+              <span className="text-[12px] px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--upbit-panel)', color: 'var(--upbit-text-dim)' }}>수익권</span>
+            </div>
+            <div className="mt-4 flex items-baseline gap-3 flex-wrap">
+              <span className="text-[24px] font-bold tabular-nums" style={{ color: 'var(--upbit-text)' }}>{formatPrice(price)}</span>
+              <span className="text-[14px] font-semibold tabular-nums" style={{ color: change >= 0 ? 'var(--upbit-positive)' : 'var(--upbit-ask)' }}>
+                {change >= 0 ? '+' : ''}{change}%
+              </span>
+              <span className="text-[12px]" style={{ color: 'var(--upbit-text-dim)' }}>모집가</span>
+            </div>
+          </section>
+
+          {/* 중단 좌측: 모집 정보 (청약형) 또는 그래프+호가 (2차거래형) */}
+          <div className="px-4 mt-4 space-y-4">
+            {isMobilization ? (
+              <MobilizationInfo
+                progress={mobilizationData.progress}
+                participants={mobilizationData.participants}
+                remainingText={mobilizationData.remainingText}
+                targetAmount={mobilizationData.targetAmount}
+                currentAmount={mobilizationData.currentAmount}
+              />
+            ) : null}
+
+            <PriceChartSection mode="청약" isMobilization={isMobilization} />
+
+            {!isMobilization && <OrderBookPanel />}
+
+            <RevenueInfoSection />
           </div>
-        </section>
-      )}
 
-      {cohort === 'POWER' && buyVariant === 'B' && (
-        <section className="px-4 mt-2">
-          <div className="rounded-lg text-[12px] px-3 py-2" style={{ backgroundColor: 'var(--upbit-bid-bg)', color: 'var(--upbit-bid)' }}>
-            <Zap size={17} strokeWidth={2} className="inline mr-1.5 align-middle" />숙련 투자자에게는 지금이 진입 타이밍일 수 있습니다
+          {/* 채팅 하단 배치 - 채팅 답변 시 알림: handleSend 내부에서 notifyChatReply(원작성자_id, message_id, id) 호출 */}
+          <div className="px-4 mt-6 mb-4">
+            <MarketChatSection marketId={id} />
           </div>
-        </section>
+        </div>
+
+        {/* 데스크탑: 우측 고정 패널 */}
+        {isDesktop && (
+          <div className="hidden md:block w-[320px] shrink-0">
+            <div className="sticky top-20">
+              <TradingPanel
+                mode="청약"
+                price={price}
+                productId={id}
+                isLoggedIn={hasSession}
+                isMobilization={isMobilization}
+                sticky={false}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 모바일: 하단 고정 CTA */}
+      {!isDesktop && (
+        <div className="md:hidden">
+          <TradingPanel
+            mode="청약"
+            price={price}
+            productId={id}
+            isLoggedIn={hasSession}
+            isMobilization={isMobilization}
+            sticky
+          />
+        </div>
       )}
-
-      <SideToggle side={side} onChange={setSide} />
-      <OrderBookSummary onOpen={() => setOrderBookOpen(true)} />
-      <OrderBookPanel open={orderBookOpen} onClose={() => setOrderBookOpen(false)} />
-
-      <MobileOrderStickyBar
-        disabled={false}
-        side={side}
-        price={lastPrice}
-        change={3.2}
-        onOpen={handleOrderOpen}
-      />
-
-      <MobileOrderPanel
-        open={orderOpen}
-        side={side}
-        price={lastPrice}
-        productId={id}
-        onClose={() => setOrderOpen(false)}
-        requireLogin={requireLogin}
-      />
     </main>
   );
 }

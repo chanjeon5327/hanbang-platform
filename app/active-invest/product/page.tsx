@@ -14,6 +14,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useStore } from "@/context/StoreContext";
+import { useAuth } from "@/components/auth/AuthProvider";
 import MobileProductDetail from "@/components/mobile/MobileProductDetail";
 import Image from "next/image";
 import { getYtThumb } from "@/lib/thumbnails";
@@ -27,10 +28,10 @@ export default function ProductDetail() {
     holdings,
     buyStock,
     sellStock,
-    isLoggedIn,
-    openLoginModal,
     products,
   } = useStore();
+  const { user, openLoginModal } = useAuth();
+  const isLoggedIn = !!user;
 
   // ✅ 화면 크기에 따라 "하나만 렌더" (CSS 숨김 금지)
   const [isDesktop, setIsDesktop] = useState<boolean | null>(null);

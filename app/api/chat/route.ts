@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createClient as createServerClient } from "@/lib/supabase/server";
+import { requireActiveUser } from "@/lib/auth/requireActiveUser";
 
 // env
-const SUPABASE_URL = process.env.SUPABASE_URL || "";
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 function sb() {
@@ -35,6 +37,7 @@ export async function GET(req: NextRequest) {
       .from("chat_messages_v2")
       .select("id, room_key, sender, text, created_at")
       .eq("room_key", room_key)
+      .or("is_deleted.is.null,is_deleted.eq.false")
       .order("created_at", { ascending: true })
       .limit(200);
 
@@ -63,6 +66,24 @@ export async function GET(req: NextRequest) {
 ======================= */
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: "로그인이 필요합니다." },
+        { status: 401 }
+      );
+    }
+
+    try {
+      await requireActiveUser(user.id);
+    } catch (e: any) {
+      return NextResponse.json(
+        { error: e?.message ?? "USER_SUSPENDED" },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const { room_key, message, sender } = body;
 

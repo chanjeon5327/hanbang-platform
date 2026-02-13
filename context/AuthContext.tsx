@@ -1,7 +1,9 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
+import { isAdminEmail } from "@/lib/admin/env";
 
 export type AdminRole = 1 | 2 | 3 | 4 | 5;
 
@@ -16,20 +18,11 @@ interface AuthContextType {
   adminUser: AdminUser | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   hasPermission: (requiredRole: AdminRole) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const MASTER_ACCOUNT = {
-  email: "chanjeon5327@gmail.com",
-  password: "love54175327!!",
-  name: "마스터 관리자",
-  role: 5 as AdminRole,
-  roleName: "마스터",
-};
 
 const ROLE_NAMES: Record<AdminRole, string> = {
   1: "인턴",
@@ -39,43 +32,66 @@ const ROLE_NAMES: Record<AdminRole, string> = {
   5: "마스터",
 };
 
+function profileRoleToAdminRole(role: string | null): AdminRole {
+  if (role === "ADMIN") return 5;
+  return 5;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    const saved = localStorage.getItem("admin_auth");
-    if (saved) {
-      try {
-        setAdminUser(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to load admin auth:", e);
-      }
+  const loadAdminFromSession = useCallback(async () => {
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.email) {
+      setAdminUser(null);
+      return;
     }
-    setLoading(false);
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name, role, status")
+      .eq("id", session.user.id)
+      .single();
+
+    // 유저 정지 시 관리자 접근 차단
+    if (profile?.status === "SUSPENDED") {
+      await supabase.auth.signOut();
+      setAdminUser(null);
+      return;
+    }
+
+    const isAdmin = isAdminEmail(session.user.email) || profile?.role === "ADMIN";
+    if (!isAdmin) {
+      setAdminUser(null);
+      return;
+    }
+    const role = profileRoleToAdminRole(profile?.role ?? null);
+    setAdminUser({
+      email: session.user.email,
+      name: profile?.display_name ?? session.user.email?.split("@")[0] ?? "관리자",
+      role,
+      roleName: ROLE_NAMES[role],
+    });
   }, []);
 
-  const login = async (email: string, password: string) => {
-    if (email === MASTER_ACCOUNT.email && password === MASTER_ACCOUNT.password) {
-      const user: AdminUser = {
-        email: MASTER_ACCOUNT.email,
-        name: MASTER_ACCOUNT.name,
-        role: MASTER_ACCOUNT.role,
-        roleName: ROLE_NAMES[MASTER_ACCOUNT.role],
-      };
-      setAdminUser(user);
-      localStorage.setItem("admin_auth", JSON.stringify(user));
-      return true;
-    }
-    return false;
-  };
+  useEffect(() => {
+    loadAdminFromSession().finally(() => setLoading(false));
 
-  const logout = () => {
+    const supabase = createClient();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      loadAdminFromSession();
+    });
+    return () => subscription.unsubscribe();
+  }, [loadAdminFromSession]);
+
+  const logout = useCallback(async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
     setAdminUser(null);
-    localStorage.removeItem("admin_auth");
-    router.push("/");
-  };
+    router.push("/admin/login");
+  }, [router]);
 
   const hasPermission = (requiredRole: AdminRole) => {
     return !!adminUser && adminUser.role >= requiredRole;
@@ -87,7 +103,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         adminUser,
         isAuthenticated: !!adminUser,
         loading,
-        login,
         logout,
         hasPermission,
       }}

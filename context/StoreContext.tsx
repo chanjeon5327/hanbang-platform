@@ -7,7 +7,6 @@ import React, {
   useState,
   ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
 import { getYtThumb } from "@/lib/thumbnails";
 
 /* =====================
@@ -48,9 +47,6 @@ interface StoreContextType {
   holdings: Holding[];
   history: Transaction[];
   products: Product[];
-  isLoggedIn: boolean;
-  openLoginModal: () => void;
-  closeLoginModal: () => void;
 
   buyStock: (
     item: { name: string; price: number },
@@ -114,7 +110,6 @@ export const products: Product[] = [
 ===================== */
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const router = useRouter();
   const [userCash, setUserCash] = useState(defaultState.userCash);
   const [holdings, setHoldings] = useState<Holding[]>(defaultState.holdings);
   const [history, setHistory] = useState<Transaction[]>(defaultState.history);
@@ -288,9 +283,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         holdings,
         history,
         products,
-        isLoggedIn: false,
-        openLoginModal: () => router.push("/login"),
-        closeLoginModal: () => {},
         buyStock,
         sellStock,
         getTotalAssets,

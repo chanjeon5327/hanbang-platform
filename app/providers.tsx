@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { AuthProvider } from '@/components/auth/AuthProvider';
 import { StoreProvider } from '@/context/StoreContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { TokenProvider } from '@/context/TokenContext';
@@ -11,9 +12,11 @@ export default function Providers({ children }: { children: ReactNode }) {
     <WagmiProviders>
       <ThemeProvider>
         <TokenProvider>
-          <StoreProvider>
-            {children}
-          </StoreProvider>
+          <AuthProvider>
+            <StoreProvider>
+              {children}
+            </StoreProvider>
+          </AuthProvider>
         </TokenProvider>
       </ThemeProvider>
     </WagmiProviders>

@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 
-import { useStore } from "../context/StoreContext";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { AuthStatus } from "./auth/AuthStatus";
-import { createClient } from "@/lib/supabase/client";
 
 export default function TopHeader() {
   const [visible, setVisible] = useState(true);
@@ -16,99 +15,13 @@ export default function TopHeader() {
   const [showPhotoCard, setShowPhotoCard] = useState(false);
 
   const router = useRouter();
-  const supabase = createClient();
+  const { user, loading, signOut, openLoginModal } = useAuth();
+  const { address } = useAccount();
 
-  const { isLoggedIn, openLoginModal, closeLoginModal } = useStore();
-  const { address, isConnected } = useAccount();
-
-  // ✅ Supabase 세션 기준 로그인 상태(오른쪽 UI 판단 기준)
-  const [sbAuthed, setSbAuthed] = useState(false);
+  const isAuthenticated = !!user;
+  const userLabel = user?.email ?? (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "사용자");
 
   useEffect(() => {
-    let mounted = true;
-
-    const init = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!mounted) return;
-      setSbAuthed(!!data.session);
-    };
-
-    init();
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSbAuthed(!!session);
-    });
-
-    return () => {
-      mounted = false;
-      sub.subscription.unsubscribe();
-    };
-  }, [supabase]);
-
-  // ✅ 오른쪽 "로그인 상태"는 Supabase 세션으로만 판단
-  const isAuthenticated = sbAuthed;
-
-  // (선택) 프로필 표시용: 지갑주소가 있으면 지갑주소, 없으면 로컬 hb_user 이메일(있으면) 표시
-  const [hbUserLabel, setHbUserLabel] = useState<string>("");
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const updateHbLabel = () => {
-      try {
-        const raw = localStorage.getItem("hb_user");
-        if (!raw) return setHbUserLabel("");
-        // hb_user 구조를 모르니: 이메일 문자열이든 JSON이든 최대한 안전하게 처리
-        if (raw.includes("@")) {
-          setHbUserLabel(raw);
-          return;
-        }
-        const parsed = JSON.parse(raw);
-        const email = parsed?.email || parsed?.user?.email || "";
-        setHbUserLabel(email || "");
-      } catch {
-        setHbUserLabel("");
-      }
-    };
-
-    updateHbLabel();
-    window.addEventListener("loginStateChange", updateHbLabel);
-    window.addEventListener("storage", updateHbLabel);
-
-    return () => {
-      window.removeEventListener("loginStateChange", updateHbLabel);
-      window.removeEventListener("storage", updateHbLabel);
-    };
-  }, []);
-
-  useEffect(() => {
-    const checkUser = () => {
-      if (typeof window === "undefined") return;
-
-      const user = localStorage.getItem("hb_user");
-      const wasLoggedIn = isLoggedIn;
-
-      // 로그인 상태가 변경되고, 로그인했을 때만 포토카드 팝업 표시
-      if (!wasLoggedIn && !!user && !localStorage.getItem("photoCardShown")) {
-        setTimeout(() => {
-          setShowPhotoCard(true);
-          localStorage.setItem("photoCardShown", "true");
-        }, 1000);
-      }
-    };
-
-    checkUser();
-
-    const handleStorageChange = () => {
-      checkUser();
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("loginStateChange", handleStorageChange);
-
-    // 주기적으로 확인
-    const interval = setInterval(checkUser, 1000);
-
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       setVisible(lastScrollY > currentScrollY || currentScrollY < 50);
@@ -117,52 +30,22 @@ export default function TopHeader() {
     };
 
     window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
-    // 메인 페이지 진입 시 포토카드 팝업 (한 번만)
-    if (
-      typeof window !== "undefined" &&
-      window.location.pathname === "/" &&
-      !localStorage.getItem("photoCardShown")
-    ) {
-      setTimeout(() => {
-        setShowPhotoCard(true);
-        localStorage.setItem("photoCardShown", "true");
-      }, 2000);
-    }
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.pathname !== "/") return;
+    const shown = sessionStorage.getItem("photoCardShown");
+    if (shown) return;
 
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("loginStateChange", handleStorageChange);
-      clearInterval(interval);
-    };
-  }, [lastScrollY, isLoggedIn]);
+    const timer = setTimeout(() => {
+      setShowPhotoCard(true);
+      sessionStorage.setItem("photoCardShown", "true");
+    }, 2000);
 
-  // ✅ Supabase 로그아웃(오른쪽 버튼)
-  const handleSupabaseLogout = async () => {
-    try {
-      // 1) Supabase 세션 로그아웃
-      await supabase.auth.signOut();
-
-      // 2) 프로젝트에서 쓰는 로컬 상태도 정리(있으면)
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("hb_user");
-        localStorage.removeItem("photoCardShown");
-        window.dispatchEvent(new Event("loginStateChange"));
-      }
-
-      // 3) 모달이 열려있을 수도 있으니 닫기(스토어에 함수가 있으면)
-      try {
-        closeLoginModal?.();
-      } catch {}
-
-      // 4) 확실히 UI 갱신되도록 강제 이동(새로고침)
-      window.location.assign("/");
-    } catch (e) {
-      console.error("TopHeader logout error:", e);
-      alert("로그아웃 중 오류가 발생했습니다. 콘솔을 확인해주세요.");
-    }
-  };
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <header
@@ -232,7 +115,6 @@ export default function TopHeader() {
             </span>
           </Link>
 
-          {/* 상태 배지 */}
           <div
             style={{
               padding: "6px 12px",
@@ -260,12 +142,12 @@ export default function TopHeader() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0, zIndex: 50 }}>
-          {/* ✅ 좌측 초록 상태(기존 컴포넌트 유지) */}
           <AuthStatus />
 
-          {isAuthenticated ? (
+          {loading ? (
+            <span style={{ padding: "8px 16px", fontSize: "13px", color: "var(--text-muted)" }}>확인 중...</span>
+          ) : isAuthenticated ? (
             <>
-              {/* 지갑 연결은 로그인과 별개: 표시만 유지 */}
               <button
                 disabled
                 style={{
@@ -297,18 +179,12 @@ export default function TopHeader() {
                   <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" />
                 </div>
                 <span style={{ fontWeight: "bold", color: "var(--text-primary)", fontSize: "14px" }}>
-                  {address
-                    ? `${address.slice(0, 6)}...${address.slice(-4)}`
-                    : hbUserLabel
-                    ? hbUserLabel
-                    : "사용자"}
-                  님
+                  {userLabel} 님
                 </span>
               </div>
 
-              {/* ✅ 핵심: Supabase 로그아웃 */}
               <button
-                onClick={handleSupabaseLogout}
+                onClick={signOut}
                 style={{
                   padding: "8px 16px",
                   borderRadius: "20px",
@@ -382,7 +258,6 @@ export default function TopHeader() {
         </div>
       </div>
 
-      {/* 데일리 포토카드 팝업 */}
       {showPhotoCard && (
         <div
           style={{
