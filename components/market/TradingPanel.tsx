@@ -120,6 +120,7 @@ export default function TradingPanel({ mode: initialMode, price, productId, isLo
         <button
           onClick={handleCta}
           disabled={loading}
+          data-testid="trade-cta"
           className="w-full py-3.5 rounded-lg text-white text-[16px] font-semibold transition disabled:opacity-60 flex items-center justify-center gap-2"
           style={{ backgroundColor: 'var(--upbit-bid)' }}
         >

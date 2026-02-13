@@ -72,21 +72,33 @@ export default function Wallet() {
   const [toastMessage, setToastMessage] = useState('');
   const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
   const [ledgerLoading, setLedgerLoading] = useState(true);
+  const [balance, setBalance] = useState(0);
 
   useEffect(() => {
     fetch('/api/wallet/ledger')
       .then((res) => (res.ok ? res.json() : { entries: [] }))
       .then((data) => {
-        setLedgerEntries(data.entries ?? []);
+        const entries = data.entries ?? [];
+        setLedgerEntries(entries);
+
+        let total = 0;
+        entries.forEach((r: LedgerEntry) => {
+          if (r.entry_type === 'CASH_DEBIT') total -= Math.abs(Number(r.amount));
+          if (r.entry_type === 'CASH_CREDIT') total += Number(r.amount);
+        });
+        setBalance(total);
       })
-      .catch(() => setLedgerEntries([]))
+      .catch(() => {
+        setLedgerEntries([]);
+        setBalance(0);
+      })
       .finally(() => setLedgerLoading(false));
   }, []);
 
   const totalAssets = useMemo(() => {
     const holdingsValue = holdings.reduce((sum, h) => sum + h.currentValue, 0);
-    return userCash + holdingsValue;
-  }, [userCash, holdings]);
+    return balance + holdingsValue;
+  }, [balance, holdings]);
 
   const totalReturn = useMemo(() => {
     const holdingsValue = holdings.reduce((sum, h) => sum + h.currentValue, 0);
@@ -165,7 +177,7 @@ export default function Wallet() {
           <div className="mt-4 pt-4 flex gap-6 text-[13px]" style={{ borderTop: `1px solid ${'var(--toss-border)'}` }}>
             <div>
               <span style={{ color: 'var(--toss-text-secondary)' }}>예수금 </span>
-              <span className="font-semibold" style={{ color: 'var(--toss-text)' }}>{userCash.toLocaleString()}원</span>
+              <span className="font-semibold" style={{ color: 'var(--toss-text)' }}>{balance.toLocaleString()}원</span>
             </div>
             <div>
               <span style={{ color: 'var(--toss-text-secondary)' }}>보유평가 </span>

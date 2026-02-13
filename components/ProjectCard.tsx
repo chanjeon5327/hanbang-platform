@@ -37,16 +37,6 @@ export function ProjectCard({ project }: ProjectCardProps) {
     ? Math.min(((project.current_amount || 0) / project.target_amount) * 100, 100)
     : 0
 
-  const categoryLabels: Record<string, string> = {
-    kpop: "K-POP",
-    drama: "드라마",
-    movie: "영화",
-    youtube: "유튜브",
-    webtoon: "웹툰",
-    webnovel: "웹소설",
-    other: "기타",
-  }
-
   return (
     <>
       <Card className="group h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer rounded-3xl border-none shadow-md">
@@ -59,9 +49,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
               className="object-cover transition-transform group-hover:scale-110"
             />
             <div className="absolute top-3 right-3">
-              <Badge variant="secondary">
-                {categoryLabels[project.category] || project.category}
-              </Badge>
+              <Badge variant="secondary">기타</Badge>
             </div>
           </div>
 

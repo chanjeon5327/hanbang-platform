@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { requireActiveUser } from '@/lib/auth/requireActiveUser';
+import type { Tables } from '@/lib/supabase/types';
+
+type OrderRow = Tables<'orders'>;
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -49,11 +52,13 @@ export async function POST(req: Request) {
     );
   }
 
-  const { data: order, error: orderError } = await supabase
+  const { data: orderData, error: orderError } = await supabase
     .from('orders')
-    .select('id, buyer_id, total_amount_krw, status')
+    .select('id, user_id, price, quantity, status')
     .eq('id', orderId)
     .single();
+
+  const order = orderData as OrderRow | null;
 
   if (orderError || !order) {
     return NextResponse.json(
@@ -62,7 +67,7 @@ export async function POST(req: Request) {
     );
   }
 
-  if (order.buyer_id !== user.id) {
+  if (order.user_id !== user.id) {
     return NextResponse.json(
       { ok: false, error: '본인 주문만 결제할 수 있습니다.' },
       { status: 403 }
@@ -76,8 +81,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const amount = Number(order.total_amount_krw ?? 0);
-  if (!Number.isFinite(amount) || amount <= 0) {
+  const totalAmount = order.price * order.quantity;
+  if (!Number.isFinite(totalAmount) || totalAmount <= 0) {
     return NextResponse.json(
       { ok: false, error: 'Invalid order amount' },
       { status: 400 }
@@ -93,19 +98,19 @@ export async function POST(req: Request) {
 
   if (isTestMode) {
     // 테스트 모드: 내부 결제 시뮬레이션 페이지로 이동
-    redirectUrl = `${baseUrl}/order/pay?order_id=${orderId}&amount=${amount}`;
+    redirectUrl = `${baseUrl}/order/pay?order_id=${orderId}&amount=${totalAmount}`;
   } else {
     // KCP 실제 연동: 결제창 URL 생성
     const siteCd = process.env.KCP_SITE_CD ?? 'T0000';
     const returnUrl = `${baseUrl}/order/return`;
     const kcpGateway = process.env.KCP_GATEWAY_URL ?? 'https://testspay.kcp.co.kr';
-    redirectUrl = `${kcpGateway}/gateway?site_cd=${siteCd}&ordr_idxx=${orderId}&ordr_mony=${amount}&return_url=${encodeURIComponent(returnUrl)}`;
+    redirectUrl = `${kcpGateway}/gateway?site_cd=${siteCd}&ordr_idxx=${orderId}&ordr_mony=${totalAmount}&return_url=${encodeURIComponent(returnUrl)}`;
   }
 
   return NextResponse.json({
     ok: true,
     redirect_url: redirectUrl,
     order_id: orderId,
-    amount,
+    amount: totalAmount,
   });
 }

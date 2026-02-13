@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import type { Database } from "@/lib/supabase/types"
 import Header from "@/components/Header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -29,21 +28,11 @@ export default async function ProjectDetailPage({
     notFound()
   }
 
-  const p = project as Database["public"]["Tables"]["projects"]["Row"]
+  const p = project
   const progressPercentage =
     p.target_amount > 0
-      ? Math.min((p.current_amount / p.target_amount) * 100, 100)
+      ? Math.min(((p.current_amount ?? 0) / p.target_amount) * 100, 100)
       : 0
-
-  const categoryLabels: Record<string, string> = {
-    kpop: "K-POP",
-    drama: "드라마",
-    movie: "영화",
-    youtube: "유튜브",
-    webtoon: "웹툰",
-    webnovel: "웹소설",
-    other: "기타",
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,26 +49,15 @@ export default async function ProjectDetailPage({
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Video/Thumbnail */}
-            {p.video_url ? (
-              <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-                <iframe
-                  src={p.video_url}
-                  className="h-full w-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            ) : (
-              <div className="relative aspect-video w-full overflow-hidden rounded-lg">
-                <Image
-                  src={p.thumbnail_url || getYtThumb(p.id?.length ?? 0)}
-                  alt={p.title}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            )}
+            {/* Thumbnail */}
+            <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+              <Image
+                src={p.thumbnail_url || getYtThumb(p.id?.length ?? 0)}
+                alt={p.title}
+                fill
+                className="object-cover"
+              />
+            </div>
 
             {/* Project Info */}
             <Card>
@@ -87,9 +65,6 @@ export default async function ProjectDetailPage({
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="secondary">
-                        {categoryLabels[p.category] || p.category}
-                      </Badge>
                       <Badge
                         variant={
                           p.status === "recruiting"
@@ -132,7 +107,7 @@ export default async function ProjectDetailPage({
                       최소 투자금액
                     </p>
                     <p className="text-2xl font-bold">
-                      {p.min_investment.toLocaleString()}원
+                      {(p.min_investment ?? 0).toLocaleString()}원
                     </p>
                   </div>
                 </div>
@@ -154,7 +129,7 @@ export default async function ProjectDetailPage({
                   </div>
                   <div className="mt-2 flex items-center justify-between text-sm text-muted-foreground">
                     <span>
-                      {p.current_amount.toLocaleString()}원 모집됨
+                      {(p.current_amount ?? 0).toLocaleString()}원 모집됨
                     </span>
                     <span>
                       목표: {p.target_amount.toLocaleString()}원
@@ -186,7 +161,7 @@ export default async function ProjectDetailPage({
                       최소 투자금액
                     </span>
                     <span className="font-semibold">
-                      {p.min_investment.toLocaleString()}원
+                      {(p.min_investment ?? 0).toLocaleString()}원
                     </span>
                   </div>
                 </div>

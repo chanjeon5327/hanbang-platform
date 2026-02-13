@@ -51,20 +51,20 @@ export async function POST(req: Request) {
     );
   }
 
-  // 멱등: pg_transaction_id 이미 처리된 경우
-  const { data: existingPayment } = await supabaseAdmin
+  // 멱등: pg_transaction_id 이미 처리된 경우 (payments 테이블이 있을 때만)
+  const { data: existingPayment, error: payCheckErr } = await supabaseAdmin
     .from('payments')
     .select('id')
     .eq('pg_transaction_id', pgTransactionId)
     .single();
 
-  if (existingPayment) {
+  if (!payCheckErr && existingPayment) {
     return NextResponse.json({ ok: true, idempotent: true });
   }
 
   const { data: order } = await supabaseAdmin
     .from('orders')
-    .select('id, total_amount_krw, status')
+    .select('id, price, quantity, status')
     .eq('id', orderId)
     .single();
 
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const amount = Number(order.total_amount_krw ?? 0);
+  const amount = Number((order.price ?? 0) * (order.quantity ?? 0));
   if (!Number.isFinite(amount) || amount <= 0) {
     return NextResponse.json(
       { ok: false, error: 'Invalid order amount' },
@@ -116,14 +116,19 @@ export async function POST(req: Request) {
     );
   }
 
-  // payments 테이블에 기록 (멱등용, unique violation 시 무시)
+  // payments 테이블에 기록 (멱등용, 테이블 없으면/unique violation 시 무시)
   const { error: payErr } = await supabaseAdmin.from('payments').insert({
     order_id: orderId,
     pg_transaction_id: pgTransactionId,
     status: 'APPROVED',
     amount,
   });
-  if (payErr && !payErr.message.includes('duplicate') && !payErr.message.includes('unique')) {
+  const ignorePayErr =
+    !payErr ||
+    payErr.message.includes('duplicate') ||
+    payErr.message.includes('unique') ||
+    payErr.message.includes('does not exist');
+  if (!ignorePayErr) {
     console.error('payments insert error:', payErr);
   }
 

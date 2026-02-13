@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/utils/supabase/server';
 import { requireActiveUser } from '@/lib/auth/requireActiveUser';
 
 export async function POST(req: Request) {
@@ -48,9 +48,8 @@ export async function POST(req: Request) {
     );
   }
 
-  // @ts-expect-error - rpc_place_order는 migration으로 추가됨, types에 미반영 시
   const { data, error } = await supabase.rpc('rpc_place_order', {
-    p_product_id: productUuid,
+    p_market_id: productUuid,
     p_side: side ?? 'BUY',
     p_price: pPrice,
     p_quantity: pQty,

@@ -85,6 +85,7 @@ function PayContent() {
         <button
           onClick={handleTestPay}
           disabled={loading}
+          data-testid="pay-confirm-btn"
           className="w-full py-3.5 rounded-lg text-white text-[16px] font-semibold disabled:opacity-60"
           style={{ backgroundColor: 'var(--upbit-bid)' }}
         >
