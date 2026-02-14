@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 
   if (user) {
     const { data: profile } = await supabase.from('profiles').select('status, role, display_name').eq('id', user.id).single();
-    if (profile?.status === 'SUSPENDED') {
+    if ((profile as any)?.status === 'SUSPENDED') {
       await supabase.auth.signOut({ scope: 'local' });
       user = null;
     } else if (req.nextUrl.searchParams.get('admin') === '1') {
