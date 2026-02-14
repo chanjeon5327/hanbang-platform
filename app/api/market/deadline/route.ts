@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
       .select("deadline")
       .limit(1);
 
-    const hasDeadline = schema && typeof (schema as unknown[])[0]?.deadline !== "undefined";
+    const hasDeadline = schema && typeof (schema as Record<string, unknown>[])[0]?.deadline !== "undefined";
 
     if (!hasDeadline) {
       const { data: fallback } = await supabase

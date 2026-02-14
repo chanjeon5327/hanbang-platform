@@ -52,8 +52,8 @@ function formatTime(iso: string): string {
 }
 
 function showToast(msg: string) {
-  if (typeof window !== 'undefined' && (window as { toast?: (m: string) => void }).toast) {
-    (window as { toast: (m: string) => void }).toast(msg);
+  if (typeof window !== "undefined" && (window as unknown as { toast?: (m: string) => void }).toast) {
+    (window as unknown as { toast: (m: string) => void }).toast(msg);
   } else {
     alert(msg);
   }
@@ -91,7 +91,7 @@ export default function ProductChat({ productId }: Props) {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'product_chat_messages', filter: `product_id=eq.${productId}` }, () => {
         fetchMessages();
       })
-      .subscribe((status) => {
+      .subscribe((status: string) => {
         if (status === 'SUBSCRIBED') {
           setRealtimeStatus('realtime');
           if (pollRef.current) {

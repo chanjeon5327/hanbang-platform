@@ -3,8 +3,8 @@
  */
 const YT_THUMB_RE = /i\.ytimg\.com\/vi\/([a-zA-Z0-9_-]+)\//;
 
-export function extractYoutubeId(thumbnailUrl: string | null | undefined): string | null {
-  if (!thumbnailUrl || typeof thumbnailUrl !== 'string') return null;
+export function extractYoutubeId(thumbnailUrl: string | null | undefined | unknown): string | null {
+  if (thumbnailUrl == null || typeof thumbnailUrl !== "string") return null;
   const m = thumbnailUrl.match(YT_THUMB_RE);
   return m ? m[1] : null;
 }

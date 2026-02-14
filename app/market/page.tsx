@@ -6,7 +6,7 @@ import { ArrowLeft, Search } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import MarketGridCard from '@/components/market/MarketGridCard';
 import { useMarketTab, type RailItem } from '@/hooks/useMarketTab';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, Suspense } from 'react';
 
 const TABS = [
   { key: 'all', label: '전체' },
@@ -23,7 +23,7 @@ const SORT_OPTIONS = [
   { value: 'participants', label: '참여수' },
 ] as const;
 
-export default function MarketPage() {
+function MarketPageContent() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const tab = searchParams.get('tab') ?? 'popular';
@@ -187,6 +187,18 @@ export default function MarketPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function MarketPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--toss-bg)' }}>
+        <div className="animate-pulse text-[var(--toss-text-secondary)]">로딩 중...</div>
+      </div>
+    }>
+      <MarketPageContent />
+    </Suspense>
   );
 }
 

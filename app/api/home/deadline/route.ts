@@ -28,11 +28,12 @@ export async function GET() {
 
       const items = (fallback ?? []).map((r: Record<string, unknown>, idx: number) => {
         const thumb = r.thumbnail_url ?? getYtThumb(idx);
+        const thumbStr = typeof thumb === "string" ? thumb : null;
         return {
           id: r.id,
           title: r.title,
           thumbnail_url: thumb,
-          youtube_id: extractYoutubeId(thumb),
+          youtube_id: extractYoutubeId(thumbStr),
           creator_name: r.creator_name,
           category: r.category,
           platform: r.platform,
@@ -72,11 +73,12 @@ export async function GET() {
 
     const items = result.slice(0, 24).map((r: Record<string, unknown>, idx: number) => {
       const thumb = r.thumbnail_url ?? getYtThumb(idx);
+      const thumbStr = typeof thumb === "string" ? thumb : null;
       return {
         id: r.id,
         title: r.title,
         thumbnail_url: thumb,
-        youtube_id: extractYoutubeId(thumb),
+        youtube_id: extractYoutubeId(thumbStr),
         creator_name: r.creator_name,
         category: r.category,
         platform: r.platform,

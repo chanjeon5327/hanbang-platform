@@ -23,11 +23,10 @@ export async function GET(
 ) {
   try {
     const { productId } = await params;
-    const contentId = productId;
-    if (!contentId) {
+    if (!productId) {
       return NextResponse.json({ error: "productId required" }, { status: 400 });
     }
-    if (!isValidUUID(contentId)) {
+    if (!isValidUUID(productId)) {
       return NextResponse.json({ error: "productId must be a valid UUID" }, { status: 400 });
     }
 
@@ -41,7 +40,7 @@ export async function GET(
     const { data: pinnedRows } = await supabase
       .from("product_chat_messages")
       .select("id, product_id, user_id, message, created_at, is_pinned")
-      .eq("product_id", contentId)
+      .eq("product_id", productId)
       .eq("is_deleted", false)
       .eq("is_pinned", true)
       .order("created_at", { ascending: false })
@@ -51,7 +50,7 @@ export async function GET(
     let query = supabase
       .from("product_chat_messages")
       .select("id, product_id, user_id, message, created_at, is_pinned")
-      .eq("product_id", contentId)
+      .eq("product_id", productId)
       .eq("is_deleted", false)
       .eq("is_pinned", false)
       .order("created_at", { ascending: false })

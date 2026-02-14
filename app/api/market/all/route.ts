@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
         .in("content_id", ids)
         .in("status", ["INVEST_CONFIRMED", "SETTLED", "COMPLETED"]);
       const byContent = new Map<string, Set<string>>();
-      (orderRows ?? []).forEach((r: { content_id?: string; user_id?: string; status?: string }) => {
+      (orderRows ?? []).forEach((r: { content_id?: string; product_id?: string; user_id?: string; status?: string }) => {
         const cid = r.content_id ?? r.product_id;
         if (cid && r.user_id) {
           if (!byContent.has(cid)) byContent.set(cid, new Set());

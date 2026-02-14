@@ -33,7 +33,7 @@ export const useUserTaste = create<TasteState>((set, get) => ({
 
     if (data) {
       set({
-        tastes: data.map((d) => ({ id: d.item_id, score: d.score })),
+        tastes: data.map((d: { item_id: string; score: number }) => ({ id: d.item_id, score: d.score })),
       });
     }
   },

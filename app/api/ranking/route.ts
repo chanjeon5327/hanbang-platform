@@ -26,10 +26,10 @@ export async function GET() {
           .eq("status", "active");
         const cntMap = new Map((mv as { content_id: string; cnt: number }[]).map((r) => [r.content_id, r.cnt]));
         interestTop = (items ?? []).map((r: Record<string, unknown>) => ({
-          id: r.id,
-          title: r.title,
-          creator_name: r.creator_name,
-          thumbnail_url: r.thumbnail_url,
+          id: String(r.id ?? ""),
+          title: String(r.title ?? ""),
+          creator_name: r.creator_name as string | undefined,
+          thumbnail_url: r.thumbnail_url as string | undefined,
           cnt: cntMap.get(String(r.id)) ?? 0,
         }));
       }
@@ -58,11 +58,11 @@ export async function GET() {
         .sort((a: { progress: number }, b: { progress: number }) => b.progress - a.progress)
         .slice(0, 10);
       progressTop = withProgress.map((r: Record<string, unknown>) => ({
-        id: r.id,
-        title: r.title,
-        creator_name: r.creator_name,
-        thumbnail_url: r.thumbnail_url,
-        progress: r.progress as number,
+        id: String(r.id ?? ""),
+        title: String(r.title ?? ""),
+        creator_name: r.creator_name as string | undefined,
+        thumbnail_url: r.thumbnail_url as string | undefined,
+        progress: (r.progress as number) ?? 0,
       }));
     } catch {
       // fallback
@@ -78,10 +78,10 @@ export async function GET() {
         .order("created_at", { ascending: false })
         .limit(20);
       surgeTop = (recent ?? []).slice(0, 10).map((r: Record<string, unknown>) => ({
-        id: r.id,
-        title: r.title,
-        creator_name: r.creator_name,
-        thumbnail_url: r.thumbnail_url,
+        id: String(r.id ?? ""),
+        title: String(r.title ?? ""),
+        creator_name: r.creator_name as string | undefined,
+        thumbnail_url: r.thumbnail_url as string | undefined,
       }));
     } catch {
       // fallback
