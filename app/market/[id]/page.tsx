@@ -112,6 +112,14 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const isPopular = (item?.popular_cnt ?? 0) >= 20;
   const deadlineSoon = isDeadlineSoon(item?.deadline ?? null);
   const yieldRate = item?.yield_rate ?? 8.4;
+  const dday = useMemo(() => {
+    const ed = item?.event_date;
+    if (!ed) return null;
+    const d = new Date(ed);
+    const now = new Date();
+    const diff = Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return diff >= 0 ? diff : null;
+  }, [item?.event_date]);
 
   const handleInvestConfirm = async () => {
     if (!hasSession) return;
@@ -225,9 +233,18 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           isDeadlineSoon={deadlineSoon}
         />
 
+        {/* FOMO: last_1h_count >= 3 */}
+        {(item?.last_1h_count ?? 0) >= 3 && (
+          <div className="rounded-xl border p-3" style={{ backgroundColor: 'rgba(239,68,68,0.08)', borderColor: 'rgba(239,68,68,0.3)' }}>
+            <p className="text-[13px] font-medium" style={{ color: '#dc2626' }}>
+              지금 이 순간 빠르게 참여가 이어지고 있습니다
+            </p>
+          </div>
+        )}
+
         {/* 최근 투자 가속 */}
         {((item?.last_1h_count ?? 0) > 0 || (item?.last_24h_amount ?? 0) > 0) && (
-          <div className="rounded-xl border p-3 flex gap-4" style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}>
+          <div className="rounded-xl border p-3 flex flex-wrap gap-4" style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}>
             {(item?.last_1h_count ?? 0) > 0 && (
               <span className="text-[13px]" style={{ color: 'var(--upbit-text)' }}>
                 최근 1시간 <strong>{(item?.last_1h_count ?? 0)}명</strong> 참여
@@ -261,10 +278,16 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
         <button
           type="button"
           onClick={() => (hasSession ? setShowConfirm(true) : (window.location.href = '/login'))}
-          className="w-full py-4 rounded-xl text-[16px] font-bold"
-          style={{ backgroundColor: 'var(--upbit-bid)', color: '#fff' }}
+          className={`w-full py-4 rounded-xl text-[16px] font-bold ${dday != null && dday <= 3 ? 'animate-pulse' : ''}`}
+          style={{
+            backgroundColor: 'var(--upbit-bid)',
+            color: '#fff',
+            border: dday != null && dday <= 3 ? '2px solid #dc2626' : undefined,
+          }}
         >
-          {formatPrice(investAmount)} 투자하기
+          {dday != null && dday <= 3
+            ? `D-${dday} 공연 전 파트너십 참여하기`
+            : `${formatPrice(investAmount)} 투자하기`}
         </button>
       </div>
 

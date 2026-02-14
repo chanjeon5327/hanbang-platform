@@ -49,18 +49,36 @@ export default function MarketGridCard({ item, index, showDeadlineBadge = false,
   const thumbSrc = item.thumbnail_url ?? getYtThumb(index);
   const dday = getDday(item.event_date);
 
+  const isUrgent = dday != null && dday <= 3;
+
   return (
     <Link
       href={`/market/${item.id}`}
-      className="block rounded-2xl overflow-hidden border active:scale-[0.98] transition focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-2"
-      style={{ backgroundColor: TOSS.card, borderColor: TOSS.border, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+      className={`block rounded-2xl overflow-hidden border active:scale-[0.98] transition focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+        isUrgent ? 'focus:ring-red-500 border-2 animate-pulse' : 'focus:ring-[var(--toss-blue)]'
+      }`}
+      style={{
+        backgroundColor: TOSS.card,
+        borderColor: isUrgent ? '#dc2626' : TOSS.border,
+        boxShadow: isUrgent ? '0 0 12px rgba(220,38,38,0.3)' : '0 2px 8px rgba(0,0,0,0.06)',
+      }}
       aria-label={`${item.title} 수익권 보기`}
     >
+      {isUrgent && (
+        <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #dc2626, #ef4444)' }} />
+      )}
       <div className="relative aspect-[4/5] bg-[#e5e8eb]">
         <img src={thumbSrc} alt="" className="w-full h-full object-cover" loading="lazy" />
         <div className="absolute top-2 right-2 flex items-center gap-1.5">
           {dday != null && (
-            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white bg-red-500">
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
+              style={
+                isUrgent
+                  ? { background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }
+                  : { backgroundColor: '#ef4444' }
+              }
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
               D-{dday} 공연 임박
             </span>
