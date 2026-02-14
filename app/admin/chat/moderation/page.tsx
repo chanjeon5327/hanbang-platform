@@ -17,9 +17,9 @@ type ReportedMessage = {
 };
 
 const MOCK_REPORTED: ReportedMessage[] = [
-  { id: '1', marketId: 'sample-1', marketTitle: '여행가 제이', userId: 'u1', userName: '투자자A', message: '부적절한 메시지 예시', reportedCount: 5, createdAt: '2024-01-15 14:30' },
-  { id: '2', marketId: 'sample-2', marketTitle: '먹방 로드', userId: 'u2', userName: '크리에이터', message: '광고성 메시지', reportedCount: 3, createdAt: '2024-01-15 13:20' },
-  { id: '3', marketId: 'sample-1', marketTitle: '여행가 제이', userId: 'u3', userName: '투자자B', message: '욕설 포함 메시지', reportedCount: 8, createdAt: '2024-01-15 12:00' },
+  { id: '1', marketId: 'a1b2c3d4-e5f6-4789-a012-345678901234', marketTitle: '여행가 제이', userId: 'u1', userName: '투자자A', message: '부적절한 메시지 예시', reportedCount: 5, createdAt: '2024-01-15 14:30' },
+  { id: '2', marketId: 'b2c3d4e5-f6a7-4890-b123-456789012345', marketTitle: '먹방 로드', userId: 'u2', userName: '크리에이터', message: '광고성 메시지', reportedCount: 3, createdAt: '2024-01-15 13:20' },
+  { id: '3', marketId: 'a1b2c3d4-e5f6-4789-a012-345678901234', marketTitle: '여행가 제이', userId: 'u3', userName: '투자자B', message: '욕설 포함 메시지', reportedCount: 8, createdAt: '2024-01-15 12:00' },
 ];
 
 export default function AdminChatModerationPage() {

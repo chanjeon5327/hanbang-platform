@@ -1,16 +1,16 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
-import type { User, Session } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
 import LoginModal from './LoginModal';
+import { clearAuthStorage } from '@/lib/auth/clearStorage';
 
 type AuthContextType = {
   user: User | null;
-  session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  refreshSession: () => Promise<void>;
   openLoginModal: () => void;
   closeLoginModal: () => void;
 };
@@ -20,86 +20,44 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const mountedRef = useRef(true);
 
-  const applySession = useCallback((s: Session | null, u: User | null) => {
-    setSession(s);
-    setUser(u);
-    setLoading(false);
+  const fetchSession = useCallback(async () => {
+    try {
+      const res = await fetch('/api/auth/session', { cache: 'no-store' });
+      const json = await res.json();
+      const u = json.user ?? null;
+
+      if (!mountedRef.current) return;
+      setUser(u);
+      // 세션 없을 때 localStorage 잔재 제거 (쿠키만 신뢰)
+      if (!u) clearAuthStorage();
+    } catch {
+      if (mountedRef.current) setUser(null);
+    } finally {
+      if (mountedRef.current) setLoading(false);
+    }
   }, []);
 
+  const refreshSession = useCallback(async () => {
+    setLoading(true);
+    await fetchSession();
+  }, [fetchSession]);
+
   useEffect(() => {
-    const supabase = createClient();
-    let mounted = true;
-
-    const init = async () => {
-      try {
-        // 1) 저장된 세션 먼저 읽기 (localStorage/cookie)
-        const { data: sessionData } = await supabase.auth.getSession();
-        let s = sessionData.session ?? null;
-        let u = s?.user ?? null;
-
-        if (!mounted) return;
-
-        // 2) 세션이 있으면 서버에 재검증 (만료 토큰 갱신)
-        if (s) {
-          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-          if (!mounted) return;
-          if (!refreshError && refreshData.session) {
-            s = refreshData.session;
-            u = refreshData.session.user;
-          }
-        }
-
-        // 3) 유저 정지(SUSPENDED) 시 로그아웃
-        if (u) {
-          const { data: profile } = await supabase.from('profiles').select('status').eq('id', u.id).single();
-          if (profile?.status === 'SUSPENDED') {
-            await supabase.auth.signOut();
-            s = null;
-            u = null;
-          }
-        }
-
-        applySession(s, u);
-      } catch {
-        if (!mounted) return;
-        applySession(null, null);
-      }
-    };
-
-    init();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
-      if (!mounted) return;
-      let s = newSession ?? null;
-      let u = s?.user ?? null;
-
-      if (u) {
-        const { data: profile } = await supabase.from('profiles').select('status').eq('id', u.id).single();
-        if (profile?.status === 'SUSPENDED') {
-          await supabase.auth.signOut();
-          s = null;
-          u = null;
-        }
-      }
-
-      applySession(s, u);
-    });
-
+    mountedRef.current = true;
+    fetchSession();
     return () => {
-      mounted = false;
-      subscription.unsubscribe();
+      mountedRef.current = false;
     };
-  }, [applySession]);
+  }, [fetchSession]);
 
   const signOut = useCallback(async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await fetch('/api/auth/logout', { method: 'POST' });
+    clearAuthStorage();
     setUser(null);
-    setSession(null);
     setLoginModalOpen(false);
     router.push('/');
   }, [router]);
@@ -109,9 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value: AuthContextType = {
     user,
-    session,
     loading,
     signOut,
+    refreshSession,
     openLoginModal,
     closeLoginModal,
   };
@@ -119,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={value}>
       {children}
-      <LoginModal open={loginModalOpen} onOpenChange={setLoginModalOpen} />
+      <LoginModal open={loginModalOpen} onOpenChange={setLoginModalOpen} onSuccess={refreshSession} />
     </AuthContext.Provider>
   );
 }

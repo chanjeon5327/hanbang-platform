@@ -2,8 +2,6 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
-import { isAdminEmail } from "@/lib/admin/env";
 
 export type AdminRole = 1 | 2 | 3 | 4 | 5;
 
@@ -43,34 +41,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   const loadAdminFromSession = useCallback(async () => {
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user?.email) {
-      setAdminUser(null);
-      return;
-    }
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("display_name, role, status")
-      .eq("id", session.user.id)
-      .single();
+    const res = await fetch("/api/auth/session?admin=1", { cache: "no-store" });
+    const json = await res.json();
+    const { user, isAdmin, profile } = json;
 
-    // 유저 정지 시 관리자 접근 차단
-    if (profile?.status === "SUSPENDED") {
-      await supabase.auth.signOut();
+    if (!user?.email || !isAdmin) {
       setAdminUser(null);
       return;
     }
 
-    const isAdmin = isAdminEmail(session.user.email) || profile?.role === "ADMIN";
-    if (!isAdmin) {
-      setAdminUser(null);
-      return;
-    }
     const role = profileRoleToAdminRole(profile?.role ?? null);
     setAdminUser({
-      email: session.user.email,
-      name: profile?.display_name ?? session.user.email?.split("@")[0] ?? "관리자",
+      email: user.email,
+      name: profile?.display_name ?? user.email?.split("@")[0] ?? "관리자",
       role,
       roleName: ROLE_NAMES[role],
     });
@@ -78,17 +61,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     loadAdminFromSession().finally(() => setLoading(false));
-
-    const supabase = createClient();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      loadAdminFromSession();
-    });
-    return () => subscription.unsubscribe();
   }, [loadAdminFromSession]);
 
   const logout = useCallback(async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await fetch("/api/auth/logout", { method: "POST" });
+    const { clearAuthStorage } = await import("@/lib/auth/clearStorage");
+    clearAuthStorage();
     setAdminUser(null);
     router.push("/admin/login");
   }, [router]);

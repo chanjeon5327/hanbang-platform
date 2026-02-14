@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { getYtThumb } from '@/lib/thumbnails';
+import { ChevronRight } from 'lucide-react';
 
 const TOSS = {
   card: '#ffffff',
@@ -33,16 +34,90 @@ export type MarketCardItem = {
 type Props = {
   item: MarketCardItem;
   index: number;
-  variant?: 'horizon' | 'vertical';
+  variant?: 'horizon' | 'vertical' | 'list';
 };
 
-export default function MarketCard({ item, index, variant = 'vertical' }: Props) {
+/** 토스형 리스트 카드: 썸네일/요약/수익모델/모집률/잔여시간 한눈에 비교 */
+function ListCard({ item, index }: { item: MarketCardItem; index: number }) {
+  const thumbSrc = item.thumbnail_url || getYtThumb(index);
+  const change = item.change ?? 0;
+  const price = item.price ?? 0;
+  const progress = item.progress ?? 0;
+  const summary = item.summary ?? `${item.title} · ${item.creator_name ?? item.category ?? ''}`;
+
+  return (
+    <Link
+      href={`/market/${item.id}`}
+      data-testid="market-card"
+      className="group flex gap-4 p-4 rounded-2xl border border-black/5 active:scale-[0.99] transition-all focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-2"
+      style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+      aria-label={`${item.title} 수익권 상세 보기`}
+    >
+      {/* 썸네일 */}
+      <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-black/5">
+        <img src={thumbSrc} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        {/* 작품명 + 수익모델 */}
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-[15px] font-bold line-clamp-1" style={{ color: TOSS.text }}>{item.title}</h3>
+          {item.revenueBadge && (
+            <span className="shrink-0 rounded-lg px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: 'rgba(49,130,246,0.12)', color: TOSS.blue }}>
+              {item.revenueBadge}
+            </span>
+          )}
+        </div>
+
+        {/* 요약 (크리에이터) */}
+        <p className="text-[12px] mt-0.5 line-clamp-2" style={{ color: TOSS.secondary }}>{summary}</p>
+
+        {/* 가격 + 등락률 */}
+        <div className="flex items-baseline gap-2 mt-2">
+          <span className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>₩{price.toLocaleString()}</span>
+          <span className="text-[12px] font-semibold tabular-nums" style={{ color: change >= 0 ? TOSS.positive : TOSS.negative }}>
+            {change >= 0 ? '+' : ''}{change}%
+          </span>
+        </div>
+
+        {/* 모집률 + 잔여시간 */}
+        <div className="flex items-center gap-3 mt-2">
+          {progress > 0 && (
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between text-[10px] mb-0.5" style={{ color: TOSS.secondary }}>
+                <span>모집률</span>
+                <span className="font-medium" style={{ color: TOSS.text }}>{progress}%</span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: TOSS.border }}>
+                <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, progress)}%`, backgroundColor: TOSS.blue }} />
+              </div>
+            </div>
+          )}
+          {item.remainingText && (
+            <span className="shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(235,77,61,0.12)', color: TOSS.negative }}>
+              {item.remainingText}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <ChevronRight size={20} className="shrink-0" style={{ color: TOSS.secondary }} />
+    </Link>
+  );
+}
+
+export default function MarketCard({ item, index, variant = 'list' }: Props) {
   const thumbSrc = item.thumbnail_url || getYtThumb(index);
   const change = item.change ?? 0;
   const price = item.price ?? 0;
   const progress = item.progress ?? 0;
 
+  if (variant === 'list') {
+    return <ListCard item={item} index={index} />;
+  }
+
   if (variant === 'horizon') {
+    const summary = item.summary ?? `${item.title} · ${item.creator_name ?? item.category ?? ''}`;
     return (
       <Link
         href={`/market/${item.id}`}
@@ -61,7 +136,7 @@ export default function MarketCard({ item, index, variant = 'vertical' }: Props)
               <span className="shrink-0 rounded px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: 'rgba(49,130,246,0.15)', color: TOSS.blue }}>{item.revenueBadge}</span>
             )}
           </div>
-          <p className="text-[12px] mt-0.5 truncate" style={{ color: TOSS.secondary }}>{item.creator_name ?? item.category ?? '-'}</p>
+          <p className="text-[12px] mt-0.5 truncate" style={{ color: TOSS.secondary }}>{summary}</p>
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>₩{price.toLocaleString()}</span>
             <span className="text-[12px] font-semibold tabular-nums" style={{ color: change >= 0 ? TOSS.positive : TOSS.negative }}>
@@ -80,7 +155,7 @@ export default function MarketCard({ item, index, variant = 'vertical' }: Props)
             </div>
           )}
           {item.remainingText && (
-            <p className="text-[11px] mt-1" style={{ color: TOSS.secondary }}>{item.remainingText}</p>
+            <p className="text-[11px] mt-1" style={{ color: TOSS.negative }}>{item.remainingText}</p>
           )}
         </div>
       </Link>
@@ -126,12 +201,6 @@ export default function MarketCard({ item, index, variant = 'vertical' }: Props)
             </div>
           )}
         </div>
-        {/* hover 상세 요약 */}
-        {item.summary && (
-          <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center p-4 pointer-events-none">
-            <p className="text-[13px] text-white line-clamp-4 text-center">{item.summary}</p>
-          </div>
-        )}
       </div>
     </Link>
   );

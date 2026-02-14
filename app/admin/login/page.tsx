@@ -3,10 +3,9 @@
 import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { login } from '@/lib/auth/client';
 
 function AdminLoginContent() {
-  const supabase = createClient();
   const router = useRouter();
   const params = useSearchParams();
   const redirect = params.get('redirect') ?? '/admin';
@@ -14,21 +13,19 @@ function AdminLoginContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async () => {
     setLoading(true);
+    setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
+    const result = await login(email, password);
     setLoading(false);
 
-    if (!error) {
+    if (result.ok) {
       router.replace(redirect);
     } else {
-      alert('로그인 실패');
+      setError(result.error);
     }
   };
 
@@ -51,10 +48,11 @@ function AdminLoginContent() {
         onChange={(e) => setPassword(e.target.value)}
       />
 
+      {error && <p className="mb-2 text-sm text-red-500">{error}</p>}
       <button
         onClick={handleLogin}
         disabled={loading}
-        className="w-full rounded bg-black py-3 text-white"
+        className="w-full rounded bg-black py-3 text-white disabled:opacity-60"
       >
         {loading ? '로그인 중…' : '관리자 로그인'}
       </button>

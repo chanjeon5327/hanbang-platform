@@ -1,58 +1,32 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { login } from '@/lib/auth/client';
 
 export default function LoginPage() {
-  const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
+    if (loading) return;
 
-    if (loading) return
-    setLoading(true)
+    setLoading(true);
+    setError(null);
 
-    try {
-      const supabase = createClient()
+    const result = await login(email, password);
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (error) {
-        console.error('LOGIN ERROR:', error)
-        alert(error.message)
-        setLoading(false)
-        return
-      }
-
-      // 세션이 localStorage에 안정적으로 기록되도록 약간 대기
-      await new Promise((res) => setTimeout(res, 300))
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
-      console.log('SESSION:', session)
-
-      if (!session) {
-        alert('세션 생성 실패')
-        setLoading(false)
-        return
-      }
-
-      router.replace('/')
-    } catch (err) {
-      console.error('LOGIN CATCH ERROR:', err)
-      alert('로그인 중 오류 발생')
-    } finally {
-      setLoading(false)
+    if (result.ok) {
+      router.replace('/');
+      return;
     }
+
+    setError(result.error);
+    setLoading(false);
   }
 
   return (
@@ -81,14 +55,16 @@ export default function LoginPage() {
           required
         />
 
+        {error && <p className="text-sm text-red-500 mb-3">{error}</p>}
+
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition disabled:opacity-60"
         >
           {loading ? '로그인 중...' : '로그인'}
         </button>
       </form>
     </div>
-  )
+  );
 }

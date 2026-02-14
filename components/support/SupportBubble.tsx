@@ -23,7 +23,7 @@ export default function SupportBubble() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-20 right-4 z-40 md:bottom-6 md:right-6" aria-label="고객센터">
+    <div className="fixed bottom-24 right-4 z-[100] md:bottom-6 md:right-6" aria-label="고객센터">
       {open && (
         <div
           className="absolute bottom-full right-0 mb-2 w-[280px] md:w-[320px] rounded-2xl border shadow-lg overflow-hidden"
@@ -55,7 +55,7 @@ export default function SupportBubble() {
           <div className="px-4 py-3 border-t" style={{ borderColor: TOSS.border, backgroundColor: 'rgba(0,0,0,0.02)' }}>
             <p className="text-[12px] font-medium" style={{ color: TOSS.secondary }}>운영시간</p>
             <p className="text-[13px] mt-0.5" style={{ color: TOSS.text }}>평일 09:00 ~ 18:00</p>
-            <p className="text-[11px] mt-2 font-medium" style={{ color: TOSS.blue }}>응답 24시간 이내</p>
+            <p className="text-[12px] mt-2 font-semibold" style={{ color: TOSS.blue }}>응답 SLA: 24시간 이내</p>
           </div>
         </div>
       )}

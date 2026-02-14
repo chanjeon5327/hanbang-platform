@@ -1,37 +1,18 @@
 'use client';
 
 import { useAuth } from '@/components/auth/AuthProvider';
-import { useStore } from '@/context/StoreContext';
 import HomeView from '@/components/home/HomeView';
+import { useAssetFromLedger } from '@/hooks/useAssetFromLedger';
 
 export default function HomePage() {
-  console.log('HOME PAGE RENDER');
   const { user, loading: authLoading } = useAuth();
-  const { userCash, holdings, getTotalAssets, getTotalReturn } = useStore();
-
   const isLoggedIn = !!user;
-
-  // user 있을 때만 자산 데이터 계산
-  const assetData = isLoggedIn
-    ? (() => {
-        const totalAssets = getTotalAssets();
-        const { amount: returnAmount, rate: returnRate } = getTotalReturn();
-        const holdingsValue = holdings.reduce((s, h) => s + h.currentValue, 0);
-        return {
-          totalAssets,
-          userCash,
-          holdingsValue,
-          returnAmount,
-          returnRate,
-          dailyChange: 0,
-        };
-      })()
-    : null;
+  const { data: assetData, loading: assetLoading } = useAssetFromLedger(isLoggedIn);
 
   return (
     <HomeView
       assetData={assetData}
-      assetLoading={isLoggedIn && authLoading}
+      assetLoading={isLoggedIn && (authLoading || assetLoading)}
       isLoggedIn={isLoggedIn}
       demoMode={false}
       showBottomNav

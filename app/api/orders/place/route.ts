@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import { createClient, createAdminClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 
 /**
- * 잔액 계산: CASH_CREDIT(+) - CASH_DEBIT(-)
+ * @deprecated POST /api/orders/place - 실결제 없이 즉시 투자 (잔액 차감)
+ * 신규: POST /api/payments/request → PG redirect → /api/payments/confirm
+ * 이 API는 샌드박스/테스트용으로만 유지
  */
 function computeBalance(rows: { entry_type: string; amount: number }[]): number {
   let balance = 0;
@@ -40,7 +42,7 @@ export async function POST(req: Request) {
       );
     }
 
-    let body: { product_id?: string; amount?: unknown };
+    let body: { product_id?: string; content_id?: string; amount?: unknown; idempotency_key?: string };
     try {
       body = await req.json();
     } catch (parseErr) {
@@ -51,12 +53,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const { product_id, amount } = body;
-    const amountPositive = toPositiveAmount(amount);
+    const contentId = body.content_id ?? body.product_id;
+    const amountPositive = toPositiveAmount(body.amount);
 
-    if (!product_id || typeof product_id !== "string" || product_id.trim() === "") {
+    if (!contentId || typeof contentId !== "string" || contentId.trim() === "") {
       return NextResponse.json(
-        { error: "INVALID_PAYLOAD", debug: "product_id is required (non-empty string)" },
+        { error: "INVALID_PAYLOAD", debug: "content_id or product_id is required (non-empty string)" },
         { status: 400 }
       );
     }
@@ -89,58 +91,29 @@ export async function POST(req: Request) {
       );
     }
 
-    const admin = createAdminClient();
-    const nowIso = new Date().toISOString();
-
-    const orderPayload = {
-      user_id: user.id,
-      product_id: product_id.trim(),
-      type: "BUY" as const,
-      order_type: "MARKET" as const,
-      price: amountPositive,
-      quantity: 1,
-      filled_quantity: 1,
-      status: "COMPLETED" as const,
-      completed_at: nowIso,
-      ledger_posted_at: nowIso,
-    };
-
-    const { data: order, error: orderError } = await admin
-      .from("orders")
-      .insert(orderPayload)
-      .select("id")
-      .single();
-
-    if (orderError) {
-      return NextResponse.json(
-        { error: "ORDER_INSERT_FAILED", debug: orderError.message },
-        { status: 500 }
-      );
-    }
-
-    if (!order?.id) {
-      return NextResponse.json(
-        { error: "ORDER_INSERT_FAILED", debug: "Order insert returned no id" },
-        { status: 500 }
-      );
-    }
-
-    const { error: ledgerError } = await supabase.rpc("rpc_post_ledger_for_order", {
-      p_order_id: order.id,
+    const { data: rpcResult, error: rpcError } = await supabase.rpc("rpc_invest_and_notify", {
       p_user_id: user.id,
+      p_content_id: contentId.trim(),
       p_amount_krw: amountPositive,
-      p_product_id: product_id.trim(),
-      p_quantity: 1,
+      p_idempotency_key: body.idempotency_key ?? null,
     });
 
-    if (ledgerError) {
+    if (rpcError) {
+      const msg = rpcError.message ?? "";
+      if (msg.includes("INSUFFICIENT_FUNDS")) {
+        return NextResponse.json(
+          { error: "INSUFFICIENT_FUNDS", debug: "잔액 부족" },
+          { status: 400 }
+        );
+      }
       return NextResponse.json(
-        { error: "LEDGER_INSERT_FAILED", debug: ledgerError.message },
+        { error: "INVEST_FAILED", debug: rpcError.message },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ success: true, order_id: order.id });
+    const orderId = (rpcResult as { order_id?: string })?.order_id;
+    return NextResponse.json({ success: true, order_id: orderId });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json(

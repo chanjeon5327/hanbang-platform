@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 const TOSS = {
   card: '#ffffff',
@@ -33,10 +33,16 @@ const CATEGORY_OPTIONS = [
   { value: 'all', label: '전체' },
   { value: '유튜브', label: '유튜브' },
   { value: '웹툰', label: '웹툰' },
-  { value: '음원', label: '음원' },
-  { value: '드라마', label: '드라마' },
-  { value: '팟캐스트', label: '팟캐스트' },
   { value: '웹소설', label: '웹소설' },
+  { value: '음원', label: '음원' },
+  { value: '음악', label: '음악' },
+  { value: '드라마', label: '드라마' },
+  { value: 'OTT', label: 'OTT' },
+  { value: '팟캐스트', label: '팟캐스트' },
+  { value: '오디오', label: '오디오' },
+  { value: '여행', label: '여행' },
+  { value: '먹방', label: '먹방' },
+  { value: '일상', label: '일상' },
 ];
 
 const RISK_OPTIONS = [

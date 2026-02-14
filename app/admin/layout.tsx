@@ -20,6 +20,7 @@ import {
   X,
   LogOut,
   Shield,
+  CreditCard,
 } from 'lucide-react';
 
 const menuItems = [
@@ -27,6 +28,7 @@ const menuItems = [
   { icon: Users, label: '유저 관리', path: '/admin/users', role: 1 as const },
   { icon: FileCheck, label: '작품 승인/강제삭제', path: '/admin/content', role: 2 as const },
   { icon: ShoppingCart, label: '주문/결제 확인', path: '/admin/orders', role: 1 as const },
+  { icon: CreditCard, label: '결제 모니터링', path: '/admin/payments', role: 1 as const },
   { icon: DollarSign, label: '정산 확정', path: '/admin/settlement', role: 3 as const },
   { icon: MessageSquare, label: '채팅 모더레이션', path: '/admin/chat/moderation', role: 2 as const },
   { icon: Flag, label: '신고 처리', path: '/admin/reports', role: 2 as const },

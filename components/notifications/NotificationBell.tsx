@@ -16,12 +16,6 @@ type NotificationItem = {
   created_at: string;
 };
 
-const MOCK_NOTIFICATIONS: NotificationItem[] = [
-  { id: '1', type: 'PRICE_CHANGE', reference_id: 'sample-1', title: '여행가 제이 가격 변동', content: '+3.2% 상승', is_read: false, created_at: '2024-01-15T14:30:00Z' },
-  { id: '2', type: 'MOBILIZATION_90', reference_id: 'sample-2', title: '먹방 로드 모집 90% 도달', content: '마감 임박', is_read: false, created_at: '2024-01-15T13:00:00Z' },
-  { id: '3', type: 'CHAT_REPLY', reference_id: 'sample-1', title: '채팅 답변 알림', content: '크리에이터가 답변했습니다', is_read: true, created_at: '2024-01-15T12:00:00Z' },
-];
-
 function formatTime(iso: string): string {
   const d = new Date(iso);
   const now = new Date();
@@ -44,9 +38,15 @@ export default function NotificationBell() {
       setUnreadCount(0);
       return;
     }
-    // TODO: fetch from API GET /api/notifications
-    setNotifications(MOCK_NOTIFICATIONS);
-    setUnreadCount(MOCK_NOTIFICATIONS.filter((n) => !n.is_read).length);
+    fetch('/api/notifications', { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.notifications) {
+          setNotifications(data.notifications);
+          setUnreadCount(data.unreadCount ?? data.notifications.filter((n: NotificationItem) => !n.is_read).length);
+        }
+      })
+      .catch(() => {});
   }, [user]);
 
   const displayList = notifications.slice(0, 10);
@@ -103,7 +103,14 @@ export default function NotificationBell() {
                     href={n.reference_id ? `/market/${n.reference_id}` : '/notifications'}
                     className="block px-4 py-3 border-b hover:bg-black/[0.02] transition"
                     style={{ borderColor: 'var(--toss-border)' }}
-                    onClick={() => setOpen(false)}
+                    onClick={async () => {
+                      setOpen(false);
+                      if (!n.is_read) {
+                        await fetch(`/api/notifications/${n.id}/read`, { method: 'PATCH' }).catch(() => {});
+                        setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, is_read: true } : x)));
+                        setUnreadCount((c) => Math.max(0, c - 1));
+                      }
+                    }}
                   >
                     <div className="flex items-start gap-2">
                       {!n.is_read && (

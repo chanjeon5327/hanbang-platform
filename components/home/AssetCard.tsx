@@ -1,5 +1,7 @@
 'use client';
 
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+
 const TOSS = {
   card: '#ffffff',
   text: '#191f28',
@@ -49,10 +51,12 @@ export default function AssetCard({ data, loading }: Props) {
     return <AssetCardSkeleton />;
   }
 
-  const { totalAssets, userCash, holdingsValue, returnAmount, returnRate, dailyChange = 0 } = data;
+  const { totalAssets, userCash, holdingsValue, returnAmount, returnRate, dailyChange } = data;
+  const dailyVal = dailyChange ?? 0;
   const isPositive = returnAmount >= 0;
   const isRatePositive = returnRate >= 0;
-  const isDailyPositive = (dailyChange ?? 0) >= 0;
+  const isDailyPositive = dailyVal > 0;
+  const isDailyNegative = dailyVal < 0;
 
   return (
     <div
@@ -76,14 +80,18 @@ export default function AssetCard({ data, loading }: Props) {
         >
           ({isRatePositive ? '+' : ''}{returnRate.toFixed(2)}%)
         </span>
-        {dailyChange !== undefined && dailyChange !== 0 && (
-          <span
-            className="text-[12px] font-medium tabular-nums"
-            style={{ color: isDailyPositive ? TOSS.positive : TOSS.negative }}
-          >
-            · 전일 {isDailyPositive ? '+' : ''}{dailyChange.toFixed(1)}%
-          </span>
-        )}
+      </div>
+      {/* 오늘 등락률 강조 - API 없으면 0 fallback */}
+      <div
+        className="flex items-center gap-1.5 mt-2 text-[13px] font-semibold tabular-nums"
+        style={{ color: isDailyPositive ? TOSS.positive : isDailyNegative ? TOSS.negative : TOSS.secondary }}
+      >
+        {isDailyPositive && <TrendingUp size={14} strokeWidth={2.5} aria-hidden />}
+        {isDailyNegative && <TrendingDown size={14} strokeWidth={2.5} aria-hidden />}
+        {!isDailyPositive && !isDailyNegative && <Minus size={14} strokeWidth={2.5} aria-hidden />}
+        <span>
+          오늘 {isDailyPositive ? '+' : ''}{dailyVal.toFixed(1)}% {isDailyPositive ? '상승 중' : isDailyNegative ? '하락 중' : '보합'}
+        </span>
       </div>
       <div className="grid grid-cols-2 gap-4 mt-4 pt-4" style={{ borderTop: '1px solid var(--toss-border)' }}>
         <div>

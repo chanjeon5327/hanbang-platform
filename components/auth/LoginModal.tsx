@@ -2,17 +2,17 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { login } from '@/lib/auth/client';
 
-/* 업비트 사용법 레퍼런스: 단계형 스텝퍼 + 상태 배지 + CTA */
 const UPBIT = { bg: '#0d0d0d', panel: '#161616', border: '#2b2b2b', bid: '#1e88e5', text: '#e0e0e0', dim: '#8e8e8e' };
 
 type LoginModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void | Promise<void>;
 };
 
-export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
+export default function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
@@ -26,17 +26,18 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const supabase = createClient();
-    try {
-      const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-      if (err) throw err;
+
+    const result = await login(email, password);
+
+    if (result.ok) {
       onOpenChange(false);
+      await onSuccess?.();
       router.push('/');
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : '로그인 실패');
-    } finally {
-      setLoading(false);
+      return;
     }
+
+    setError(result.error);
+    setLoading(false);
   };
 
   return (

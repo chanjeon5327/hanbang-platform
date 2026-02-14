@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Phone, Mail, Wallet, MessageSquare, FileText } from "lucide-react";
+import { Search, Phone, Mail, Wallet, MessageSquare, FileText, Shield } from "lucide-react";
 
 interface User {
   id: string;
@@ -12,23 +12,65 @@ interface User {
   investmentTotal: number;
   joinDate: string;
   privateNote?: string;
+  dailyInvestLimit?: number;
+  monthlyInvestLimit?: number;
+  kycLevel?: number;
 }
 
 interface UserDetailModalProps {
   user: User | null;
   onClose: () => void;
   onUpdateNote: (userId: string, note: string) => void;
+  onUpdateLimits?: (userId: string, limits: { daily_invest_limit: number; monthly_invest_limit: number; kyc_level: number }) => void;
 }
 
-function UserDetailModal({ user, onClose, onUpdateNote }: UserDetailModalProps) {
-  const [activeTab, setActiveTab] = useState<"cs" | "investment" | "wallet">("cs");
+function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDetailModalProps) {
+  const [activeTab, setActiveTab] = useState<"cs" | "investment" | "wallet" | "limits">("cs");
   const [note, setNote] = useState(user?.privateNote || "");
+  const [dailyLimit, setDailyLimit] = useState(user?.dailyInvestLimit ?? 1000000);
+  const [monthlyLimit, setMonthlyLimit] = useState(user?.monthlyInvestLimit ?? 10000000);
+  const [kycLevel, setKycLevel] = useState(user?.kycLevel ?? 1);
+  const [limitsSaving, setLimitsSaving] = useState(false);
+
+  useEffect(() => {
+    if (user?.id) {
+      setDailyLimit(user.dailyInvestLimit ?? 1000000);
+      setMonthlyLimit(user.monthlyInvestLimit ?? 10000000);
+      setKycLevel(user.kycLevel ?? 1);
+    }
+  }, [user?.id, user?.dailyInvestLimit, user?.monthlyInvestLimit, user?.kycLevel]);
 
   if (!user) return null;
 
   const handleSaveNote = () => {
     onUpdateNote(user.id, note);
     alert("메모가 저장되었습니다.");
+  };
+
+  const handleSaveLimits = async () => {
+    setLimitsSaving(true);
+    try {
+      const res = await fetch(`/api/admin/users/${user.id}/limits`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          daily_invest_limit: dailyLimit,
+          monthly_invest_limit: monthlyLimit,
+          kyc_level: kycLevel,
+        }),
+      });
+      if (res.ok) {
+        onUpdateLimits?.(user.id, { daily_invest_limit: dailyLimit, monthly_invest_limit: monthlyLimit, kyc_level: kycLevel });
+        alert("한도가 저장되었습니다.");
+      } else {
+        const err = await res.json();
+        alert(err?.error ?? "저장 실패");
+      }
+    } catch {
+      alert("저장 실패");
+    } finally {
+      setLimitsSaving(false);
+    }
   };
 
   return (
@@ -106,6 +148,7 @@ function UserDetailModal({ user, onClose, onUpdateNote }: UserDetailModalProps) 
             { id: "cs", label: "CS 히스토리", icon: MessageSquare },
             { id: "investment", label: "투자 내역", icon: FileText },
             { id: "wallet", label: "지갑 잔액", icon: Wallet },
+            { id: "limits", label: "투자 한도", icon: Shield },
           ].map((tab) => {
             const Icon = tab.icon;
             return (
@@ -236,6 +279,92 @@ function UserDetailModal({ user, onClose, onUpdateNote }: UserDetailModalProps) 
               </div>
             </div>
           )}
+
+          {activeTab === "limits" && (
+            <div>
+              <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--text-primary)", marginBottom: "16px" }}>
+                투자 한도 설정
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div>
+                  <label style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px", display: "block" }}>
+                    일일 투자 한도 (원)
+                  </label>
+                  <input
+                    type="number"
+                    value={dailyLimit}
+                    onChange={(e) => setDailyLimit(Number(e.target.value) || 0)}
+                    min={0}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--border-color)",
+                      backgroundColor: "var(--bg-primary)",
+                      color: "var(--text-primary)",
+                      fontSize: "14px",
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px", display: "block" }}>
+                    월간 투자 한도 (원)
+                  </label>
+                  <input
+                    type="number"
+                    value={monthlyLimit}
+                    onChange={(e) => setMonthlyLimit(Number(e.target.value) || 0)}
+                    min={0}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--border-color)",
+                      backgroundColor: "var(--bg-primary)",
+                      color: "var(--text-primary)",
+                      fontSize: "14px",
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px", display: "block" }}>
+                    KYC 레벨 (1=기본, 2=본인인증, 3=고급)
+                  </label>
+                  <input
+                    type="number"
+                    value={kycLevel}
+                    onChange={(e) => setKycLevel(Math.min(3, Math.max(1, Number(e.target.value) || 1)))}
+                    min={1}
+                    max={3}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--border-color)",
+                      backgroundColor: "var(--bg-primary)",
+                      color: "var(--text-primary)",
+                      fontSize: "14px",
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={handleSaveLimits}
+                  disabled={limitsSaving}
+                  style={{
+                    padding: "10px 20px",
+                    borderRadius: "8px",
+                    border: "none",
+                    backgroundColor: "var(--accent-color)",
+                    color: "white",
+                    fontWeight: "bold",
+                    cursor: limitsSaving ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {limitsSaving ? "저장 중..." : "한도 저장"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 직원용 메모 */}
@@ -290,6 +419,9 @@ export default function AdminUsers() {
       walletBalance: 5000000,
       investmentTotal: 1800000,
       joinDate: "2024-01-01",
+      dailyInvestLimit: 1000000,
+      monthlyInvestLimit: 10000000,
+      kycLevel: 1,
     },
     {
       id: "2",
@@ -300,6 +432,9 @@ export default function AdminUsers() {
       investmentTotal: 0,
       joinDate: "2024-01-05",
       privateNote: "이 유저는 악성 민원인입니다. 주의 필요.",
+      dailyInvestLimit: 1000000,
+      monthlyInvestLimit: 10000000,
+      kycLevel: 1,
     },
     {
       id: "3",
@@ -309,6 +444,9 @@ export default function AdminUsers() {
       walletBalance: 2000000,
       investmentTotal: 500000,
       joinDate: "2024-01-10",
+      dailyInvestLimit: 1000000,
+      monthlyInvestLimit: 10000000,
+      kycLevel: 1,
     },
   ]);
 
@@ -325,6 +463,44 @@ export default function AdminUsers() {
   const handleUpdateNote = (userId: string, note: string) => {
     setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, privateNote: note } : u)));
   };
+
+  const handleUpdateLimits = (
+    userId: string,
+    limits: { daily_invest_limit: number; monthly_invest_limit: number; kyc_level: number }
+  ) => {
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === userId
+          ? {
+              ...u,
+              dailyInvestLimit: limits.daily_invest_limit,
+              monthlyInvestLimit: limits.monthly_invest_limit,
+              kycLevel: limits.kyc_level,
+            }
+          : u
+      )
+    );
+  };
+
+  // 모달 열릴 때 실제 DB에서 한도 로드 (profiles에 해당 유저가 있는 경우)
+  useEffect(() => {
+    const uid = selectedUser?.id;
+    if (!uid) return;
+    fetch(`/api/admin/users/${uid}/limits`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.profile) {
+          const updated = {
+            dailyInvestLimit: data.profile.daily_invest_limit ?? 1000000,
+            monthlyInvestLimit: data.profile.monthly_invest_limit ?? 10000000,
+            kycLevel: data.profile.kyc_level ?? 1,
+          };
+          setUsers((prev) => prev.map((u) => (u.id === uid ? { ...u, ...updated } : u)));
+          setSelectedUser((prev) => (prev && prev.id === uid ? { ...prev, ...updated } : prev));
+        }
+      })
+      .catch(() => {});
+  }, [selectedUser?.id]);
 
   return (
     <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
@@ -434,7 +610,12 @@ export default function AdminUsers() {
         </div>
       </div>
 
-      <UserDetailModal user={selectedUser} onClose={() => setSelectedUser(null)} onUpdateNote={handleUpdateNote} />
+      <UserDetailModal
+        user={selectedUser}
+        onClose={() => setSelectedUser(null)}
+        onUpdateNote={handleUpdateNote}
+        onUpdateLimits={handleUpdateLimits}
+      />
     </div>
   );
 }
