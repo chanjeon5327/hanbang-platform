@@ -15,12 +15,16 @@ const TOSS = {
   negative: '#eb4d3d',
 } as const;
 
+const PREVIEW_URL = (id: string) =>
+  `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&playsinline=1&modestbranding=1&rel=0&cc_load_policy=0&iv_load_policy=3&loop=1&playlist=${id}`;
+
 export type MarketGridItem = {
   id: string;
   title: string;
   creator_name?: string;
   category?: string;
   thumbnail_url?: string;
+  youtube_id?: string | null;
   deadline?: string | null;
   total_raise?: number;
   current_raise?: number;
@@ -35,6 +39,8 @@ type Props = {
   index: number;
   showDeadlineBadge?: boolean;
   isInterested?: boolean;
+  activePreviewId?: string | null;
+  onPreviewActive?: (id: string | null) => void;
 };
 
 function getDday(eventDate: string | null | undefined): number | null {
@@ -45,13 +51,28 @@ function getDday(eventDate: string | null | undefined): number | null {
   return diff >= 0 ? diff : null;
 }
 
-export default function MarketGridCard({ item, index, showDeadlineBadge = false, isInterested: initialInterested = false }: Props) {
+export default function MarketGridCard({
+  item,
+  index,
+  showDeadlineBadge = false,
+  isInterested: initialInterested = false,
+  activePreviewId = null,
+  onPreviewActive,
+}: Props) {
   const { user } = useAuth();
   const { isInterested, toggle, loading } = useInterestToggle(item.id, initialInterested);
   const thumbSrc = item.thumbnail_url ?? getYtThumb(index);
   const dday = getDday(item.event_date);
+  const youtubeId = item.youtube_id ?? null;
+  const showPreview = activePreviewId === item.id && youtubeId;
 
   const isUrgent = dday != null && dday <= 3;
+
+  const handlePointerEnter = () => onPreviewActive?.(item.id);
+  const handlePointerLeave = () => onPreviewActive?.(null);
+  const handlePointerDown = () => onPreviewActive?.(item.id);
+  const handlePointerUp = () => onPreviewActive?.(null);
+  const handlePointerCancel = () => onPreviewActive?.(null);
 
   return (
     <Link
@@ -65,12 +86,27 @@ export default function MarketGridCard({ item, index, showDeadlineBadge = false,
         boxShadow: isUrgent ? '0 0 12px rgba(220,38,38,0.3)' : '0 2px 8px rgba(0,0,0,0.06)',
       }}
       aria-label={`${item.title} 수익권 보기`}
+      onPointerEnter={youtubeId ? handlePointerEnter : undefined}
+      onPointerLeave={youtubeId ? handlePointerLeave : undefined}
+      onPointerDown={youtubeId ? handlePointerDown : undefined}
+      onPointerUp={youtubeId ? handlePointerUp : undefined}
+      onPointerCancel={youtubeId ? handlePointerCancel : undefined}
     >
       {isUrgent && (
         <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #dc2626, #ef4444)' }} />
       )}
       <div className="relative aspect-[4/5] bg-[#e5e8eb]">
-        <img src={thumbSrc} alt="" className="w-full h-full object-cover" loading="lazy" />
+        {showPreview ? (
+          <iframe
+            src={PREVIEW_URL(youtubeId)}
+            title=""
+            className="absolute inset-0 w-full h-full object-cover"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <img src={thumbSrc} alt="" className="w-full h-full object-cover" loading="lazy" />
+        )}
         <div className="absolute top-2 right-2 flex flex-wrap justify-end gap-1.5">
           {item.integrity_ok && (item.settlement_count ?? 0) > 0 && (
             <span className="rounded px-1.5 py-0.5 text-[9px] font-medium bg-emerald-600/90 text-white shrink-0">

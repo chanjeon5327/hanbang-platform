@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { getYtThumb } from "@/lib/thumbnails";
+import { extractYoutubeId } from "@/lib/youtube";
 
 export const revalidate = 60;
 
@@ -74,10 +75,12 @@ export async function GET(req: NextRequest) {
 
     const items = ordered.map((r: Record<string, unknown>, idx: number) => {
       const cid = String(r.id);
+      const thumb = r.thumbnail_url ?? getYtThumb(idx);
       return {
         id: r.id,
         title: r.title,
-        thumbnail_url: r.thumbnail_url ?? getYtThumb(idx),
+        thumbnail_url: thumb,
+        youtube_id: extractYoutubeId(thumb),
         creator_name: r.creator_name,
         category: r.category,
         platform: r.platform,

@@ -23,7 +23,7 @@ export async function GET(
 
     const { data, error } = await supabase
       .from("content_items")
-      .select("id, title, summary, creator_name, category, platform, thumbnail_url, deadline, youtube_video_id, media_url, created_at, total_raise, current_raise, yield_rate, artist_keyword, event_date")
+      .select("id, title, summary, creator_name, category, platform, thumbnail_url, deadline, youtube_video_id, media_url, created_at, total_raise, current_raise, yield_rate, artist_keyword, event_date, product_type, pricing_currency, share_price_usd, total_raise_usd, current_raise_usd, dividend_monthly_usd_per_share, dividend_monthly_rate, payout_day")
       .eq("id", contentId)
       .eq("status", "active")
       .single();
@@ -74,6 +74,16 @@ export async function GET(
       // ignore
     }
 
+    let fxRate = 1350;
+    try {
+      const base = new URL(req.url).origin;
+      const fxRes = await fetch(`${base}/api/fx/usd`, { cache: "no-store" });
+      const fxJson = await fxRes.json();
+      if (typeof fxJson?.usd_krw === "number") fxRate = fxJson.usd_krw;
+    } catch {
+      // fallback
+    }
+
     const item = {
       id: data.id,
       title: data.title,
@@ -96,6 +106,15 @@ export async function GET(
       last_1h_count: last1hCount,
       last_24h_count: last24hCount,
       last_24h_amount: last24hAmount,
+      product_type: data.product_type ?? "DIVIDEND_ONLY",
+      pricing_currency: data.pricing_currency ?? "USD",
+      share_price_usd: data.share_price_usd ?? null,
+      total_raise_usd: data.total_raise_usd ?? null,
+      current_raise_usd: data.current_raise_usd ?? null,
+      dividend_monthly_usd_per_share: data.dividend_monthly_usd_per_share ?? null,
+      dividend_monthly_rate: data.dividend_monthly_rate ?? null,
+      payout_day: data.payout_day ?? 3,
+      fx_rate: fxRate,
     };
 
     return NextResponse.json(item);

@@ -34,7 +34,7 @@ export default function MarketStatsBar({
   isDeadlineSoon = false,
 }: Props) {
   return (
-    <div className="rounded-xl border p-4" style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}>
+    <div className="pb-4" style={{ borderBottom: '1px solid var(--upbit-border)' }}>
       {/* 배지 */}
       <div className="flex gap-2 mb-3">
         {isLive && (
@@ -49,11 +49,11 @@ export default function MarketStatsBar({
         )}
       </div>
 
-      {/* 모집률 */}
-      <div className="mb-3">
-        <div className="flex justify-between text-[12px] mb-1" style={{ color: TOSS.secondary }}>
-          <span>모집률</span>
-          <span className="font-bold" style={{ color: TOSS.text }}>{progress}%</span>
+      {/* 모집률 - 크게 강조 */}
+      <div className="mb-4">
+        <div className="flex justify-between items-baseline mb-1">
+          <span className="text-[12px]" style={{ color: TOSS.secondary }}>모집률</span>
+          <span className="text-[28px] font-extrabold tabular-nums" style={{ color: TOSS.text }}>{progress}%</span>
         </div>
         <div className="w-full rounded-full h-2 overflow-hidden" style={{ backgroundColor: 'var(--upbit-border)' }}>
           <div
@@ -67,19 +67,19 @@ export default function MarketStatsBar({
       <div className="grid grid-cols-2 gap-3 text-[12px]">
         <div>
           <div style={{ color: TOSS.secondary }}>총 모집 금액</div>
-          <div className="font-bold tabular-nums" style={{ color: TOSS.text }}>₩{formatAmount(targetAmount)}</div>
+          <div className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>₩{formatAmount(targetAmount)}</div>
         </div>
         <div>
           <div style={{ color: TOSS.secondary }}>현재 참여자</div>
-          <div className="font-bold tabular-nums" style={{ color: TOSS.text }}>{participants}명</div>
+          <div className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>{participants}명</div>
         </div>
         <div>
           <div style={{ color: TOSS.secondary }}>현재 모집액</div>
-          <div className="font-bold tabular-nums" style={{ color: TOSS.positive }}>₩{formatAmount(currentAmount)}</div>
+          <div className="text-[18px] font-extrabold tabular-nums" style={{ color: TOSS.positive }}>₩{formatAmount(currentAmount)}</div>
         </div>
         <div>
           <div style={{ color: TOSS.secondary }}>남은 금액</div>
-          <div className="font-bold tabular-nums" style={{ color: TOSS.text }}>₩{formatAmount(remainingAmount)}</div>
+          <div className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>₩{formatAmount(remainingAmount)}</div>
         </div>
       </div>
     </div>

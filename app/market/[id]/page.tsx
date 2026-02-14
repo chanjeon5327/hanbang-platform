@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Moon, Sun, Heart } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
-import { useToken } from '@/context/TokenContext';
 import { useAuth } from '@/components/auth/AuthProvider';
 import YouTubeEmbed from '@/components/common/YouTubeEmbed';
 import MarketStatsBar from '@/components/market/MarketStatsBar';
@@ -14,6 +13,10 @@ import TrustBadges from '@/components/market/TrustBadges';
 import RecentInvestLog from '@/components/market/RecentInvestLog';
 import InvestConfirmModal from '@/components/market/InvestConfirmModal';
 import ProductChat from '@/components/chat/ProductChat';
+import PriceHeader from '@/components/market/PriceHeader';
+import PriceChartBlock from '@/components/market/PriceChartBlock';
+import DividendInfo from '@/components/market/DividendInfo';
+import TradingPanelV2 from '@/components/market/TradingPanelV2';
 import Toast from '@/components/ui/Toast';
 import { useMarketItem } from '@/hooks/useMarketItem';
 import { useRecentInvestLog } from '@/hooks/useRecentInvestLog';
@@ -28,7 +31,6 @@ const YT_FALLBACK = 'HosW0gulISQ';
 const YT_START_SEC = 25;
 const DEFAULT_AMOUNT = 100_000;
 
-/** progress = current_raise / total_raise (실제 DB값 기반) */
 function calcProgress(total?: number | null, current?: number | null): number {
   if (total != null && total > 0 && current != null) {
     return Math.min(100, Math.round((current / total) * 100));
@@ -36,7 +38,6 @@ function calcProgress(total?: number | null, current?: number | null): number {
   return 0;
 }
 
-/** deadline 3일 이내 여부 */
 function isDeadlineSoon(deadline: string | null | undefined): boolean {
   if (!deadline) return false;
   const d = new Date(deadline);
@@ -49,16 +50,15 @@ function MarketHeader() {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className="sticky top-0 z-50 border-b" style={{ backgroundColor: 'var(--upbit-bg)', borderColor: 'var(--upbit-border)' }}>
-      <div className="px-4 py-3 flex items-center justify-between">
-        <Link href="/market" className="text-sm font-medium" style={{ color: 'var(--upbit-text-dim)' }}>
+    <header className="sticky top-0 z-50 border-b bg-white" style={{ borderColor: 'var(--border)' }}>
+      <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+        <Link href="/market" className="text-sm font-medium text-[var(--text-secondary)]">
           ← 마켓으로
         </Link>
         <button
           type="button"
           onClick={toggleTheme}
-          className="p-2 rounded-lg transition hover:opacity-80"
-          style={{ backgroundColor: 'var(--upbit-panel)', color: 'var(--upbit-text-dim)' }}
+          className="p-2 rounded-lg transition hover:opacity-80 text-[var(--text-secondary)]"
           aria-label={theme === 'light' ? '다크 모드' : '라이트 모드'}
         >
           {theme === 'light' ? <Moon size={22} strokeWidth={2} /> : <Sun size={22} strokeWidth={2} />}
@@ -71,11 +71,11 @@ function MarketHeader() {
 export default function MarketDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { user } = useAuth();
-  const { formatPrice } = useToken();
   const [showConfirm, setShowConfirm] = useState(false);
   const [investLoading, setInvestLoading] = useState(false);
   const [investAmount, setInvestAmount] = useState(DEFAULT_AMOUNT);
   const [toastVisible, setToastVisible] = useState(false);
+  const [todayCount, setTodayCount] = useState<number>(0);
 
   const { item, loading: itemLoading, refetch: refetchItem } = useMarketItem(id);
   const { items: investLogs, refetch: refetchInvestLogs } = useRecentInvestLog(id);
@@ -84,7 +84,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const { items: artistProgress, refetch: refetchProgress } = useArtistProgress(!!user);
   const searchParams = useSearchParams();
 
-  // 결제 플로우 리다이렉트 시 invest=done → invest-success 이벤트로 갱신
   useEffect(() => {
     if (searchParams.get('invest') === 'done') {
       refetchItem();
@@ -94,6 +93,14 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
       window.dispatchEvent(new Event('invest-success'));
     }
   }, [searchParams, refetchItem, refetchInvestLogs, refetchContributions, refetchProgress]);
+
+  useEffect(() => {
+    fetch('/api/metrics/live', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((j) => setTodayCount(j.today_count ?? 0))
+      .catch(() => {});
+  }, []);
+
   const isInMyInterests = myInterests.some((i) => i.id === id);
   const { isInterested, toggle, loading: toggleLoading } = useInterestToggle(id, isInMyInterests);
 
@@ -104,6 +111,10 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const category = item?.category ?? '여행';
   const platform = item?.platform ?? '유튜브';
 
+  const productType = item?.product_type ?? 'DIVIDEND_ONLY';
+  const isTradable = productType === 'DIVIDEND_TRADABLE';
+  const fxRate = item?.fx_rate ?? 1350;
+
   const targetAmount = item?.total_raise ?? 0;
   const currentAmount = item?.current_raise ?? 0;
   const progress = useMemo(() => calcProgress(targetAmount, currentAmount), [targetAmount, currentAmount]);
@@ -111,7 +122,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const participants = item?.participants ?? Math.max(1, Math.floor(currentAmount / 300_000));
   const isPopular = (item?.popular_cnt ?? 0) >= 20;
   const deadlineSoon = isDeadlineSoon(item?.deadline ?? null);
-  const yieldRate = item?.yield_rate ?? 8.4;
+  const yieldRate = item?.yield_rate ?? item?.dividend_monthly_rate ?? 8.4;
   const dday = useMemo(() => {
     const ed = item?.event_date;
     if (!ed) return null;
@@ -120,6 +131,11 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
     const diff = Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     return diff >= 0 ? diff : null;
   }, [item?.event_date]);
+
+  const sharePriceUsd = item?.share_price_usd ?? null;
+  const totalRaiseUsd = item?.total_raise_usd ?? null;
+  const currentRaiseUsd = item?.current_raise_usd ?? null;
+  const hasUsdData = sharePriceUsd != null || (totalRaiseUsd != null && currentRaiseUsd != null);
 
   const handleInvestConfirm = async () => {
     if (!hasSession) return;
@@ -148,13 +164,29 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
     }
   };
 
+  const ctaSubtext =
+    (item?.last_1h_count ?? 0) >= 5
+      ? '최근 1시간 집중 참여 중'
+      : dday != null && dday <= 3
+        ? '공연 전 마지막 파트너십 기회'
+        : isTradable
+          ? '투자 후 거래 가능'
+          : '지금 참여하면 오늘 집계에 반영됩니다';
+
+  const ctaButtonText =
+    dday != null && dday <= 3
+      ? `D-${dday} 공연 전 파트너십 참여하기`
+      : isTradable
+        ? `₩${investAmount.toLocaleString()} 투자/매수`
+        : `₩${investAmount.toLocaleString()} 투자하기`;
+
   return (
-    <main className="min-h-screen pb-24 md:pb-6" style={{ backgroundColor: 'var(--upbit-bg)' }}>
+    <main className="min-h-screen bg-white">
       <MarketHeader />
 
-      <div className="max-w-lg mx-auto px-4 pt-4 space-y-4">
-        {/* 1. 썸네일(영상) */}
-        <section className="relative w-full aspect-video rounded-xl overflow-hidden border" style={{ borderColor: 'var(--upbit-border)' }}>
+      <div className="max-w-3xl mx-auto px-4 pb-32 pt-6">
+        {/* 1. 영상 */}
+        <section className="relative w-full aspect-video rounded-2xl overflow-hidden mb-6">
           {!itemLoading && (
             <YouTubeEmbed
               videoId={ytId}
@@ -168,7 +200,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
               fill
             />
           )}
-          {/* 배지: 인기, 마감임박 */}
           <div className="absolute top-2 left-2 flex gap-2">
             {isPopular && (
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-white">인기</span>
@@ -179,16 +210,43 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           </div>
         </section>
 
-        {/* 2. 타이틀 + 3. 크리에이터 */}
+        {/* 2. 타이틀 + OFFICIAL IP EXCHANGE + 타입 배지 */}
         <section className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <h1 className="text-[20px] font-bold" style={{ color: 'var(--upbit-text)' }}>{title}</h1>
-            <p className="text-[14px] mt-1" style={{ color: 'var(--upbit-text-dim)' }}>{creator} · {category}</p>
-            {item?.artist_keyword && user && (() => {
+            <h1 className="text-[28px] font-extrabold leading-snug tracking-tight">{title}</h1>
+            <p className="text-[13px] tracking-wide uppercase mt-1" style={{ color: 'var(--text-secondary)' }}>OFFICIAL IP EXCHANGE</p>
+            <div className="flex gap-2 mt-2">
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--primary)', color: '#fff' }}>
+                {isTradable ? '월배당+거래' : '월배당'}
+              </span>
+              <span className="text-[12px] px-2 py-0.5 rounded bg-[var(--upbit-bid)] text-white">{platform}</span>
+            </div>
+          </div>
+          {user && (
+            <button
+              type="button"
+              onClick={toggle}
+              disabled={toggleLoading}
+              className="p-2 rounded-full border shrink-0 disabled:opacity-50"
+              style={{ borderColor: 'var(--border)' }}
+              aria-label={isInterested ? '관심 해제' : '관심 등록'}
+            >
+              <Heart size={22} className={isInterested ? 'fill-red-500 text-red-500' : ''} strokeWidth={2} />
+            </button>
+          )}
+        </section>
+
+        {/* 3. 크리에이터 · 카테고리 */}
+        <p className="text-[14px] mt-2" style={{ color: 'var(--text-secondary)' }}>{creator} · {category}</p>
+
+        {/* 4. ArtistBadge */}
+        {item?.artist_keyword && user && (
+          <div className="mt-3 space-y-2">
+            {(() => {
               const contrib = artistContributions.find((c) => c.artist_keyword === item.artist_keyword);
               const prog = artistProgress.find((p) => p.artist_keyword === item.artist_keyword);
               return (
-                <div className="mt-2 space-y-2">
+                <>
                   {contrib && <ArtistBadge artist={item.artist_keyword} amount={contrib.total_amount} />}
                   {prog && (
                     <ArtistProgressCard
@@ -199,92 +257,128 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
                       compact
                     />
                   )}
-                </div>
+                </>
               );
             })()}
           </div>
-          {user && (
-            <button
-              type="button"
-              onClick={toggle}
-              disabled={toggleLoading}
-              className="p-2 rounded-full border shrink-0 disabled:opacity-50"
-              style={{ borderColor: 'var(--upbit-border)' }}
-              aria-label={isInterested ? '관심 해제' : '관심 등록'}
-            >
-              <Heart size={22} className={isInterested ? 'fill-red-500 text-red-500' : ''} strokeWidth={2} />
-            </button>
-          )}
-        </section>
+        )}
 
-        <div className="flex gap-2">
-          <span className="text-[12px] px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--upbit-bid)', color: '#fff' }}>{platform}</span>
-          <span className="text-[12px] px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--upbit-panel)', color: 'var(--upbit-text-dim)', border: '1px solid var(--upbit-border)' }}>수익권</span>
+        {/* 5. PriceHeader (USD + 로컬) */}
+        {hasUsdData && sharePriceUsd != null && (
+          <div className="mt-10">
+            <PriceHeader sharePriceUsd={sharePriceUsd} fxRate={fxRate} />
+          </div>
+        )}
+
+        {/* 6. 차트 블록 (USD 기반 + 로컬 변환) */}
+        {hasUsdData && (
+          <div className="mt-10">
+            <PriceChartBlock
+              sharePriceUsd={sharePriceUsd}
+              totalRaiseUsd={totalRaiseUsd}
+              currentRaiseUsd={currentRaiseUsd}
+              fxRate={fxRate}
+            />
+          </div>
+        )}
+
+        {/* 7. MarketStatsBar (USD 미사용 시 KRW 기반) */}
+        {!hasUsdData && (
+          <div className="mt-10">
+            <MarketStatsBar
+              progress={progress}
+              targetAmount={targetAmount}
+              currentAmount={currentAmount}
+              participants={participants}
+              remainingAmount={remainingAmount}
+              isLive
+              isDeadlineSoon={deadlineSoon}
+            />
+          </div>
+        )}
+
+        {/* 8. TradingPanel v2 (DIVIDEND_TRADABLE) / 투자 패널 + 거래 불가 (DIVIDEND_ONLY) */}
+        {isTradable && sharePriceUsd != null ? (
+          <div className="mt-10">
+            <TradingPanelV2
+              contentId={id}
+              sharePriceUsd={sharePriceUsd}
+              fxRate={fxRate}
+              isLoggedIn={hasSession}
+            />
+          </div>
+        ) : (
+          <div className="mt-10">
+            <p className="text-[12px] mb-3" style={{ color: 'var(--upbit-text-dim)' }}>거래 불가 · 투자 후 월배당만 수령</p>
+          </div>
+        )}
+
+        {/* 9. DividendInfo */}
+        <div className="mt-10">
+          <DividendInfo
+            payoutDay={item?.payout_day ?? 3}
+            dividendMonthlyRate={item?.dividend_monthly_rate}
+            dividendMonthlyUsdPerShare={item?.dividend_monthly_usd_per_share}
+            sharePriceUsd={sharePriceUsd}
+            fxRate={fxRate}
+          />
         </div>
 
-        {/* 3. MarketStatsBar */}
-        <MarketStatsBar
-          progress={progress}
-          targetAmount={targetAmount}
-          currentAmount={currentAmount}
-          participants={participants}
-          remainingAmount={remainingAmount}
-          isLive
-          isDeadlineSoon={deadlineSoon}
-        />
-
-        {/* 4. LiveMomentumBar (1h/24h) */}
+        {/* 10. LiveMomentumBar */}
         {((item?.last_1h_count ?? 0) > 0 || (item?.last_24h_amount ?? 0) > 0) && (
           <div
-            className="w-full py-2 px-4 flex items-center justify-center gap-4 text-[12px] font-medium rounded-xl"
+            className="mt-10 w-full py-2 px-4 flex items-center justify-center gap-4 text-[12px] font-medium rounded-2xl"
             style={{ backgroundColor: '#000', color: '#C5A059' }}
           >
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1.5 tabular-nums font-bold">
               <span className="w-1.5 h-1.5 rounded-full bg-[#C5A059] animate-pulse" />
               1h {(item?.last_1h_count ?? 0)}명
             </span>
             <span className="opacity-70">|</span>
-            <span>24h ₩{(item?.last_24h_amount ?? 0).toLocaleString()}</span>
+            <span className="tabular-nums font-bold">24h ₩{(item?.last_24h_amount ?? 0).toLocaleString()}</span>
           </div>
         )}
 
-        {/* 5. ExpectedReturnBox */}
-        <ExpectedReturnBox yieldRate={yieldRate} defaultAmount={DEFAULT_AMOUNT} onAmountChange={setInvestAmount} />
+        {/* 11. ExpectedReturnBox */}
+        <div className="mt-10">
+          <ExpectedReturnBox yieldRate={yieldRate} defaultAmount={DEFAULT_AMOUNT} onAmountChange={setInvestAmount} />
+        </div>
 
-        {/* 6. TrustBadges */}
-        <TrustBadges />
+        {/* 12. TrustBadges */}
+        <div className="mt-10">
+          <TrustBadges />
+        </div>
 
-        {/* 7. RecentInvestLog */}
-        <RecentInvestLog items={investLogs} />
+        {/* 13. RecentInvestLog */}
+        <div className="mt-10">
+          <RecentInvestLog items={investLogs} />
+        </div>
 
-        {/* 8. ProductChat */}
-        <div className="pb-4">
+        {/* 14. ProductChat */}
+        <div className="mt-10">
           <ProductChat productId={id} />
         </div>
       </div>
 
-      {/* 9. Sticky Invest CTA */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden p-4 border-t" style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}>
-        <p className="text-[11px] text-center mb-2" style={{ color: 'var(--upbit-text-dim)' }}>
-          {(item?.last_1h_count ?? 0) >= 5
-            ? '최근 1시간 집중 참여 중'
-            : dday != null && dday <= 3
-              ? '공연 전 마지막 파트너십 기회'
-              : '지금 참여하면 오늘 집계에 반영됩니다'}
-        </p>
-        <button
-          type="button"
-          onClick={() => (hasSession ? setShowConfirm(true) : (window.location.href = '/login'))}
-          className={`w-full py-4 rounded-xl text-[16px] font-bold ${dday != null && dday <= 3 ? 'animate-pulse' : ''}`}
-          style={{
-            background: dday != null && dday <= 3 ? 'linear-gradient(135deg,#dc2626,#7f1d1d)' : 'var(--upbit-bid)',
-            color: '#fff',
-          }}
-        >
-          {dday != null && dday <= 3
-            ? `D-${dday} 공연 전 파트너십 참여하기`
-            : `${formatPrice(investAmount)} 투자하기`}
-        </button>
+      {/* Sticky CTA */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t md:hidden" style={{ borderColor: 'var(--border)' }}>
+        <div className="max-w-3xl mx-auto px-4 py-3">
+          <p className="text-[11px] text-center mb-1" style={{ color: 'var(--text-secondary)' }}>
+            현재 {participants}명 참여 · 오늘 확정 {todayCount}건
+          </p>
+          <p className="text-[11px] text-center mb-2" style={{ color: 'var(--text-secondary)' }}>{ctaSubtext}</p>
+          <button
+            type="button"
+            onClick={() => (hasSession ? setShowConfirm(true) : (window.location.href = '/login'))}
+            className={`w-full rounded-2xl py-4 text-[16px] font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] tabular-nums ${dday != null && dday <= 3 ? 'animate-pulse' : ''}`}
+            style={{
+              background: dday != null && dday <= 3 ? 'linear-gradient(135deg,#dc2626,#7f1d1d)' : 'var(--upbit-bid)',
+              color: '#fff',
+            }}
+          >
+            {ctaButtonText}
+          </button>
+        </div>
       </div>
 
       <Toast message="투자 완료되었습니다." visible={toastVisible} onHide={() => setToastVisible(false)} />

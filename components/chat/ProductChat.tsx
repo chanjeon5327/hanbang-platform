@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { MessageCircle, Send, User } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -9,6 +9,28 @@ import { createClient } from '@/utils/supabase/client';
 
 const MAX_MESSAGE_LENGTH = 300;
 const POLL_INTERVAL_MS = 10_000;
+
+const SEED_NICKNAMES = [
+  '활발한튤립',
+  '하늘거북이',
+  '달빛고래',
+  '새벽라디오',
+  '금빛모래',
+  '초록펭귄',
+  '블루폭스',
+  '별수집가',
+];
+
+const SEED_MESSAGES = [
+  '월 수익 얼마지?',
+  '오늘도 참여 늘었네',
+  'D-Day 얼마 남음?',
+  '배당 기준 말일이네',
+  '가즈아',
+  '이거 거래도 되나요?',
+  '스프레드 괜찮다',
+  '3일 정산 맞죠?',
+];
 
 type ChatMessage = {
   id: string;
@@ -121,8 +143,25 @@ export default function ProductChat({ productId }: Props) {
   const pinned = messages.filter((m) => m.is_pinned);
   const normal = messages.filter((m) => !m.is_pinned);
 
+  const showSeed = !loading && normal.length === 0;
+  const seedList = useMemo(() => {
+    const shuffledMsgs = [...SEED_MESSAGES].sort(() => Math.random() - 0.5);
+    const shuffledNicks = [...SEED_NICKNAMES].sort(() => Math.random() - 0.5);
+    return shuffledMsgs.map((msg, i) => ({
+      id: `seed-${i}`,
+      user_id: 'seed',
+      message: msg,
+      created_at: new Date(Date.now() - (shuffledMsgs.length - i) * 60000).toISOString(),
+      is_pinned: false,
+      nickname: shuffledNicks[i] ?? '봇',
+      avatar_url: null,
+    }));
+  }, []);
+
+  const displayMessages = showSeed ? seedList : normal;
+
   return (
-    <section className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}>
+    <section className="rounded-3xl overflow-hidden p-4" style={{ backgroundColor: 'rgba(0,0,0,0.02)' }}>
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--upbit-border)' }}>
         <div className="flex items-center gap-2">
           <MessageCircle size={18} strokeWidth={2} style={{ color: 'var(--upbit-bid)' }} />
@@ -147,28 +186,43 @@ export default function ProductChat({ productId }: Props) {
       <div className="max-h-[200px] overflow-y-auto px-4 py-3 space-y-3">
         {loading ? (
           <p className="text-[13px]" style={{ color: 'var(--upbit-text-dim)' }}>로딩 중...</p>
-        ) : normal.length === 0 ? (
+        ) : displayMessages.length === 0 ? (
           <p className="text-[13px]" style={{ color: 'var(--upbit-text-dim)' }}>아직 메시지가 없습니다.</p>
         ) : (
-          normal.map((m) => (
+          displayMessages.map((m) => (
             <div key={m.id} className="flex items-start gap-2">
-              <Link
-                href={`/profile/${m.user_id}`}
-                className="shrink-0 flex flex-col items-center gap-0.5"
-                aria-label={`${m.nickname} 프로필`}
-              >
-                {m.avatar_url ? (
-                  <img src={m.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
-                ) : (
+              {m.user_id === 'seed' ? (
+                <div className="shrink-0 flex flex-col items-center gap-0.5">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--upbit-border)' }}>
                     <User size={14} style={{ color: 'var(--upbit-text-dim)' }} />
                   </div>
-                )}
-              </Link>
-              <div className="flex-1 min-w-0">
-                <Link href={`/profile/${m.user_id}`} className="text-[12px] font-medium hover:underline" style={{ color: 'var(--upbit-text)' }}>
-                  {m.nickname}
+                </div>
+              ) : (
+                <Link
+                  href={`/profile/${m.user_id}`}
+                  className="shrink-0 flex flex-col items-center gap-0.5"
+                  aria-label={`${m.nickname} 프로필`}
+                >
+                  {m.avatar_url ? (
+                    <img src={m.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--upbit-border)' }}>
+                      <User size={14} style={{ color: 'var(--upbit-text-dim)' }} />
+                    </div>
+                  )}
                 </Link>
+              )}
+              <div className="flex-1 min-w-0">
+                {m.user_id === 'seed' ? (
+                  <span className="text-[12px] font-medium inline-flex items-center gap-1.5" style={{ color: 'var(--upbit-text-dim)' }}>
+                    {m.nickname}
+                    <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--upbit-border)', color: 'var(--upbit-text-dim)' }}>봇</span>
+                  </span>
+                ) : (
+                  <Link href={`/profile/${m.user_id}`} className="text-[12px] font-medium hover:underline" style={{ color: 'var(--upbit-text)' }}>
+                    {m.nickname}
+                  </Link>
+                )}
                 <span className="text-[11px] ml-2" style={{ color: 'var(--upbit-text-dim)' }}>{formatTime(m.created_at)}</span>
                 <p className="text-[13px] mt-0.5" style={{ color: 'var(--upbit-text)' }}>{m.message}</p>
               </div>

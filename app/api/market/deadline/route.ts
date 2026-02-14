@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { getYtThumb } from "@/lib/thumbnails";
+import { extractYoutubeId } from "@/lib/youtube";
 
 export const revalidate = 60;
 
@@ -29,19 +30,23 @@ export async function GET(req: NextRequest) {
         .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);
 
-      const items = (fallback ?? []).map((r: Record<string, unknown>, idx: number) => ({
-        id: r.id,
-        title: r.title,
-        thumbnail_url: r.thumbnail_url ?? getYtThumb(idx),
-        creator_name: r.creator_name,
-        category: r.category,
-        platform: r.platform,
-        deadline: null,
-        total_raise: r.total_raise ?? 0,
-        current_raise: r.current_raise ?? 0,
-        participants: 1,
-      event_date: null,
-      }));
+      const items = (fallback ?? []).map((r: Record<string, unknown>, idx: number) => {
+        const thumb = r.thumbnail_url ?? getYtThumb(idx);
+        return {
+          id: r.id,
+          title: r.title,
+          thumbnail_url: thumb,
+          youtube_id: extractYoutubeId(thumb),
+          creator_name: r.creator_name,
+          category: r.category,
+          platform: r.platform,
+          deadline: null,
+          total_raise: r.total_raise ?? 0,
+          current_raise: r.current_raise ?? 0,
+          participants: 1,
+          event_date: null,
+        };
+      });
       return NextResponse.json({ items, next_cursor: offset + items.length });
     }
 
@@ -108,12 +113,14 @@ export async function GET(req: NextRequest) {
         integrityMap[cid] = os === cr;
       });
     }
-    const items = page.map((r, idx) => {
+    const items = page.map((r: Record<string, unknown>, idx: number) => {
       const cid = String(r.id);
+      const thumb = r.thumbnail_url ?? getYtThumb(idx);
       return {
         id: r.id,
         title: r.title,
-        thumbnail_url: r.thumbnail_url ?? getYtThumb(idx),
+        thumbnail_url: thumb,
+        youtube_id: extractYoutubeId(thumb),
         creator_name: r.creator_name,
         category: r.category,
         platform: r.platform,

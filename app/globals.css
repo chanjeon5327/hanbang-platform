@@ -3,6 +3,14 @@
 
 @layer base {
   :root {
+    /* ===== 공통 디자인 토큰 (라이트) ===== */
+    --bg: #f9fafb;
+    --card: #ffffff;
+    --text: #191f28;
+    --text-secondary: #6b7684;
+    --border: #e5e8eb;
+    --primary: #3182f6;
+
     /* ===== 토스 Toss (정적 페이지: 첫화면, 마이페이지, 관리자) ===== */
     --toss-bg: #f2f4f6;
     --toss-card: #ffffff;
@@ -34,6 +42,13 @@
   }
 
   html.dark {
+    /* ===== 공통 디자인 토큰 (다크) ===== */
+    --bg: #0b0c0f;
+    --card: #111318;
+    --text: #f5f6f7;
+    --text-secondary: #8b949e;
+    --border: #1f242b;
+    --primary: #3b82f6;
     --toss-bg: #0d0d0d;
     --toss-card: #161616;
     --toss-blue: #3182f6;
@@ -53,8 +68,8 @@
 
   html, body {
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    background-color: var(--toss-bg);
-    color: var(--toss-text);
+    background: var(--bg);
+    color: var(--text);
   }
 }
 
@@ -65,5 +80,22 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* 카드 공통 */
+  .card {
+    @apply rounded-3xl p-5;
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+
+  /* 숫자 전용 */
+  .metric {
+    @apply font-extrabold tabular-nums;
+  }
+
+  /* 페이지 컨테이너 */
+  .page-wrap {
+    @apply max-w-3xl mx-auto px-4 pb-32;
   }
 }

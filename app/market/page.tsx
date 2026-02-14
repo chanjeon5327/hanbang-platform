@@ -63,6 +63,7 @@ export default function MarketPage() {
 
   const showMyTab = !!user;
   const isEmpty = !loading && filteredItems.length === 0;
+  const [activePreviewId, setActivePreviewId] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen pb-8" style={{ backgroundColor: 'var(--toss-bg)' }}>
@@ -164,6 +165,8 @@ export default function MarketPage() {
                   item={item}
                   index={i}
                   showDeadlineBadge={effectiveTab === 'deadline'}
+                  activePreviewId={activePreviewId}
+                  onPreviewActive={setActivePreviewId}
                 />
               ))}
             </div>

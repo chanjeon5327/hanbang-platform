@@ -3,12 +3,15 @@ import { createClient } from "@/utils/supabase/server";
 
 export const revalidate = 60;
 
+const FALLBACK = { ok: false, live: 0, last_24h_amount: 0, last_1h_count: 0, today_count: 0 };
+
 /**
  * GET /api/metrics/live
  * orders 기반 집계 (INVEST_CONFIRMED 이상만)
  * - last_24h_amount: 최근 24시간 전체 투자 금액
  * - last_1h_count: 최근 1시간 참여 인원
  * - today_count: 오늘 투자 확정 건수
+ * 항상 200 반환. 실패 시 FALLBACK.
  */
 export async function GET() {
   try {
@@ -21,7 +24,8 @@ export async function GET() {
       .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
 
     if (error) {
-      return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+      console.error("[metrics/live] supabase error:", error.message);
+      return NextResponse.json(FALLBACK, { status: 200 });
     }
 
     const now = Date.now();
@@ -49,12 +53,13 @@ export async function GET() {
     }
 
     return NextResponse.json({
+      ok: true,
       last_24h_amount,
       last_1h_count,
       today_count,
-    });
+    }, { status: 200 });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Unknown error";
-    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
+    console.error("[metrics/live] error:", e instanceof Error ? e.message : e);
+    return NextResponse.json(FALLBACK, { status: 200 });
   }
 }

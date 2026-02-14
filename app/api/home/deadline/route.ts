@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { getYtThumb } from "@/lib/thumbnails";
+import { extractYoutubeId } from "@/lib/youtube";
 
 export const revalidate = 60;
 
@@ -25,15 +26,19 @@ export async function GET() {
         .order("created_at", { ascending: false })
         .limit(12);
 
-      const items = (fallback ?? []).map((r: Record<string, unknown>, idx: number) => ({
-        id: r.id,
-        title: r.title,
-        thumbnail_url: r.thumbnail_url ?? getYtThumb(idx),
-        creator_name: r.creator_name,
-        category: r.category,
-        platform: r.platform,
-        deadline: null,
-      }));
+      const items = (fallback ?? []).map((r: Record<string, unknown>, idx: number) => {
+        const thumb = r.thumbnail_url ?? getYtThumb(idx);
+        return {
+          id: r.id,
+          title: r.title,
+          thumbnail_url: thumb,
+          youtube_id: extractYoutubeId(thumb),
+          creator_name: r.creator_name,
+          category: r.category,
+          platform: r.platform,
+          deadline: null,
+        };
+      });
 
       return NextResponse.json({ items });
     }
@@ -65,15 +70,19 @@ export async function GET() {
       result.push(...shuffled);
     });
 
-    const items = result.slice(0, 24).map((r: Record<string, unknown>, idx: number) => ({
-      id: r.id,
-      title: r.title,
-      thumbnail_url: r.thumbnail_url ?? getYtThumb(idx),
-      creator_name: r.creator_name,
-      category: r.category,
-      platform: r.platform,
-      deadline: r.deadline,
-    }));
+    const items = result.slice(0, 24).map((r: Record<string, unknown>, idx: number) => {
+      const thumb = r.thumbnail_url ?? getYtThumb(idx);
+      return {
+        id: r.id,
+        title: r.title,
+        thumbnail_url: thumb,
+        youtube_id: extractYoutubeId(thumb),
+        creator_name: r.creator_name,
+        category: r.category,
+        platform: r.platform,
+        deadline: r.deadline,
+      };
+    });
 
     return NextResponse.json({ items });
   } catch (e: unknown) {

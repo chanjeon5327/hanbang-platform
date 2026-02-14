@@ -24,6 +24,15 @@ export type MarketItem = {
   last_1h_count?: number;
   last_24h_count?: number;
   last_24h_amount?: number;
+  product_type?: 'DIVIDEND_ONLY' | 'DIVIDEND_TRADABLE';
+  pricing_currency?: string;
+  share_price_usd?: number | null;
+  total_raise_usd?: number | null;
+  current_raise_usd?: number | null;
+  dividend_monthly_usd_per_share?: number | null;
+  dividend_monthly_rate?: number | null;
+  payout_day?: number;
+  fx_rate?: number;
 };
 
 export function useMarketItem(id: string | undefined) {

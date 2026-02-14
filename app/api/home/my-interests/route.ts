@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { getYtThumb } from "@/lib/thumbnails";
+import { extractYoutubeId } from "@/lib/youtube";
 
 export const revalidate = 60;
 
@@ -37,14 +38,18 @@ export async function GET() {
         (orderMap.get(a.id) ?? 99) - (orderMap.get(b.id) ?? 99)
     );
 
-    const items = ordered.map((r: Record<string, unknown>, idx: number) => ({
-      id: r.id,
-      title: r.title,
-      thumbnail_url: r.thumbnail_url ?? getYtThumb(idx),
-      creator_name: r.creator_name,
-      category: r.category,
-      platform: r.platform,
-    }));
+    const items = ordered.map((r: Record<string, unknown>, idx: number) => {
+      const thumb = r.thumbnail_url ?? getYtThumb(idx);
+      return {
+        id: r.id,
+        title: r.title,
+        thumbnail_url: thumb,
+        youtube_id: extractYoutubeId(thumb),
+        creator_name: r.creator_name,
+        category: r.category,
+        platform: r.platform,
+      };
+    });
 
     return NextResponse.json({ items });
   } catch {

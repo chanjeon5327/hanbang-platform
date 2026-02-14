@@ -9,6 +9,7 @@ export type RailItem = {
   category?: string;
   platform?: string;
   thumbnail_url?: string;
+  youtube_id?: string | null;
   deadline?: string | null;
   total_raise?: number;
   current_raise?: number;
