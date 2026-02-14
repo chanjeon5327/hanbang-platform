@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Header from '@/components/Header';
+import BuildStamp from '@/components/dev/BuildStamp';
 
 if (typeof window === 'undefined') {
   console.log('SERVER RENDER START');
@@ -24,6 +25,7 @@ export default function RootLayout({
           <Header />
           <main>{children}</main>
         </Providers>
+        <BuildStamp />
       </body>
     </html>
   );

@@ -26,15 +26,17 @@ export async function GET() {
       { headers: { 'Cache-Control': 'no-store' } }
     );
   } catch (e: any) {
+    // 스키마 통일: ok:true 유지, reason으로 에러 정보 전달
     return NextResponse.json(
       {
-        ok: false,
+        ok: true,
         live: 0,
         last_24h_amount: 0,
         last_1h_count: 0,
         today_count: 0,
         env,
         sha,
+        note: 'metrics-not-implemented-yet',
         reason: e?.message ? String(e.message) : 'unknown',
       },
       { headers: { 'Cache-Control': 'no-store' } }

@@ -9,14 +9,17 @@ import { cookies } from 'next/headers';
  * - anon key 사용, RLS 적용
  * - Route Handler / Server Component 등에서 사용
  */
-export async function createClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) {
-    throw new Error(
-      'Missing env: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY'
-    );
+function requireEnv(name: string): string {
+  const v = process.env[name];
+  if (!v || v.trim() === "") {
+    throw new Error(`Supabase env required but empty: ${name}`);
   }
+  return v;
+}
+
+export async function createClient() {
+  const url = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
+  const anonKey = requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
 
   const cookieStore = await cookies();
 
@@ -44,13 +47,8 @@ export async function createClient() {
  * - 로그인 세션 없이 사용
  */
 export function createAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceRoleKey) {
-    throw new Error(
-      'Missing env: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY'
-    );
-  }
+  const url = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
+  const serviceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
   return createSupabaseClient(url, serviceRoleKey, {
     auth: { persistSession: false },

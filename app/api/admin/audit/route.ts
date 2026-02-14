@@ -6,7 +6,8 @@ import { requireAdmin } from '@/lib/admin/requireAdmin';
  * POST /api/admin/audit
  * 관리자 감사 로그 기록
  * - requireAdmin: role 검증
- * - service role: RLS bypass (admin_audit_logs insert)
+ * - supabaseAdmin(service role): admin_audit_logs에 INSERT 정책 없음 → RLS bypass 필요
+ *   (anon + admin 세션으로 전환하려면 admin_audit_logs INSERT 정책 마이그레이션 필요)
  */
 export async function POST(req: NextRequest) {
   try {
