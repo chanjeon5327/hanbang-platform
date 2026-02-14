@@ -186,7 +186,7 @@ export async function POST(
     const { data: inserted, error } = await supabase
       .from("product_chat_messages")
       .insert({
-        product_id: contentId,
+        product_id: productId,
         user_id: user.id,
         message,
         is_pinned: false,
