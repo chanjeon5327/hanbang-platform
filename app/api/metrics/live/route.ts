@@ -1,45 +1,49 @@
-import { NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabase/server';
+import { NextResponse } from 'next/server'
+import { createClient } from '@/utils/supabase/server'
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const env = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? null;
-  const sha = process.env.VERCEL_GIT_COMMIT_SHA ?? null;
-
   try {
-    // 쿠키/세션 없이도 항상 동작하게: Service Role 클라이언트 생성만 보장
-    createAdminClient();
+    const supabase = await createClient()
 
-    return NextResponse.json(
-      {
-        ok: true,
-        live: 0,
-        last_24h_amount: 0,
-        last_1h_count: 0,
-        today_count: 0,
-        env,
-        sha,
-        note: 'metrics-not-implemented-yet',
-      },
-      { headers: { 'Cache-Control': 'no-store' } }
-    );
+    const now = new Date()
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+
+    const { count: last_1h_count } = await supabase
+      .from('metrics_events')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', oneHourAgo.toISOString())
+
+    const { data: amountRows } = await supabase
+      .from('metrics_events')
+      .select('amount')
+      .gte('created_at', oneDayAgo.toISOString())
+
+    const last_24h_amount =
+      amountRows?.reduce((sum, r) => sum + Number(r.amount || 0), 0) ?? 0
+
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+
+    const { count: today_count } = await supabase
+      .from('metrics_events')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', todayStart.toISOString())
+
+    return NextResponse.json({
+      ok: true,
+      live: last_1h_count ?? 0,
+      last_24h_amount,
+      last_1h_count: last_1h_count ?? 0,
+      today_count: today_count ?? 0
+    })
   } catch (e: any) {
-    // 스키마 통일: ok:true 유지, reason으로 에러 정보 전달
-    return NextResponse.json(
-      {
-        ok: true,
-        live: 0,
-        last_24h_amount: 0,
-        last_1h_count: 0,
-        today_count: 0,
-        env,
-        sha,
-        note: 'metrics-not-implemented-yet',
-        reason: e?.message ? String(e.message) : 'unknown',
-      },
-      { headers: { 'Cache-Control': 'no-store' } }
-    );
+    return NextResponse.json({
+      ok: false,
+      error: e?.message ?? 'live-error'
+    })
   }
 }
