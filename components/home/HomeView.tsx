@@ -96,6 +96,11 @@ export default function HomeView({ assetData, assetLoading = false, isLoggedIn, 
           </>
         )}
 
+        <Link href="/trust" className="block rounded-2xl p-4 border text-center" style={{ backgroundColor: TOSS.card, borderColor: TOSS.border }}>
+          <span className="text-[14px] font-semibold" style={{ color: TOSS.blue }}>투자 구조 보기</span>
+          <span className="text-[12px] block mt-0.5" style={{ color: TOSS.secondary }}>원장·결제·정산 흐름 확인</span>
+        </Link>
+
         <div className="h-6" />
       </main>
 

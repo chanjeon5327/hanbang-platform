@@ -29,11 +29,27 @@ export async function GET(req: NextRequest) {
 
     const { data: contents, error: err2 } = await supabase
       .from("content_items")
-      .select("id, title, thumbnail_url, creator_name, category, platform")
+      .select("id, title, thumbnail_url, creator_name, category, platform, total_raise, current_raise")
       .in("id", ids)
       .eq("status", "active");
 
     if (err2) return NextResponse.json({ items: [], next_cursor: null });
+
+    const { data: orderRows } = await supabase
+      .from("orders")
+      .select("content_id, user_id")
+      .in("content_id", ids)
+      .in("status", ["INVEST_CONFIRMED", "COMPLETED"]);
+    const uniqueByContent = new Map<string, Set<string>>();
+    (orderRows ?? []).forEach((r: { content_id?: string; user_id?: string }) => {
+      const cid = r.content_id;
+      if (cid && r.user_id) {
+        if (!uniqueByContent.has(cid)) uniqueByContent.set(cid, new Set());
+        uniqueByContent.get(cid)!.add(r.user_id);
+      }
+    });
+    const participantsMap: Record<string, number> = {};
+    uniqueByContent.forEach((s, cid) => { participantsMap[cid] = s.size; });
 
     const orderMap = new Map(ids.map((id: string, i: number) => [id, i]));
     const ordered = (contents ?? []).sort(
@@ -48,6 +64,9 @@ export async function GET(req: NextRequest) {
       creator_name: r.creator_name,
       category: r.category,
       platform: r.platform,
+      total_raise: r.total_raise ?? 0,
+      current_raise: r.current_raise ?? 0,
+      participants: Math.max(1, participantsMap[String(r.id)] ?? 0),
     }));
 
     return NextResponse.json({

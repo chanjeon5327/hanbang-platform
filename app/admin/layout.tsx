@@ -21,10 +21,12 @@ import {
   LogOut,
   Shield,
   CreditCard,
+  ShieldCheck,
 } from 'lucide-react';
 
 const menuItems = [
   { icon: LayoutDashboard, label: '리포트 대시보드', path: '/admin', role: 1 as const },
+  { icon: ShieldCheck, label: '정합성 점검', path: '/admin/integrity', role: 1 as const },
   { icon: Users, label: '유저 관리', path: '/admin/users', role: 1 as const },
   { icon: FileCheck, label: '작품 승인/강제삭제', path: '/admin/content', role: 2 as const },
   { icon: ShoppingCart, label: '주문/결제 확인', path: '/admin/orders', role: 1 as const },

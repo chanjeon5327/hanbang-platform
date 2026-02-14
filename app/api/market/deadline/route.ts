@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     if (!hasDeadline) {
       const { data: fallback } = await supabase
         .from("content_items")
-        .select("id, title, thumbnail_url, creator_name, category, platform")
+        .select("id, title, thumbnail_url, creator_name, category, platform, total_raise, current_raise")
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);
@@ -37,13 +37,16 @@ export async function GET(req: NextRequest) {
         category: r.category,
         platform: r.platform,
         deadline: null,
+        total_raise: r.total_raise ?? 0,
+        current_raise: r.current_raise ?? 0,
+        participants: 1,
       }));
       return NextResponse.json({ items, next_cursor: offset + items.length });
     }
 
     const { data: rows, error } = await supabase
       .from("content_items")
-      .select("id, title, thumbnail_url, creator_name, category, platform, deadline")
+      .select("id, title, thumbnail_url, creator_name, category, platform, deadline, total_raise, current_raise")
       .eq("status", "active")
       .gt("deadline", now)
       .order("deadline", { ascending: true })
@@ -69,6 +72,24 @@ export async function GET(req: NextRequest) {
     });
 
     const page = result.slice(offset, offset + limit) as Record<string, unknown>[];
+    const pageIds = page.map((r) => r.id).filter(Boolean) as string[];
+    let partMap: Record<string, number> = {};
+    if (pageIds.length > 0) {
+      const { data: orderRows } = await supabase
+        .from("orders")
+        .select("content_id, user_id")
+        .in("content_id", pageIds)
+        .in("status", ["INVEST_CONFIRMED", "COMPLETED"]);
+      const uniqueByContent = new Map<string, Set<string>>();
+      (orderRows ?? []).forEach((r: { content_id?: string; user_id?: string }) => {
+        const cid = r.content_id;
+        if (cid && r.user_id) {
+          if (!uniqueByContent.has(cid)) uniqueByContent.set(cid, new Set());
+          uniqueByContent.get(cid)!.add(r.user_id);
+        }
+      });
+      uniqueByContent.forEach((s, cid) => { partMap[cid] = s.size; });
+    }
     const items = page.map((r, idx) => ({
       id: r.id,
       title: r.title,
@@ -77,6 +98,9 @@ export async function GET(req: NextRequest) {
       category: r.category,
       platform: r.platform,
       deadline: r.deadline,
+      total_raise: r.total_raise ?? 0,
+      current_raise: r.current_raise ?? 0,
+      participants: Math.max(1, partMap[String(r.id)] ?? 0),
     }));
 
     return NextResponse.json({

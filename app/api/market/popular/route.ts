@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     if (aggError || !agg || agg.length === 0) {
       const { data: fallback } = await supabase
         .from("content_items")
-        .select("id, title, thumbnail_url, creator_name, category, platform")
+        .select("id, title, thumbnail_url, creator_name, category, platform, total_raise, current_raise")
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);
@@ -47,6 +47,9 @@ export async function GET(req: NextRequest) {
         creator_name: r.creator_name,
         category: r.category,
         platform: r.platform,
+        total_raise: r.total_raise ?? 0,
+        current_raise: r.current_raise ?? 0,
+        participants: 1,
       }));
       return NextResponse.json({ items, next_cursor: offset + items.length });
     }
@@ -70,9 +73,25 @@ export async function GET(req: NextRequest) {
 
     const { data: contentRows } = await supabase
       .from("content_items")
-      .select("id, title, thumbnail_url, creator_name, category, platform")
+      .select("id, title, thumbnail_url, creator_name, category, platform, total_raise, current_raise")
       .in("id", pageIds)
       .eq("status", "active");
+
+    const { data: orderRows } = await supabase
+      .from("orders")
+      .select("content_id, user_id")
+      .in("content_id", pageIds)
+      .in("status", ["INVEST_CONFIRMED", "COMPLETED"]);
+    const uniqueByContent = new Map<string, Set<string>>();
+    (orderRows ?? []).forEach((r: { content_id?: string; user_id?: string }) => {
+      const cid = r.content_id;
+      if (cid && r.user_id) {
+        if (!uniqueByContent.has(cid)) uniqueByContent.set(cid, new Set());
+        uniqueByContent.get(cid)!.add(r.user_id);
+      }
+    });
+    const partMap: Record<string, number> = {};
+    uniqueByContent.forEach((s, cid) => { partMap[cid] = s.size; });
 
     const orderMap = new Map(pageIds.map((id, i) => [id, i]));
     const ordered = (contentRows ?? []).sort(
@@ -87,6 +106,9 @@ export async function GET(req: NextRequest) {
       creator_name: r.creator_name,
       category: r.category,
       platform: r.platform,
+      total_raise: r.total_raise ?? 0,
+      current_raise: r.current_raise ?? 0,
+      participants: Math.max(1, partMap[String(r.id)] ?? 0),
     }));
 
     return NextResponse.json({

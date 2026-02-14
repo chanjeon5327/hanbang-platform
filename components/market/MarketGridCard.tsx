@@ -22,6 +22,9 @@ export type MarketGridItem = {
   category?: string;
   thumbnail_url?: string;
   deadline?: string | null;
+  total_raise?: number;
+  current_raise?: number;
+  participants?: number;
 };
 
 type Props = {
@@ -45,9 +48,13 @@ export default function MarketGridCard({ item, index, showDeadlineBadge = false,
     >
       <div className="relative aspect-[4/5] bg-[#e5e8eb]">
         <img src={thumbSrc} alt="" className="w-full h-full object-cover" loading="lazy" />
-        {showDeadlineBadge && (
+        {showDeadlineBadge ? (
           <span className="absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-bold text-white" style={{ backgroundColor: TOSS.negative }}>
             마감임박
+          </span>
+        ) : (
+          <span className="absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-bold text-white bg-emerald-500">
+            LIVE
           </span>
         )}
         {user && (
@@ -74,6 +81,24 @@ export default function MarketGridCard({ item, index, showDeadlineBadge = false,
         <div className="text-[14px] font-semibold line-clamp-2 leading-snug" style={{ color: TOSS.text }}>{item.title}</div>
         {item.creator_name && (
           <div className="text-[12px] mt-0.5 truncate" style={{ color: TOSS.secondary }}>{item.creator_name}</div>
+        )}
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="h-1.5 rounded-full overflow-hidden bg-black/10">
+              <div
+                className="h-full rounded-full bg-[var(--toss-blue)] transition-all"
+                style={{ width: `${Math.min(100, ((item.current_raise ?? 0) / Math.max(1, item.total_raise ?? 1)) * 100)}%` }}
+              />
+            </div>
+          </div>
+          <span className="text-[11px] font-bold shrink-0" style={{ color: TOSS.text }}>
+            {Math.min(100, Math.round(((item.current_raise ?? 0) / Math.max(1, item.total_raise ?? 1)) * 100))}%
+          </span>
+        </div>
+        {(item.participants ?? 0) > 0 && (
+          <div className="text-[11px] mt-1" style={{ color: TOSS.secondary }}>
+            {item.participants}명 참여
+          </div>
         )}
       </div>
     </Link>

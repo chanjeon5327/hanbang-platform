@@ -10,6 +10,9 @@ export type RailItem = {
   platform?: string;
   thumbnail_url?: string;
   deadline?: string | null;
+  total_raise?: number;
+  current_raise?: number;
+  participants?: number;
 };
 
 const TAB_APIS: Record<string, string> = {
