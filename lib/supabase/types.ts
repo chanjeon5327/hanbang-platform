@@ -134,6 +134,42 @@ export type Database = {
         }
         Relationships: []
       }
+      content_items: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          creator_name: string | null
+          id: string
+          platform: string | null
+          status: string | null
+          summary: string | null
+          thumbnail_url: string | null
+          title: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          creator_name?: string | null
+          id?: string
+          platform?: string | null
+          status?: string | null
+          summary?: string | null
+          thumbnail_url?: string | null
+          title: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          creator_name?: string | null
+          id?: string
+          platform?: string | null
+          status?: string | null
+          summary?: string | null
+          thumbnail_url?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       interest_registrations: {
         Row: {
           contact_type: string | null
@@ -649,6 +685,7 @@ export type Database = {
           id: string
           nickname: string | null
           role: string
+          status: string | null
         }
         Insert: {
           balance?: number | null
@@ -657,6 +694,7 @@ export type Database = {
           id: string
           nickname?: string | null
           role?: string
+          status?: string | null
         }
         Update: {
           balance?: number | null
@@ -665,6 +703,7 @@ export type Database = {
           id?: string
           nickname?: string | null
           role?: string
+          status?: string | null
         }
         Relationships: [
           {
@@ -1148,6 +1187,30 @@ export type Database = {
         }
         Relationships: []
       }
+      v_content_metrics_7d: {
+        Row: {
+          clicks_7d: number | null
+          content_id: string | null
+          impressions_7d: number | null
+          interests_7d: number | null
+          watch_seconds_7d: number | null
+        }
+        Insert: {
+          clicks_7d?: never
+          content_id?: string | null
+          impressions_7d?: never
+          interests_7d?: never
+          watch_seconds_7d?: never
+        }
+        Update: {
+          clicks_7d?: never
+          content_id?: string | null
+          impressions_7d?: never
+          interests_7d?: never
+          watch_seconds_7d?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
       buy_product: {
@@ -1191,7 +1254,7 @@ export type Database = {
       }
       reverse_trade: { Args: { p_trade_id: string }; Returns: undefined }
       rpc_admin_confirm_settlement:
-        | { Args: { p_batch_id: string }; Returns: undefined }
+        | { Args: { p_batch_id: string }; Returns: Json }
         | {
             Args: { p_seller_id: string; p_settlement_date: string }
             Returns: Json
