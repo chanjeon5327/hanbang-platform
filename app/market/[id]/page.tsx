@@ -20,7 +20,9 @@ import { useRecentInvestLog } from '@/hooks/useRecentInvestLog';
 import { useInterestToggle } from '@/hooks/useInterestToggle';
 import { useMyInterests } from '@/hooks/useMyInterests';
 import { useArtistContribution } from '@/hooks/useArtistContribution';
+import { useArtistProgress } from '@/hooks/useArtistProgress';
 import ArtistBadge from '@/components/profile/ArtistBadge';
+import ArtistProgressCard from '@/components/profile/ArtistProgressCard';
 
 const YT_FALLBACK = 'HosW0gulISQ';
 const YT_START_SEC = 25;
@@ -79,6 +81,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const { items: investLogs, refetch: refetchInvestLogs } = useRecentInvestLog(id);
   const { items: myInterests } = useMyInterests(!!user);
   const { items: artistContributions, refetch: refetchContributions } = useArtistContribution(!!user);
+  const { items: artistProgress, refetch: refetchProgress } = useArtistProgress(!!user);
   const searchParams = useSearchParams();
 
   // 결제 플로우 리다이렉트 시 invest=done → invest-success 이벤트로 갱신
@@ -87,9 +90,10 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
       refetchItem();
       refetchInvestLogs();
       refetchContributions();
+      refetchProgress();
       window.dispatchEvent(new Event('invest-success'));
     }
-  }, [searchParams, refetchItem, refetchInvestLogs, refetchContributions]);
+  }, [searchParams, refetchItem, refetchInvestLogs, refetchContributions, refetchProgress]);
   const isInMyInterests = myInterests.some((i) => i.id === id);
   const { isInterested, toggle, loading: toggleLoading } = useInterestToggle(id, isInMyInterests);
 
@@ -174,7 +178,21 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
             <p className="text-[14px] mt-1" style={{ color: 'var(--upbit-text-dim)' }}>{creator} · {category}</p>
             {item?.artist_keyword && user && (() => {
               const contrib = artistContributions.find((c) => c.artist_keyword === item.artist_keyword);
-              return contrib ? <div className="mt-2"><ArtistBadge artist={item.artist_keyword} amount={contrib.total_amount} /></div> : null;
+              const prog = artistProgress.find((p) => p.artist_keyword === item.artist_keyword);
+              return (
+                <div className="mt-2 space-y-2">
+                  {contrib && <ArtistBadge artist={item.artist_keyword} amount={contrib.total_amount} />}
+                  {prog && (
+                    <ArtistProgressCard
+                      artist={item.artist_keyword}
+                      totalAmount={prog.total_amount}
+                      targetAmount={prog.target_amount}
+                      progress={prog.progress_percent}
+                      compact
+                    />
+                  )}
+                </div>
+              );
             })()}
           </div>
           {user && (

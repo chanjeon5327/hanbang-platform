@@ -7,7 +7,9 @@ import { ArrowLeft, User } from 'lucide-react';
 import BottomNavigation from '@/components/home/BottomNavigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useArtistContribution } from '@/hooks/useArtistContribution';
+import { useArtistProgress } from '@/hooks/useArtistProgress';
 import ArtistBadge from '@/components/profile/ArtistBadge';
+import ArtistProgressCard from '@/components/profile/ArtistProgressCard';
 
 type Profile = {
   id: string;
@@ -21,7 +23,8 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
   const { id } = use(params);
   const router = useRouter();
   const { user } = useAuth();
-  const { items: artistContributions, loading: contributionsLoading } = useArtistContribution(!!user && user?.id === id);
+  const { items: artistContributions } = useArtistContribution(!!user && user?.id === id);
+  const { items: artistProgress } = useArtistProgress(!!user && user?.id === id);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -106,14 +109,29 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
         </div>
 
         <div className="mt-8 space-y-4">
-          {user?.id === id && artistContributions.length > 0 && (
+          {user?.id === id && (artistContributions.length > 0 || artistProgress.length > 0) && (
             <section className="rounded-2xl p-4 border" style={{ backgroundColor: 'var(--toss-card)', borderColor: 'var(--toss-border)' }}>
               <h2 className="text-[15px] font-semibold mb-3" style={{ color: 'var(--toss-text)' }}>공식 파트너십</h2>
-              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                {artistContributions.map((c) => (
-                  <ArtistBadge key={c.artist_keyword} artist={c.artist_keyword} amount={c.total_amount} />
-                ))}
-              </div>
+              {artistContributions.length > 0 && (
+                <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 mb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                  {artistContributions.map((c) => (
+                    <ArtistBadge key={c.artist_keyword} artist={c.artist_keyword} amount={c.total_amount} />
+                  ))}
+                </div>
+              )}
+              {artistProgress.length > 0 && (
+                <div className="flex flex-col gap-3">
+                  {artistProgress.map((p) => (
+                    <ArtistProgressCard
+                      key={p.artist_keyword}
+                      artist={p.artist_keyword}
+                      totalAmount={p.total_amount}
+                      targetAmount={p.target_amount}
+                      progress={p.progress_percent}
+                    />
+                  ))}
+                </div>
+              )}
             </section>
           )}
           <section className="rounded-2xl p-4 border" style={{ backgroundColor: 'var(--toss-card)', borderColor: 'var(--toss-border)' }}>
