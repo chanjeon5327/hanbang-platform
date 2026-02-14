@@ -6,10 +6,12 @@ import BottomNavigation from '@/components/home/BottomNavigation';
 import GuestHero from '@/components/home/GuestHero';
 import GuestPreview from '@/components/home/GuestPreview';
 import SponsoredPickHero from '@/components/home/SponsoredPickHero';
+import LiveMomentumBar from '@/components/home/LiveMomentumBar';
 import InvestorDashboardCard from '@/components/home/InvestorDashboardCard';
 import PrimaryCTAs from '@/components/home/PrimaryCTAs';
 import InterestStrip from '@/components/home/InterestStrip';
 import CurationSection from '@/components/home/CurationSection';
+import AdSlot from '@/components/ads/AdSlot';
 import IpNewsSection from '@/components/news/IpNewsSection';
 import SupportBubble from '@/components/support/SupportBubble';
 import CompanyFooter from '@/components/layout/CompanyFooter';
@@ -54,6 +56,9 @@ export default function HomeView({ assetData, assetLoading = false, isLoggedIn, 
             {/* 스폰서: 영상 히어로형 - AssetSummaryCard 위 */}
             <SponsoredPickHero />
 
+            {/* 실시간 참여 지표 바 */}
+            <LiveMomentumBar />
+
             {/* (A) 총자산 + 나의 레벨 (다음 레벨 게이지 포함) */}
             <InvestorDashboardCard data={assetData} loading={assetLoading} isLoggedIn={isLoggedIn} />
 
@@ -63,6 +68,7 @@ export default function HomeView({ assetData, assetLoading = false, isLoggedIn, 
             {/* (C) 나의 관심 → 모두의 추천 → 마감임박 */}
             <InterestStrip enabled={!demoMode} />
             <CurationSection title="모두의 추천" enabled={!demoMode} />
+            <AdSlot position="home_mid" />
             <DeadlineRail enabled={!demoMode} />
 
             <Link href="/active-invest" className="rounded-2xl p-4 border flex items-center gap-3" style={{ backgroundColor: TOSS.card, borderColor: TOSS.border }}>
@@ -87,6 +93,9 @@ export default function HomeView({ assetData, assetLoading = false, isLoggedIn, 
           <>
             {/* 1. 서비스 설명 + CTA 2개 (구경하기/데모) */}
             <GuestHero />
+
+            {/* 실시간 참여 지표 바 */}
+            <LiveMomentumBar />
 
             {/* 2. 인기 1~2개 프리뷰 - usePopularPicks 경계 */}
             <GuestPreview enabled={!demoMode} />

@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 
     const { data: rows, error } = await supabase
       .from("content_items")
-      .select("id, title, thumbnail_url, creator_name, category, platform, deadline, total_raise, current_raise")
+      .select("id, title, thumbnail_url, creator_name, category, platform, deadline, total_raise, current_raise, event_date")
       .eq("status", "active")
       .gt("deadline", now)
       .order("deadline", { ascending: true })
@@ -75,35 +75,57 @@ export async function GET(req: NextRequest) {
     const page = result.slice(offset, offset + limit) as Record<string, unknown>[];
     const pageIds = page.map((r) => r.id).filter(Boolean) as string[];
     let partMap: Record<string, number> = {};
+    const settledByContent: Record<string, number> = {};
+    const integrityMap: Record<string, boolean> = {};
     if (pageIds.length > 0) {
       const { data: orderRows } = await supabase
         .from("orders")
-        .select("content_id, user_id")
+        .select("content_id, user_id, status")
         .in("content_id", pageIds)
-        .in("status", ["INVEST_CONFIRMED", "COMPLETED"]);
+        .in("status", ["INVEST_CONFIRMED", "SETTLED", "COMPLETED"]);
       const uniqueByContent = new Map<string, Set<string>>();
-      (orderRows ?? []).forEach((r: { content_id?: string; user_id?: string }) => {
+      (orderRows ?? []).forEach((r: { content_id?: string; user_id?: string; status?: string }) => {
         const cid = r.content_id;
         if (cid && r.user_id) {
           if (!uniqueByContent.has(cid)) uniqueByContent.set(cid, new Set());
           uniqueByContent.get(cid)!.add(r.user_id);
         }
+        if (cid && (r.status === "SETTLED" || r.status === "COMPLETED")) {
+          settledByContent[cid] = (settledByContent[cid] ?? 0) + 1;
+        }
       });
       uniqueByContent.forEach((s, cid) => { partMap[cid] = s.size; });
+
+      const { data: integrityRows } = await supabase
+        .from("v_integrity_check")
+        .select("content_id, orders_sum, ledger_sum, current_raise")
+        .in("content_id", pageIds);
+      (integrityRows ?? []).forEach((r: { content_id?: string; orders_sum?: number; ledger_sum?: number; current_raise?: number }) => {
+        const cid = r.content_id;
+        if (!cid) return;
+        const os = Number(r.orders_sum ?? 0);
+        const cr = Number(r.current_raise ?? 0);
+        integrityMap[cid] = os === cr;
+      });
     }
-    const items = page.map((r, idx) => ({
-      id: r.id,
-      title: r.title,
-      thumbnail_url: r.thumbnail_url ?? getYtThumb(idx),
-      creator_name: r.creator_name,
-      category: r.category,
-      platform: r.platform,
-      deadline: r.deadline,
-      total_raise: r.total_raise ?? 0,
-      current_raise: r.current_raise ?? 0,
-      participants: Math.max(1, partMap[String(r.id)] ?? 0),
-      event_date: r.event_date ?? null,
-    }));
+    const items = page.map((r, idx) => {
+      const cid = String(r.id);
+      return {
+        id: r.id,
+        title: r.title,
+        thumbnail_url: r.thumbnail_url ?? getYtThumb(idx),
+        creator_name: r.creator_name,
+        category: r.category,
+        platform: r.platform,
+        deadline: r.deadline,
+        total_raise: r.total_raise ?? 0,
+        current_raise: r.current_raise ?? 0,
+        participants: Math.max(1, partMap[cid] ?? 0),
+        event_date: r.event_date ?? null,
+        integrity_ok: integrityMap[cid] ?? false,
+        settlement_count: settledByContent[cid] ?? 0,
+      };
+    });
 
     return NextResponse.json({
       items,

@@ -26,6 +26,8 @@ export type MarketGridItem = {
   current_raise?: number;
   participants?: number;
   event_date?: string | null;
+  integrity_ok?: boolean;
+  settlement_count?: number;
 };
 
 type Props = {
@@ -69,7 +71,17 @@ export default function MarketGridCard({ item, index, showDeadlineBadge = false,
       )}
       <div className="relative aspect-[4/5] bg-[#e5e8eb]">
         <img src={thumbSrc} alt="" className="w-full h-full object-cover" loading="lazy" />
-        <div className="absolute top-2 right-2 flex items-center gap-1.5">
+        <div className="absolute top-2 right-2 flex flex-wrap justify-end gap-1.5">
+          {item.integrity_ok && (item.settlement_count ?? 0) > 0 && (
+            <span className="rounded px-1.5 py-0.5 text-[9px] font-medium bg-emerald-600/90 text-white shrink-0">
+              정산완료 {item.settlement_count}건
+            </span>
+          )}
+          {item.integrity_ok && (item.settlement_count ?? 0) === 0 && (
+            <span className="rounded px-1.5 py-0.5 text-[9px] font-medium bg-sky-600/90 text-white shrink-0">
+              원장 검증 완료
+            </span>
+          )}
           {dday != null && (
             <span
               className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white"

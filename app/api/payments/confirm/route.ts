@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (payment.status === "PAYMENT_APPROVED" || payment.status === "INVEST_CONFIRMED") {
-    return NextResponse.redirect(new URL(`/market/${payment.content_id}?invest=done`, req.url));
+    return NextResponse.redirect(new URL("/invest/success", req.url));
   }
 
   const isSandbox = PG_SANDBOX || sandbox;
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL("/market?error=pg_not_ready", req.url));
   }
 
-  return NextResponse.redirect(new URL(`/market/${payment.content_id}?invest=done`, req.url));
+    return NextResponse.redirect(new URL("/invest/success", req.url));
 }
 
 export async function POST(req: Request) {

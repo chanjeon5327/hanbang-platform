@@ -11,6 +11,7 @@ import YouTubeEmbed from '@/components/common/YouTubeEmbed';
 import MarketStatsBar from '@/components/market/MarketStatsBar';
 import ExpectedReturnBox from '@/components/market/ExpectedReturnBox';
 import TrustBadges from '@/components/market/TrustBadges';
+import AdSlot from '@/components/ads/AdSlot';
 import RecentInvestLog from '@/components/market/RecentInvestLog';
 import InvestConfirmModal from '@/components/market/InvestConfirmModal';
 import ProductChat from '@/components/chat/ProductChat';
@@ -261,6 +262,8 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
         {/* TrustBadges */}
         <TrustBadges />
 
+        <AdSlot position="market_detail" />
+
         {/* 5. ExpectedReturnBox */}
         <ExpectedReturnBox yieldRate={yieldRate} defaultAmount={DEFAULT_AMOUNT} onAmountChange={setInvestAmount} />
 
@@ -275,6 +278,9 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
 
       {/* 모바일: sticky 하단 투자 버튼 */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden p-4 border-t" style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}>
+        <p className="text-[11px] text-center mb-2" style={{ color: 'var(--upbit-text-dim)' }}>
+          {(item?.last_1h_count ?? 0) >= 5 ? '최근 1시간 집중 참여 중' : '지금 참여하면 오늘 집계에 반영됩니다'}
+        </p>
         <button
           type="button"
           onClick={() => (hasSession ? setShowConfirm(true) : (window.location.href = '/login'))}

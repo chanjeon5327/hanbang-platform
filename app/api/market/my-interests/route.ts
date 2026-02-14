@@ -37,19 +37,34 @@ export async function GET(req: NextRequest) {
 
     const { data: orderRows } = await supabase
       .from("orders")
-      .select("content_id, user_id")
+      .select("content_id, user_id, status")
       .in("content_id", ids)
-      .in("status", ["INVEST_CONFIRMED", "COMPLETED"]);
+      .in("status", ["INVEST_CONFIRMED", "SETTLED", "COMPLETED"]);
     const uniqueByContent = new Map<string, Set<string>>();
-    (orderRows ?? []).forEach((r: { content_id?: string; user_id?: string }) => {
+    const settledByContent: Record<string, number> = {};
+    (orderRows ?? []).forEach((r: { content_id?: string; user_id?: string; status?: string }) => {
       const cid = r.content_id;
       if (cid && r.user_id) {
         if (!uniqueByContent.has(cid)) uniqueByContent.set(cid, new Set());
         uniqueByContent.get(cid)!.add(r.user_id);
       }
+      if (cid && (r.status === "SETTLED" || r.status === "COMPLETED")) {
+        settledByContent[cid] = (settledByContent[cid] ?? 0) + 1;
+      }
     });
     const participantsMap: Record<string, number> = {};
     uniqueByContent.forEach((s, cid) => { participantsMap[cid] = s.size; });
+
+    const { data: integrityRows } = await supabase
+      .from("v_integrity_check")
+      .select("content_id, orders_sum, current_raise")
+      .in("content_id", ids);
+    const integrityMap: Record<string, boolean> = {};
+    (integrityRows ?? []).forEach((r: { content_id?: string; orders_sum?: number; current_raise?: number }) => {
+      const cid = r.content_id;
+      if (!cid) return;
+      integrityMap[cid] = Number(r.orders_sum ?? 0) === Number(r.current_raise ?? 0);
+    });
 
     const orderMap = new Map(ids.map((id: string, i: number) => [id, i]));
     const ordered = (contents ?? []).sort(
@@ -57,18 +72,23 @@ export async function GET(req: NextRequest) {
         (orderMap.get(a.id) ?? 99) - (orderMap.get(b.id) ?? 99)
     );
 
-    const items = ordered.map((r: Record<string, unknown>, idx: number) => ({
-      id: r.id,
-      title: r.title,
-      thumbnail_url: r.thumbnail_url ?? getYtThumb(idx),
-      creator_name: r.creator_name,
-      category: r.category,
-      platform: r.platform,
-      total_raise: r.total_raise ?? 0,
-      current_raise: r.current_raise ?? 0,
-      participants: Math.max(1, participantsMap[String(r.id)] ?? 0),
-      event_date: r.event_date ?? null,
-    }));
+    const items = ordered.map((r: Record<string, unknown>, idx: number) => {
+      const cid = String(r.id);
+      return {
+        id: r.id,
+        title: r.title,
+        thumbnail_url: r.thumbnail_url ?? getYtThumb(idx),
+        creator_name: r.creator_name,
+        category: r.category,
+        platform: r.platform,
+        total_raise: r.total_raise ?? 0,
+        current_raise: r.current_raise ?? 0,
+        participants: Math.max(1, participantsMap[cid] ?? 0),
+        event_date: r.event_date ?? null,
+        integrity_ok: integrityMap[cid] ?? false,
+        settlement_count: settledByContent[cid] ?? 0,
+      };
+    });
 
     return NextResponse.json({
       items,
