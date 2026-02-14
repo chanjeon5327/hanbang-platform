@@ -14,6 +14,9 @@ export type RailItem = {
   current_raise?: number;
   participants?: number;
   event_date?: string | null;
+  artist_keyword?: string | null;
+  integrity_ok?: boolean;
+  settlement_count?: number;
 };
 
 const TAB_APIS: Record<string, string> = {
@@ -26,7 +29,9 @@ const TAB_APIS: Record<string, string> = {
 export function useMarketTab(
   tab: string,
   category: string | null,
-  isLoggedIn: boolean
+  isLoggedIn: boolean,
+  sort?: string,
+  artistKeyword?: string | null
 ) {
   const [items, setItems] = useState<RailItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +47,8 @@ export function useMarketTab(
     const api = tab === 'category' ? '/api/market/all' : TAB_APIS[tab] ?? TAB_APIS.all;
     const params = new URLSearchParams({ limit: '24', offset: String(offset) });
     if (tab === 'category' && category) params.set('category', category);
+    if (sort && (tab === 'popular' || tab === 'category' || tab === 'all')) params.set('sort', sort);
+    if (artistKeyword && (tab === 'popular' || tab === 'category' || tab === 'all')) params.set('artist_keyword', artistKeyword);
 
     setLoading(true);
     try {
@@ -56,7 +63,7 @@ export function useMarketTab(
     } finally {
       setLoading(false);
     }
-  }, [tab, category, isLoggedIn]);
+  }, [tab, category, isLoggedIn, sort, artistKeyword]);
 
   useEffect(() => {
     fetchPage(0, false);

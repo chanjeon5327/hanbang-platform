@@ -139,7 +139,7 @@ export default function MarketGridCard({ item, index, showDeadlineBadge = false,
               />
             </div>
           </div>
-          <span className="text-[11px] font-bold shrink-0" style={{ color: TOSS.text }}>
+          <span className="text-[12px] font-bold shrink-0" style={{ color: TOSS.text }}>
             {Math.min(100, Math.round(((item.current_raise ?? 0) / Math.max(1, item.total_raise ?? 1)) * 100))}%
           </span>
         </div>

@@ -6,7 +6,7 @@ import { ArrowLeft, Search } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import MarketGridCard from '@/components/market/MarketGridCard';
 import { useMarketTab, type RailItem } from '@/hooks/useMarketTab';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 const TABS = [
   { key: 'all', label: '전체' },
@@ -16,7 +16,12 @@ const TABS = [
   { key: 'category', label: '카테고리' },
 ] as const;
 
-const CATEGORIES = ['여행', '게임', '음악', '웹툰', '웹소설', '드라마', '먹방', '일상', '팟캐스트', 'OTT', '유튜브', '음원'] as const;
+const SORT_OPTIONS = [
+  { value: 'recommendation', label: '추천' },
+  { value: 'progress', label: '모집률' },
+  { value: 'deadline', label: '마감순' },
+  { value: 'participants', label: '참여수' },
+] as const;
 
 export default function MarketPage() {
   const searchParams = useSearchParams();
@@ -24,12 +29,25 @@ export default function MarketPage() {
   const tab = searchParams.get('tab') ?? 'popular';
   const category = searchParams.get('category');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sort, setSort] = useState<string>('recommendation');
+  const [artistKeyword, setArtistKeyword] = useState<string | null>(null);
+  const [filters, setFilters] = useState<{ categories: string[]; artist_keywords: string[] }>({ categories: [], artist_keywords: [] });
+
+  useEffect(() => {
+    fetch('/api/market/filters', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((j) => setFilters({ categories: j.categories ?? [], artist_keywords: j.artist_keywords ?? [] }))
+      .catch(() => {});
+  }, []);
 
   const effectiveTab = tab === 'my' && !user ? 'all' : tab;
+  const effectiveSort = effectiveTab === 'deadline' ? 'deadline' : sort;
   const { items, loading, nextCursor, loadMore } = useMarketTab(
     effectiveTab,
     tab === 'category' ? category : null,
-    !!user
+    !!user,
+    effectiveSort,
+    artistKeyword
   );
 
   const filteredItems = useMemo(() => {
@@ -71,6 +89,20 @@ export default function MarketPage() {
           </div>
         </div>
 
+        {/* SortDropdown */}
+        <div className="px-4 py-2 border-b border-black/5">
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="w-full max-w-[140px] px-3 py-2 rounded-lg text-[13px] font-medium border"
+            style={{ backgroundColor: 'var(--toss-bg)', color: 'var(--toss-text)', borderColor: 'var(--toss-border)' }}
+          >
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+
         {/* 탭 */}
         <div className="flex overflow-x-auto no-scrollbar gap-1 px-4 pb-2 border-b border-black/5">
           {TABS.filter((t) => t.key !== 'my' || showMyTab).map((t) => (
@@ -86,21 +118,32 @@ export default function MarketPage() {
           ))}
         </div>
 
-        {tab === 'category' && (
-          <div className="flex flex-wrap gap-2 px-4 py-3 border-b border-black/5">
-            {CATEGORIES.map((c) => (
-              <Link
-                key={c}
-                href={`/market?tab=category&category=${encodeURIComponent(c)}`}
-                className={`px-3 py-1.5 rounded-lg text-[12px] font-medium transition ${
-                  category === c ? 'bg-[var(--toss-blue)] text-white' : 'bg-black/5 text-[var(--toss-text-secondary)] hover:bg-black/10'
-                }`}
-              >
-                {c}
-              </Link>
-            ))}
-          </div>
-        )}
+        {/* 필터 칩: 카테고리 + artist_keyword */}
+        <div className="flex overflow-x-auto no-scrollbar gap-2 px-4 py-3 border-b border-black/5">
+          {filters.categories.map((c) => (
+            <Link
+              key={c}
+              href={`/market?tab=category&category=${encodeURIComponent(c)}`}
+              className={`shrink-0 px-3 py-1.5 rounded-lg text-[12px] font-medium transition ${
+                category === c ? 'bg-[var(--toss-blue)] text-white' : 'bg-black/5 text-[var(--toss-text-secondary)] hover:bg-black/10'
+              }`}
+            >
+              {c}
+            </Link>
+          ))}
+          {filters.artist_keywords.map((kw) => (
+            <button
+              key={kw}
+              type="button"
+              onClick={() => setArtistKeyword(artistKeyword === kw ? null : kw)}
+              className={`shrink-0 px-3 py-1.5 rounded-lg text-[12px] font-medium transition ${
+                artistKeyword === kw ? 'bg-[#C5A059] text-black' : 'bg-black/5 text-[var(--toss-text-secondary)] hover:bg-black/10'
+              }`}
+            >
+              {kw}
+            </button>
+          ))}
+        </div>
       </header>
 
       <main className="max-w-lg mx-auto px-4 pt-4 pb-8">

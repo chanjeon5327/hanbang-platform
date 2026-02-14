@@ -11,7 +11,6 @@ import YouTubeEmbed from '@/components/common/YouTubeEmbed';
 import MarketStatsBar from '@/components/market/MarketStatsBar';
 import ExpectedReturnBox from '@/components/market/ExpectedReturnBox';
 import TrustBadges from '@/components/market/TrustBadges';
-import AdSlot from '@/components/ads/AdSlot';
 import RecentInvestLog from '@/components/market/RecentInvestLog';
 import InvestConfirmModal from '@/components/market/InvestConfirmModal';
 import ProductChat from '@/components/chat/ProductChat';
@@ -223,7 +222,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           <span className="text-[12px] px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--upbit-panel)', color: 'var(--upbit-text-dim)', border: '1px solid var(--upbit-border)' }}>수익권</span>
         </div>
 
-        {/* 4. MarketStatsBar */}
+        {/* 3. MarketStatsBar */}
         <MarketStatsBar
           progress={progress}
           targetAmount={targetAmount}
@@ -234,61 +233,52 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           isDeadlineSoon={deadlineSoon}
         />
 
-        {/* FOMO: last_1h_count >= 3 */}
-        {(item?.last_1h_count ?? 0) >= 3 && (
-          <div className="rounded-xl border p-3" style={{ backgroundColor: 'rgba(239,68,68,0.08)', borderColor: 'rgba(239,68,68,0.3)' }}>
-            <p className="text-[13px] font-medium" style={{ color: '#dc2626' }}>
-              지금 이 순간 빠르게 참여가 이어지고 있습니다
-            </p>
-          </div>
-        )}
-
-        {/* 최근 투자 가속 */}
+        {/* 4. LiveMomentumBar (1h/24h) */}
         {((item?.last_1h_count ?? 0) > 0 || (item?.last_24h_amount ?? 0) > 0) && (
-          <div className="rounded-xl border p-3 flex flex-wrap gap-4" style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}>
-            {(item?.last_1h_count ?? 0) > 0 && (
-              <span className="text-[13px]" style={{ color: 'var(--upbit-text)' }}>
-                최근 1시간 <strong>{(item?.last_1h_count ?? 0)}명</strong> 참여
-              </span>
-            )}
-            {(item?.last_24h_amount ?? 0) > 0 && (
-              <span className="text-[13px]" style={{ color: 'var(--upbit-text)' }}>
-                최근 24시간 <strong>₩{(item?.last_24h_amount ?? 0).toLocaleString()}</strong> 투자
-              </span>
-            )}
+          <div
+            className="w-full py-2 px-4 flex items-center justify-center gap-4 text-[12px] font-medium rounded-xl"
+            style={{ backgroundColor: '#000', color: '#C5A059' }}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#C5A059] animate-pulse" />
+              1h {(item?.last_1h_count ?? 0)}명
+            </span>
+            <span className="opacity-70">|</span>
+            <span>24h ₩{(item?.last_24h_amount ?? 0).toLocaleString()}</span>
           </div>
         )}
-
-        {/* TrustBadges */}
-        <TrustBadges />
-
-        <AdSlot position="market_detail" />
 
         {/* 5. ExpectedReturnBox */}
         <ExpectedReturnBox yieldRate={yieldRate} defaultAmount={DEFAULT_AMOUNT} onAmountChange={setInvestAmount} />
 
-        {/* 6. 최근 참여 로그 */}
+        {/* 6. TrustBadges */}
+        <TrustBadges />
+
+        {/* 7. RecentInvestLog */}
         <RecentInvestLog items={investLogs} />
 
-        {/* 7. 채팅 */}
+        {/* 8. ProductChat */}
         <div className="pb-4">
           <ProductChat productId={id} />
         </div>
       </div>
 
-      {/* 모바일: sticky 하단 투자 버튼 */}
+      {/* 9. Sticky Invest CTA */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden p-4 border-t" style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}>
         <p className="text-[11px] text-center mb-2" style={{ color: 'var(--upbit-text-dim)' }}>
-          {(item?.last_1h_count ?? 0) >= 5 ? '최근 1시간 집중 참여 중' : '지금 참여하면 오늘 집계에 반영됩니다'}
+          {(item?.last_1h_count ?? 0) >= 5
+            ? '최근 1시간 집중 참여 중'
+            : dday != null && dday <= 3
+              ? '공연 전 마지막 파트너십 기회'
+              : '지금 참여하면 오늘 집계에 반영됩니다'}
         </p>
         <button
           type="button"
           onClick={() => (hasSession ? setShowConfirm(true) : (window.location.href = '/login'))}
           className={`w-full py-4 rounded-xl text-[16px] font-bold ${dday != null && dday <= 3 ? 'animate-pulse' : ''}`}
           style={{
-            backgroundColor: 'var(--upbit-bid)',
+            background: dday != null && dday <= 3 ? 'linear-gradient(135deg,#dc2626,#7f1d1d)' : 'var(--upbit-bid)',
             color: '#fff',
-            border: dday != null && dday <= 3 ? '2px solid #dc2626' : undefined,
           }}
         >
           {dday != null && dday <= 3
