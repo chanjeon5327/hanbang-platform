@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 
     let query = supabase
       .from("content_items")
-      .select("id, title, thumbnail_url, creator_name, category, platform, deadline, total_raise, current_raise")
+      .select("id, title, thumbnail_url, creator_name, category, platform, deadline, total_raise, current_raise, event_date")
       .eq("status", "active")
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
@@ -63,6 +63,7 @@ export async function GET(req: NextRequest) {
       total_raise: r.total_raise ?? 0,
       current_raise: r.current_raise ?? 0,
       participants: Math.max(1, participantsMap[String(r.id)] ?? 0),
+      event_date: r.event_date ?? null,
     }));
 
     return NextResponse.json({

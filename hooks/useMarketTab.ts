@@ -13,6 +13,7 @@ export type RailItem = {
   total_raise?: number;
   current_raise?: number;
   participants?: number;
+  event_date?: string | null;
 };
 
 const TAB_APIS: Record<string, string> = {

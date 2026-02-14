@@ -20,6 +20,10 @@ export type MarketItem = {
   yield_rate?: number | null;
   participants?: number;
   artist_keyword?: string | null;
+  event_date?: string | null;
+  last_1h_count?: number;
+  last_24h_count?: number;
+  last_24h_amount?: number;
 };
 
 export function useMarketItem(id: string | undefined) {

@@ -23,7 +23,7 @@ export async function GET(
 
     const { data, error } = await supabase
       .from("content_items")
-      .select("id, title, summary, creator_name, category, platform, thumbnail_url, deadline, youtube_video_id, media_url, created_at, total_raise, current_raise, yield_rate, artist_keyword")
+      .select("id, title, summary, creator_name, category, platform, thumbnail_url, deadline, youtube_video_id, media_url, created_at, total_raise, current_raise, yield_rate, artist_keyword, event_date")
       .eq("id", contentId)
       .eq("status", "active")
       .single();
@@ -50,8 +50,26 @@ export async function GET(
         .from("orders")
         .select("user_id")
         .or(`content_id.eq.${contentId},product_id.eq.${contentId}`)
-        .eq("status", "COMPLETED");
+        .in("status", ["INVEST_CONFIRMED", "COMPLETED", "SETTLED"]);
       participants = new Set((orderRows ?? []).map((r) => r.user_id).filter(Boolean)).size;
+    } catch {
+      // ignore
+    }
+
+    let last1hCount = 0;
+    let last24hCount = 0;
+    let last24hAmount = 0;
+    try {
+      const { data: stats } = await supabase
+        .from("v_recent_invest_stats")
+        .select("last_1h_count, last_24h_count, last_24h_amount")
+        .eq("content_id", contentId)
+        .maybeSingle();
+      if (stats) {
+        last1hCount = Number((stats as { last_1h_count?: number })?.last_1h_count ?? 0);
+        last24hCount = Number((stats as { last_24h_count?: number })?.last_24h_count ?? 0);
+        last24hAmount = Number((stats as { last_24h_amount?: number })?.last_24h_amount ?? 0);
+      }
     } catch {
       // ignore
     }
@@ -74,6 +92,10 @@ export async function GET(
       yield_rate: data.yield_rate ?? 8.4,
       participants: Math.max(1, participants),
       artist_keyword: data.artist_keyword ?? null,
+      event_date: data.event_date ?? null,
+      last_1h_count: last1hCount,
+      last_24h_count: last24hCount,
+      last_24h_amount: last24hAmount,
     };
 
     return NextResponse.json(item);

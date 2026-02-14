@@ -25,6 +25,7 @@ export type MarketGridItem = {
   total_raise?: number;
   current_raise?: number;
   participants?: number;
+  event_date?: string | null;
 };
 
 type Props = {
@@ -34,10 +35,19 @@ type Props = {
   isInterested?: boolean;
 };
 
+function getDday(eventDate: string | null | undefined): number | null {
+  if (!eventDate) return null;
+  const d = new Date(eventDate);
+  const now = new Date();
+  const diff = Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return diff >= 0 ? diff : null;
+}
+
 export default function MarketGridCard({ item, index, showDeadlineBadge = false, isInterested: initialInterested = false }: Props) {
   const { user } = useAuth();
   const { isInterested, toggle, loading } = useInterestToggle(item.id, initialInterested);
   const thumbSrc = item.thumbnail_url ?? getYtThumb(index);
+  const dday = getDday(item.event_date);
 
   return (
     <Link
@@ -48,15 +58,23 @@ export default function MarketGridCard({ item, index, showDeadlineBadge = false,
     >
       <div className="relative aspect-[4/5] bg-[#e5e8eb]">
         <img src={thumbSrc} alt="" className="w-full h-full object-cover" loading="lazy" />
-        {showDeadlineBadge ? (
-          <span className="absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-bold text-white" style={{ backgroundColor: TOSS.negative }}>
-            마감임박
-          </span>
-        ) : (
-          <span className="absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-bold text-white bg-emerald-500">
-            LIVE
-          </span>
-        )}
+        <div className="absolute top-2 right-2 flex items-center gap-1.5">
+          {dday != null && (
+            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white bg-red-500">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              D-{dday} 공연 임박
+            </span>
+          )}
+          {showDeadlineBadge ? (
+            <span className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white" style={{ backgroundColor: TOSS.negative }}>
+              마감임박
+            </span>
+          ) : !dday && (
+            <span className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white bg-emerald-500">
+              LIVE
+            </span>
+          )}
+        </div>
         {user && (
           <button
             type="button"

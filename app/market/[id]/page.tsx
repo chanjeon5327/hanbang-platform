@@ -225,6 +225,22 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           isDeadlineSoon={deadlineSoon}
         />
 
+        {/* 최근 투자 가속 */}
+        {((item?.last_1h_count ?? 0) > 0 || (item?.last_24h_amount ?? 0) > 0) && (
+          <div className="rounded-xl border p-3 flex gap-4" style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}>
+            {(item?.last_1h_count ?? 0) > 0 && (
+              <span className="text-[13px]" style={{ color: 'var(--upbit-text)' }}>
+                최근 1시간 <strong>{(item?.last_1h_count ?? 0)}명</strong> 참여
+              </span>
+            )}
+            {(item?.last_24h_amount ?? 0) > 0 && (
+              <span className="text-[13px]" style={{ color: 'var(--upbit-text)' }}>
+                최근 24시간 <strong>₩{(item?.last_24h_amount ?? 0).toLocaleString()}</strong> 투자
+              </span>
+            )}
+          </div>
+        )}
+
         {/* TrustBadges */}
         <TrustBadges />
 

@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
     const { data: contents, error: err2 } = await supabase
       .from("content_items")
-      .select("id, title, thumbnail_url, creator_name, category, platform, total_raise, current_raise")
+      .select("id, title, thumbnail_url, creator_name, category, platform, total_raise, current_raise, event_date")
       .in("id", ids)
       .eq("status", "active");
 
@@ -67,6 +67,7 @@ export async function GET(req: NextRequest) {
       total_raise: r.total_raise ?? 0,
       current_raise: r.current_raise ?? 0,
       participants: Math.max(1, participantsMap[String(r.id)] ?? 0),
+      event_date: r.event_date ?? null,
     }));
 
     return NextResponse.json({

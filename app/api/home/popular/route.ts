@@ -15,20 +15,20 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 /**
- * 인기 정렬: popular_content_mv 기반
- * 동률일 경우 서버에서 랜덤 셔플
+ * 인기 정렬: recommendation_score_mv 기반 (인기 + 최근 투자 + D-Day 모멘텀)
+ * ORDER BY score DESC
  */
 export async function GET() {
   try {
     const supabase = await createClient();
 
-    const { data: agg, error: aggError } = await supabase
-      .from("popular_content_mv")
-      .select("content_id, cnt")
-      .order("cnt", { ascending: false })
+    const { data: scored, error: scoredError } = await supabase
+      .from("recommendation_score_mv")
+      .select("id, score")
+      .order("score", { ascending: false })
       .limit(50);
 
-    if (aggError || !agg || agg.length === 0) {
+    if (scoredError || !scored || scored.length === 0) {
       const { data: fallback } = await supabase
         .from("content_items")
         .select("id, title, thumbnail_url, creator_name, category, platform")
@@ -47,30 +47,30 @@ export async function GET() {
       return NextResponse.json({ items });
     }
 
-    const rows = agg as { content_id: string; cnt: number }[];
-    const byCnt = new Map<number, string[]>();
-    rows.forEach((r) => {
-      const cnt = Number(r.cnt);
-      if (!byCnt.has(cnt)) byCnt.set(cnt, []);
-      byCnt.get(cnt)!.push(r.content_id);
+    const ids = (scored as { id: string; score: number }[]).map((r) => r.id);
+    const byScore = new Map(ids.map((id, i) => [id, (scored[i] as { score: number }).score]));
+    const scoreGroups = new Map<number, string[]>();
+    ids.forEach((id) => {
+      const s = byScore.get(id) ?? 0;
+      if (!scoreGroups.has(s)) scoreGroups.set(s, []);
+      scoreGroups.get(s)!.push(id);
     });
-
-    const sortedCnts = Array.from(byCnt.keys()).sort((a, b) => b - a);
+    const sortedScores = Array.from(scoreGroups.keys()).sort((a, b) => b - a);
     const finalIds: string[] = [];
-    for (const cnt of sortedCnts) {
-      const group = byCnt.get(cnt)!;
+    for (const s of sortedScores) {
+      const group = scoreGroups.get(s)!;
       finalIds.push(...shuffle(group));
       if (finalIds.length >= 24) break;
     }
-    const ids = finalIds.slice(0, 24);
+    const pageIds = finalIds.slice(0, 24);
 
     const { data: contentRows } = await supabase
       .from("content_items")
       .select("id, title, thumbnail_url, creator_name, category, platform")
-      .in("id", ids)
+      .in("id", pageIds)
       .eq("status", "active");
 
-    const orderMap = new Map(ids.map((id, i) => [id, i]));
+    const orderMap = new Map(pageIds.map((id, i) => [id, i]));
     const ordered = (contentRows ?? []).sort(
       (a: Record<string, unknown>, b: Record<string, unknown>) =>
         (orderMap.get(String(a.id)) ?? 99) - (orderMap.get(String(b.id)) ?? 99)
