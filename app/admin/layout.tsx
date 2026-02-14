@@ -26,6 +26,7 @@ import {
 
 const menuItems = [
   { icon: LayoutDashboard, label: '리포트 대시보드', path: '/admin', role: 1 as const },
+  { icon: LayoutDashboard, label: '운영 콘솔 (매출/탐지)', path: '/admin/dashboard', role: 1 as const },
   { icon: ShieldCheck, label: '정합성 점검', path: '/admin/integrity', role: 1 as const },
   { icon: Users, label: '유저 관리', path: '/admin/users', role: 1 as const },
   { icon: FileCheck, label: '작품 승인/강제삭제', path: '/admin/content', role: 2 as const },
@@ -48,7 +49,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   if (
     pathname === '/admin/login' ||
     pathname.startsWith('/admin/orders/') ||
-    pathname.startsWith('/admin/settlement/')
+    pathname.startsWith('/admin/settlement/') ||
+    pathname === '/admin/dashboard'
   ) {
     return <>{children}</>;
   }
