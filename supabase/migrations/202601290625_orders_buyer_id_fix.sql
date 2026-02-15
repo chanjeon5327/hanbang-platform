@@ -22,9 +22,13 @@ begin
   end if;
 end $$;
 
--- 3) buyer_id NOT NULL 강제 (데이터 이관 후)
-alter table public.orders
-alter column buyer_id set not null;
+-- 3) buyer_id NOT NULL 강제 (null이 없을 때만; 정산완료 주문에 null 남아있으면 스킵)
+do $$
+begin
+  if not exists (select 1 from public.orders where buyer_id is null) then
+    execute 'alter table public.orders alter column buyer_id set not null';
+  end if;
+end $$;
 
 -- 4) 조회/조인 성능 인덱스
 create index if not exists orders_buyer_id_idx
