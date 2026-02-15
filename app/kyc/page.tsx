@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Check, Upload, Shield } from 'lucide-react';
 
@@ -10,6 +10,18 @@ export default function KycPage() {
   const [step, setStep] = useState(0);
   const [uploaded, setUploaded] = useState(false);
   const [status, setStatus] = useState<'pending' | 'approved' | 'rejected'>('pending');
+  const [kycStatus, setKycStatus] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/kyc/status', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.kyc_status) setKycStatus(d.kyc_status);
+        if (d?.submissions?.[0]?.status) setStatus(d.submissions[0].status);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
@@ -137,16 +149,34 @@ export default function KycPage() {
           </div>
         </div>
 
+        {kycStatus && (
+          <p className="text-[12px] mb-2" style={{ color: 'var(--text-secondary)' }}>
+            KYC 상태: {kycStatus}
+          </p>
+        )}
         <button
           type="button"
-          className="w-full mt-8 py-4 rounded-[16px] font-bold tap-scale"
+          disabled={submitting}
+          onClick={async () => {
+            setSubmitting(true);
+            try {
+              await fetch('/api/kyc/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ step: `step${step + 1}`, payload: { uploaded } }),
+              });
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+          className="w-full mt-8 py-4 rounded-[16px] font-bold tap-scale disabled:opacity-60"
           style={{
             backgroundColor: 'var(--royal-blue)',
             color: '#fff',
             boxShadow: 'var(--shadow-royal)',
           }}
         >
-          엔젤 등록 완료
+          {submitting ? '제출 중…' : '엔젤 등록 완료'}
         </button>
       </main>
     </div>

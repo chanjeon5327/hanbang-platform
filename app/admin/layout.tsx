@@ -30,6 +30,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: '운영 콘솔 (매출/탐지)', path: '/admin/dashboard', role: 1 as const },
   { icon: ShieldCheck, label: '정합성 점검', path: '/admin/integrity', role: 1 as const },
   { icon: Users, label: '유저 관리', path: '/admin/users', role: 1 as const },
+  { icon: Shield, label: 'KYC 제출', path: '/admin/kyc', role: 1 as const },
   { icon: FileCheck, label: '작품 승인/강제삭제', path: '/admin/content', role: 2 as const },
   { icon: ShoppingCart, label: '주문/결제 확인', path: '/admin/orders', role: 1 as const },
   { icon: CreditCard, label: '결제 모니터링', path: '/admin/payments', role: 1 as const },
