@@ -91,6 +91,22 @@ export async function POST(req: Request) {
       );
     }
 
+    try {
+      const { data: invProfile } = await (supabase as any).from("investor_profiles").select("investment_limit, kyc_status").eq("user_id", user.id).single();
+      const limit = Number(invProfile?.investment_limit ?? 50000000);
+      const kyc = invProfile?.kyc_status ?? "VERIFIED";
+      if (kyc !== "VERIFIED") {
+        return NextResponse.json({ error: "KYC_REQUIRED", debug: "KYC 인증이 필요합니다" }, { status: 403 });
+      }
+      const { data: totalInv } = await (supabase as any).from("ledger_entries").select("amount").eq("user_id", user.id).eq("entry_type", "CASH_DEBIT");
+      const invested = (totalInv ?? []).reduce((s: number, r: { amount?: number }) => s + Math.abs(Number(r.amount ?? 0)), 0);
+      if (invested + amountPositive > limit) {
+        return NextResponse.json({ error: "INVESTMENT_LIMIT_EXCEEDED", debug: "투자 한도 초과" }, { status: 400 });
+      }
+    } catch {
+      /* investor_profiles 미존재 시 패스 */
+    }
+
     const { data: rpcResult, error: rpcError } = await supabase.rpc("rpc_invest_and_notify", {
       p_user_id: user.id,
       p_content_id: contentId.trim(),
@@ -113,6 +129,17 @@ export async function POST(req: Request) {
     }
 
     const orderId = (rpcResult as { order_id?: string })?.order_id;
+    try {
+      await (supabase as any).from("financial_audit_logs").insert({
+        user_id: user.id,
+        action: "ORDER_PLACE",
+        target_type: "order",
+        target_id: orderId ?? null,
+        metadata: { content_id: contentId, amount: amountPositive },
+      });
+    } catch {
+      /* audit 실패 시 무시 */
+    }
     let executed_quantity = amountPositive;
     let remaining_quantity = 0;
     if (orderId) {

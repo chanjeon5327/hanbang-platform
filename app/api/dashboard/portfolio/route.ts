@@ -57,6 +57,14 @@ export async function GET() {
     .select("id, title, share_price_usd")
     .in("id", assetIds);
 
+  let lastPrices: { item_id: string; price_krw?: number }[] = [];
+  try {
+    const { data } = await (supabase as any).from("v_item_last_price").select("item_id, price_krw").in("item_id", assetIds);
+    lastPrices = data ?? [];
+  } catch {
+    lastPrices = [];
+  }
+
   const fxRate = 1350;
   const positions = assetIds.map((aid) => {
     const v = byAsset[aid];
@@ -67,7 +75,8 @@ export async function GET() {
     });
     const avgPrice = v.quantity > 0 ? totalCost / v.quantity : 0;
     const item = (items ?? []).find((i: { id: string }) => i.id === aid) as { share_price_usd?: number } | undefined;
-    const currentPriceKrw = (item?.share_price_usd ?? 10) * fxRate;
+    const lastPriceRow = (lastPrices ?? []).find((p: { item_id: string }) => p.item_id === aid);
+    const currentPriceKrw = lastPriceRow?.price_krw ?? (item?.share_price_usd ?? 10) * fxRate;
     const currentValue = qty * currentPriceKrw;
 
     return {

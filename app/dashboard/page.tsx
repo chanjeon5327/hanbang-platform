@@ -33,16 +33,19 @@ type Performance = {
 export default function DashboardPage() {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [performance, setPerformance] = useState<Performance | null>(null);
+  const [irrData, setIrrData] = useState<{ irr?: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       fetch('/api/dashboard/portfolio', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)),
       fetch('/api/dashboard/performance', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)),
+      fetch('/api/dashboard/irr', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)),
     ])
-      .then(([p, perf]) => {
+      .then(([p, perf, irr]) => {
         setPortfolio(p);
         setPerformance(perf);
+        setIrrData(irr);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -99,9 +102,9 @@ export default function DashboardPage() {
             <div className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>총 수익률</div>
             <div
               className="text-[18px] font-bold tabular-nums mt-1"
-              style={{ color: p.total_return_rate >= 0 ? 'var(--upbit-positive)' : 'var(--upbit-ask)' }}
+              style={{ color: (irrData?.irr ?? p.total_return_rate) >= 0 ? 'var(--upbit-positive)' : 'var(--upbit-ask)' }}
             >
-              {formatRate(p.total_return_rate)}
+              {formatRate(irrData?.irr ?? p.total_return_rate)}
             </div>
           </div>
         </div>
@@ -137,7 +140,7 @@ export default function DashboardPage() {
               </Link>
             </div>
           ) : (
-            p.positions.map((pos) => (
+            [...p.positions].sort((a, b) => (b.unrealized_rate ?? 0) - (a.unrealized_rate ?? 0)).map((pos) => (
               <Link
                 key={pos.asset_id}
                 href={`/market/${pos.asset_id}`}
