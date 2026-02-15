@@ -7,7 +7,11 @@ import { requireActiveUser } from '@/lib/auth/requireActiveUser';
  * - 로그인 사용자의 원장(ledger_entries) 조회
  * - completed 주문 시 CASH_DEBIT/ASSET_CREDIT 등 자동 기록된 내역 반환
  * - 인증 필수 + requireActiveUser(정지 유저 차단)
+ * - cache: no-store로 잔고 즉시 반영
  */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

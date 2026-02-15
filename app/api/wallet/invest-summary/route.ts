@@ -32,6 +32,7 @@ export async function GET() {
 
   const rows = entries ?? [];
   let totalInvest = 0;
+  let cashBalance = 0;
   let monthlyProfit = 0;
 
   const now = new Date();
@@ -41,9 +42,13 @@ export async function GET() {
     const amt = Number(r.amount) || 0;
     if (r.entry_type === "CASH_DEBIT") {
       totalInvest += Math.abs(amt);
+      cashBalance -= Math.abs(amt);
     }
-    if (r.entry_type === "CASH_CREDIT" && r.created_at >= thisMonthStart) {
-      monthlyProfit += amt;
+    if (r.entry_type === "CASH_CREDIT") {
+      cashBalance += amt;
+      if (r.created_at >= thisMonthStart) {
+        monthlyProfit += amt;
+      }
     }
   }
 
@@ -63,13 +68,15 @@ export async function GET() {
   });
   holdingsValue = Math.max(0, holdingsValue);
 
-  const avgReturnRate = totalInvest > 0
-    ? ((holdingsValue - totalInvest) / totalInvest) * 100
-    : 0;
+  const totalValue = cashBalance + holdingsValue;
+  const avgReturnRate =
+    totalInvest > 0 ? ((totalValue - totalInvest) / totalInvest) * 100 : 0;
 
   return NextResponse.json({
     totalInvest,
-    avgReturnRate: Number(avgReturnRate.toFixed(2)),
+    cashBalance,
+    totalValue,
+    avgReturnRate: Math.round(avgReturnRate * 100) / 100,
     monthlyProfit,
     holdingsValue,
   });
