@@ -9,6 +9,9 @@
     "typecheck": "tsc --noEmit",
     "verify": "pnpm run typecheck && pnpm run build",
     "smoke:prod": "powershell -ExecutionPolicy Bypass -File scripts/smoke-prod.ps1",
+    "migrations:dump-remote": "node scripts/dump-remote-migrations.mjs",
+    "migrations:dump-local": "node scripts/dump-local-migrations.mjs",
+    "migrations:compare": "node scripts/dump-remote-migrations.mjs && node scripts/dump-local-migrations.mjs && node scripts/compare-migrations.mjs",
     "test:partial-sell": "node scripts/run-partial-sell-test.mjs",
     "prepare": "husky"
   },

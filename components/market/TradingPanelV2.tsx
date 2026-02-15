@@ -24,6 +24,8 @@ type Props = {
   isLoggedIn: boolean;
   totalSupplyShares?: number | null;
   onToast?: (message: string) => void;
+  /** 'order-only': 호가/체결/내주문/포지션 탭 숨김, 주문 폼만 표시 (거래소 레이아웃용) */
+  variant?: 'full' | 'order-only';
 };
 
 function formatUsd(n: number): string {
@@ -37,6 +39,7 @@ export default function TradingPanelV2({
   isLoggedIn,
   totalSupplyShares,
   onToast,
+  variant = 'full',
 }: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'호가' | '주문' | '체결' | '내주문' | '포지션'>('호가');
@@ -55,6 +58,8 @@ export default function TradingPanelV2({
   const [myOrders, setMyOrders] = useState<{ id: string; type: string; price: number; quantity: number; executed_quantity: number; status: string | null; created_at: string }[]>([]);
   const [myOrdersLoading, setMyOrdersLoading] = useState(false);
   const [positionLoading, setPositionLoading] = useState(false);
+  const [lockBusyRetrying, setLockBusyRetrying] = useState(false);
+  const [matchResultFlash, setMatchResultFlash] = useState(false);
 
   const showToast = useCallback(
     (msg: string) => {
@@ -184,14 +189,66 @@ export default function TradingPanelV2({
       return;
     }
     setLoading(true);
+    setLockBusyRetrying(false);
+    const idempotencyKey = crypto.randomUUID();
     try {
-      if (orderSide === 'ask') {
+      if (orderTab === '지정가') {
+        const res = await fetch('/api/orders/orderbook/place', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            item_id: contentId,
+            content_id: contentId,
+            side: orderSide,
+            price_usd: parseFloat(orderPrice || '0'),
+            quantity: orderQty,
+            price_krw: Math.round(parseFloat(orderPrice || '0') * fxRate),
+            idempotency_key: idempotencyKey,
+          }),
+        });
+        const json = await res.json();
+        if (res.status === 409 && json?.code === 'LOCK_BUSY') {
+          setLockBusyRetrying(true);
+          showToast('잠시 후 다시 시도해 주세요.');
+          return;
+        }
+        if (json?.success) {
+          const matchedCount = json?.matched_count ?? 0;
+          if (matchedCount > 0) {
+            setMatchResultFlash(true);
+            setTimeout(() => setMatchResultFlash(false), 500);
+            showToast(`${matchedCount}건 체결되었습니다.`);
+          } else {
+            showToast('주문이 접수되었습니다.');
+          }
+          window.dispatchEvent(new Event('invest-success'));
+          window.dispatchEvent(new Event('wallet-refresh'));
+          setOrderQty(1);
+          fetchOrderbook();
+          fetchTrades();
+          fetchMyOrders();
+          fetchPosition();
+          fetchUserCash();
+        } else {
+          showToast(json?.error === 'INSUFFICIENT_FUNDS' ? '잔고가 부족합니다.' : json?.error === 'INSUFFICIENT_ASSETS' ? '보유 수량이 부족합니다.' : json?.error ?? '주문에 실패했습니다.');
+        }
+      } else if (orderSide === 'ask') {
         const res = await fetch('/api/orders/sell', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ product_id: contentId, content_id: contentId, quantity: orderQty }),
+          body: JSON.stringify({
+            product_id: contentId,
+            content_id: contentId,
+            quantity: orderQty,
+            idempotency_key: idempotencyKey,
+          }),
         });
         const json = await res.json();
+        if (res.status === 409 && json?.code === 'LOCK_BUSY') {
+          setLockBusyRetrying(true);
+          showToast('잠시 후 다시 시도해 주세요.');
+          return;
+        }
         if (json?.success) {
           window.dispatchEvent(new Event('invest-success'));
           window.dispatchEvent(new Event('wallet-refresh'));
@@ -203,18 +260,26 @@ export default function TradingPanelV2({
           fetchPosition();
           fetchUserCash();
         } else {
-          showToast(json?.error === 'INSUFFICIENT_ASSETS' ? '보유 수량이 부족합니다.' : '주문에 실패했습니다.');
+          showToast(json?.error === 'INSUFFICIENT_ASSETS' ? '보유 수량이 부족합니다.' : json?.code === 'LOCK_BUSY' ? '잠시 후 다시 시도해 주세요.' : '주문에 실패했습니다.');
         }
       } else {
-        const amount = Math.round(
-          orderTab === '시장가' ? currentPriceKrw * orderQty : parseFloat(orderPrice || '0') * orderQty * fxRate
-        );
+        const amount = Math.round(currentPriceKrw * orderQty);
         const res = await fetch('/api/orders/place', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ product_id: contentId, amount }),
+          body: JSON.stringify({
+            product_id: contentId,
+            content_id: contentId,
+            amount,
+            idempotency_key: idempotencyKey,
+          }),
         });
         const json = await res.json();
+        if (res.status === 409 && json?.code === 'LOCK_BUSY') {
+          setLockBusyRetrying(true);
+          showToast('잠시 후 다시 시도해 주세요.');
+          return;
+        }
         if (json?.success) {
           window.dispatchEvent(new Event('invest-success'));
           window.dispatchEvent(new Event('wallet-refresh'));
@@ -226,7 +291,7 @@ export default function TradingPanelV2({
           fetchPosition();
           fetchUserCash();
         } else {
-          showToast(json?.error === 'INSUFFICIENT_FUNDS' ? '잔고가 부족합니다.' : '주문에 실패했습니다.');
+          showToast(json?.error === 'INSUFFICIENT_FUNDS' ? '잔고가 부족합니다.' : json?.code === 'LOCK_BUSY' ? '잠시 후 다시 시도해 주세요.' : '주문에 실패했습니다.');
         }
       }
     } catch {
@@ -264,13 +329,15 @@ export default function TradingPanelV2({
       : null;
 
   const tabs = ['호가', '주문', '체결', '내주문', '포지션'] as const;
+  const showTabs = variant === 'full';
 
   return (
-    <div className="py-4" style={{ borderBottom: '1px solid var(--upbit-border)' }}>
+    <div className="py-4" style={{ borderBottom: showTabs ? '1px solid var(--upbit-border)' : 'none' }}>
       <style>{`
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       `}</style>
+      {showTabs && (
       <div className="flex gap-1 mb-4">
         {tabs.map((t) => (
           <button
@@ -287,8 +354,9 @@ export default function TradingPanelV2({
           </button>
         ))}
       </div>
+      )}
 
-      {activeTab === '호가' && (
+      {(showTabs ? activeTab === '호가' : false) && (
         <div className="grid grid-cols-2 gap-4 animate-[fadeIn_0.15s_ease-out]">
           {orderbookLoading ? (
             <>
@@ -360,14 +428,14 @@ export default function TradingPanelV2({
         </div>
       )}
 
-      {activeTab === '주문' && (
+      {(showTabs ? activeTab === '주문' : true) && (
         <div className="space-y-3 animate-[fadeIn_0.15s_ease-out]">
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setOrderTab('지정가')}
               disabled={loading}
-              className="flex-1 py-2 text-[13px] font-semibold rounded-lg transition disabled:opacity-50"
+              className="flex-1 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ease-out disabled:opacity-50"
               style={{
                 backgroundColor: orderTab === '지정가' ? 'var(--primary)' : 'rgba(0,0,0,0.06)',
                 color: orderTab === '지정가' ? '#fff' : 'var(--upbit-text)',
@@ -379,7 +447,7 @@ export default function TradingPanelV2({
               type="button"
               onClick={() => setOrderTab('시장가')}
               disabled={loading}
-              className="flex-1 py-2 text-[13px] font-semibold rounded-lg transition disabled:opacity-50"
+              className="flex-1 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ease-out disabled:opacity-50"
               style={{
                 backgroundColor: orderTab === '시장가' ? 'var(--primary)' : 'rgba(0,0,0,0.06)',
                 color: orderTab === '시장가' ? '#fff' : 'var(--upbit-text)',
@@ -415,7 +483,7 @@ export default function TradingPanelV2({
             </button>
           </div>
           {orderTab === '지정가' && (
-            <div>
+            <div className="animate-[fadeIn_0.2s_ease-out]">
               <label className="text-[12px] block mb-1" style={{ color: 'var(--upbit-text-dim)' }}>가격 (USD)</label>
               <input
                 type="text"
@@ -433,7 +501,7 @@ export default function TradingPanelV2({
             </div>
           )}
           {orderTab === '시장가' && (
-            <div className="text-[13px]" style={{ color: 'var(--upbit-text-dim)' }}>
+            <div className="text-[13px] animate-[fadeIn_0.2s_ease-out]" style={{ color: 'var(--upbit-text-dim)' }}>
               시장가: {formatUsd(sharePriceUsd)} ({formatKrw(sharePriceUsd * fxRate)})
             </div>
           )}
@@ -474,11 +542,16 @@ export default function TradingPanelV2({
               보유 수량이 부족합니다.
             </p>
           )}
+          {lockBusyRetrying && (
+            <p className="text-[12px] text-center py-1" style={{ color: 'var(--upbit-ask)' }}>
+              재시도 가능합니다. 아래 버튼을 다시 눌러주세요.
+            </p>
+          )}
           <button
             type="button"
             onClick={handlePlaceOrder}
             disabled={loading || !isLoggedIn || insufficientFunds || insufficientAssets}
-            className="w-full py-3 rounded-lg text-[15px] font-bold transition-all duration-200 hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:opacity-50"
+            className={`w-full py-3 rounded-lg text-[15px] font-bold transition-all duration-200 hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:opacity-50 ${matchResultFlash ? 'ring-2 ring-green-400 ring-offset-2' : ''}`}
             style={{
               backgroundColor: orderSide === 'bid' ? 'var(--upbit-bid)' : 'var(--upbit-ask)',
               color: '#fff',
@@ -490,7 +563,7 @@ export default function TradingPanelV2({
         </div>
       )}
 
-      {activeTab === '체결' && (
+      {showTabs && activeTab === '체결' && (
         <div className="space-y-1 max-h-[200px] overflow-y-auto animate-[fadeIn_0.15s_ease-out]">
           {tradesLoading ? (
             <div className="py-4 space-y-2">
@@ -529,7 +602,7 @@ export default function TradingPanelV2({
         </div>
       )}
 
-      {activeTab === '내주문' && (
+      {showTabs && activeTab === '내주문' && (
         <div className="space-y-1 max-h-[200px] overflow-y-auto animate-[fadeIn_0.15s_ease-out]">
           {!isLoggedIn ? (
             <p className="text-[13px] py-8 text-center" style={{ color: 'var(--upbit-text-dim)' }}>
@@ -565,7 +638,7 @@ export default function TradingPanelV2({
         </div>
       )}
 
-      {activeTab === '포지션' && (
+      {showTabs && activeTab === '포지션' && (
         <div className="space-y-3 animate-[fadeIn_0.15s_ease-out]">
           {!isLoggedIn ? (
             <p className="text-[13px] py-8 text-center" style={{ color: 'var(--upbit-text-dim)' }}>

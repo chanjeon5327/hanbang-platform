@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     }
 
     const user = authData.user;
-    let body: { product_id?: string; content_id?: string; quantity?: unknown };
+    let body: { product_id?: string; content_id?: string; quantity?: unknown; idempotency_key?: string };
     try {
       body = await req.json();
     } catch {
@@ -37,6 +37,7 @@ export async function POST(req: Request) {
 
     const contentId = (body.content_id ?? body.product_id)?.trim();
     const quantity = toPositiveNumber(body.quantity);
+    const idempotencyKey = body.idempotency_key ?? null;
 
     if (!contentId || quantity <= 0) {
       return NextResponse.json(
@@ -49,7 +50,7 @@ export async function POST(req: Request) {
       p_user_id: user.id,
       p_content_id: contentId,
       p_quantity: quantity,
-      p_idempotency_key: null,
+      p_idempotency_key: idempotencyKey,
     });
 
     if (rpcError) {

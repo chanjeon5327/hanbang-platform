@@ -27,7 +27,9 @@ import DividendSimulator from '@/components/market/DividendSimulator';
 import AngelPitchDeckSection from '@/components/market/AngelPitchDeckSection';
 import DividendExplainSection from '@/components/market/DividendExplainSection';
 import DividendSimulatorV2 from '@/components/market/DividendSimulatorV2';
+import ExchangeSection from '@/components/market/ExchangeSection';
 import Skeleton from '@/components/ui/Skeleton';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 const YT_FALLBACK = 'HosW0gulISQ';
 const YT_START_SEC = 25;
@@ -95,6 +97,7 @@ export default function MarketDetailPage({
   const [toastMessage, setToastMessage] = useState('투자 완료되었습니다.');
   const [todayCount, setTodayCount] = useState<number>(0);
 
+  const { user } = useAuth();
   const { item, loading: itemLoading, error: itemError, refetch: refetchItem } = useMarketItem(id);
   const { items: investLogs, refetch: refetchInvestLogs } = useRecentInvestLog(id);
   const { items: artistContributions, refetch: refetchContributions } = useArtistContribution(false);
@@ -118,7 +121,7 @@ export default function MarketDetailPage({
       .catch(() => {});
   }, []);
 
-  const hasSession = false;
+  const hasSession = !!user;
   const ytId = item?.youtube_video_id ?? YT_FALLBACK;
   const title = item?.title ?? '여행가 제이';
   const creator = item?.creator_name ?? '크리에이터';
@@ -169,11 +172,17 @@ export default function MarketDetailPage({
   const handleInvestConfirm = async () => {
     if (!hasSession) return;
     setInvestLoading(true);
+    const idempotencyKey = crypto.randomUUID();
     try {
       const res = await fetch('/api/orders/place', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_id: id, amount: investAmount }),
+        body: JSON.stringify({
+          product_id: id,
+          content_id: id,
+          amount: investAmount,
+          idempotency_key: idempotencyKey,
+        }),
       });
       const json = await res.json();
       if (json?.success) {
@@ -186,7 +195,13 @@ export default function MarketDetailPage({
         window.dispatchEvent(new Event('invest-success'));
         window.dispatchEvent(new Event('wallet-refresh'));
       } else {
-        setToastMessage(json?.error === 'INSUFFICIENT_FUNDS' ? '잔고가 부족합니다.' : '투자에 실패했습니다.');
+        setToastMessage(
+          json?.error === 'INSUFFICIENT_FUNDS'
+            ? '잔고가 부족합니다.'
+            : json?.code === 'LOCK_BUSY'
+              ? '잠시 후 다시 시도해 주세요.'
+              : '투자에 실패했습니다.'
+        );
         setToastVisible(true);
       }
     } catch {
@@ -229,7 +244,7 @@ export default function MarketDetailPage({
     <main className="min-h-screen bg-white">
       <MarketHeader onShare={handleShare} />
 
-      <div className="max-w-3xl mx-auto px-4 pb-32 pt-6">
+      <div className={`max-w-3xl mx-auto px-4 pt-6 ${isTradable ? 'pb-80' : 'pb-32'}`}>
         {/* 1. Hero Section */}
         <section className="relative w-full aspect-video rounded-[16px] overflow-hidden mb-6">
           {itemLoading ? <Skeleton className="w-full h-full" /> : (
@@ -323,8 +338,8 @@ export default function MarketDetailPage({
           <DividendExplainSection creatorStory={item?.creator_story ?? undefined} />
         </div>
 
-        {/* 5. PriceHeader (USD + 로컬 + 전일대비 + 거래량) */}
-        {hasUsdData && sharePriceUsd != null && (
+        {/* 5. PriceHeader (USD + 로컬 + 전일대비 + 거래량) - 거래 불가 시에만 */}
+        {hasUsdData && sharePriceUsd != null && !isTradable && (
           <div className="mt-10">
             <PriceHeader
               sharePriceUsd={sharePriceUsd}
@@ -335,8 +350,8 @@ export default function MarketDetailPage({
           </div>
         )}
 
-        {/* 6. 차트 블록 (USD 기반 + 로컬 변환) */}
-        {hasUsdData && (
+        {/* 6. 차트 블록 (거래 불가 시에만, 거래 가능 시 ExchangeSection에 포함) */}
+        {hasUsdData && !isTradable && (
           <div className="mt-10">
             <PriceChartBlock
               sharePriceUsd={sharePriceUsd}
@@ -362,19 +377,22 @@ export default function MarketDetailPage({
           </div>
         )}
 
-        {/* 8. TradingPanel v2 (DIVIDEND_TRADABLE) / 투자 패널 + 거래 불가 (DIVIDEND_ONLY) */}
+        {/* 8. 거래소 UI (DIVIDEND_TRADABLE) / 거래 불가 (DIVIDEND_ONLY) */}
         {isTradable && sharePriceUsd != null ? (
           <div className="mt-10">
-            <TradingPanelV2
+            <ExchangeSection
               contentId={id}
               sharePriceUsd={sharePriceUsd}
               fxRate={fxRate}
               isLoggedIn={hasSession}
+              userId={user?.id}
               totalSupplyShares={
                 sharePriceUsd != null && sharePriceUsd > 0 && item?.total_raise_usd != null
                   ? item.total_raise_usd / sharePriceUsd
                   : null
               }
+              totalRaiseUsd={item?.total_raise_usd}
+              currentRaiseUsd={item?.current_raise_usd}
               onToast={(msg) => {
                 setToastMessage(msg);
                 setToastVisible(true);
@@ -430,7 +448,8 @@ export default function MarketDetailPage({
         </div>
       </div>
 
-      {/* Sticky CTA */}
+      {/* Sticky CTA (거래 가능 시 주문 폼이 하단 고정되므로 CTA 숨김) */}
+      {!isTradable && (
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t md:hidden" style={{ borderColor: 'var(--border)' }}>
         <div className="max-w-3xl mx-auto px-4 py-3">
           <p className="text-[11px] text-center mb-1" style={{ color: 'var(--text-secondary)' }}>
@@ -450,6 +469,7 @@ export default function MarketDetailPage({
           </button>
         </div>
       </div>
+      )}
 
       <Toast message={toastMessage} visible={toastVisible} onHide={() => setToastVisible(false)} />
 

@@ -130,12 +130,12 @@ export async function POST(req: Request) {
 
     const orderId = (rpcResult as { order_id?: string })?.order_id;
     try {
-      await (supabase as any).from("financial_audit_logs").insert({
-        user_id: user.id,
-        action: "ORDER_PLACE",
-        target_type: "order",
-        target_id: orderId ?? null,
-        metadata: { content_id: contentId, amount: amountPositive },
+      await supabase.rpc("rpc_write_financial_audit", {
+        p_user_id: user.id,
+        p_action: "ORDER_PLACE",
+        p_target_type: "order",
+        p_target_id: orderId ?? null,
+        p_metadata: { content_id: contentId, amount: amountPositive },
       });
     } catch {
       /* audit 실패 시 무시 */

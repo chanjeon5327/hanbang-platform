@@ -45,7 +45,7 @@ export default function PriceHeader({
     <div className="py-4" style={{ borderBottom: '1px solid var(--upbit-border)' }}>
       <div className="text-[12px] mb-0.5" style={{ color: 'var(--upbit-text-dim)' }}>주당 가격</div>
       <div className="flex items-baseline gap-3 flex-wrap">
-        <span className="text-[24px] font-extrabold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
+        <span className="text-[28px] sm:text-[32px] font-extrabold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
           {formatUsd(sharePriceUsd)}
         </span>
         <span className="text-[14px] font-semibold tabular-nums" style={{ color: 'var(--upbit-text-dim)' }}>
@@ -53,12 +53,12 @@ export default function PriceHeader({
         </span>
         {prevCloseUsd != null && prevCloseUsd !== sharePriceUsd && (
           <span
-            className="text-[13px] font-semibold tabular-nums"
+            className="text-[14px] font-semibold tabular-nums inline-flex items-center gap-0.5"
             style={{
               color: isUp ? 'var(--upbit-bid)' : isDown ? 'var(--upbit-ask)' : 'var(--upbit-text-dim)',
             }}
           >
-            {isUp ? '+' : ''}{formatRate(changeRate)} ({isUp ? '+' : ''}{formatKrw(changeAmount)})
+            {isUp ? '▲' : isDown ? '▼' : ''} {isUp ? '+' : ''}{formatRate(changeRate)} ({isUp ? '+' : ''}{formatKrw(changeAmount)})
           </span>
         )}
       </div>
