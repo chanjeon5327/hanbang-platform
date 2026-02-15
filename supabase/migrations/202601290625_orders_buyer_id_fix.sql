@@ -7,20 +7,18 @@ begin;
 alter table public.orders
 add column if not exists buyer_id uuid;
 
--- 2) 기존 주문 데이터가 있고
---    user_id 같은 컬럼이 존재한다면 buyer_id로 이관
+-- 2) 기존 주문 데이터가 있고 user_id 컬럼이 존재하면 buyer_id로 이관
+--    (ledger_posted_at이 있는 정산완료 주문은 트리거로 잠겨 있어 제외)
 do $$
 begin
   if exists (
-    select 1
-    from information_schema.columns
-    where table_schema='public'
-      and table_name='orders'
-      and column_name='user_id'
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='orders' and column_name='user_id'
   ) then
     update public.orders
     set buyer_id = user_id
-    where buyer_id is null;
+    where buyer_id is null
+      and ledger_posted_at is null;
   end if;
 end $$;
 
