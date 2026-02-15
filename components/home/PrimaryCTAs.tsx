@@ -4,14 +4,14 @@ import Link from 'next/link';
 import { Download, TrendingUp } from 'lucide-react';
 import { useDeadlinePicks } from '@/hooks/useDeadlinePicks';
 
-const TOSS = {
-  blue: '#3182f6',
-  card: '#ffffff',
-  text: '#191f28',
-  secondary: '#6b7684',
+const ROYAL = {
+  blue: 'var(--royal-blue)',
+  card: 'var(--card)',
+  text: 'var(--text)',
+  secondary: 'var(--text-secondary)',
 } as const;
 
-/** 로그인 유저용 다음 행동 CTA: 현금 충전, 수익권 둘러보기 */
+/** 로그인 유저용 다음 행동 CTA: 현금 충전, 수익권 둘러보기 (엔젤 대시보드) */
 export default function PrimaryCTAs({ enabled = true }: { enabled?: boolean }) {
   const { items: deadlineItems } = useDeadlinePicks(enabled);
   const urgentCount = deadlineItems.length;
@@ -21,8 +21,8 @@ export default function PrimaryCTAs({ enabled = true }: { enabled?: boolean }) {
       <div className="grid grid-cols-2 gap-3">
         <Link
           href="/wallet/deposit"
-          className="rounded-2xl p-4 flex items-center gap-3 transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2"
-          style={{ backgroundColor: TOSS.blue, color: TOSS.card, boxShadow: '0 4px 12px rgba(49,130,246,0.35)' }}
+          className="rounded-[16px] p-4 flex items-center gap-3 tap-scale focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2"
+          style={{ backgroundColor: ROYAL.blue, color: ROYAL.card, boxShadow: 'var(--shadow-royal)' }}
         >
           <Download size={29} strokeWidth={2} aria-hidden />
           <div className="text-left">
@@ -32,17 +32,17 @@ export default function PrimaryCTAs({ enabled = true }: { enabled?: boolean }) {
         </Link>
         <Link
           href="/market"
-          className="rounded-2xl p-4 flex items-center gap-3 transition active:scale-[0.98] border border-black/5 focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-2"
-          style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+          className="rounded-[16px] p-4 flex items-center gap-3 tap-scale border focus:outline-none focus:ring-2 focus:ring-[var(--royal-blue)] focus:ring-offset-2"
+          style={{ backgroundColor: ROYAL.card, borderColor: 'var(--border)', boxShadow: 'var(--shadow-sm)' }}
         >
           <TrendingUp size={29} strokeWidth={2} aria-hidden />
           <div className="text-left">
-            <div className="text-[15px] font-bold" style={{ color: TOSS.text }}>수익권 둘러보기</div>
-            <div className="text-[12px]" style={{ color: TOSS.secondary }}>수익권 투자</div>
+            <div className="text-[15px] font-bold" style={{ color: ROYAL.text }}>수익권 둘러보기</div>
+            <div className="text-[12px]" style={{ color: ROYAL.secondary }}>엔젤로 참여하기</div>
           </div>
         </Link>
       </div>
-      <p className="text-[11px] text-center" style={{ color: TOSS.secondary }}>
+      <p className="text-[11px] text-center" style={{ color: ROYAL.secondary }}>
         마감임박 {urgentCount}건
       </p>
     </div>

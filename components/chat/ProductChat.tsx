@@ -60,6 +60,10 @@ function showToast(msg: string) {
 }
 
 export default function ProductChat({ productId }: Props) {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
   const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');

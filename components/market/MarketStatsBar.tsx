@@ -1,5 +1,7 @@
 'use client';
 
+import { formatKrw } from '@/lib/utils/format';
+
 const TOSS = {
   text: '#191f28',
   secondary: '#6b7684',
@@ -17,12 +19,6 @@ type Props = {
   isLive?: boolean;
   isDeadlineSoon?: boolean;
 };
-
-function formatAmount(n: number): string {
-  if (n >= 1_0000_0000) return `${(n / 1_0000_0000).toFixed(1)}억`;
-  if (n >= 1_0000) return `${(n / 1_0000).toFixed(0)}만`;
-  return n.toLocaleString();
-}
 
 export default function MarketStatsBar({
   progress,
@@ -53,7 +49,7 @@ export default function MarketStatsBar({
       <div className="mb-4">
         <div className="flex justify-between items-baseline mb-1">
           <span className="text-[12px]" style={{ color: TOSS.secondary }}>모집률</span>
-          <span className="text-[28px] font-extrabold tabular-nums" style={{ color: TOSS.text }}>{progress}%</span>
+          <span className="text-[28px] font-extrabold tabular-nums" style={{ color: TOSS.text }}>{progress.toFixed(2)}%</span>
         </div>
         <div className="w-full rounded-full h-2 overflow-hidden" style={{ backgroundColor: 'var(--upbit-border)' }}>
           <div
@@ -67,7 +63,7 @@ export default function MarketStatsBar({
       <div className="grid grid-cols-2 gap-3 text-[12px]">
         <div>
           <div style={{ color: TOSS.secondary }}>총 모집 금액</div>
-          <div className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>₩{formatAmount(targetAmount)}</div>
+          <div className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>{formatKrw(targetAmount)}</div>
         </div>
         <div>
           <div style={{ color: TOSS.secondary }}>현재 참여자</div>
@@ -75,11 +71,11 @@ export default function MarketStatsBar({
         </div>
         <div>
           <div style={{ color: TOSS.secondary }}>현재 모집액</div>
-          <div className="text-[18px] font-extrabold tabular-nums" style={{ color: TOSS.positive }}>₩{formatAmount(currentAmount)}</div>
+          <div className="text-[18px] font-extrabold tabular-nums" style={{ color: TOSS.positive }}>{formatKrw(currentAmount)}</div>
         </div>
         <div>
           <div style={{ color: TOSS.secondary }}>남은 금액</div>
-          <div className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>₩{formatAmount(remainingAmount)}</div>
+          <div className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>{formatKrw(remainingAmount)}</div>
         </div>
       </div>
     </div>

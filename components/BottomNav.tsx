@@ -37,7 +37,7 @@ export default function BottomNav() {
           <Link href="/" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"><Home size={24} strokeWidth={2.5} /></Link>
           <Link href="/active-invest" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><Search size={24} /></Link>
           <Link href="/wallet" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><Wallet size={24} /></Link>
-          <Link href="/active-invest/product" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><Settings size={24} /></Link>
+          <Link href="/settings" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><Settings size={24} /></Link>
           
           <button onClick={toggleTheme} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" style={{ background: 'none', border: 'none', cursor: 'pointer', paddingLeft: '15px', borderLeft: '1px solid var(--border-color)', display: 'flex' }}>
             {isDark ? <Sun size={20} /> : <Moon size={20} />}

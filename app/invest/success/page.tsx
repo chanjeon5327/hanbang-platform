@@ -12,6 +12,7 @@ export default function InvestSuccessPage() {
   const router = useRouter();
 
   useEffect(() => {
+    window.dispatchEvent(new Event('wallet-refresh'));
     const t = setTimeout(() => {
       router.replace('/active-invest');
     }, 1500);

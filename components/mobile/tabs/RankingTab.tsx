@@ -82,21 +82,21 @@ export default function RankingTab() {
 
       {/* 나머지 랭킹 리스트 - 납작한 가로형 바 */}
       <div className="px-5 space-y-2">
-        {sortedByYield.slice(3, 15).map((product, idx) => (
+        {sortedByYield.slice(3, 15).map((item, idx) => (
           <Link
-            key={product.id}
-            href={`/active-invest/product/${product.id}`}
+            key={item.id}
+            href={`/active-invest/${item.id}`}
             className="flex items-center gap-3 bg-white dark:bg-slate-800 rounded-lg p-3 shadow-sm active:scale-95 transition-transform cursor-pointer"
           >
             <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center font-bold text-sm text-gray-600 dark:text-gray-400 flex-shrink-0">
               {idx + 4}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-slate-900 dark:text-white truncate">{product.name}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{product.category}</p>
+              <p className="font-semibold text-slate-900 dark:text-white truncate">{item.name}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{item.category}</p>
             </div>
             <p className="text-base font-bold text-red-600 dark:text-red-400 flex-shrink-0" style={{ fontVariantNumeric: "tabular-nums" }}>
-              +{product.yield}
+              +{item.yield}
             </p>
           </Link>
         ))}

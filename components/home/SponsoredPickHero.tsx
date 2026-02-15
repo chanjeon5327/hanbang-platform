@@ -90,9 +90,10 @@ export default function SponsoredPickHero() {
 
         <Link
           href={`/market/${pick.productId}`}
-          className="inline-block mt-3 bg-blue-600 px-4 py-2 rounded-lg text-[13px] font-bold"
+          className="inline-block mt-3 px-5 py-2.5 rounded-[12px] text-[13px] font-bold tap-scale"
+          style={{ backgroundColor: 'var(--royal-blue)', boxShadow: 'var(--shadow-royal)' }}
         >
-          {pick.ctaLabel}
+          엔젤로 참여하기
         </Link>
       </div>
 

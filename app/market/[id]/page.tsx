@@ -1,18 +1,16 @@
 'use client';
 
-import { use, useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Moon, Sun, Heart } from 'lucide-react';
+import { Moon, Sun, Share2 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
-import { useAuth } from '@/components/auth/AuthProvider';
 import YouTubeEmbed from '@/components/common/YouTubeEmbed';
 import MarketStatsBar from '@/components/market/MarketStatsBar';
 import ExpectedReturnBox from '@/components/market/ExpectedReturnBox';
 import TrustBadges from '@/components/market/TrustBadges';
 import RecentInvestLog from '@/components/market/RecentInvestLog';
 import InvestConfirmModal from '@/components/market/InvestConfirmModal';
-import ProductChat from '@/components/chat/ProductChat';
 import PriceHeader from '@/components/market/PriceHeader';
 import PriceChartBlock from '@/components/market/PriceChartBlock';
 import DividendInfo from '@/components/market/DividendInfo';
@@ -20,12 +18,9 @@ import TradingPanelV2 from '@/components/market/TradingPanelV2';
 import Toast from '@/components/ui/Toast';
 import { useMarketItem } from '@/hooks/useMarketItem';
 import { useRecentInvestLog } from '@/hooks/useRecentInvestLog';
-import { useInterestToggle } from '@/hooks/useInterestToggle';
-import { useMyInterests } from '@/hooks/useMyInterests';
 import { useArtistContribution } from '@/hooks/useArtistContribution';
 import { useArtistProgress } from '@/hooks/useArtistProgress';
-import ArtistBadge from '@/components/profile/ArtistBadge';
-import ArtistProgressCard from '@/components/profile/ArtistProgressCard';
+import { formatKrw } from '@/lib/utils/format';
 
 const YT_FALLBACK = 'HosW0gulISQ';
 const YT_START_SEC = 25;
@@ -46,7 +41,11 @@ function isDeadlineSoon(deadline: string | null | undefined): boolean {
   return diffDays >= 0 && diffDays <= 3;
 }
 
-function MarketHeader() {
+function Skeleton({ className = '' }: { className?: string }) {
+  return <div className={`animate-pulse rounded-lg bg-gray-200/30 ${className}`} />;
+}
+
+function MarketHeader({ onShare }: { onShare?: () => void }) {
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -55,33 +54,48 @@ function MarketHeader() {
         <Link href="/market" className="text-sm font-medium text-[var(--text-secondary)]">
           ← 마켓으로
         </Link>
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className="p-2 rounded-lg transition hover:opacity-80 text-[var(--text-secondary)]"
-          aria-label={theme === 'light' ? '다크 모드' : '라이트 모드'}
-        >
-          {theme === 'light' ? <Moon size={22} strokeWidth={2} /> : <Sun size={22} strokeWidth={2} />}
-        </button>
+        <div className="flex items-center gap-1">
+          {onShare && (
+            <button
+              type="button"
+              onClick={onShare}
+              className="p-2 rounded-lg transition hover:opacity-80 text-[var(--text-secondary)]"
+              aria-label="공유"
+            >
+              <Share2 size={20} strokeWidth={2} />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="p-2 rounded-lg transition hover:opacity-80 text-[var(--text-secondary)]"
+            aria-label={theme === 'light' ? '다크 모드' : '라이트 모드'}
+          >
+            {theme === 'light' ? <Moon size={22} strokeWidth={2} /> : <Sun size={22} strokeWidth={2} />}
+          </button>
+        </div>
       </div>
     </header>
   );
 }
 
-export default function MarketDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  const { user } = useAuth();
+export default function MarketDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const { id } = params;
   const [showConfirm, setShowConfirm] = useState(false);
   const [investLoading, setInvestLoading] = useState(false);
   const [investAmount, setInvestAmount] = useState(DEFAULT_AMOUNT);
   const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('투자 완료되었습니다.');
   const [todayCount, setTodayCount] = useState<number>(0);
 
-  const { item, loading: itemLoading, refetch: refetchItem } = useMarketItem(id);
+  const { item, loading: itemLoading, error: itemError, refetch: refetchItem } = useMarketItem(id);
   const { items: investLogs, refetch: refetchInvestLogs } = useRecentInvestLog(id);
-  const { items: myInterests } = useMyInterests(!!user);
-  const { items: artistContributions, refetch: refetchContributions } = useArtistContribution(!!user);
-  const { items: artistProgress, refetch: refetchProgress } = useArtistProgress(!!user);
+  const { items: artistContributions, refetch: refetchContributions } = useArtistContribution(false);
+  const { items: artistProgress, refetch: refetchProgress } = useArtistProgress(false);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -101,10 +115,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
       .catch(() => {});
   }, []);
 
-  const isInMyInterests = myInterests.some((i) => i.id === id);
-  const { isInterested, toggle, loading: toggleLoading } = useInterestToggle(id, isInMyInterests);
-
-  const hasSession = !!user;
+  const hasSession = false;
   const ytId = item?.youtube_video_id ?? YT_FALLBACK;
   const title = item?.title ?? '여행가 제이';
   const creator = item?.creator_name ?? '크리에이터';
@@ -137,6 +148,17 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const currentRaiseUsd = item?.current_raise_usd ?? null;
   const hasUsdData = sharePriceUsd != null || (totalRaiseUsd != null && currentRaiseUsd != null);
 
+  const handleShare = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(typeof window !== 'undefined' ? window.location.href : '');
+      setToastMessage('주소가 복사되었습니다.');
+      setToastVisible(true);
+    } catch {
+      setToastMessage('복사에 실패했습니다.');
+      setToastVisible(true);
+    }
+  }, []);
+
   const handleInvestConfirm = async () => {
     if (!hasSession) return;
     setInvestLoading(true);
@@ -149,16 +171,20 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
       const json = await res.json();
       if (json?.success) {
         setShowConfirm(false);
+        setToastMessage('주문이 체결되었습니다.');
         setToastVisible(true);
         refetchItem();
         refetchInvestLogs();
         refetchContributions();
         window.dispatchEvent(new Event('invest-success'));
+        window.dispatchEvent(new Event('wallet-refresh'));
       } else {
-        alert(json?.error === 'INSUFFICIENT_FUNDS' ? '잔액 부족' : '투자 실패');
+        setToastMessage(json?.error === 'INSUFFICIENT_FUNDS' ? '잔고가 부족합니다.' : '투자에 실패했습니다.');
+        setToastVisible(true);
       }
     } catch {
-      alert('투자 실패');
+      setToastMessage('투자에 실패했습니다.');
+      setToastVisible(true);
     } finally {
       setInvestLoading(false);
     }
@@ -175,19 +201,31 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
 
   const ctaButtonText =
     dday != null && dday <= 3
-      ? `D-${dday} 공연 전 파트너십 참여하기`
+      ? `D-${dday} 공연 전 엔젤로 참여하기`
       : isTradable
-        ? `₩${investAmount.toLocaleString()} 투자/매수`
-        : `₩${investAmount.toLocaleString()} 투자하기`;
+        ? `${formatKrw(investAmount)} 엔젤 참여/매수`
+        : `${formatKrw(investAmount)} 엔젤로 참여하기`;
+
+  if (!itemLoading && itemError && !item) {
+    return (
+      <main className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
+        <MarketHeader onShare={handleShare} />
+        <p className="text-[14px] text-gray-500 mb-4">정보를 불러올 수 없습니다.</p>
+        <button onClick={refetchItem} className="px-4 py-2 rounded-lg bg-blue-600 text-white text-[14px] font-semibold">
+          다시 시도
+        </button>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-white">
-      <MarketHeader />
+      <MarketHeader onShare={handleShare} />
 
       <div className="max-w-3xl mx-auto px-4 pb-32 pt-6">
         {/* 1. 영상 */}
         <section className="relative w-full aspect-video rounded-2xl overflow-hidden mb-6">
-          {!itemLoading && (
+          {itemLoading ? <Skeleton className="w-full h-full" /> : (
             <YouTubeEmbed
               videoId={ytId}
               className="!rounded-none h-full w-full"
@@ -222,51 +260,20 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
               <span className="text-[12px] px-2 py-0.5 rounded bg-[var(--upbit-bid)] text-white">{platform}</span>
             </div>
           </div>
-          {user && (
-            <button
-              type="button"
-              onClick={toggle}
-              disabled={toggleLoading}
-              className="p-2 rounded-full border shrink-0 disabled:opacity-50"
-              style={{ borderColor: 'var(--border)' }}
-              aria-label={isInterested ? '관심 해제' : '관심 등록'}
-            >
-              <Heart size={22} className={isInterested ? 'fill-red-500 text-red-500' : ''} strokeWidth={2} />
-            </button>
-          )}
         </section>
 
         {/* 3. 크리에이터 · 카테고리 */}
         <p className="text-[14px] mt-2" style={{ color: 'var(--text-secondary)' }}>{creator} · {category}</p>
 
-        {/* 4. ArtistBadge */}
-        {item?.artist_keyword && user && (
-          <div className="mt-3 space-y-2">
-            {(() => {
-              const contrib = artistContributions.find((c) => c.artist_keyword === item.artist_keyword);
-              const prog = artistProgress.find((p) => p.artist_keyword === item.artist_keyword);
-              return (
-                <>
-                  {contrib && <ArtistBadge artist={item.artist_keyword} amount={contrib.total_amount} />}
-                  {prog && (
-                    <ArtistProgressCard
-                      artist={item.artist_keyword}
-                      totalAmount={prog.total_amount}
-                      targetAmount={prog.target_amount}
-                      progress={prog.progress_percent}
-                      compact
-                    />
-                  )}
-                </>
-              );
-            })()}
-          </div>
-        )}
-
-        {/* 5. PriceHeader (USD + 로컬) */}
+        {/* 5. PriceHeader (USD + 로컬 + 전일대비 + 거래량) */}
         {hasUsdData && sharePriceUsd != null && (
           <div className="mt-10">
-            <PriceHeader sharePriceUsd={sharePriceUsd} fxRate={fxRate} />
+            <PriceHeader
+              sharePriceUsd={sharePriceUsd}
+              fxRate={fxRate}
+              prevCloseUsd={sharePriceUsd * 0.98}
+              volume24h={(item?.last_24h_amount ?? 0) || null}
+            />
           </div>
         )}
 
@@ -305,11 +312,20 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
               sharePriceUsd={sharePriceUsd}
               fxRate={fxRate}
               isLoggedIn={hasSession}
+              totalSupplyShares={
+                sharePriceUsd != null && sharePriceUsd > 0 && item?.total_raise_usd != null
+                  ? item.total_raise_usd / sharePriceUsd
+                  : null
+              }
+              onToast={(msg) => {
+                setToastMessage(msg);
+                setToastVisible(true);
+              }}
             />
           </div>
         ) : (
           <div className="mt-10">
-            <p className="text-[12px] mb-3" style={{ color: 'var(--upbit-text-dim)' }}>거래 불가 · 투자 후 월배당만 수령</p>
+            <p className="text-[12px] mb-3" style={{ color: 'var(--upbit-text-dim)' }}>거래 불가 · 엔젤 참여 후 월배당만 수령</p>
           </div>
         )}
 
@@ -335,7 +351,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
               1h {(item?.last_1h_count ?? 0)}명
             </span>
             <span className="opacity-70">|</span>
-            <span className="tabular-nums font-bold">24h ₩{(item?.last_24h_amount ?? 0).toLocaleString()}</span>
+            <span className="tabular-nums font-bold">24h {formatKrw(item?.last_24h_amount ?? 0)}</span>
           </div>
         )}
 
@@ -346,17 +362,13 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
 
         {/* 12. TrustBadges */}
         <div className="mt-10">
+          <p className="text-[11px] mb-2" style={{ color: 'var(--text-secondary)' }}>최근 체결 · 정산/원장 기반</p>
           <TrustBadges />
         </div>
 
         {/* 13. RecentInvestLog */}
         <div className="mt-10">
           <RecentInvestLog items={investLogs} />
-        </div>
-
-        {/* 14. ProductChat */}
-        <div className="mt-10">
-          <ProductChat productId={id} />
         </div>
       </div>
 
@@ -381,7 +393,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
-      <Toast message="투자 완료되었습니다." visible={toastVisible} onHide={() => setToastVisible(false)} />
+      <Toast message={toastMessage} visible={toastVisible} onHide={() => setToastVisible(false)} />
 
       {showConfirm && (
         <InvestConfirmModal

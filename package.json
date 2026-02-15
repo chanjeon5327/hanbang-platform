@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "verify": "pnpm run typecheck && pnpm run build",
     "smoke:prod": "powershell -ExecutionPolicy Bypass -File scripts/smoke-prod.ps1",
+    "test:partial-sell": "node scripts/run-partial-sell-test.mjs",
     "prepare": "husky"
   },
   "dependencies": {

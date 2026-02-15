@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, User } from 'lucide-react';
@@ -19,8 +19,8 @@ type Profile = {
   role: string;
 };
 
-export default function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function ProfilePage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const router = useRouter();
   const { user } = useAuth();
   const { items: artistContributions } = useArtistContribution(!!user && user?.id === id);

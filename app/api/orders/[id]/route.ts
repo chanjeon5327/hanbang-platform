@@ -8,7 +8,6 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // ✅ Next.js 16: params는 Promise
   const { id } = await params;
 
   if (!id) {

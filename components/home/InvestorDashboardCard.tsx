@@ -5,8 +5,9 @@ import AssetSummaryCard from './AssetSummaryCard';
 import LevelCard from './LevelCard';
 import type { AssetData } from './AssetCard';
 import { useInvestSummary } from '@/hooks/useInvestSummary';
+import { formatKrw, formatRate } from '@/lib/utils/format';
 
-const TOSS = { secondary: '#6b7684', positive: '#00c48c' } as const;
+const ROYAL = { secondary: 'var(--text-secondary)', positive: 'var(--emerald)' } as const;
 
 type Props = {
   data: AssetData | null;
@@ -27,24 +28,24 @@ export default function InvestorDashboardCard({ data, loading, isLoggedIn }: Pro
     <section className="space-y-4">
       <AssetSummaryCard data={data} loading={loading} />
       {isLoggedIn && !summaryLoading && investSummary && (
-        <div className="rounded-2xl p-4 border" style={{ backgroundColor: 'var(--toss-card)', borderColor: 'var(--toss-border)' }}>
+        <div className="rounded-[16px] p-4 border card" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <div className="text-[11px] font-medium" style={{ color: TOSS.secondary }}>총 투자금</div>
-              <div className="text-[14px] font-bold tabular-nums mt-0.5" style={{ color: 'var(--toss-text)' }}>
-                ₩{investSummary.totalInvest >= 10000 ? `${(investSummary.totalInvest / 10000).toFixed(0)}만` : investSummary.totalInvest.toLocaleString()}
+              <div className="text-[11px] font-medium" style={{ color: ROYAL.secondary }}>총 투자금</div>
+              <div className="text-[14px] font-bold tabular-nums mt-0.5 metric" style={{ color: 'var(--text)' }}>
+                {formatKrw(investSummary.totalInvest)}
               </div>
             </div>
             <div>
-              <div className="text-[11px] font-medium" style={{ color: TOSS.secondary }}>평균 수익률</div>
-              <div className="text-[14px] font-bold tabular-nums mt-0.5" style={{ color: investSummary.avgReturnRate >= 0 ? TOSS.positive : 'var(--toss-negative)' }}>
-                {investSummary.avgReturnRate >= 0 ? '+' : ''}{investSummary.avgReturnRate}%
+              <div className="text-[11px] font-medium" style={{ color: ROYAL.secondary }}>예상 배당 수익률</div>
+              <div className="text-[14px] font-bold tabular-nums mt-0.5 metric" style={{ color: investSummary.unrealizedRate >= 0 ? ROYAL.positive : 'var(--accent-loss)' }}>
+                {investSummary.unrealizedRate >= 0 ? '+' : ''}{formatRate(investSummary.unrealizedRate)}
               </div>
             </div>
             <div>
-              <div className="text-[11px] font-medium" style={{ color: TOSS.secondary }}>이번 달 수익</div>
-              <div className="text-[14px] font-bold tabular-nums mt-0.5" style={{ color: TOSS.positive }}>
-                +₩{investSummary.monthlyProfit.toLocaleString()}
+              <div className="text-[11px] font-medium" style={{ color: ROYAL.secondary }}>이번 달 배당</div>
+              <div className="text-[14px] font-bold tabular-nums mt-0.5 metric text-profit">
+                +{formatKrw(investSummary.monthlyProfit)}
               </div>
             </div>
           </div>

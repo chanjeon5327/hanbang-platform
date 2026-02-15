@@ -24,7 +24,7 @@
 - **Card Item:** 16:9 Thumbnail. Title, Category, Returns(%), Price.
 - **Interaction:** Hovering card plays the teaser video instantly.
 
-## 4. Page: Product Detail (Trading) `app/active-invest/product/page.tsx`
+## 4. Page: Product Detail (Trading) `app/active-invest/page.tsx`
 **Layout Rule:** Single View (No Scroll, No Tabs hiding core features).
 - **Left Column (65%):**
   - Top: YouTube Player (Autoplay).

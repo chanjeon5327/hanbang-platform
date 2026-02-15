@@ -13,9 +13,9 @@ import { getYtThumb } from "@/lib/thumbnails"
 export default async function ProjectDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: { id: string }
 }) {
-  const { id } = await params
+  const { id } = params
   const supabase = await createClient()
 
   const { data: project, error } = await supabase

@@ -133,15 +133,15 @@ export default function MobileHome() {
              </Link>
           </div>
           <div className="flex overflow-x-auto gap-4 pb-6 snap-x scrollbar-hide -mx-5 px-5">
-            {(products.length > 0 ? products : Array.from({ length: 5 })).map((product: any, i: number) => (
+            {(products.length > 0 ? products : Array.from({ length: 5 })).map((item: any, i: number) => (
               <Link
                 key={i}
-                href={product ? `/active-invest/product/${product.id}` : '#'}
+                href={item?.id ? `/active-invest/${item.id}` : '#'}
                 className="min-w-[160px] w-[160px] flex-shrink-0 bg-white rounded-[20px] overflow-hidden shadow-sm border border-gray-100 snap-center active:scale-95 transition-transform"
               >
                 <div className="h-[160px] bg-gray-100 relative">
                    <Image 
-                     src={product?.image || getYtThumb(i)} 
+                     src={item?.image || getYtThumb(i)} 
                      alt="product"
                      fill
                      className="object-cover"
@@ -150,12 +150,12 @@ export default function MobileHome() {
                 </div>
                 <div className="p-4">
                   <div className="text-sm font-bold text-[#191F28] truncate mb-1">
-                    {product?.name || `가상의 상품 ${i+1}`}
+                    {item?.name || `가상의 상품 ${i+1}`}
                   </div>
                   <div className="flex justify-between items-center mt-2">
-                    <span className="text-xs text-gray-500">{product?.category || 'K-POP'}</span>
+                    <span className="text-xs text-gray-500">{item?.category || 'K-POP'}</span>
                     <span className="text-[#ef4444] font-bold text-sm">
-                        {product ? '+15.5%' : `+${(12 + i * 1.2).toFixed(1)}%`}
+                        {item ? '+15.5%' : `+${(12 + i * 1.2).toFixed(1)}%`}
                     </span>
                   </div>
                 </div>

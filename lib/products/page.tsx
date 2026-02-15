@@ -28,10 +28,9 @@ export default function ProductsPage() {
 
       <div style={{ display: 'grid', gap: 12 }}>
         {items.map((p) => (
-          <a
+          <div
             key={p.id}
-            href={`/active-invest/product/${p.id}`}
-            style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12, textDecoration: 'none', color: 'inherit' }}
+            style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12 }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
               <strong>{p.title}</strong>
@@ -43,7 +42,7 @@ export default function ProductsPage() {
                 잔여/총수량: {p.remaining_quantity ?? '-'} / {p.total_quantity ?? '-'}
               </div>
             </div>
-          </a>
+          </div>
         ))}
       </div>
     </div>

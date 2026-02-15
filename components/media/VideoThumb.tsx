@@ -31,11 +31,28 @@ export default function VideoThumb({
   const [hasHover, setHasHover] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia('(hover: hover)');
+    if (typeof window === 'undefined') return;
+
+    const mq = window.matchMedia?.('(hover: hover)');
+    if (!mq) return;
+
     setHasHover(mq.matches);
+
     const handler = () => setHasHover(mq.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
+
+    if (mq.addEventListener) {
+      mq.addEventListener('change', handler);
+      return () => mq.removeEventListener('change', handler);
+    }
+
+    // 구형 브라우저 대응
+    // @ts-ignore
+    if (mq.addListener) {
+      // @ts-ignore
+      mq.addListener(handler);
+      // @ts-ignore
+      return () => mq.removeListener(handler);
+    }
   }, []);
 
   const play = useCallback(() => {

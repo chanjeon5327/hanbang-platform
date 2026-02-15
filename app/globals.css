@@ -1,75 +1,183 @@
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 @import "tailwindcss";
 
+/* ===== HANBANG 디자인 시스템 ===== */
+/* 토스증권형 × 엔젤투자 × 배당 중심 × 로얄블루 */
+
 @layer base {
   :root {
-    /* ===== 공통 디자인 토큰 (라이트) ===== */
-    --bg: #f9fafb;
-    --card: #ffffff;
-    --text: #191f28;
-    --text-secondary: #6b7684;
-    --border: #e5e8eb;
-    --primary: #3182f6;
+    /* 메인 컬러 */
+    --royal-blue: #1E3A8A;
+    --royal-blue-light: #2563EB;
+    --royal-blue-dark: #1E40AF;
+    --midnight-navy: #0F172A;
+    --midnight-navy-light: #1E293B;
 
-    /* ===== 토스 Toss (정적 페이지: 첫화면, 마이페이지, 관리자) ===== */
-    --toss-bg: #f2f4f6;
-    --toss-card: #ffffff;
-    --toss-blue: #3182f6;
-    --toss-blue-hover: #1b64da;
-    --toss-text: #191f28;
-    --toss-text-secondary: #6b7684;
-    --toss-border: #e5e8eb;
-    --toss-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    --toss-radius: 16px;
+    /* 액센트 */
+    --emerald: #059669;
+    --emerald-light: #10B981;
+    --accent-loss: #DC2626;
+    --accent-loss-light: #EF4444;
 
-    /* ===== 업비트 Upbit (주문/호가/차트) - 라이트 기본 ===== */
-    --upbit-bg: #f2f4f6;
-    --upbit-panel: #ffffff;
-    --upbit-border: #e5e8eb;
-    --upbit-bid: #1e88e5;
-    --upbit-bid-bg: rgba(30,136,229,0.12);
-    --upbit-ask: #e53935;
-    --upbit-ask-bg: rgba(229,57,53,0.12);
-    --upbit-text: #191f28;
-    --upbit-text-dim: #6b7684;
-    --upbit-positive: #00c48c;
-    --upbit-radius: 12px;
+    /* 배경/카드 */
+    --bg: #F8FAFC;
+    --bg-secondary: #F1F5F9;
+    --card: #FFFFFF;
+    --card-elevated: #FFFFFF;
 
-    /* Legacy (호환) */
-    --bg-app: var(--toss-bg);
-    --accent-positive: #00c48c;
-    --accent-negative: #e53935;
+    /* 텍스트 */
+    --text: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+
+    /* 테두리 */
+    --border: #E2E8F0;
+    --border-strong: #CBD5E1;
+
+    /* 그림자 */
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.08);
+    --shadow-royal: 0 4px 14px rgba(30, 58, 138, 0.25);
+
+    /* 레거시 호환 */
+    --primary: var(--royal-blue);
+    --toss-bg: var(--bg);
+    --toss-card: var(--card);
+    --toss-blue: var(--royal-blue);
+    --toss-text: var(--text);
+    --toss-text-secondary: var(--text-secondary);
+    --toss-border: var(--border);
+    --upbit-bg: var(--bg);
+    --upbit-panel: var(--card);
+    --upbit-border: var(--border);
+    --upbit-bid: var(--royal-blue);
+    --upbit-ask: var(--accent-loss);
+    --upbit-text: var(--text);
+    --upbit-text-dim: var(--text-muted);
+    --upbit-positive: var(--emerald);
+    --accent-positive: var(--emerald);
+    --accent-negative: var(--accent-loss);
   }
 
   html.dark {
-    /* ===== 공통 디자인 토큰 (다크) ===== */
-    --bg: #0b0c0f;
-    --card: #111318;
-    --text: #f5f6f7;
-    --text-secondary: #8b949e;
-    --border: #1f242b;
-    --primary: #3b82f6;
-    --toss-bg: #0d0d0d;
-    --toss-card: #161616;
-    --toss-blue: #3182f6;
-    --toss-text: #e0e0e0;
-    --toss-text-secondary: #8e8e8e;
-    --toss-border: #2b2b2b;
-    --toss-shadow: 0 2px 12px rgba(0,0,0,0.4);
-
-    /* 업비트 Upbit - 다크 모드 */
-    --upbit-bg: #0d0d0d;
-    --upbit-panel: #161616;
-    --upbit-border: #2b2b2b;
-    --upbit-text: #e0e0e0;
-    --upbit-text-dim: #8e8e8e;
-    --upbit-positive: #00c48c;
+    --bg: #0F172A;
+    --bg-secondary: #1E293B;
+    --card: #1E293B;
+    --card-elevated: #334155;
+    --text: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --border: #334155;
+    --border-strong: #475569;
+    --toss-bg: var(--bg);
+    --toss-card: var(--card);
+    --upbit-bg: var(--bg);
+    --upbit-panel: var(--card);
   }
 
   html, body {
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     background: var(--bg);
     color: var(--text);
+  }
+}
+
+@layer components {
+  /* 버튼 스타일 */
+  .btn-primary {
+    @apply rounded-2xl px-6 py-3.5 font-bold transition-all active:scale-[0.98] disabled:opacity-50;
+    background: var(--royal-blue);
+    color: white;
+    box-shadow: var(--shadow-royal);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--royal-blue-dark);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    @apply rounded-2xl px-6 py-3.5 font-bold transition-all active:scale-[0.98] disabled:opacity-50 border-2;
+    background: transparent;
+    border-color: var(--royal-blue);
+    color: var(--royal-blue);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: rgba(30, 58, 138, 0.08);
+  }
+
+  .btn-ghost {
+    @apply rounded-2xl px-6 py-3.5 font-semibold transition-all active:scale-[0.98] disabled:opacity-50;
+    background: transparent;
+    color: var(--text-secondary);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--bg-secondary);
+    color: var(--text);
+  }
+
+  .btn-danger {
+    @apply rounded-2xl px-6 py-3.5 font-bold transition-all active:scale-[0.98] disabled:opacity-50;
+    background: var(--accent-loss);
+    color: white;
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: var(--accent-loss-light);
+  }
+
+  /* 카드 */
+  .card {
+    @apply rounded-[16px] p-5 transition-all;
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+  .card:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  .card-royal {
+    @apply rounded-[16px] p-6;
+    background: linear-gradient(135deg, var(--royal-blue) 0%, var(--royal-blue-dark) 100%);
+    color: white;
+    box-shadow: var(--shadow-royal);
+  }
+
+  /* 숫자 전용 */
+  .metric {
+    @apply font-bold tabular-nums tracking-tight;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric-lg {
+    @apply text-2xl md:text-3xl font-extrabold tabular-nums;
+  }
+  .metric-xl {
+    @apply text-3xl md:text-4xl font-extrabold tabular-nums;
+  }
+
+  /* 수익/손실 */
+  .text-profit {
+    color: var(--emerald);
+  }
+  .text-loss {
+    color: var(--accent-loss);
+  }
+
+  /* Skeleton shimmer */
+  .skeleton {
+    background: linear-gradient(90deg, rgba(200,200,200,0.15) 25%, rgba(200,200,200,0.3) 50%, rgba(200,200,200,0.15) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* 공통 active scale */
+  .tap-scale {
+    @apply transition-transform active:scale-[0.98];
+  }
+
+  /* 페이지 컨테이너 */
+  .page-wrap {
+    @apply max-w-3xl mx-auto px-4 pb-32;
   }
 }
 
@@ -82,20 +190,18 @@
     scrollbar-width: none;
   }
 
-  /* 카드 공통 */
-  .card {
-    @apply rounded-3xl p-5;
-    background: var(--card);
-    border: 1px solid var(--border);
+  /* fade-in 애니메이션 */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
-  /* 숫자 전용 */
-  .metric {
-    @apply font-extrabold tabular-nums;
-  }
-
-  /* 페이지 컨테이너 */
-  .page-wrap {
-    @apply max-w-3xl mx-auto px-4 pb-32;
+  /* shimmer */
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
   }
 }

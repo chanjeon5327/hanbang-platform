@@ -24,15 +24,13 @@ export type WalletSummary = {
 };
 
 /**
- * 수익률 계산 (ledger 기반)
- * - 투자원금(principal): CASH_DEBIT 절대값 합
- * - 현재평가액(currentValue): 현금잔고 + 보유자산평가
- * - 수익률 = (현재평가액 - 투자원금) / 투자원금 * 100 (분모 0 방지)
+ * 수익률 정의 (거래소형 고정)
+ * - currentValue = remainingQty * currentPrice
+ * - unrealizedPnl = currentValue - remainingCost
+ * - unrealizedRate = (unrealizedPnl / remainingCost) * 100 (0 나눔 방지)
+ * - 보유 포지션(remainingCost) 기준 미실현 수익률만 사용. investedPrincipal 기반 제거.
  *
- * @param summary - WalletSummary (cashBalance, investedPrincipal, assetQuantity)
- * @param currentPrice - 단일 자산 시 주당 현재가 (원)
- * @param assetQuantity - 보유 수량 (미지정 시 summary.assetQuantity)
- * @param holdingsValue - 보유자산 평가액 (원). 전달 시 currentPrice 무시
+ * 레거시 calcReturn: 단일 자산 시 보조용. UI 메인은 /api/wallet/position, invest-summary의 포지션 기반 사용.
  */
 export function calcReturn(
   summary: WalletSummary,

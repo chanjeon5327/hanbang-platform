@@ -1,7 +1,36 @@
 const { withSentryConfig } = require('@sentry/nextjs');
 
+const isDev = process.env.NODE_ENV !== 'production';
+
+// dev: inline/eval 허용으로 콘솔 에러 제거 | prod: 보안형
+const scriptSrc = isDev ? "'self' 'unsafe-inline' 'unsafe-eval'" : "'self' https:";
+const styleSrc = isDev ? "'self' 'unsafe-inline'" : "'self'";
+const connectSrc = isDev ? "'self' http: https:" : "'self' https:";
+
+const csp = [
+  "default-src 'self'",
+  `script-src ${scriptSrc}`,
+  `style-src ${styleSrc}`,
+  "img-src 'self' data: https:",
+  `connect-src ${connectSrc}`,
+  "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com",
+  "font-src 'self' data: https:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "frame-ancestors 'self'",
+].join('; ');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
+
+  headers: async () => [
+    {
+      source: '/(.*)',
+      headers: [{ key: 'Content-Security-Policy', value: csp }],
+    },
+  ],
+
   // 외부 이미지 허용
   images: {
     remotePatterns: [

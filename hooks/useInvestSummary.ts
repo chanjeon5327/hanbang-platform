@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 
 export type InvestSummary = {
   totalInvest: number;
-  avgReturnRate: number;
+  unrealizedPnl: number;
+  unrealizedRate: number;
   monthlyProfit: number;
   holdingsValue: number;
 };

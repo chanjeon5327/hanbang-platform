@@ -26,12 +26,12 @@ export type AssetData = {
   dailyChange?: number;
 };
 
-const TOSS = {
-  card: '#ffffff',
-  blue: '#3182f6',
-  text: '#191f28',
-  secondary: '#6b7684',
-  border: '#e5e8eb',
+const ROYAL = {
+  card: 'var(--card)',
+  blue: 'var(--royal-blue)',
+  text: 'var(--text)',
+  secondary: 'var(--text-secondary)',
+  border: 'var(--border)',
 } as const;
 
 type Props = {
@@ -49,7 +49,7 @@ type Props = {
  */
 export default function HomeView({ assetData, assetLoading = false, isLoggedIn, demoMode = false, showBottomNav = true }: Props) {
   return (
-    <div className="min-h-screen pb-24" style={{ backgroundColor: 'var(--toss-bg)' }}>
+    <div className="min-h-screen pb-24" style={{ backgroundColor: 'var(--bg)' }}>
       <main className="max-w-lg mx-auto px-4 pt-4 pb-6 space-y-4">
         {isLoggedIn ? (
           <>
@@ -71,21 +71,21 @@ export default function HomeView({ assetData, assetLoading = false, isLoggedIn, 
             <AdSlot position="home_mid" />
             <DeadlineRail enabled={!demoMode} />
 
-            <Link href="/active-invest" className="rounded-2xl p-4 border flex items-center gap-3" style={{ backgroundColor: TOSS.card, borderColor: TOSS.border }}>
-              <Activity size={20} strokeWidth={2} style={{ color: TOSS.blue }} />
+            <Link href="/active-invest" className="rounded-[16px] p-4 border flex items-center gap-3 tap-scale" style={{ backgroundColor: ROYAL.card, borderColor: ROYAL.border }}>
+              <Activity size={20} strokeWidth={2} style={{ color: ROYAL.blue }} />
               <div>
-                <div className="text-[14px] font-semibold" style={{ color: TOSS.text }}>투자 현황</div>
-                <div className="text-[12px]" style={{ color: TOSS.secondary }}>진행 중인 수익권 보기</div>
+                <div className="text-[14px] font-semibold" style={{ color: ROYAL.text }}>엔젤 투자 현황</div>
+                <div className="text-[12px]" style={{ color: ROYAL.secondary }}>진행 중인 수익권 보기</div>
               </div>
             </Link>
 
             <IpNewsSection />
 
-            <Link href="/notifications" className="rounded-2xl p-4 border flex items-center gap-3" style={{ backgroundColor: TOSS.card, borderColor: TOSS.border }}>
-              <Bell size={20} strokeWidth={2} style={{ color: TOSS.secondary }} />
+            <Link href="/notifications" className="rounded-[16px] p-4 border flex items-center gap-3 tap-scale" style={{ backgroundColor: ROYAL.card, borderColor: ROYAL.border }}>
+              <Bell size={20} strokeWidth={2} style={{ color: ROYAL.secondary }} />
               <div>
-                <div className="text-[14px] font-semibold" style={{ color: TOSS.text }}>알림</div>
-                <div className="text-[12px]" style={{ color: TOSS.secondary }}>수익·정산 알림 확인</div>
+                <div className="text-[14px] font-semibold" style={{ color: ROYAL.text }}>알림</div>
+                <div className="text-[12px]" style={{ color: ROYAL.secondary }}>배당·정산 알림 확인</div>
               </div>
             </Link>
           </>
@@ -105,9 +105,9 @@ export default function HomeView({ assetData, assetLoading = false, isLoggedIn, 
           </>
         )}
 
-        <Link href="/trust" className="block rounded-2xl p-4 border text-center" style={{ backgroundColor: TOSS.card, borderColor: TOSS.border }}>
-          <span className="text-[14px] font-semibold" style={{ color: TOSS.blue }}>투자 구조 보기</span>
-          <span className="text-[12px] block mt-0.5" style={{ color: TOSS.secondary }}>원장·결제·정산 흐름 확인</span>
+        <Link href="/trust" className="block rounded-[16px] p-4 border text-center tap-scale" style={{ backgroundColor: ROYAL.card, borderColor: ROYAL.border }}>
+          <span className="text-[14px] font-semibold" style={{ color: ROYAL.blue }}>엔젤 투자 구조 보기</span>
+          <span className="text-[12px] block mt-0.5" style={{ color: ROYAL.secondary }}>원장·결제·정산 흐름 확인</span>
         </Link>
 
         <div className="h-6" />

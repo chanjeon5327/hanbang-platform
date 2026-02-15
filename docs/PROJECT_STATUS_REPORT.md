@@ -22,7 +22,7 @@
 ### 투자/프로젝트
 - `/invest`, `/invest/[id]`, `/invest/list`, `/invest/product/[id]`
 - `/projects/[id]`, `/projects/[id]/invest`
-- `/active-invest`, `/active-invest/product`, `/active-invest/product/[id]`
+- `/active-invest`, `/active-invest/[id]`
 
 ### 기타
 - `/interest/[id]`, `/creator/dashboard`, `/creator/register`, `/settings`, `/notice`, `/onboarding`, `/ranking`, `/closing-soon`, `/lobby`, `/demo`

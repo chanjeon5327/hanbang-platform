@@ -84,7 +84,10 @@ function OrderSuccessContent() {
 
       <div className="space-y-3 mt-auto">
         <button
-          onClick={() => router.push('/wallet')}
+          onClick={() => {
+            window.dispatchEvent(new Event('wallet-refresh'));
+            router.push('/wallet');
+          }}
           className="w-full py-4 rounded-2xl text-[16px] font-bold text-white bg-[var(--toss-blue)]"
           style={{ boxShadow: '0 4px 12px rgba(49,130,246,0.35)' }}
         >

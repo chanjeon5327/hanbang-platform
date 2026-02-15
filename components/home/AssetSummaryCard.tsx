@@ -16,7 +16,7 @@ export default function AssetSummaryCard({
   loading?: boolean;
 }) {
   return (
-    <Link href="/mypage" className="block focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-2 rounded-2xl" aria-label="내 자산 상세 보기">
+    <Link href="/mypage" className="block focus:outline-none focus:ring-2 focus:ring-[var(--royal-blue)] focus:ring-offset-2 rounded-[16px]" aria-label="내 자산 상세 보기">
       <AssetCard data={data} loading={loading} />
     </Link>
   );

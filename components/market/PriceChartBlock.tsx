@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useMemo } from 'react';
+
 type Props = {
   sharePriceUsd: number | null;
   totalRaiseUsd: number | null;
@@ -17,16 +19,42 @@ function formatKrw(n: number, fx: number): string {
   return `₩${Math.round(n).toLocaleString()}`;
 }
 
-export default function PriceChartBlock({ sharePriceUsd, totalRaiseUsd, currentRaiseUsd, fxRate }: Props) {
-  const hasUsd = sharePriceUsd != null || (totalRaiseUsd != null && currentRaiseUsd != null);
-  if (!hasUsd) return null;
+function SkeletonChart() {
+  return (
+    <div className="h-[200px] rounded-lg animate-pulse" style={{ backgroundColor: 'var(--upbit-border)' }} />
+  );
+}
 
-  const progress = totalRaiseUsd != null && totalRaiseUsd > 0 && currentRaiseUsd != null
-    ? Math.min(100, (currentRaiseUsd / totalRaiseUsd) * 100)
-    : 0;
+export default function PriceChartBlock({ sharePriceUsd, totalRaiseUsd, currentRaiseUsd, fxRate }: Props) {
+  const [chartTab, setChartTab] = useState<'1D' | '1W' | '1M'>('1D');
+
+  const hasUsd = sharePriceUsd != null || (totalRaiseUsd != null && currentRaiseUsd != null);
+  const progress = useMemo(() => {
+    if (totalRaiseUsd == null || totalRaiseUsd <= 0 || currentRaiseUsd == null) return 0;
+    return Math.min(100, (currentRaiseUsd / totalRaiseUsd) * 100);
+  }, [totalRaiseUsd, currentRaiseUsd]);
+
+  if (!hasUsd) return null;
 
   return (
     <div className="py-4" style={{ borderBottom: '1px solid var(--upbit-border)' }}>
+      <div className="flex gap-1 mb-3">
+        {(['1D', '1W', '1M'] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setChartTab(t)}
+            className="px-3 py-1.5 text-[12px] font-semibold rounded-lg transition"
+            style={{
+              backgroundColor: chartTab === t ? 'var(--primary)' : 'transparent',
+              color: chartTab === t ? '#fff' : 'var(--upbit-text-dim)',
+            }}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
       {sharePriceUsd != null && (
         <div className="flex items-baseline gap-2 mb-3">
           <span className="text-[20px] font-extrabold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
@@ -37,6 +65,11 @@ export default function PriceChartBlock({ sharePriceUsd, totalRaiseUsd, currentR
           </span>
         </div>
       )}
+
+      <div className="mb-3">
+        <SkeletonChart />
+      </div>
+
       {totalRaiseUsd != null && currentRaiseUsd != null && (
         <div>
           <div className="flex justify-between text-[12px] mb-1" style={{ color: 'var(--upbit-text-dim)' }}>
