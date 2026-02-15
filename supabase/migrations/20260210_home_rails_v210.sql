@@ -70,6 +70,7 @@ create table if not exists public.user_interests (
 create index if not exists idx_user_interests_user on public.user_interests (user_id, created_at desc);
 
 -- 6) 홈 호출용 뷰(최근 7일 지표 합산)
+drop view if exists public.v_content_metrics_7d cascade;
 create or replace view public.v_content_metrics_7d as
 select
   ci.id as content_id,
