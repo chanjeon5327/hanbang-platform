@@ -22,6 +22,7 @@ import {
   Shield,
   CreditCard,
   ShieldCheck,
+  Percent,
 } from 'lucide-react';
 
 const menuItems = [
@@ -33,6 +34,7 @@ const menuItems = [
   { icon: ShoppingCart, label: '주문/결제 확인', path: '/admin/orders', role: 1 as const },
   { icon: CreditCard, label: '결제 모니터링', path: '/admin/payments', role: 1 as const },
   { icon: DollarSign, label: '정산 확정', path: '/admin/settlement', role: 3 as const },
+  { icon: Percent, label: '배당 설정', path: '/admin/dividend', role: 3 as const },
   { icon: MessageSquare, label: '채팅 모더레이션', path: '/admin/chat/moderation', role: 2 as const },
   { icon: Flag, label: '신고 처리', path: '/admin/reports', role: 2 as const },
   { icon: Gift, label: 'KPC 포인트 지급', path: '/admin/kpc', role: 3 as const },

@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
+import { useToast } from "@/context/ToastContext";
 
 export function MobileSignup() {
+  const { toast } = useToast();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -16,7 +18,7 @@ export function MobileSignup() {
       setStep(3);
     } else if (step === 3 && verificationCode.trim()) {
       // 회원가입 완료 처리
-      alert("회원가입이 완료되었습니다!");
+      toast("회원가입이 완료되었습니다!");
     }
   };
 
@@ -120,7 +122,7 @@ export function MobileSignup() {
               autoFocus
             />
             <button
-              onClick={() => alert("인증번호를 다시 전송했습니다.")}
+              onClick={() => toast("인증번호를 다시 전송했습니다.")}
               style={{
                 marginTop: "16px",
                 width: "100%",

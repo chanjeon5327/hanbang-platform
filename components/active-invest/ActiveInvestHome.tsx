@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useStore } from '@/context/StoreContext';
+import { formatKrw, formatRate } from '@/lib/utils/format';
 
 const CATEGORIES = ['ALL', '유튜브', '전시', 'K-POP', '드라마', '영화', '웹툰', '웹소설', '공연', '굿즈', '스타트업'];
 
@@ -43,7 +44,7 @@ export default function ActiveInvestHome() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', padding: '0 5%', maxWidth: '1400px', margin: '0 auto' }}>
         {filtered.map((p) => (
-          <Link href={`/active-invest/${p.id}`} key={p.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Link href={`/market/${p.id}`} key={p.id} style={{ textDecoration: 'none', color: 'inherit' }}>
             <div
               className="group"
               style={{
@@ -112,7 +113,7 @@ export default function ActiveInvestHome() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
                   <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                    {p.price.toLocaleString()}원
+                    {formatKrw(p.price)}
                   </span>
                   <span
                     style={{
@@ -124,7 +125,7 @@ export default function ActiveInvestHome() {
                       backgroundColor: parseFloat(p.yield) > 0 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)',
                     }}
                   >
-                    {parseFloat(p.yield) > 0 ? '+' : ''}{p.yield}
+                    {parseFloat(p.yield) > 0 ? '+' : ''}{formatRate(parseFloat(p.yield))}
                   </span>
                 </div>
               </div>

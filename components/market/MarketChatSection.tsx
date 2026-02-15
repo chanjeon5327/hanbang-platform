@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { MessageCircle, Flag, Send, Ban } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { useToast } from '@/context/ToastContext';
 import { filterProfanity, containsProfanity } from '@/lib/chat/profanityFilter';
 
 const MAX_MESSAGE_LENGTH = 300;
@@ -49,6 +50,7 @@ type Props = {
 
 export default function MarketChatSection({ marketId }: Props) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [input, setInput] = useState('');
   const [reportConfirm, setReportConfirm] = useState<string | null>(null);
   const [blockTarget, setBlockTarget] = useState<string | null>(null);
@@ -58,7 +60,7 @@ export default function MarketChatSection({ marketId }: Props) {
   const handleSend = () => {
     if (!canWrite || !input.trim()) return;
     if (containsProfanity(input.trim())) {
-      alert('부적절한 표현이 포함되어 있습니다.');
+      toast('부적절한 표현이 포함되어 있습니다.');
       return;
     }
     const filtered = filterProfanity(input.trim());
@@ -94,7 +96,7 @@ export default function MarketChatSection({ marketId }: Props) {
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--upbit-border)' }}>
         <div className="flex items-center gap-2">
           <MessageCircle size={18} strokeWidth={2} style={{ color: 'var(--upbit-bid)' }} />
-          <span className="font-bold text-[15px]" style={{ color: 'var(--upbit-text)' }}>투자자 채팅</span>
+          <span className="font-bold text-[15px]" style={{ color: 'var(--upbit-text)' }}>엔젤 채팅</span>
         </div>
       </div>
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Search, X, Phone, Mail, Wallet, MessageSquare, FileText } from "lucide-react";
+import { formatKrw } from "@/lib/utils/format";
 
 interface StatsCard {
   title: string;
@@ -294,7 +295,7 @@ export function MobileAdminDashboard({ stats, contacts, recentActivities = [] }:
             <div style={{ marginBottom: "20px" }}>
               <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>총 투자액</p>
               <p style={{ fontSize: "18px", fontWeight: "bold", color: "var(--text-primary)" }}>
-                {selectedUser.investmentTotal.toLocaleString()}원
+                {formatKrw(selectedUser.investmentTotal)}
               </p>
             </div>
           </div>

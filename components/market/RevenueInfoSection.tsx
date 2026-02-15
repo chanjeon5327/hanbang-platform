@@ -37,7 +37,7 @@ export default function RevenueInfoSection() {
         <div>
           <h4 className="text-[13px] font-semibold mb-1" style={{ color: 'var(--upbit-text)' }}>수익 배분 구조</h4>
           <p className="text-[12px] leading-relaxed" style={{ color: 'var(--upbit-text-dim)' }}>
-            크리에이터 50% · 투자자 45% · 플랫폼 5% (수익 발생 시 배분)
+            크리에이터 50% · 엔젤 45% · 플랫폼 5% (수익 발생 시 배분)
           </p>
         </div>
         <div className="flex gap-2 p-3 rounded-lg" style={{ backgroundColor: 'rgba(235, 77, 61, 0.08)', border: '1px solid rgba(235, 77, 61, 0.2)' }}>

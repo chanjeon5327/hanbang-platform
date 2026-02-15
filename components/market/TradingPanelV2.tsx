@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatKrw, formatRate, formatQty } from '@/lib/utils/format';
+import Skeleton from '@/components/ui/Skeleton';
 
 type OrderbookLevel = { price_usd: number; quantity: number };
 type Trade = { id: string; price_usd: number; quantity: number; side: string; created_at: string };
@@ -27,19 +28,6 @@ type Props = {
 
 function formatUsd(n: number): string {
   return `$${n.toFixed(2)}`;
-}
-
-function Skeleton({ className = '' }: { className?: string }) {
-  return (
-    <div
-      className={`rounded-lg ${className}`}
-      style={{
-        background: 'linear-gradient(90deg, rgba(200,200,200,0.2) 25%, rgba(200,200,200,0.4) 50%, rgba(200,200,200,0.2) 75%)',
-        backgroundSize: '200% 100%',
-        animation: 'shimmer 1.5s infinite',
-      }}
-    />
-  );
 }
 
 export default function TradingPanelV2({

@@ -179,6 +179,46 @@
   .page-wrap {
     @apply max-w-3xl mx-auto px-4 pb-32;
   }
+
+  /* glass-card */
+  .glass-card {
+    @apply rounded-[16px] p-5;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+  }
+  html.dark .glass-card {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(51, 65, 85, 0.8);
+  }
+
+  /* royal-gradient-bg */
+  .royal-gradient-bg {
+    background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #3B82F6 100%);
+  }
+
+  /* subtle-divider */
+  .subtle-divider {
+    height: 1px;
+    background: var(--border);
+    opacity: 0.6;
+  }
+
+  /* metric-number */
+  .metric-number {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* 버튼 상태 통일 */
+  button:disabled, .btn-primary:disabled, .btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  button:focus-visible, .btn-primary:focus-visible {
+    outline: 2px solid var(--royal-blue);
+    outline-offset: 2px;
+  }
 }
 
 @layer utilities {

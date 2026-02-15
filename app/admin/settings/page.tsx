@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Shield, Settings as SettingsIcon, ToggleLeft, ToggleRight } from "lucide-react";
+import { useToast } from "@/context/ToastContext";
 
 export default function AdminSettings() {
+  const { toast } = useToast();
   const [investEnabled, setInvestEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -33,10 +35,10 @@ export default function AdminSettings() {
         setInvestEnabled(next);
       } else {
         const err = await res.json();
-        alert(err?.error ?? "저장 실패");
+        toast(err?.error ?? "저장 실패");
       }
     } catch (e) {
-      alert("저장 실패");
+      toast("저장 실패");
     } finally {
       setSaving(false);
     }

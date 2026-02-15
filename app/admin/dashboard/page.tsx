@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { TrendingUp, AlertTriangle, BarChart3, RotateCcw } from 'lucide-react';
+import { useToast } from '@/context/ToastContext';
 
 const STYLE = {
   bg: '#000',
@@ -49,6 +50,7 @@ type DashboardData = {
 };
 
 export default function AdminDashboardPage() {
+  const { toast } = useToast();
   const [data, setData] = useState<DashboardData | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -107,10 +109,10 @@ export default function AdminDashboardPage() {
         const j = await r.json();
         setPayments(j.payments ?? []);
       } else {
-        alert(json.error ?? '재시도 실패');
+        toast(json.error ?? '재시도 실패');
       }
     } catch (e) {
-      alert(e instanceof Error ? e.message : '재시도 실패');
+      toast(e instanceof Error ? e.message : '재시도 실패');
     } finally {
       setRetrying(null);
     }

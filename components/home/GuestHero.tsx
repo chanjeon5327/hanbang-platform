@@ -9,7 +9,7 @@ export default function GuestHero() {
     <section
       className="rounded-[16px] p-6 border overflow-hidden card-royal"
       style={{
-        background: 'linear-gradient(135deg, var(--royal-blue) 0%, var(--royal-blue-dark) 100%)',
+        background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #3B82F6 100%)',
         borderColor: 'rgba(255,255,255,0.2)',
         boxShadow: 'var(--shadow-royal)',
       }}

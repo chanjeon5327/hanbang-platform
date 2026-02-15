@@ -5,21 +5,10 @@ import Link from 'next/link';
 import { Download, ArrowLeftRight, Upload } from 'lucide-react';
 import { useWalletLedger, type LedgerEntry } from '@/hooks/useWalletLedger';
 import { formatKrw, formatRate } from '@/lib/utils/format';
+import Skeleton from '@/components/ui/Skeleton';
+import EmptyState from '@/components/ui/EmptyState';
 
 const ROYAL = { bg: 'var(--bg)', card: 'var(--card)', blue: 'var(--royal-blue)', text: 'var(--text)', secondary: 'var(--text-secondary)', border: 'var(--border)', positive: 'var(--emerald)', negative: 'var(--accent-loss)' };
-
-function Skeleton({ className = '' }: { className?: string }) {
-  return (
-    <div
-      className={`rounded-lg ${className}`}
-      style={{
-        background: 'linear-gradient(90deg, rgba(200,200,200,0.2) 25%, rgba(200,200,200,0.4) 50%, rgba(200,200,200,0.2) 75%)',
-        backgroundSize: '200% 100%',
-        animation: 'shimmer 1.5s infinite',
-      }}
-    />
-  );
-}
 
 type InvestSummary = {
   totalInvest: number;
@@ -30,9 +19,19 @@ type InvestSummary = {
   holdingsValue: number;
 };
 
+type WalletSummaryApi = {
+  cashBalance: number;
+  totalAssets: number;
+  totalDividend: number;
+  recentDividends: { id: string; amount: number; created_at: string }[];
+  unrealizedPnl: number;
+  unrealizedRate: number;
+};
+
 export default function Wallet() {
   const { summary, loading, error, refetch } = useWalletLedger();
   const [investSummary, setInvestSummary] = useState<InvestSummary | null>(null);
+  const [walletSummary, setWalletSummary] = useState<WalletSummaryApi | null>(null);
 
   const fetchInvestSummary = React.useCallback(() => {
     fetch('/api/wallet/invest-summary', { cache: 'no-store' })
@@ -41,28 +40,38 @@ export default function Wallet() {
       .catch(() => setInvestSummary(null));
   }, []);
 
-  useEffect(() => {
-    fetchInvestSummary();
-  }, [fetchInvestSummary, loading]);
+  const fetchWalletSummary = React.useCallback(() => {
+    fetch('/api/wallet/summary', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setWalletSummary(d))
+      .catch(() => setWalletSummary(null));
+  }, []);
 
   useEffect(() => {
-    const onRefresh = () => fetchInvestSummary();
+    fetchInvestSummary();
+    fetchWalletSummary();
+  }, [fetchInvestSummary, fetchWalletSummary, loading]);
+
+  useEffect(() => {
+    const onRefresh = () => {
+      fetchInvestSummary();
+      fetchWalletSummary();
+    };
     window.addEventListener('wallet-refresh', onRefresh);
     window.addEventListener('invest-success', onRefresh);
     return () => {
       window.removeEventListener('wallet-refresh', onRefresh);
       window.removeEventListener('invest-success', onRefresh);
     };
-  }, [fetchInvestSummary]);
+  }, [fetchInvestSummary, fetchWalletSummary]);
 
-  const totalDisplay = investSummary?.totalValue ?? summary.cashBalance;
+  const totalDisplay = investSummary?.totalValue ?? walletSummary?.totalAssets ?? summary.cashBalance;
   const displayReturn =
     investSummary && investSummary.holdingsValue > 0
-      ? {
-          amount: investSummary.unrealizedPnl,
-          rate: investSummary.unrealizedRate,
-        }
-      : null;
+      ? { amount: investSummary.unrealizedPnl, rate: investSummary.unrealizedRate }
+      : walletSummary && (walletSummary.unrealizedPnl !== 0 || walletSummary.unrealizedRate !== 0)
+        ? { amount: walletSummary.unrealizedPnl, rate: walletSummary.unrealizedRate }
+        : null;
 
   return (
     <div className="min-h-screen pb-24" style={{ backgroundColor: 'var(--bg)' }}>
@@ -74,6 +83,22 @@ export default function Wallet() {
       </header>
 
       <main className="px-4 pt-2 pb-8">
+        {/* 0. KPI 3개 */}
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          <div className="rounded-xl p-4 card" style={{ backgroundColor: 'var(--card)' }}>
+            <div className="text-[11px] mb-1" style={{ color: 'var(--text-secondary)' }}>총자산</div>
+            {loading ? <Skeleton className="h-5 w-16" /> : <div className="text-[14px] font-bold tabular-nums" style={{ color: 'var(--text)' }}>{formatKrw(walletSummary?.totalAssets ?? totalDisplay)}</div>}
+          </div>
+          <div className="rounded-xl p-4 card" style={{ backgroundColor: 'var(--card)' }}>
+            <div className="text-[11px] mb-1" style={{ color: 'var(--text-secondary)' }}>누적배당</div>
+            {loading ? <Skeleton className="h-5 w-16" /> : <div className="text-[14px] font-bold tabular-nums text-profit" style={{ color: 'var(--emerald)' }}>{formatKrw(walletSummary?.totalDividend ?? 0)}</div>}
+          </div>
+          <div className="rounded-xl p-4 card" style={{ backgroundColor: 'var(--card)' }}>
+            <div className="text-[11px] mb-1" style={{ color: 'var(--text-secondary)' }}>미실현손익</div>
+            {loading ? <Skeleton className="h-5 w-16" /> : <div className="text-[14px] font-bold tabular-nums" style={{ color: (walletSummary?.unrealizedPnl ?? 0) >= 0 ? 'var(--emerald)' : 'var(--accent-loss)' }}>{formatKrw(walletSummary?.unrealizedPnl ?? 0)}</div>}
+          </div>
+        </div>
+
         {/* 1. 총 평가 자산 */}
         <div className="rounded-[16px] p-6 mb-6 card" style={{ backgroundColor: 'var(--card)', boxShadow: 'var(--shadow-md)' }}>
           <div className="text-[13px] font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>총 평가 자산</div>
@@ -135,6 +160,30 @@ export default function Wallet() {
           </Link>
         </div>
 
+        {/* 2.5 최근 배당 5건 */}
+        <div className="mb-6">
+          <h3 className="text-[15px] font-bold mb-3" style={{ color: 'var(--text)' }}>최근 배당</h3>
+          <div className="rounded-[16px] overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+            {loading ? (
+              <div className="py-8 px-4 space-y-2">
+                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-full" />)}
+              </div>
+            ) : !walletSummary?.recentDividends?.length ? (
+              <EmptyState title="아직 배당 내역이 없습니다" description="배당 지급 시 여기에 표시됩니다" />
+            ) : (
+              walletSummary.recentDividends.map((d) => (
+                <div key={d.id} className="flex justify-between items-center px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
+                  <div>
+                    <div className="font-semibold text-[14px]" style={{ color: 'var(--text)' }}>배당</div>
+                    <div className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{new Date(d.created_at).toLocaleString('ko-KR')}</div>
+                  </div>
+                  <span className="font-bold text-[14px] tabular-nums text-profit">+{formatKrw(Number(d.amount))}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
         {/* 3. 거래 내역 */}
         <div className="mb-6">
           <h3 className="text-[15px] font-bold mb-3" style={{ color: 'var(--text)' }}>거래 내역</h3>
@@ -154,7 +203,11 @@ export default function Wallet() {
                 </button>
               </div>
             ) : summary.entries.length === 0 ? (
-              <div className="py-12 text-center text-[14px]" style={{ color: 'var(--text-muted)' }}>아직 체결 내역이 없습니다.</div>
+              <EmptyState
+                title="아직 체결 내역이 없습니다"
+                description="엔젤로 참여하면 여기에 내역이 표시됩니다"
+                cta={{ label: '수익권 둘러보기', onClick: () => window.location.href = '/active-invest' }}
+              />
             ) : (
               summary.entries.slice(0, 15).map((l: LedgerEntry) => (
                 <div key={l.id} className="flex justify-between items-center px-4 py-4" style={{ borderBottom: '1px solid var(--border)' }}>

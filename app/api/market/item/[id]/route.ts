@@ -84,6 +84,17 @@ export async function GET(
       // fallback
     }
 
+    // 배당 시뮬레이션 (하드코딩, DB 미사용)
+    const monthlyRevenue = 120_000_000;
+    const dividendRatio = 0.3;
+    const totalShares = 100_000;
+    const distributable = monthlyRevenue * dividendRatio;
+    const dividendPerShare = distributable / totalShares;
+    const currentPriceKrw = (data.share_price_usd ?? 10) * fxRate;
+    const expectedAnnualYield = currentPriceKrw > 0
+      ? ((dividendPerShare * 12) / currentPriceKrw) * 100
+      : 0;
+
     const item = {
       id: data.id,
       title: data.title,
@@ -115,6 +126,10 @@ export async function GET(
       dividend_monthly_rate: data.dividend_monthly_rate ?? null,
       payout_day: data.payout_day ?? 3,
       fx_rate: fxRate,
+      monthlyRevenue,
+      dividendRatio,
+      dividendPerShare,
+      expectedAnnualYield,
     };
 
     return NextResponse.json(item);

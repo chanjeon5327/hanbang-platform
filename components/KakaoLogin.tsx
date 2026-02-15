@@ -1,8 +1,10 @@
 'use client';
 
 import { createClient } from '@supabase/supabase-js';
+import { useToast } from '@/context/ToastContext';
 
 export default function KakaoLogin() {
+  const { toast } = useToast();
   const handleKakaoLogin = async () => {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -23,7 +25,7 @@ export default function KakaoLogin() {
 
     if (error) {
       console.error('카카오 로그인 오류:', error);
-      alert('로그인에 실패했습니다. 다시 시도해주세요.');
+      toast('로그인에 실패했습니다. 다시 시도해주세요.');
     }
   };
 

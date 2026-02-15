@@ -2,12 +2,13 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import { useToast } from '@/context/ToastContext';
 
 export default function InvestPage() {
   const router = useRouter();
   const params = useParams();
   const productId = params.id as string;
-
+  const { toast } = useToast();
   const supabase = createClient();
 
   const handleBuy = async () => {
@@ -24,7 +25,7 @@ export default function InvestPage() {
       .single();
 
     if (error || !order) {
-      alert('주문 생성 실패');
+      toast('주문 생성 실패');
       return;
     }
 

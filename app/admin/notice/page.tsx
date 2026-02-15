@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Plus, Pin } from "lucide-react";
 import { logAdminAction } from "@/lib/admin/auditLog";
+import { useToast } from "@/context/ToastContext";
 
 interface Notice {
   id: string;
@@ -16,6 +17,7 @@ interface Notice {
 
 export default function AdminNotice() {
   const { adminUser, hasPermission } = useAuth();
+  const { toast } = useToast();
   const [notices, setNotices] = useState<Notice[]>([
     {
       id: "1",
@@ -42,7 +44,7 @@ export default function AdminNotice() {
 
   const handleSubmit = async () => {
     if (!newNotice.title || !newNotice.content) {
-      alert("제목과 내용을 입력해주세요.");
+      toast("제목과 내용을 입력해주세요.");
       return;
     }
 
@@ -67,7 +69,7 @@ export default function AdminNotice() {
 
     setNewNotice({ title: "", content: "", isPinned: false });
     setShowWriteModal(false);
-    alert("공지사항이 등록되었습니다.");
+    toast("공지사항이 등록되었습니다.");
 
     await logAdminAction({
       adminId: adminUser?.email ?? "unknown",

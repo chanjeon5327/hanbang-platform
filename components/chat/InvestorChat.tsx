@@ -25,7 +25,7 @@ export default function InvestorChat() {
                           bg-white border rounded-xl shadow-xl
                           flex flex-col z-50">
             <div className="px-4 py-2 border-b font-bold text-sm flex justify-between">
-              투자자 채팅
+              엔젤 채팅
               <button onClick={() => setOpen(false)}>✕</button>
             </div>
   

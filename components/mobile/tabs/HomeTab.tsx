@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { useStore } from "@/context/StoreContext";
+import { formatKrw, formatRate } from "@/lib/utils/format";
 import { ArrowRight, Heart } from "lucide-react";
 
 export default function HomeTab() {
@@ -48,7 +49,7 @@ export default function HomeTab() {
             {section.products.map((item) => (
               <Link
                 key={item.id}
-                href={`/active-invest/${item.id}`}
+                href={`/market/${item.id}`}
                 className="w-[160px] flex-shrink-0 snap-start no-underline text-inherit active:scale-95 transition-transform cursor-pointer"
               >
                 <div className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-lg shadow-gray-200/50 relative">
@@ -74,7 +75,7 @@ export default function HomeTab() {
                     </h4>
                     <div className="flex flex-col gap-1">
                       <span className="text-base font-bold text-slate-900 dark:text-white" style={{ fontVariantNumeric: "tabular-nums" }}>
-                        {item.price.toLocaleString()}원
+                        {formatKrw(item.price)}
                       </span>
                       <span
                         className={`text-xs font-bold px-2 py-0.5 rounded w-fit ${
@@ -85,7 +86,7 @@ export default function HomeTab() {
                         style={{ fontVariantNumeric: "tabular-nums" }}
                       >
                         {parseFloat(item.yield) > 0 ? "+" : ""}
-                        {item.yield}
+                        {formatRate(parseFloat(item.yield))}
                       </span>
                     </div>
                   </div>

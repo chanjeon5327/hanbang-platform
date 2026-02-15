@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeftRight } from 'lucide-react';
 import { TOKENS, TokenId } from '@/lib/tokens';
+import { useToast } from '@/context/ToastContext';
 
 /* 토큰 교환/스왑 — KRW, USDT, USDC, BTC, ETH 간 환전 */
 
@@ -28,6 +29,7 @@ function formatDisplay(amount: number, tokenId: TokenId): string {
 }
 
 export default function SwapPage() {
+  const { toast } = useToast();
   const [fromToken, setFromToken] = useState<TokenId>('KRW');
   const [toToken, setToToken] = useState<TokenId>('USDT');
   const [fromAmount, setFromAmount] = useState<string>('');
@@ -55,21 +57,21 @@ export default function SwapPage() {
   const handleSwap = async () => {
     const n = parseFloat(fromAmount) || 0;
     if (n <= 0) {
-      alert('금액을 입력하세요.');
+      toast('금액을 입력하세요.');
       return;
     }
     if (fromToken === toToken) {
-      alert('같은 토큰끼리는 교환할 수 없습니다.');
+      toast('같은 토큰끼리는 교환할 수 없습니다.');
       return;
     }
     setLoading(true);
     try {
       // TODO: 실제 교환 API 연동
       await new Promise((r) => setTimeout(r, 800));
-      alert(`${formatDisplay(n, fromToken)} → ${formatDisplay(toAmount, toToken)} 교환 요청이 접수되었습니다. (데모)`);
+      toast(`${formatDisplay(n, fromToken)} → ${formatDisplay(toAmount, toToken)} 교환 요청이 접수되었습니다. (데모)`);
       setFromAmount('');
     } catch {
-      alert('교환 처리 중 오류가 발생했습니다.');
+      toast('교환 처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }

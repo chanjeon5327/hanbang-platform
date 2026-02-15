@@ -20,7 +20,14 @@ import { useMarketItem } from '@/hooks/useMarketItem';
 import { useRecentInvestLog } from '@/hooks/useRecentInvestLog';
 import { useArtistContribution } from '@/hooks/useArtistContribution';
 import { useArtistProgress } from '@/hooks/useArtistProgress';
-import { formatKrw } from '@/lib/utils/format';
+import { formatKrw, formatRate } from '@/lib/utils/format';
+import DividendCard from '@/components/market/DividendCard';
+import AngelStorySection from '@/components/market/AngelStorySection';
+import DividendSimulator from '@/components/market/DividendSimulator';
+import AngelPitchDeckSection from '@/components/market/AngelPitchDeckSection';
+import DividendExplainSection from '@/components/market/DividendExplainSection';
+import DividendSimulatorV2 from '@/components/market/DividendSimulatorV2';
+import Skeleton from '@/components/ui/Skeleton';
 
 const YT_FALLBACK = 'HosW0gulISQ';
 const YT_START_SEC = 25;
@@ -39,10 +46,6 @@ function isDeadlineSoon(deadline: string | null | undefined): boolean {
   const now = new Date();
   const diffDays = (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
   return diffDays >= 0 && diffDays <= 3;
-}
-
-function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse rounded-lg bg-gray-200/30 ${className}`} />;
 }
 
 function MarketHeader({ onShare }: { onShare?: () => void }) {
@@ -148,6 +151,10 @@ export default function MarketDetailPage({
   const currentRaiseUsd = item?.current_raise_usd ?? null;
   const hasUsdData = sharePriceUsd != null || (totalRaiseUsd != null && currentRaiseUsd != null);
 
+  const expectedYield = item?.expectedAnnualYield ?? yieldRate;
+  const sharePriceKrw = (sharePriceUsd ?? 10) * fxRate;
+  const dividendPerShare = item?.dividendPerShare ?? 360;
+
   const handleShare = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(typeof window !== 'undefined' ? window.location.href : '');
@@ -223,8 +230,8 @@ export default function MarketDetailPage({
       <MarketHeader onShare={handleShare} />
 
       <div className="max-w-3xl mx-auto px-4 pb-32 pt-6">
-        {/* 1. 영상 */}
-        <section className="relative w-full aspect-video rounded-2xl overflow-hidden mb-6">
+        {/* 1. Hero Section */}
+        <section className="relative w-full aspect-video rounded-[16px] overflow-hidden mb-6">
           {itemLoading ? <Skeleton className="w-full h-full" /> : (
             <YouTubeEmbed
               videoId={ytId}
@@ -248,22 +255,73 @@ export default function MarketDetailPage({
           </div>
         </section>
 
-        {/* 2. 타이틀 + OFFICIAL IP EXCHANGE + 타입 배지 */}
-        <section className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-[28px] font-extrabold leading-snug tracking-tight">{title}</h1>
-            <p className="text-[13px] tracking-wide uppercase mt-1" style={{ color: 'var(--text-secondary)' }}>OFFICIAL IP EXCHANGE</p>
-            <div className="flex gap-2 mt-2">
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--primary)', color: '#fff' }}>
-                {isTradable ? '월배당+거래' : '월배당'}
-              </span>
-              <span className="text-[12px] px-2 py-0.5 rounded bg-[var(--upbit-bid)] text-white">{platform}</span>
+        <section className="mb-6">
+          <h1 className="text-[28px] font-extrabold leading-snug tracking-tight">{title}</h1>
+          <p className="text-[13px] mt-1" style={{ color: 'var(--text-secondary)' }}>{creator} · {category}</p>
+          <div className="flex gap-2 mt-2">
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--primary)', color: '#fff' }}>
+              {isTradable ? '월배당+거래' : '월배당'}
+            </span>
+            <span className="text-[12px] px-2 py-0.5 rounded bg-[var(--royal-blue)] text-white">{platform}</span>
+          </div>
+          <div className="mt-4 p-4 rounded-[16px]" style={{ backgroundColor: 'var(--royal-blue)', color: '#fff' }}>
+            <div className="text-[12px] font-medium opacity-90">예상 배당 수익률</div>
+            <div className="text-[28px] font-extrabold tabular-nums metric-xl mt-1">
+              {formatRate(expectedYield)}
             </div>
           </div>
         </section>
 
-        {/* 3. 크리에이터 · 카테고리 */}
-        <p className="text-[14px] mt-2" style={{ color: 'var(--text-secondary)' }}>{creator} · {category}</p>
+        {/* 2. 배당 카드 */}
+        <div className="mt-6">
+          <DividendCard
+            monthlyRevenue={item?.monthlyRevenue ?? 120_000_000}
+            dividendRatio={item?.dividendRatio ?? 0.3}
+            dividendPerShare={item?.dividendPerShare ?? 360}
+            expectedAnnualYield={item?.expectedAnnualYield ?? expectedYield}
+          />
+        </div>
+
+        {/* 3. 엔젤 설득 섹션 */}
+        <div className="mt-6">
+          <AngelStorySection
+            creatorStory={item?.creator_story}
+            growthReason1={item?.growth_reason_1}
+            growthReason2={item?.growth_reason_2}
+            growthReason3={item?.growth_reason_3}
+          />
+        </div>
+
+        {/* 4. 수익률 시뮬레이터 V2 */}
+        <div className="mt-6">
+          <DividendSimulatorV2
+            sharePriceKrw={sharePriceKrw}
+            dividendPerShare={dividendPerShare}
+            expectedAnnualYield={expectedYield}
+            monthlyRevenue={item?.monthlyRevenue ?? 120_000_000}
+            dividendRatio={item?.dividendRatio ?? 0.3}
+            totalShares={item?.total_shares ?? 100_000}
+            loading={itemLoading}
+            error={itemError ? '정보를 불러올 수 없습니다' : null}
+            onInvestClick={(amt) => {
+              setInvestAmount(amt);
+              hasSession ? setShowConfirm(true) : (window.location.href = '/login');
+            }}
+          />
+        </div>
+
+        {/* 4b. 엔젤 피치덱 + 배당 설명 */}
+        <div className="mt-10">
+          <AngelPitchDeckSection
+            creatorStory={item?.creator_story ?? undefined}
+            growthReason1={item?.growth_reason_1 ?? undefined}
+            growthReason2={item?.growth_reason_2 ?? undefined}
+            growthReason3={item?.growth_reason_3 ?? undefined}
+          />
+        </div>
+        <div className="mt-6">
+          <DividendExplainSection creatorStory={item?.creator_story ?? undefined} />
+        </div>
 
         {/* 5. PriceHeader (USD + 로컬 + 전일대비 + 거래량) */}
         {hasUsdData && sharePriceUsd != null && (

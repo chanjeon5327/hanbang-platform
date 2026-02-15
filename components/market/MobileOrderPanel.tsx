@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToken } from '@/context/TokenContext';
+import { useToast } from '@/context/ToastContext';
 
 /* 업비트 KRW 거래 UX: 매수/매도 토글 + 지정가/시장가 탭 + 빠른 비율 버튼 + 주문 요약 — 다중 토큰 표시 (주문은 KRW 기준) */
 
@@ -28,6 +29,7 @@ export default function MobileOrderPanel({
   const [loading, setLoading] = useState(false);
 
   const { formatPrice } = useToken();
+  const { toast } = useToast();
   const estAmountKrw = useMemo(() => Math.max(0, Number.isFinite(qty) ? qty : 0) * (orderType === 'market' ? price : limitPrice), [qty, price, limitPrice, orderType]);
 
   if (!open) return null;
@@ -41,7 +43,7 @@ export default function MobileOrderPanel({
       return;
     }
     if (!qty || qty <= 0) {
-      alert('수량을 입력하세요.');
+      toast('수량을 입력하세요.');
       return;
     }
     const execPrice = orderType === 'market' ? price : limitPrice;
@@ -54,12 +56,12 @@ export default function MobileOrderPanel({
       });
       const json = await res.json();
       if (!json.success) {
-        alert(`주문 실패: ${json.error}`);
+        toast(`주문 실패: ${json.error}`);
         return;
       }
       const orderId = json.data?.id;
       if (!orderId) {
-        alert('주문 ID를 받지 못했습니다.');
+        toast('주문 ID를 받지 못했습니다.');
         return;
       }
       const stubRes = await fetch('/api/payment/stub', {
@@ -69,13 +71,13 @@ export default function MobileOrderPanel({
       });
       const stubJson = await stubRes.json();
       if (!stubJson.ok) {
-        alert(`결제 처리 실패: ${stubJson.error}`);
+        toast(`결제 처리 실패: ${stubJson.error}`);
         return;
       }
       onClose();
       router.push(`/order/success?order_id=${orderId}`);
     } catch {
-      alert('주문 처리 중 오류가 발생했습니다.');
+      toast('주문 처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }

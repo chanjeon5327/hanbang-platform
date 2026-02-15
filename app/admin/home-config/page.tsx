@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import { useToast } from '@/context/ToastContext';
 
 type Item = {
   id: string;
@@ -14,6 +15,7 @@ const allItems: Item[] = Array.from({ length: 12 }).map((_, i) => ({
 }));
 
 export default function AdminHomeConfigPage() {
+  const { toast } = useToast();
   const supabase = createClient();
   const [fixedHeroId, setFixedHeroId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,7 +47,7 @@ export default function AdminHomeConfigPage() {
       );
 
     setFixedHeroId(id);
-    alert(id ? `히어로 고정: ${id}` : '히어로 고정 해제');
+    toast(id ? `히어로 고정: ${id}` : '히어로 고정 해제');
   };
 
   if (loading) return <main className="p-4">로딩중…</main>;

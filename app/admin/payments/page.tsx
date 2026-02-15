@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useToast } from '@/context/ToastContext';
 
 type Payment = {
   id: string;
@@ -19,6 +20,7 @@ type Payment = {
 const STATUS_OPTIONS = ['', 'INIT', 'PAYMENT_APPROVED', 'INVEST_CONFIRMED', 'CANCELLED'];
 
 export default function AdminPaymentsPage() {
+  const { toast } = useToast();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
@@ -49,10 +51,10 @@ export default function AdminPaymentsPage() {
       if (json?.success) {
         await load();
       } else {
-        alert(json?.error ?? '재시도 실패');
+        toast(json?.error ?? '재시도 실패');
       }
     } catch (e) {
-      alert(e instanceof Error ? e.message : '재시도 실패');
+      toast(e instanceof Error ? e.message : '재시도 실패');
     } finally {
       setRetrying(null);
     }

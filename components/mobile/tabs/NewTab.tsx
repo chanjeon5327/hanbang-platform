@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useStore } from "@/context/StoreContext";
+import { formatKrw, formatRate } from "@/lib/utils/format";
 import { Heart } from "lucide-react";
 
 export default function NewTab() {
@@ -31,7 +32,7 @@ export default function NewTab() {
         {newProducts.map((item) => (
           <Link
             key={item.id}
-            href={`/active-invest/${item.id}`}
+            href={`/market/${item.id}`}
             className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-lg shadow-gray-200/50 active:scale-95 transition-transform cursor-pointer relative"
           >
             <div className="relative h-40">
@@ -56,7 +57,7 @@ export default function NewTab() {
               </h4>
               <div className="flex justify-between items-center">
                 <span className="text-base font-bold text-slate-900 dark:text-white" style={{ fontVariantNumeric: "tabular-nums" }}>
-                  {item.price.toLocaleString()}원
+                  {formatKrw(item.price)}
                 </span>
                 <span
                   className={`text-xs font-bold px-2 py-0.5 rounded ${
@@ -67,7 +68,7 @@ export default function NewTab() {
                   style={{ fontVariantNumeric: "tabular-nums" }}
                 >
                   {parseFloat(item.yield) > 0 ? "+" : ""}
-                  {item.yield}
+                  {formatRate(parseFloat(item.yield))}
                 </span>
               </div>
             </div>

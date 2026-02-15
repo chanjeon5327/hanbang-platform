@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Shield } from "lucide-react";
+import { useToast } from "@/context/ToastContext";
 
 interface Admin {
   id: string;
@@ -31,6 +32,7 @@ const ROLE_DESCRIPTIONS: Record<1 | 2 | 3 | 4 | 5, string> = {
 
 export default function AdminSettings() {
   const { adminUser, hasPermission } = useAuth();
+  const { toast } = useToast();
   const [admins, setAdmins] = useState<Admin[]>([
     {
       id: "1",
@@ -62,14 +64,14 @@ export default function AdminSettings() {
 
   const handleRoleChange = (adminId: string, newRole: 1 | 2 | 3 | 4 | 5) => {
     if (!canManage) {
-      alert("권한이 없습니다.");
+      toast("권한이 없습니다.");
       return;
     }
 
     setAdmins((prev) =>
       prev.map((admin) => (admin.id === adminId ? { ...admin, role: newRole, roleName: ROLE_NAMES[newRole] } : admin))
     );
-    alert("권한이 변경되었습니다.");
+    toast("권한이 변경되었습니다.");
   };
 
   return (

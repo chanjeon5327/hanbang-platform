@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { MessageCircle, Send, User } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { useToast } from '@/context/ToastContext';
 import { filterProfanity, containsProfanity } from '@/lib/chat/profanityFilter';
 import { createClient } from '@/utils/supabase/client';
 
@@ -51,20 +52,13 @@ function formatTime(iso: string): string {
   return d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
 }
 
-function showToast(msg: string) {
-  if (typeof window !== "undefined" && (window as unknown as { toast?: (m: string) => void }).toast) {
-    (window as unknown as { toast: (m: string) => void }).toast(msg);
-  } else {
-    alert(msg);
-  }
-}
-
 export default function ProductChat({ productId }: Props) {
   if (typeof window === 'undefined') {
     return null
   }
 
   const { user } = useAuth();
+  const { toast } = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
@@ -121,7 +115,7 @@ export default function ProductChat({ productId }: Props) {
   const handleSend = async () => {
     if (!canWrite || !input.trim()) return;
     if (containsProfanity(input.trim())) {
-      showToast('부적절한 표현이 포함되어 있습니다.');
+      toast('부적절한 표현이 포함되어 있습니다.');
       return;
     }
     const filtered = filterProfanity(input.trim());
@@ -137,10 +131,10 @@ export default function ProductChat({ productId }: Props) {
         fetchMessages();
       } else {
         const err = json?.error ?? '전송 실패';
-        showToast(err === 'RATE_LIMIT' ? '잠시 후 다시 시도해 주세요.' : err);
+        toast(err === 'RATE_LIMIT' ? '잠시 후 다시 시도해 주세요.' : err);
       }
     } catch {
-      showToast('전송 실패');
+      toast('전송 실패');
     }
   };
 
@@ -169,7 +163,7 @@ export default function ProductChat({ productId }: Props) {
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--upbit-border)' }}>
         <div className="flex items-center gap-2">
           <MessageCircle size={18} strokeWidth={2} style={{ color: 'var(--upbit-bid)' }} />
-          <span className="font-bold text-[15px]" style={{ color: 'var(--upbit-text)' }}>투자자 채팅</span>
+          <span className="font-bold text-[15px]" style={{ color: 'var(--upbit-text)' }}>엔젤 채팅</span>
         </div>
       </div>
 

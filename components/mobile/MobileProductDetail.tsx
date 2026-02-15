@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
 import { getYtThumb } from '@/lib/thumbnails';
+import { useToast } from '@/context/ToastContext';
+import { formatKrw } from '@/lib/utils/format';
 
 type Product = {
   id: string;
@@ -19,6 +21,7 @@ type Product = {
 export default function MobileProductDetail({ productId }: { productId: string }) {
   const supabase = createClient();
   const router = useRouter();
+  const { toast } = useToast();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,7 +61,7 @@ export default function MobileProductDetail({ productId }: { productId: string }
     });
 
     if (error) {
-      alert(error.message);
+      toast(error.message);
       setBuying(false);
       return;
     }
@@ -74,7 +77,7 @@ export default function MobileProductDetail({ productId }: { productId: string }
       .single();
 
     if (!order) {
-      alert('주문 조회 실패');
+      toast('주문 조회 실패');
       setBuying(false);
       return;
     }
@@ -115,7 +118,7 @@ export default function MobileProductDetail({ productId }: { productId: string }
         </div>
 
         <div className="text-lg font-semibold">
-          {product.price.toLocaleString()}원
+          {formatKrw(product.price)}
         </div>
 
         {product.description && (

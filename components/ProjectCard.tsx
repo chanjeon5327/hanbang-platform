@@ -11,6 +11,7 @@ import Image from "next/image"
 import LoginModal from "@/components/auth/LoginModal"
 import { createClient } from "@/utils/supabase/client"
 import { getYtThumb } from "@/lib/thumbnails"
+import { formatKrw, formatRate } from "@/lib/utils/format"
 
 type Project = Database["public"]["Tables"]["projects"]["Row"]
 
@@ -68,7 +69,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">예상 수익률</span>
               <span className="text-2xl font-bold text-red-500">
-                {Number(project.yield_rate).toFixed(1)}%
+                {formatRate(Number(project.yield_rate))}
               </span>
             </div>
 
@@ -87,8 +88,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>
-                  {(project.current_amount || 0).toLocaleString()}원 /{" "}
-                  {(project.target_amount || 0).toLocaleString()}원
+                  {formatKrw(project.current_amount || 0)} / {formatKrw(project.target_amount || 0)}
                 </span>
               </div>
             </div>
@@ -96,7 +96,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">최소 투자금액</span>
               <span className="font-semibold">
-                {(project.min_investment || 10000).toLocaleString()}원
+                {formatKrw(project.min_investment || 10000)}
               </span>
             </div>
           </CardContent>
@@ -108,7 +108,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             variant="default"
             onClick={handleInvestClick}
           >
-            투자하기
+            엔젤로 참여
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </CardFooter>

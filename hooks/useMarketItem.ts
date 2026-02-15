@@ -33,6 +33,15 @@ export type MarketItem = {
   dividend_monthly_rate?: number | null;
   payout_day?: number;
   fx_rate?: number;
+  monthlyRevenue?: number;
+  dividendRatio?: number;
+  dividendPerShare?: number;
+  expectedAnnualYield?: number;
+  creator_story?: string | null;
+  growth_reason_1?: string | null;
+  growth_reason_2?: string | null;
+  growth_reason_3?: string | null;
+  total_shares?: number | null;
 };
 
 export function useMarketItem(id: string | undefined) {

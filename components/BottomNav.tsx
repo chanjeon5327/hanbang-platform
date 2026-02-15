@@ -2,8 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Home, Search, Wallet, Settings, Sun, Moon, Mic2, MessageCircle, X } from 'lucide-react';
+import { useToast } from '@/context/ToastContext';
 
 export default function BottomNav() {
+  const { toast } = useToast();
   const [isDark, setIsDark] = useState(true);
   const [showChat, setShowChat] = useState(false);
 
@@ -46,7 +48,7 @@ export default function BottomNav() {
       </div>
 
       <div style={{ position: 'fixed', bottom: '30px', right: '20px', zIndex: 50, display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        <button onClick={() => alert('🪄 내 응원봉(KCP)이 돈이 된다고요?\n\n단순한 포인트가 아닙니다. 매시간 충전되는 응원봉은 미래의 자산입니다. 모은 KCP로 공모주 청약 수수료를 내거나, 특별 굿즈 경매에 참여하세요. 켜두기만 해도 팬심이 자산으로 변하는 마법, 지금 충전 중입니다!')} className="animate-pulse-custom" style={{ width: '52px', height: '52px', borderRadius: '50%', backgroundColor: '#ff4081', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', border: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(255,64,129,0.5)' }}>
+        <button onClick={() => toast('🪄 KCP는 매시간 충전되는 응원봉입니다. 모은 KCP로 청약 수수료·굿즈 경매에 참여하세요!')} className="animate-pulse-custom" style={{ width: '52px', height: '52px', borderRadius: '50%', backgroundColor: '#ff4081', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', border: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(255,64,129,0.5)' }}>
             <Mic2 size={24} fill="white" style={{ color: '#ec4899' }} />
         </button>
         <button onClick={handleInquiry} style={{ width: '52px', height: '52px', borderRadius: '50%', backgroundColor: 'var(--accent-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', border: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(139,92,246,0.4)' }}>

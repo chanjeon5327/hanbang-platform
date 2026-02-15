@@ -6,6 +6,7 @@ import { StoreProvider } from '@/context/StoreContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { TokenProvider } from '@/context/TokenContext';
 import { Providers as WagmiProviders } from '@/components/providers/WagmiProvider';
+import { ToastProvider } from '@/context/ToastContext';
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (
@@ -14,7 +15,9 @@ export default function Providers({ children }: { children: ReactNode }) {
         <TokenProvider>
           <AuthProvider>
             <StoreProvider>
-              {children}
+              <ToastProvider>
+                {children}
+              </ToastProvider>
             </StoreProvider>
           </AuthProvider>
         </TokenProvider>

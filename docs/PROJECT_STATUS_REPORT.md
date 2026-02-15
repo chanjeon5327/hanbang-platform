@@ -142,6 +142,8 @@ COMPLETED → SETTLED, REFUNDED
 9. **환불 플로우** — refunds 테이블 구조만 존재, RPC·API·UI 미구현
 10. **content_items ↔ products** — 청약/매수 시 content_id vs product_id 역할 정리 및 마이그레이션
 
+**Dividend Engine:** `scripts/run-dividend-smoke-test.mjs` — create→execute→ledger 검증 (마이그레이션 20260316, 20260317 적용 후 실행)
+
 ---
 
 ---

@@ -136,7 +136,7 @@ export default function MobileHome() {
             {(products.length > 0 ? products : Array.from({ length: 5 })).map((item: any, i: number) => (
               <Link
                 key={i}
-                href={item?.id ? `/active-invest/${item.id}` : '#'}
+                href={item?.id ? `/market/${item.id}` : '#'}
                 className="min-w-[160px] w-[160px] flex-shrink-0 bg-white rounded-[20px] overflow-hidden shadow-sm border border-gray-100 snap-center active:scale-95 transition-transform"
               >
                 <div className="h-[160px] bg-gray-100 relative">

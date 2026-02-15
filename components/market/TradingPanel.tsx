@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToken } from '@/context/TokenContext';
+import { useToast } from '@/context/ToastContext';
 
 /**
  * 거래 패널: 청약/매수 탭, 수량 입력, 예상 수익, 수수료, CTA
@@ -19,6 +20,7 @@ type Props = {
 
 export default function TradingPanel({ mode: initialMode, price, productId, isLoggedIn, isMobilization = false, sticky = false }: Props) {
   const router = useRouter();
+  const { toast } = useToast();
   const { formatPrice } = useToken();
   const [activeTab, setActiveTab] = useState<'청약' | '매수'>(initialMode);
   const [qty, setQty] = useState(1);
@@ -48,19 +50,19 @@ export default function TradingPanel({ mode: initialMode, price, productId, isLo
       const placeJson = await placeRes.json();
 
       if (placeJson.success && placeJson.order_id) {
-        alert('구매 완료');
+        toast('구매 완료');
         router.push('/wallet');
         return;
       }
 
       const err = placeJson.error ?? '';
       if (err === 'INSUFFICIENT_FUNDS') {
-        alert('잔액 부족');
+        toast('잔액 부족');
       } else {
-        alert('구매 실패');
+        toast('구매 실패');
       }
     } catch {
-      alert('구매 실패');
+      toast('구매 실패');
     } finally {
       setLoading(false);
     }

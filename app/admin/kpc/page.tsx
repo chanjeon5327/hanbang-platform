@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { Gift } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { logAdminAction } from '@/lib/admin/auditLog';
+import { useToast } from '@/context/ToastContext';
 
 export default function AdminKpcPage() {
   const { adminUser } = useAuth();
+  const { toast } = useToast();
   const [userId, setUserId] = useState('');
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
@@ -16,7 +18,7 @@ export default function AdminKpcPage() {
 
   const handleGrant = async () => {
     if (!userId || !amount || !reason) {
-      alert('모든 필드를 입력하세요.');
+      toast('모든 필드를 입력하세요.');
       return;
     }
     if (!confirm(`${userId}에게 ${amount} KPC를 지급하시겠습니까?`)) return;
@@ -24,7 +26,7 @@ export default function AdminKpcPage() {
     try {
       // TODO: API 연동
       await logAdminAction({ adminId, action: 'KPC_GRANT', targetType: 'user', targetId: userId, metadata: { amount: Number(amount), reason } });
-      alert('지급 완료');
+      toast('지급 완료');
       setUserId('');
       setAmount('');
       setReason('');

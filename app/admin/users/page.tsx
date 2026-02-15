@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Search, Phone, Mail, Wallet, MessageSquare, FileText, Shield } from "lucide-react";
+import { useToast } from "@/context/ToastContext";
 
 interface User {
   id: string;
@@ -25,6 +26,7 @@ interface UserDetailModalProps {
 }
 
 function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDetailModalProps) {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"cs" | "investment" | "wallet" | "limits">("cs");
   const [note, setNote] = useState(user?.privateNote || "");
   const [dailyLimit, setDailyLimit] = useState(user?.dailyInvestLimit ?? 1000000);
@@ -44,7 +46,7 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
 
   const handleSaveNote = () => {
     onUpdateNote(user.id, note);
-    alert("메모가 저장되었습니다.");
+    toast("메모가 저장되었습니다.");
   };
 
   const handleSaveLimits = async () => {
@@ -61,13 +63,13 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
       });
       if (res.ok) {
         onUpdateLimits?.(user.id, { daily_invest_limit: dailyLimit, monthly_invest_limit: monthlyLimit, kyc_level: kycLevel });
-        alert("한도가 저장되었습니다.");
+        toast("한도가 저장되었습니다.");
       } else {
         const err = await res.json();
-        alert(err?.error ?? "저장 실패");
+        toast(err?.error ?? "저장 실패");
       }
     } catch {
-      alert("저장 실패");
+      toast("저장 실패");
     } finally {
       setLimitsSaving(false);
     }

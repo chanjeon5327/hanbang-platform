@@ -5,12 +5,14 @@ import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { logAdminAction } from '@/lib/admin/auditLog';
+import { useToast } from '@/context/ToastContext';
 
 export default function AdminSettlementDetailPage() {
   const supabase = createClient();
   const router = useRouter();
   const params = useParams();
   const { adminUser } = useAuth();
+  const { toast } = useToast();
   const id = params.id as string;
 
   const [data, setData] = useState<any>(null);
@@ -52,7 +54,7 @@ export default function AdminSettlementDetailPage() {
       router.push('/admin/settlement');
       router.refresh();
     } else {
-      alert(error.message);
+      toast(error.message);
       setConfirming(false);
     }
   };
