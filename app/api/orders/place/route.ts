@@ -113,7 +113,21 @@ export async function POST(req: Request) {
     }
 
     const orderId = (rpcResult as { order_id?: string })?.order_id;
-    return NextResponse.json({ success: true, order_id: orderId });
+    let executed_quantity = amountPositive;
+    let remaining_quantity = 0;
+    if (orderId) {
+      const { data: ord } = await (supabase as any).from("orders").select("quantity, filled_quantity").eq("id", orderId).single();
+      const qty = Number(ord?.quantity ?? 0);
+      const filled = Number(ord?.filled_quantity ?? qty);
+      executed_quantity = filled || amountPositive;
+      remaining_quantity = Math.max(0, qty - filled);
+    }
+    return NextResponse.json({
+      success: true,
+      order_id: orderId,
+      executed_quantity: executed_quantity,
+      remaining_quantity: remaining_quantity,
+    });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json(

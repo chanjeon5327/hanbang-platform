@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Bell, Activity } from 'lucide-react';
+import { Bell, Activity, TrendingUp } from 'lucide-react';
 import BottomNavigation from '@/components/home/BottomNavigation';
 import GuestHero from '@/components/home/GuestHero';
 import GuestPreview from '@/components/home/GuestPreview';
@@ -16,6 +16,7 @@ import IpNewsSection from '@/components/news/IpNewsSection';
 import SupportBubble from '@/components/support/SupportBubble';
 import CompanyFooter from '@/components/layout/CompanyFooter';
 import DeadlineRail from '@/components/home/DeadlineRail';
+import RecentDividendWidget from '@/components/home/RecentDividendWidget';
 
 export type AssetData = {
   totalAssets: number;
@@ -59,6 +60,9 @@ export default function HomeView({ assetData, assetLoading = false, isLoggedIn, 
             {/* 실시간 참여 지표 바 */}
             <LiveMomentumBar />
 
+            {/* 실시간 배당 위젯 + 누적 지급 */}
+            <RecentDividendWidget />
+
             {/* (A) 총자산 + 나의 레벨 (다음 레벨 게이지 포함) */}
             <InvestorDashboardCard data={assetData} loading={assetLoading} isLoggedIn={isLoggedIn} />
 
@@ -71,8 +75,15 @@ export default function HomeView({ assetData, assetLoading = false, isLoggedIn, 
             <AdSlot position="home_mid" />
             <DeadlineRail enabled={!demoMode} />
 
+            <Link href="/dashboard" className="rounded-[16px] p-4 border flex items-center gap-3 tap-scale" style={{ backgroundColor: ROYAL.card, borderColor: ROYAL.border }}>
+              <TrendingUp size={20} strokeWidth={2} style={{ color: ROYAL.blue }} />
+              <div>
+                <div className="text-[14px] font-semibold" style={{ color: ROYAL.text }}>투자 대시보드</div>
+                <div className="text-[12px]" style={{ color: ROYAL.secondary }}>종목별 수익·배당 현황</div>
+              </div>
+            </Link>
             <Link href="/active-invest" className="rounded-[16px] p-4 border flex items-center gap-3 tap-scale" style={{ backgroundColor: ROYAL.card, borderColor: ROYAL.border }}>
-              <Activity size={20} strokeWidth={2} style={{ color: ROYAL.blue }} />
+              <Activity size={20} strokeWidth={2} style={{ color: ROYAL.secondary }} />
               <div>
                 <div className="text-[14px] font-semibold" style={{ color: ROYAL.text }}>엔젤 투자 현황</div>
                 <div className="text-[12px]" style={{ color: ROYAL.secondary }}>진행 중인 수익권 보기</div>
@@ -96,6 +107,9 @@ export default function HomeView({ assetData, assetLoading = false, isLoggedIn, 
 
             {/* 실시간 참여 지표 바 */}
             <LiveMomentumBar />
+
+            {/* 실시간 배당 위젯 (비로그인) */}
+            <RecentDividendWidget />
 
             {/* 2. 인기 1~2개 프리뷰 - usePopularPicks 경계 */}
             <GuestPreview enabled={!demoMode} />

@@ -9,7 +9,7 @@ import { requireAdmin } from '@/lib/admin/requireAdmin';
  */
 export async function POST(req: NextRequest) {
   try {
-    await requireAdmin();
+    const adminInfo = await requireAdmin();
     const body = await req.json().catch(() => ({}));
     const dividendId = body.dividend_id ?? body.dividendId;
 
@@ -36,6 +36,14 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    await (admin as any).from('admin_audit_logs').insert({
+      admin_id: adminInfo.id,
+      action: 'DIVIDEND_EXECUTE',
+      target_type: 'dividend',
+      target_id: dividendId,
+      metadata: { distributed_count: result?.distributed_count ?? 0 },
+    });
 
     return NextResponse.json({
       success: true,

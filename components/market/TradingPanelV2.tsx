@@ -39,7 +39,7 @@ export default function TradingPanelV2({
   onToast,
 }: Props) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'호가' | '주문' | '체결' | '포지션'>('호가');
+  const [activeTab, setActiveTab] = useState<'호가' | '주문' | '체결' | '내주문' | '포지션'>('호가');
   const [orderTab, setOrderTab] = useState<'지정가' | '시장가'>('지정가');
   const [bids, setBids] = useState<OrderbookLevel[]>([]);
   const [asks, setAsks] = useState<OrderbookLevel[]>([]);
@@ -52,6 +52,8 @@ export default function TradingPanelV2({
   const [loading, setLoading] = useState(false);
   const [orderbookLoading, setOrderbookLoading] = useState(true);
   const [tradesLoading, setTradesLoading] = useState(true);
+  const [myOrders, setMyOrders] = useState<{ id: string; type: string; price: number; quantity: number; executed_quantity: number; status: string | null; created_at: string }[]>([]);
+  const [myOrdersLoading, setMyOrdersLoading] = useState(false);
   const [positionLoading, setPositionLoading] = useState(false);
 
   const showToast = useCallback(
@@ -77,7 +79,7 @@ export default function TradingPanelV2({
 
   const fetchOrderbook = useCallback(() => {
     setOrderbookLoading(true);
-    fetch(`/api/market/orderbook/${contentId}`, { cache: 'no-store' })
+    fetch(`/api/orders/book?item_id=${contentId}`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((j) => {
         setBids(j.bids ?? []);
@@ -87,9 +89,19 @@ export default function TradingPanelV2({
       .finally(() => setOrderbookLoading(false));
   }, [contentId]);
 
+  const fetchMyOrders = useCallback(() => {
+    if (!isLoggedIn) return;
+    setMyOrdersLoading(true);
+    fetch(`/api/orders/my?item_id=${contentId}&limit=20`, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => setMyOrders(j?.orders ?? []))
+      .catch(() => setMyOrders([]))
+      .finally(() => setMyOrdersLoading(false));
+  }, [contentId, isLoggedIn]);
+
   const fetchTrades = useCallback(() => {
     setTradesLoading(true);
-    fetch(`/api/market/trades/${contentId}?limit=20`, { cache: 'no-store' })
+    fetch(`/api/orders/trades?item_id=${contentId}&limit=20`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((j) => setTrades(j.trades ?? []))
       .catch(() => setTrades([]))
@@ -122,14 +134,27 @@ export default function TradingPanelV2({
   }, [fetchOrderbook, fetchTrades]);
 
   useEffect(() => {
+    const iv = setInterval(() => {
+      fetchOrderbook();
+      fetchTrades();
+    }, 5000);
+    return () => clearInterval(iv);
+  }, [fetchOrderbook, fetchTrades]);
+
+  useEffect(() => {
     fetchPosition();
     fetchUserCash();
   }, [fetchPosition, fetchUserCash]);
 
   useEffect(() => {
+    fetchMyOrders();
+  }, [fetchMyOrders]);
+
+  useEffect(() => {
     const onRefresh = () => {
       fetchOrderbook();
       fetchTrades();
+      fetchMyOrders();
       fetchPosition();
       fetchUserCash();
     };
@@ -139,7 +164,7 @@ export default function TradingPanelV2({
       window.removeEventListener('invest-success', onRefresh);
       window.removeEventListener('wallet-refresh', onRefresh);
     };
-  }, [fetchOrderbook, fetchTrades, fetchPosition, fetchUserCash]);
+  }, [fetchOrderbook, fetchTrades, fetchMyOrders, fetchPosition, fetchUserCash]);
 
   useEffect(() => {
     setOrderPrice(sharePriceUsd.toFixed(2));
@@ -174,6 +199,7 @@ export default function TradingPanelV2({
           showToast('주문이 체결되었습니다.');
           fetchOrderbook();
           fetchTrades();
+          fetchMyOrders();
           fetchPosition();
           fetchUserCash();
         } else {
@@ -196,6 +222,7 @@ export default function TradingPanelV2({
           showToast('주문이 체결되었습니다.');
           fetchOrderbook();
           fetchTrades();
+          fetchMyOrders();
           fetchPosition();
           fetchUserCash();
         } else {
@@ -222,6 +249,7 @@ export default function TradingPanelV2({
     showToast,
     fetchOrderbook,
     fetchTrades,
+    fetchMyOrders,
     fetchPosition,
     fetchUserCash,
   ]);
@@ -235,7 +263,7 @@ export default function TradingPanelV2({
       ? (position.quantity / totalSupplyShares) * 100
       : null;
 
-  const tabs = ['호가', '주문', '체결', '포지션'] as const;
+  const tabs = ['호가', '주문', '체결', '내주문', '포지션'] as const;
 
   return (
     <div className="py-4" style={{ borderBottom: '1px solid var(--upbit-border)' }}>
@@ -494,6 +522,42 @@ export default function TradingPanelV2({
                 </span>
                 <span className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>
                   {new Date(t.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {activeTab === '내주문' && (
+        <div className="space-y-1 max-h-[200px] overflow-y-auto animate-[fadeIn_0.15s_ease-out]">
+          {!isLoggedIn ? (
+            <p className="text-[13px] py-8 text-center" style={{ color: 'var(--upbit-text-dim)' }}>
+              <Link href="/login" className="font-semibold" style={{ color: 'var(--upbit-bid)' }}>로그인</Link> 후 주문 내역을 확인하세요
+            </p>
+          ) : myOrdersLoading ? (
+            <div className="py-4 space-y-2">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-10 w-full" />
+              ))}
+            </div>
+          ) : myOrders.length === 0 ? (
+            <p className="text-[13px] py-8 text-center" style={{ color: 'var(--upbit-text-dim)' }}>주문 내역이 없습니다.</p>
+          ) : (
+            myOrders.map((o) => (
+              <div
+                key={o.id}
+                className="flex justify-between py-2 text-[13px]"
+                style={{ borderBottom: '1px solid var(--upbit-border)' }}
+              >
+                <span className="font-semibold" style={{ color: o.type === 'BUY' ? 'var(--upbit-bid)' : 'var(--upbit-ask)' }}>
+                  {o.type === 'BUY' ? '매수' : '매도'} {formatKrw(o.price)}
+                </span>
+                <span className="tabular-nums" style={{ color: 'var(--upbit-text-dim)' }}>
+                  {o.executed_quantity}/{o.quantity}
+                </span>
+                <span className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>
+                  {new Date(o.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
             ))

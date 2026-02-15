@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 export async function POST(req: NextRequest) {
   try {
-    await requireAdmin();
+    const adminInfo = await requireAdmin();
     const body = await req.json().catch(() => ({}));
     const dividendId = body.dividend_id ?? body.dividendId;
 
@@ -19,10 +19,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    const result = data as { ok?: boolean; error?: string };
+    const result = data as { ok?: boolean; error?: string; idempotent?: boolean };
     if (result?.ok === false) {
       return NextResponse.json({ success: false, error: result.error ?? '확정 실패' }, { status: 400 });
     }
+
+    await (admin as any).from('admin_audit_logs').insert({
+      admin_id: adminInfo.id,
+      action: 'DIVIDEND_CONFIRM',
+      target_type: 'dividend',
+      target_id: dividendId,
+      metadata: { idempotent: result?.idempotent ?? false },
+    });
 
     return NextResponse.json({ success: true });
   } catch (e) {
