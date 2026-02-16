@@ -2,6 +2,7 @@
 
 import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { useState } from 'react';
 import { login } from '@/lib/auth/client';
 
@@ -56,6 +57,11 @@ function AdminLoginContent() {
       >
         {loading ? '로그인 중…' : '관리자 로그인'}
       </button>
+      <p className="mt-4 text-center text-sm text-gray-500">
+        <Link href="/forgot-password" className="hover:underline">
+          비밀번호 찾기
+        </Link>
+      </p>
     </main>
   );
 }

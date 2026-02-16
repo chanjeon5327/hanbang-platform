@@ -1,71 +1,71 @@
-# Supabase CLI로 TypeScript 타입 재생성 가이드
+# Supabase CLI�?TypeScript ?�???�생??가?�드
 
-**환경**: Windows, pnpm
-
----
-
-## 사전 요구사항
-
-1. **Node.js** (pnpm 사용 가능)
-2. **Supabase 프로젝트** (원격 호스팅 또는 로컬)
-3. **Docker Desktop** (로컬 DB 사용 시)
+**?�경**: Windows, pnpm
 
 ---
 
-## 방법 A: 원격 프로젝트에서 생성 (권장)
+## ?�전 ?�구?�항
 
-Supabase Dashboard에 배포된 프로젝트의 **실제 스키마**를 기준으로 타입을 생성합니다.
+1. **Node.js** (pnpm ?�용 가??
+2. **Supabase ?�로?�트** (?�격 ?�스???�는 로컬)
+3. **Docker Desktop** (로컬 DB ?�용 ??
 
-### 1단계: Supabase CLI 설치
+---
+
+## 방법 A: ?�격 ?�로?�트?�서 ?�성 (권장)
+
+Supabase Dashboard??배포???�로?�트??**?�제 ?�키�?*�?기�??�로 ?�?�을 ?�성?�니??
+
+### 1?�계: Supabase CLI ?�치
 
 ```powershell
 pnpm add -D supabase
 ```
 
-또는 전역 설치:
+?�는 ?�역 ?�치:
 
 ```powershell
 npm install -g supabase
 ```
 
-### 2단계: Supabase 로그인
+### 2?�계: Supabase 로그??
 
 ```powershell
 pnpm supabase login
 ```
 
-- 브라우저가 열리면 Supabase 계정으로 로그인
-- [Dashboard > Account > Access Tokens](https://supabase.com/dashboard/account/tokens)에서 토큰을 발급해 `--token` 옵션으로 전달할 수도 있음
+- 브라?��?가 ?�리�?Supabase 계정?�로 로그??
+- [Dashboard > Account > Access Tokens](https://supabase.com/dashboard/account/tokens)?�서 ?�큰??발급??`--token` ?�션?�로 ?�달???�도 ?�음
 
-### 3단계: 프로젝트 ID 확인
+### 3?�계: ?�로?�트 ID ?�인
 
-- [Supabase Dashboard](https://supabase.com/dashboard) → 프로젝트 선택
-- **Settings** → **General** → **Reference ID** (예: `qolxkvqzkyfvmrqswqfg`)
+- [Supabase Dashboard](https://supabase.com/dashboard) ???�로?�트 ?�택
+- **Settings** ??**General** ??**Reference ID** (?? `qolxkvqzkyfvmrqswqfg`)
 
-또는 프로젝트 URL에서 추출:
-- `https://<PROJECT_REF>.supabase.co` → `<PROJECT_REF>`가 프로젝트 ID
+?�는 ?�로?�트 URL?�서 추출:
+- `https://<PROJECT_REF>.supabase.co` ??`<PROJECT_REF>`가 ?�로?�트 ID
 
-### 4단계: 타입 생성
+### 4?�계: ?�???�성
 
 ```powershell
 pnpm supabase gen types typescript --project-id <PROJECT_REF> --schema public > lib/supabase/types.ts
 ```
 
-예시 (프로젝트 ID가 `qolxkvqzkyfvmrqswqfg`인 경우):
+?�시 (?�로?�트 ID가 `qolxkvqzkyfvmrqswqfg`??경우):
 
 ```powershell
 pnpm supabase gen types typescript --project-id qolxkvqzkyfvmrqswqfg --schema public > lib/supabase/types.ts
 ```
 
-### 5단계: 환경변수로 프로젝트 ID 사용 (선택)
+### 5?�계: ?�경변?�로 ?�로?�트 ID ?�용 (?�택)
 
-`.env.local`에 추가:
+`.env.local`??추�?:
 
 ```
 SUPABASE_PROJECT_REF=qolxkvqzkyfvmrqswqfg
 ```
 
-PowerShell에서:
+PowerShell?�서:
 
 ```powershell
 $env:SUPABASE_PROJECT_REF = "qolxkvqzkyfvmrqswqfg"
@@ -74,42 +74,42 @@ pnpm supabase gen types typescript --project-id $env:SUPABASE_PROJECT_REF --sche
 
 ---
 
-## 방법 B: 로컬 DB에서 생성
+## 방법 B: 로컬 DB?�서 ?�성
 
-로컬 Supabase에서 migrations를 적용한 뒤 타입을 생성합니다.
+로컬 Supabase?�서 migrations�??�용?????�?�을 ?�성?�니??
 
-### 1단계: Supabase CLI 설치
+### 1?�계: Supabase CLI ?�치
 
 ```powershell
 pnpm add -D supabase
 ```
 
-### 2단계: 프로젝트 초기화 (supabase 폴더가 없을 때)
+### 2?�계: ?�로?�트 초기??(supabase ?�더가 ?�을 ??
 
 ```powershell
 pnpm supabase init
 ```
 
-- `supabase/config.toml` 생성
-- 이미 `supabase/migrations`가 있으면 그대로 사용
+- `supabase/config.toml` ?�성
+- ?��? `supabase/migrations`가 ?�으�?그�?�??�용
 
-### 3단계: 로컬 Supabase 시작
+### 3?�계: 로컬 Supabase ?�작
 
 ```powershell
 pnpm supabase start
 ```
 
-- Docker Desktop 필요
-- Postgres, Studio, Auth 등 컨테이너 실행
-- `supabase/migrations`가 자동 적용됨
+- Docker Desktop ?�요
+- Postgres, Studio, Auth ??컨테?�너 ?�행
+- `supabase/migrations`가 ?�동 ?�용??
 
-### 4단계: 타입 생성
+### 4?�계: ?�???�성
 
 ```powershell
 pnpm supabase gen types typescript --local --schema public > lib/supabase/types.ts
 ```
 
-### 5단계: 로컬 Supabase 중지 (선택)
+### 5?�계: 로컬 Supabase 중�? (?�택)
 
 ```powershell
 pnpm supabase stop
@@ -117,20 +117,20 @@ pnpm supabase stop
 
 ---
 
-## 방법 C: 프로젝트 연결(link) 후 생성
+## 방법 C: ?�로?�트 ?�결(link) ???�성
 
-원격 프로젝트를 연결해 두면 `--linked`로 타입을 생성할 수 있습니다.
+?�격 ?�로?�트�??�결???�면 `--linked`�??�?�을 ?�성?????�습?�다.
 
-### 1단계: 로그인 및 연결
+### 1?�계: 로그??�??�결
 
 ```powershell
 pnpm supabase login
 pnpm supabase link --project-ref <PROJECT_REF>
 ```
 
-- DB 비밀번호 입력 시 프롬프트 표시됨
+- DB 비�?번호 ?�력 ???�롬?�트 ?�시??
 
-### 2단계: 타입 생성
+### 2?�계: ?�???�성
 
 ```powershell
 pnpm supabase gen types typescript --linked --schema public > lib/supabase/types.ts
@@ -138,7 +138,7 @@ pnpm supabase gen types typescript --linked --schema public > lib/supabase/types
 
 ---
 
-## package.json 스크립트 추가
+## package.json ?�크립트 추�?
 
 ```json
 {
@@ -148,14 +148,14 @@ pnpm supabase gen types typescript --linked --schema public > lib/supabase/types
 }
 ```
 
-> **Windows PowerShell**에서는 `%VAR%` 대신 `$env:VAR` 사용:
+> **Windows PowerShell**?�서??`%VAR%` ?�??`$env:VAR` ?�용:
 >
 > ```powershell
 > $env:SUPABASE_PROJECT_REF = "qolxkvqzkyfvmrqswqfg"
 > pnpm db:types
 > ```
 
-크로스 플랫폼을 위해 [cross-env](https://www.npmjs.com/package/cross-env) 또는 `dotenv-cli` 사용:
+?�로???�랫?�을 ?�해 [cross-env](https://www.npmjs.com/package/cross-env) ?�는 `dotenv-cli` ?�용:
 
 ```json
 {
@@ -165,70 +165,70 @@ pnpm supabase gen types typescript --linked --schema public > lib/supabase/types
 }
 ```
 
-`.env.local`에 `SUPABASE_PROJECT_REF`가 있으면:
+`.env.local`??`SUPABASE_PROJECT_REF`가 ?�으�?
 
 ```powershell
-# PowerShell에서 .env.local 로드 후 실행
+# PowerShell?�서 .env.local 로드 ???�행
 Get-Content .env.local | ForEach-Object { if ($_ -match '^SUPABASE_PROJECT_REF=(.+)$') { $env:SUPABASE_PROJECT_REF = $matches[1] } }
 pnpm supabase gen types typescript --project-id $env:SUPABASE_PROJECT_REF --schema public > lib/supabase/types.ts
 ```
 
 ---
 
-## gen types 옵션
+## gen types ?�션
 
-| 옵션 | 설명 |
+| ?�션 | ?�명 |
 |------|------|
-| `--project-id <string>` | 원격 프로젝트 ID |
-| `--local` | 로컬 DB 사용 |
-| `--linked` | 연결된 프로젝트 사용 |
-| `--db-url <string>` | DB URL 직접 지정 |
-| `--schema <strings>` | 스키마 (기본: public) |
-| `--lang typescript` | 출력 언어 (기본값) |
+| `--project-id <string>` | ?�격 ?�로?�트 ID |
+| `--local` | 로컬 DB ?�용 |
+| `--linked` | ?�결???�로?�트 ?�용 |
+| `--db-url <string>` | DB URL 직접 지??|
+| `--schema <strings>` | ?�키�?(기본: public) |
+| `--lang typescript` | 출력 ?�어 (기본�? |
 
 ---
 
-## 생성 후 확인
+## ?�성 ???�인
 
-1. **빌드 확인**
+1. **빌드 ?�인**
 
    ```powershell
    pnpm build
    ```
 
-2. **타입 단언 제거**
+2. **?�???�언 ?�거**
 
-   - `lib/supabase/types.ts`에 `orders`, `profiles` 등이 포함되면
-   - `app/api/payments/request/route.ts`의 `PaymentOrder` 타입 단언
-   - `lib/admin/requireAdmin.ts`의 `ProfileRole` 타입 단언
-   - `lib/auth/requireActiveUser.ts`의 `ProfileStatus` 타입 단언
-   - 위 코드를 제거하고 Supabase 타입을 그대로 사용하도록 수정 가능
+   - `lib/supabase/types.ts`??`orders`, `profiles` ?�이 ?�함?�면
+   - `app/api/payments/request/route.ts`??`PaymentOrder` ?�???�언
+   - `lib/admin/requireAdmin.ts`??`ProfileRole` ?�???�언
+   - `lib/auth/requireActiveUser.ts`??`ProfileStatus` ?�???�언
+   - ??코드�??�거?�고 Supabase ?�?�을 그�?�??�용?�도�??�정 가??
 
 ---
 
-## 문제 해결
+## 문제 ?�결
 
-### "Missing SUPABASE_ACCESS_TOKEN" 또는 "project not found"
+### "Missing SUPABASE_ACCESS_TOKEN" ?�는 "project not found"
 
-- `pnpm supabase login` 재실행
-- 프로젝트 ID가 올바른지 확인
+- `pnpm supabase login` ?�실??
+- ?�로?�트 ID가 ?�바른�? ?�인
 
-### "Docker is not running" (로컬 사용 시)
+### "Docker is not running" (로컬 ?�용 ??
 
-- Docker Desktop 실행 후 `supabase start` 재시도
+- Docker Desktop ?�행 ??`supabase start` ?�시??
 
-### PowerShell에서 리다이렉션 오류
+### PowerShell?�서 리다?�렉???�류
 
-- `>` 대신 `Out-File` 사용:
+- `>` ?�??`Out-File` ?�용:
 
   ```powershell
   pnpm supabase gen types typescript --project-id <REF> --schema public | Out-File -FilePath lib/supabase/types.ts -Encoding utf8
   ```
 
-### UTF-8 인코딩
+### UTF-8 ?�코??
 
-- PowerShell 기본 인코딩이 BOM이면 문제가 될 수 있음
-- `-Encoding utf8NoBOM` (PowerShell 6+) 사용:
+- PowerShell 기본 ?�코?�이 BOM?�면 문제가 ?????�음
+- `-Encoding utf8NoBOM` (PowerShell 6+) ?�용:
 
   ```powershell
   pnpm supabase gen types typescript --project-id <REF> --schema public | Out-File -FilePath lib/supabase/types.ts -Encoding utf8NoBOM
@@ -236,12 +236,12 @@ pnpm supabase gen types typescript --project-id $env:SUPABASE_PROJECT_REF --sche
 
 ---
 
-## 요약
+## ?�약
 
 | 방법 | 명령 | 조건 |
 |------|------|------|
-| 원격 | `--project-id <REF>` | 로그인 + 프로젝트 ID |
-| 로컬 | `--local` | 로컬 Supabase 실행 중 |
-| 연결 | `--linked` | `supabase link` 완료 |
+| ?�격 | `--project-id <REF>` | 로그??+ ?�로?�트 ID |
+| 로컬 | `--local` | 로컬 Supabase ?�행 �?|
+| ?�결 | `--linked` | `supabase link` ?�료 |
 
-**권장**: `--project-id`로 원격 프로젝트 스키마에서 타입 생성하는 방법 A 사용.
+**권장**: `--project-id`�??�격 ?�로?�트 ?�키마에???�???�성?�는 방법 A ?�용.

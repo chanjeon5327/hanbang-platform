@@ -1,109 +1,109 @@
-# êµ¬í˜„ ìš”ì•½ (2026-02-27)
+# êµ¬í˜„ ?”ì•½ (2026-02-27)
 
-## 1) ìˆ˜ì •/ì¶”ê°€ëœ íŒŒì¼ ì „ì²´ ëª©ë¡
+## 1) ?˜ì •/ì¶”ê????Œì¼ ?„ì²´ ëª©ë¡
 
-### A) í™ˆ ë ˆì¼ êµ¬ì¡° ë¶„ë¦¬
-| ê²½ë¡œ | ìœ í˜• |
+### A) ???ˆì¼ êµ¬ì¡° ë¶„ë¦¬
+| ê²½ë¡œ | ? í˜• |
 |------|------|
-| `app/api/home/my-interests/route.ts` | **ì¶”ê°€** |
-| `app/api/home/popular/route.ts` | **ì¶”ê°€** |
-| `app/api/home/deadline/route.ts` | **ì¶”ê°€** |
-| `hooks/useMyInterests.ts` | **ì¶”ê°€** |
-| `hooks/usePopularPicks.ts` | **ì¶”ê°€** |
-| `hooks/useDeadlinePicks.ts` | **ì¶”ê°€** |
-| `components/home/InterestStrip.tsx` | **ìˆ˜ì •** |
-| `components/home/CurationSection.tsx` | **ìˆ˜ì •** |
-| `components/home/DeadlineRail.tsx` | **ìˆ˜ì •** |
-| `components/home/HomeView.tsx` | **ìˆ˜ì •** |
-| `components/home/GuestPreview.tsx` | **ìˆ˜ì •** |
-| `components/home/PrimaryCTAs.tsx` | **ìˆ˜ì •** |
+| `app/api/home/my-interests/route.ts` | **ì¶”ê?** |
+| `app/api/home/popular/route.ts` | **ì¶”ê?** |
+| `app/api/home/deadline/route.ts` | **ì¶”ê?** |
+| `hooks/useMyInterests.ts` | **ì¶”ê?** |
+| `hooks/usePopularPicks.ts` | **ì¶”ê?** |
+| `hooks/useDeadlinePicks.ts` | **ì¶”ê?** |
+| `components/home/InterestStrip.tsx` | **?˜ì •** |
+| `components/home/CurationSection.tsx` | **?˜ì •** |
+| `components/home/DeadlineRail.tsx` | **?˜ì •** |
+| `components/home/HomeView.tsx` | **?˜ì •** |
+| `components/home/GuestPreview.tsx` | **?˜ì •** |
+| `components/home/PrimaryCTAs.tsx` | **?˜ì •** |
 
-### B) ìƒì„¸ í˜ì´ì§€ ì‹¤ì‹œê°„ ì±„íŒ…
-| ê²½ë¡œ | ìœ í˜• |
+### B) ?ì„¸ ?˜ì´ì§€ ?¤ì‹œê°?ì±„íŒ…
+| ê²½ë¡œ | ? í˜• |
 |------|------|
-| `supabase/migrations/20260227_chat_profiles.sql` | **ì¶”ê°€** |
-| `app/api/chat/[productId]/route.ts` | **ì¶”ê°€** |
-| `components/chat/ProductChat.tsx` | **ì¶”ê°€** |
-| `app/market/[id]/page.tsx` | **ìˆ˜ì •** |
+| `supabase/migrations/20260227_chat_profiles.sql` | **ì¶”ê?** |
+| `app/api/chat/[productId]/route.ts` | **ì¶”ê?** |
+| `components/chat/ProductChat.tsx` | **ì¶”ê?** |
+| `app/market/[id]/page.tsx` | **?˜ì •** |
 
-### C) í”„ë¡œí•„ í˜ì´ì§€
-| ê²½ë¡œ | ìœ í˜• |
+### C) ?„ë¡œ???˜ì´ì§€
+| ê²½ë¡œ | ? í˜• |
 |------|------|
-| `app/api/profile/[id]/route.ts` | **ì¶”ê°€** |
-| `app/profile/[id]/page.tsx` | **ì¶”ê°€** |
+| `app/api/profile/[id]/route.ts` | **ì¶”ê?** |
+| `app/profile/[id]/page.tsx` | **ì¶”ê?** |
 
 ### D) VideoThumb
-| ê²½ë¡œ | ìœ í˜• |
+| ê²½ë¡œ | ? í˜• |
 |------|------|
-| `components/media/VideoThumb.tsx` | **ì¶”ê°€** |
+| `components/media/VideoThumb.tsx` | **ì¶”ê?** |
 
 ---
 
-## 2) ë°ì´í„° íë¦„ ë‹¤ì´ì–´ê·¸ë¨
+## 2) ?°ì´???ë¦„ ?¤ì´?´ê·¸??
 
-### í™ˆ ë ˆì¼ (ë‚˜ì˜ ê´€ì‹¬ / ëª¨ë‘ì˜ ì¶”ì²œ / ë§ˆê°ì„ë°•)
-
-```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                         HomeView                                 â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚  InterestStrip          CurationSection         DeadlineRail    â”‚
-â”‚  (ë‚˜ì˜ ê´€ì‹¬)             (ëª¨ë‘ì˜ ì¶”ì²œ)            (ë§ˆê°ì„ë°•)      â”‚
-â”‚       â”‚                        â”‚                      â”‚         â”‚
-â”‚  useMyInterests         usePopularPicks       useDeadlinePicks   â”‚
-â”‚  (enabled=ë¡œê·¸ì¸)       (enabled=true)        (enabled=true)    â”‚
-â”‚       â”‚                        â”‚                      â”‚         â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-        â”‚                        â”‚                      â”‚
-        â–¼                        â–¼                      â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ GET /api/home â”‚    â”‚ GET /api/home/    â”‚    â”‚ GET /api/home/    â”‚
-â”‚ my-interests  â”‚    â”‚ popular           â”‚    â”‚ deadline          â”‚
-â”‚               â”‚    â”‚                   â”‚    â”‚                   â”‚
-â”‚ user_interestsâ”‚    â”‚ user_interests    â”‚    â”‚ content_items     â”‚
-â”‚ + content_    â”‚    â”‚ count by content  â”‚    â”‚ deadline > now()  â”‚
-â”‚ items         â”‚    â”‚ _id               â”‚    â”‚ order by deadline â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-```
-
-### ì±„íŒ… (ì½ê¸°/ì“°ê¸°/Realtime/í”„ë¡œí•„)
+### ???ˆì¼ (?˜ì˜ ê´€??/ ëª¨ë‘??ì¶”ì²œ / ë§ˆê°?„ë°•)
 
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                    ProductChat (market/[id])                     â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚  GET /api/chat/[productId]  â”€â”€â–º  messages + profiles(nickname,  â”‚
-â”‚                                    avatar_url)                   â”‚
-â”‚  POST (ë¡œê·¸ì¸)  â”€â”€â–º  filterProfanity  â”€â”€â–º  product_chat_messagesâ”‚
-â”‚  Supabase Realtime  â”€â”€â–º  INSERT ì´ë²¤íŠ¸  â”€â”€â–º  fetchMessages()     â”‚
-â”‚  ë‹‰ë„¤ì„/ì•„ë°”íƒ€ í´ë¦­  â”€â”€â–º  /profile/[user_id]                      â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+?Œâ??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??
+??                        HomeView                                 ??
+?œâ??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??
+?? InterestStrip          CurationSection         DeadlineRail    ??
+?? (?˜ì˜ ê´€??             (ëª¨ë‘??ì¶”ì²œ)            (ë§ˆê°?„ë°•)      ??
+??      ??                       ??                     ??        ??
+?? useMyInterests         usePopularPicks       useDeadlinePicks   ??
+?? (enabled=ë¡œê·¸??       (enabled=true)        (enabled=true)    ??
+??      ??                       ??                     ??        ??
+?”â??€?€?€?€?€?€?¼â??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?¼â??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?¼â??€?€?€?€?€?€?€?€??
+        ??                       ??                     ??
+        ??                       ??                     ??
+?Œâ??€?€?€?€?€?€?€?€?€?€?€?€?€?€??   ?Œâ??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??   ?Œâ??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??
+??GET /api/home ??   ??GET /api/home/    ??   ??GET /api/home/    ??
+??my-interests  ??   ??popular           ??   ??deadline          ??
+??              ??   ??                  ??   ??                  ??
+??user_interests??   ??user_interests    ??   ??content_items     ??
+??+ content_    ??   ??count by content  ??   ??deadline > now()  ??
+??items         ??   ??_id               ??   ??order by deadline ??
+?”â??€?€?€?€?€?€?€?€?€?€?€?€?€?€??   ?”â??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??   ?”â??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??
+```
+
+### ì±„íŒ… (?½ê¸°/?°ê¸°/Realtime/?„ë¡œ??
+
+```
+?Œâ??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??
+??                   ProductChat (market/[id])                     ??
+?œâ??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??
+?? GET /api/chat/[productId]  ?€?€?? messages + profiles(nickname,  ??
+??                                   avatar_url)                   ??
+?? POST (ë¡œê·¸??  ?€?€?? filterProfanity  ?€?€?? product_chat_messages??
+?? Supabase Realtime  ?€?€?? INSERT ?´ë²¤?? ?€?€?? fetchMessages()     ??
+?? ?‰ë„¤???„ë°”?€ ?´ë¦­  ?€?€?? /profile/[user_id]                      ??
+?”â??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??
 ```
 
 ---
 
-## 3) ì™„ë£Œ ì²´í¬ë¦¬ìŠ¤íŠ¸ (12ê°œ)
+## 3) ?„ë£Œ ì²´í¬ë¦¬ìŠ¤??(12ê°?
 
-| # | í•­ëª© | ìƒíƒœ |
+| # | ??ª© | ?íƒœ |
 |---|------|------|
-| 1 | A-1: GET /api/home/my-interests (ë¡œê·¸ì¸ë§Œ, created_at desc) | âœ… PASS |
-| 2 | A-1: GET /api/home/popular (ê´€ì‹¬ count desc, ë™ë¥  random) | âœ… PASS |
-| 3 | A-1: GET /api/home/deadline (deadline asc, ê°™ì€ ë‚  random) | âœ… PASS |
-| 4 | A-2: useMyInterests, usePopularPicks, useDeadlinePicks í›… | âœ… PASS |
-| 5 | A-3: ë‚˜ì˜ ê´€ì‹¬/ëª¨ë‘ì˜ ì¶”ì²œ/ë§ˆê°ì„ë°• ë‹¨ì¼ ë°ì´í„° ì†ŒìŠ¤, ì¤‘ë³µ ì œê±° | âœ… PASS |
-| 6 | B-1: 20260227_chat_profiles.sql (profiles, product_chat_messages, RLS) | âœ… PASS |
-| 7 | B-2: GET/POST /api/chat/[productId], profiles join | âœ… PASS |
-| 8 | B-3: ProductChat (ë‹‰ë„¤ì„+ì•„ë°”íƒ€, /profile ì´ë™, Realtime) | âœ… PASS |
-| 9 | C: /profile/[id] í˜ì´ì§€, API, fallback | âœ… PASS |
-| 10 | D: VideoThumb (hover/touch play, muted, ìŠ¤í”¼ì»¤ ë²„íŠ¼) | âœ… PASS |
-| 11 | ëœë¤ ì •ë ¬ ì„œë²„ ì „ìš© (í´ë¼ì´ì–¸íŠ¸ Math.random ê¸ˆì§€) | âœ… PASS |
-| 12 | ì±„íŒ… POST ë¡œê·¸ì¸ í•„ìˆ˜, profiles ê³µê°œ í•„ë“œ ìµœì†Œí™” | âœ… PASS |
+| 1 | A-1: GET /api/home/my-interests (ë¡œê·¸?¸ë§Œ, created_at desc) | ??PASS |
+| 2 | A-1: GET /api/home/popular (ê´€??count desc, ?™ë¥  random) | ??PASS |
+| 3 | A-1: GET /api/home/deadline (deadline asc, ê°™ì? ??random) | ??PASS |
+| 4 | A-2: useMyInterests, usePopularPicks, useDeadlinePicks ??| ??PASS |
+| 5 | A-3: ?˜ì˜ ê´€??ëª¨ë‘??ì¶”ì²œ/ë§ˆê°?„ë°• ?¨ì¼ ?°ì´???ŒìŠ¤, ì¤‘ë³µ ?œê±° | ??PASS |
+| 6 | B-1: 20260227_chat_profiles.sql (profiles, product_chat_messages, RLS) | ??PASS |
+| 7 | B-2: GET/POST /api/chat/[productId], profiles join | ??PASS |
+| 8 | B-3: ProductChat (?‰ë„¤???„ë°”?€, /profile ?´ë™, Realtime) | ??PASS |
+| 9 | C: /profile/[id] ?˜ì´ì§€, API, fallback | ??PASS |
+| 10 | D: VideoThumb (hover/touch play, muted, ?¤í”¼ì»?ë²„íŠ¼) | ??PASS |
+| 11 | ?œë¤ ?•ë ¬ ?œë²„ ?„ìš© (?´ë¼?´ì–¸??Math.random ê¸ˆì?) | ??PASS |
+| 12 | ì±„íŒ… POST ë¡œê·¸???„ìˆ˜, profiles ê³µê°œ ?„ë“œ ìµœì†Œ??| ??PASS |
 
 ---
 
-## 4) ì£¼ì˜ì‚¬í•­
+## 4) ì£¼ì˜?¬í•­
 
-- **ë§ˆì´ê·¸ë ˆì´ì…˜ ì ìš©**: `supabase db push` ë˜ëŠ” `supabase migration up` ì‹¤í–‰ í•„ìš”
-- **Realtime**: product_chat_messages í…Œì´ë¸”ì— Replication í™œì„±í™” í•„ìš” (Supabase ëŒ€ì‹œë³´ë“œ)
-- **product_id**: market ìƒì„¸ idê°€ UUIDì¼ ë•Œ ì±„íŒ… ë™ì‘. sample-1 ë“± ë¬¸ìì—´ idëŠ” ë¹ˆ ë©”ì‹œì§€ ë°˜í™˜
-- **content_items.deadline**: ë§ˆì´ê·¸ë ˆì´ì…˜ì—ì„œ ì¶”ê°€. ë°ì´í„° ì…ë ¥ ì‹œ ë§ˆê°ì„ë°• API ì •ìƒ ë™ì‘
+- **ë§ˆì´ê·¸ë ˆ?´ì…˜ ?ìš©**: `supabase db push` ?ëŠ” `supabase migration up` ?¤í–‰ ?„ìš”
+- **Realtime**: product_chat_messages ?Œì´ë¸”ì— Replication ?œì„±???„ìš” (Supabase ?€?œë³´??
+- **product_id**: market ?ì„¸ idê°€ UUID????ì±„íŒ… ?™ì‘. sample-1 ??ë¬¸ì??id??ë¹?ë©”ì‹œì§€ ë°˜í™˜
+- **content_items.deadline**: ë§ˆì´ê·¸ë ˆ?´ì…˜?ì„œ ì¶”ê?. ?°ì´???…ë ¥ ??ë§ˆê°?„ë°• API ?•ìƒ ?™ì‘

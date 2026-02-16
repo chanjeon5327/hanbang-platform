@@ -24,13 +24,13 @@ export type WalletSummary = {
 };
 
 /**
- * 수익률 정의 (거래소형 고정)
+ * ?�꼷�뵡�몴??類ㅼ벥 (椰꾧퀡�삋?�슦�굨 ��⑥쥙�젟)
  * - currentValue = remainingQty * currentPrice
  * - unrealizedPnl = currentValue - remainingCost
- * - unrealizedRate = (unrealizedPnl / remainingCost) * 100 (0 나눔 방지)
- * - 보유 포지션(remainingCost) 기준 미실현 수익률만 사용. investedPrincipal 기반 제거.
+ * - unrealizedRate = (unrealizedPnl / remainingCost) * 100 (0 ?�꼶�땸 獄쎻뫗?)
+ * - 癰귣똻��� ?��???remainingCost) 疫꿸퀣? 沃섎챷�뼄???�꼷�뵡�몴醫딆춸 ?�딆뒠. investedPrincipal 疫꿸퀡而� ?�뮄援�.
  *
- * 레거시 calcReturn: 단일 자산 시 보조용. UI 메인은 /api/wallet/position, invest-summary의 포지션 기반 사용.
+ * ?�뜃援�??calcReturn: ?�뫁�뵬 ?癒�沅� ??癰귣똻���?? UI 筌롫뗄�뵥?占� /api/wallet/position, invest-summary???��???疫꿸퀡而� ?�딆뒠.
  */
 export function calcReturn(
   summary: WalletSummary,
@@ -80,7 +80,7 @@ export function useWalletLedger() {
     setError(null);
     fetch('/api/wallet/ledger', { cache: 'no-store' })
       .then((res) => {
-        if (!res.ok) throw new Error('조회 실패');
+        if (!res.ok) throw new Error('鈺곌퀬�돳 ?�끋�솭');
         return res.json();
       })
       .then((data) => {

@@ -98,7 +98,7 @@ export default function TradeHistoryRealtime({ contentId, onTrade }: Props) {
           table: 'trades',
           filter: `content_id=eq.${contentId}`,
         },
-        (payload) => {
+        (payload: { new: Record<string, unknown> }) => {
           const newRow = payload.new as { id: string; price_usd?: number; quantity?: number; buyer_id?: string; seller_id?: string; created_at?: string };
           if (newRow?.id) {
             const priceUsd = Number(newRow.price_usd ?? 0);

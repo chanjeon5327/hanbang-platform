@@ -1,63 +1,63 @@
-# 상세페이지 거래소형 스펙 (DETAIL_EXCHANGE_SPEC)
+# ?�세?�이지 거래?�형 ?�펙 (DETAIL_EXCHANGE_SPEC)
 
-## 1. 정체성
+## 1. ?�체??
 
-- **거래소형(Trade-first) + 월배당**
-- 상품 타입 2종에 따라 상세 UI 분기
-- USD 기축 저장 + 로컬통화 표시(환율 변환)
+- **거래?�형(Trade-first) + ?�배??*
+- ?�품 ?�??2종에 ?�라 ?�세 UI 분기
+- USD 기축 ?�??+ 로컬?�화 ?�시(?�율 변??
 
-## 2. 상품 타입
+## 2. ?�품 ?�??
 
-| 타입 | 설명 | UI |
+| ?�??| ?�명 | UI |
 |------|------|-----|
-| `DIVIDEND_ONLY` | 월배당만 | 투자/배당 패널, "거래 불가" 문구 |
-| `DIVIDEND_TRADABLE` | 월배당+거래 | TradingPanel v2 (호가/주문/체결/내주문) |
+| `DIVIDEND_ONLY` | ?�배?�만 | ?�자/배당 ?�널, "거래 불�?" 문구 |
+| `DIVIDEND_TRADABLE` | ?�배??거래 | TradingPanel v2 (?��?/주문/체결/?�주�? |
 
-## 3. DB 스키마 (content_items 추가 컬럼)
+## 3. DB ?�키�?(content_items 추�? 컬럼)
 
-| 컬럼 | 타입 | 기본값 | 설명 |
+| 컬럼 | ?�??| 기본�?| ?�명 |
 |------|------|--------|------|
-| product_type | text | DIVIDEND_ONLY | 상품 타입 |
-| pricing_currency | text | USD | 기축 통화 |
-| share_price_usd | numeric(20,6) | - | 주당 가격 (USD) |
-| total_raise_usd | numeric(20,6) | - | 총 모집액 (USD) |
-| current_raise_usd | numeric(20,6) | - | 현재 모집액 (USD) |
-| dividend_monthly_usd_per_share | numeric(20,6) | - | 월 배당금 (USD/주) |
-| dividend_monthly_rate | numeric(10,4) | - | 월 배당률 (%) |
-| payout_day | smallint | 3 | 매월 정산일 (1~28) |
+| product_type | text | DIVIDEND_ONLY | ?�품 ?�??|
+| pricing_currency | text | USD | 기축 ?�화 |
+| share_price_usd | numeric(20,6) | - | 주당 가�?(USD) |
+| total_raise_usd | numeric(20,6) | - | �?모집??(USD) |
+| current_raise_usd | numeric(20,6) | - | ?�재 모집??(USD) |
+| dividend_monthly_usd_per_share | numeric(20,6) | - | ??배당�?(USD/�? |
+| dividend_monthly_rate | numeric(10,4) | - | ??배당�?(%) |
+| payout_day | smallint | 3 | 매월 ?�산??(1~28) |
 
-## 4. 정산 규칙
+## 4. ?�산 규칙
 
-- **기준일**: 매월 말일 23:59:59 보유자 기준
-- **정산일**: 매월 `payout_day`일 (기본 3일)
-- 실제 수익은 콘텐츠 성과에 따라 변동
+- **기�???*: 매월 말일 23:59:59 보유??기�?
+- **?�산??*: 매월 `payout_day`??(기본 3??
+- ?�제 ?�익?� 콘텐�??�과???�라 변??
 
 ## 5. API
 
-| 엔드포인트 | 설명 |
+| ?�드?�인??| ?�명 |
 |------------|------|
-| GET /api/market/item/[id] | 상세 조회, 신규 컬럼 + fx_rate 포함 |
-| GET /api/fx/usd | USD→KRW 환율 (임시) |
-| GET /api/market/orderbook/[id] | 호가창 (mock 허용) |
-| GET /api/market/trades/[id] | 체결 내역 (mock 허용) |
+| GET /api/market/item/[id] | ?�세 조회, ?�규 컬럼 + fx_rate ?�함 |
+| GET /api/fx/usd | USD?�KRW ?�율 (?�시) |
+| GET /api/market/orderbook/[id] | ?��?�?(mock ?�용) |
+| GET /api/market/trades/[id] | 체결 ?�역 (mock ?�용) |
 
-## 6. UI 구조 (리듬형 섹션)
+## 6. UI 구조 (리듬???�션)
 
-1. 영상/썸네일
-2. 타이틀 + OFFICIAL IP EXCHANGE + 타입 배지 (월배당 / 월배당+거래)
+1. ?�상/?�네??
+2. ?�?��? + OFFICIAL IP EXCHANGE + ?�??배�? (?�배??/ ?�배??거래)
 3. PriceHeader (USD + 로컬)
-4. PriceChartBlock (USD 기반, 로컬 변환)
-5. TradingPanel v2 (DIVIDEND_TRADABLE) / 거래 불가 (DIVIDEND_ONLY)
-6. DividendInfo (정산일, 월 배당률, ? 팝업)
-7. ExpectedReturnBox (월 수익률 기준)
+4. PriceChartBlock (USD 기반, 로컬 변??
+5. TradingPanel v2 (DIVIDEND_TRADABLE) / 거래 불�? (DIVIDEND_ONLY)
+6. DividendInfo (?�산?? ??배당�? ? ?�업)
+7. ExpectedReturnBox (???�익�?기�?)
 8. LiveMomentumBar / RecentInvestLog / ProductChat
 
 ## 7. Sticky CTA 분기
 
-- DIVIDEND_ONLY: "₩XXX 투자하기"
-- DIVIDEND_TRADABLE: "₩XXX 투자/매수"
+- DIVIDEND_ONLY: "?�XXX ?�자?�기"
+- DIVIDEND_TRADABLE: "?�XXX ?�자/매수"
 
 ## 8. orderbook_orders / trades (TODO)
 
-- 스키마만 추가, 실체결 로직 TODO
-- UI 단계에서 mock/dummy 허용
+- ?�키마만 추�?, ?�체�?로직 TODO
+- UI ?�계?�서 mock/dummy ?�용

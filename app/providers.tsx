@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import { AuthProvider } from '@/components/auth/AuthProvider';
+import { StatusGuard } from '@/components/auth/StatusGuard';
 import { StoreProvider } from '@/context/StoreContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { TokenProvider } from '@/context/TokenContext';
@@ -14,11 +15,13 @@ export default function Providers({ children }: { children: ReactNode }) {
       <ThemeProvider>
         <TokenProvider>
           <AuthProvider>
-            <StoreProvider>
-              <ToastProvider>
-                {children}
-              </ToastProvider>
-            </StoreProvider>
+            <StatusGuard>
+              <StoreProvider>
+                <ToastProvider>
+                  {children}
+                </ToastProvider>
+              </StoreProvider>
+            </StatusGuard>
           </AuthProvider>
         </TokenProvider>
       </ThemeProvider>

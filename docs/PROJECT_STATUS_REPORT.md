@@ -1,94 +1,94 @@
-# HANBANG 플랫폼 프로젝트 상태 리포트
+# HANBANG ?�랫???�로?�트 ?�태 리포??
 
-> 외부 협업자 전달용 요약 (2025.02 기준)
+> ?��? ?�업???�달???�약 (2025.02 기�?)
 
 ---
 
-## 1) 주요 페이지 라우트 (app/*)
+## 1) 주요 ?�이지 ?�우??(app/*)
 
 ### 공용
-- `/` — `app/page.tsx` (홈)
-- `/login` — `app/login/page.tsx`
-- `/signup` — `app/signup/page.tsx`
-- `/market` — `app/market/page.tsx` (마켓 목록)
-- `/market/[id]` — `app/market/[id]/page.tsx` (마켓 상세, 청약/매수)
-- `/wallet` — `app/wallet/page.tsx`
-- `/wallet/deposit`, `/wallet/withdraw`, `/wallet/swap` — 입출금/스왑
-- `/mypage` — `app/mypage/page.tsx`
-- `/order/success` — `app/order/success/page.tsx` (결제 완료)
-- `/order/pay` — `app/order/pay/page.tsx` (테스트 결제 시뮬레이션)
-- `/order/return` — `app/order/return/page.tsx` (KCP 결제 후 리턴)
+- `/` ??`app/page.tsx` (??
+- `/login` ??`app/login/page.tsx`
+- `/signup` ??`app/signup/page.tsx`
+- `/market` ??`app/market/page.tsx` (마켓 목록)
+- `/market/[id]` ??`app/market/[id]/page.tsx` (마켓 ?�세, �?��/매수)
+- `/wallet` ??`app/wallet/page.tsx`
+- `/wallet/deposit`, `/wallet/withdraw`, `/wallet/swap` ???�출�??�왑
+- `/mypage` ??`app/mypage/page.tsx`
+- `/order/success` ??`app/order/success/page.tsx` (결제 ?�료)
+- `/order/pay` ??`app/order/pay/page.tsx` (?�스??결제 ?��??�이??
+- `/order/return` ??`app/order/return/page.tsx` (KCP 결제 ??리턴)
 
-### 투자/프로젝트
+### ?�자/?�로?�트
 - `/invest`, `/invest/[id]`, `/invest/list`, `/invest/product/[id]`
 - `/projects/[id]`, `/projects/[id]/invest`
 - `/active-invest`, `/active-invest/[id]`
 
-### 기타
+### 기�?
 - `/interest/[id]`, `/creator/dashboard`, `/creator/register`, `/settings`, `/notice`, `/onboarding`, `/ranking`, `/closing-soon`, `/lobby`, `/demo`
 
 ### 관리자 (admin)
-- `/admin` — 리포트 대시보드 — `app/admin/page.tsx`
-- `/admin/login` — `app/admin/login/page.tsx`
-- `/admin/users` — 유저 관리 — `app/admin/users/page.tsx`
-- `/admin/content` — 작품 승인/강제삭제 — `app/admin/content/page.tsx`
-- `/admin/orders` — 주문/결제 확인 — `app/admin/orders/page.tsx`
-- `/admin/orders/[order_id]` — 주문 상세 — `app/admin/orders/[order_id]/page.tsx`
-- `/admin/settlement` — 정산 목록 — `app/admin/settlement/page.tsx`
-- `/admin/settlement/[id]` — 정산 확정 — `app/admin/settlement/[id]/page.tsx`
-- `/admin/chat/moderation` — 채팅 모더레이션 — `app/admin/chat/moderation/page.tsx`
-- `/admin/reports` — 신고 처리 — `app/admin/reports/page.tsx`
-- `/admin/kpc` — KPC 포인트 지급 — `app/admin/kpc/page.tsx`
-- `/admin/notice` — 공지사항 — `app/admin/notice/page.tsx`
-- `/admin/settings`, `/admin/settings/admins` — 설정
-- `/admin/funnel`, `/admin/home-config`, `/admin/rail-config`, `/admin/projects` — 운영 설정
+- `/admin` ??리포???�?�보????`app/admin/page.tsx`
+- `/admin/login` ??`app/admin/login/page.tsx`
+- `/admin/users` ???��? 관�???`app/admin/users/page.tsx`
+- `/admin/content` ???�품 ?�인/강제??�� ??`app/admin/content/page.tsx`
+- `/admin/orders` ??주문/결제 ?�인 ??`app/admin/orders/page.tsx`
+- `/admin/orders/[order_id]` ??주문 ?�세 ??`app/admin/orders/[order_id]/page.tsx`
+- `/admin/settlement` ???�산 목록 ??`app/admin/settlement/page.tsx`
+- `/admin/settlement/[id]` ???�산 ?�정 ??`app/admin/settlement/[id]/page.tsx`
+- `/admin/chat/moderation` ??채팅 모더?�이????`app/admin/chat/moderation/page.tsx`
+- `/admin/reports` ???�고 처리 ??`app/admin/reports/page.tsx`
+- `/admin/kpc` ??KPC ?�인??지�???`app/admin/kpc/page.tsx`
+- `/admin/notice` ??공�??�항 ??`app/admin/notice/page.tsx`
+- `/admin/settings`, `/admin/settings/admins` ???�정
+- `/admin/funnel`, `/admin/home-config`, `/admin/rail-config`, `/admin/projects` ???�영 ?�정
 
 ---
 
-## 2) 인증/세션 구조
+## 2) ?�증/?�션 구조
 
-### 사용자 인증 (메인 앱)
-- **Provider**: `components/auth/AuthProvider.tsx` — `app/providers.tsx`에서 래핑
-- **API**: `useAuth()` → `user`, `session`, `loading`, `signOut`, `openLoginModal`, `closeLoginModal`
-- **로그아웃**: `components/auth/AuthProvider.tsx` 내 `signOut()` — Supabase `signOut()` 후 `/`로 이동
-- **세션**: Supabase Auth 기반, `supabase.auth.getSession()`, `onAuthStateChange`
+### ?�용???�증 (메인 ??
+- **Provider**: `components/auth/AuthProvider.tsx` ??`app/providers.tsx`?�서 ?�핑
+- **API**: `useAuth()` ??`user`, `session`, `loading`, `signOut`, `openLoginModal`, `closeLoginModal`
+- **로그?�웃**: `components/auth/AuthProvider.tsx` ??`signOut()` ??Supabase `signOut()` ??`/`�??�동
+- **?�션**: Supabase Auth 기반, `supabase.auth.getSession()`, `onAuthStateChange`
 
-### 관리자 인증
-- **Provider**: `context/AuthContext.tsx` — `app/admin/layout.tsx` 내부에서만 사용
-- **API**: `useAuth()` → `adminUser`, `isAuthenticated`, `login`, `logout`, `hasPermission`
-- **로그아웃**: `context/AuthContext.tsx` — `localStorage.removeItem("admin_auth")` 후 `/` 이동
-- **인증 방식**: MASTER_ACCOUNT 하드코딩 + localStorage (`chanjeon5327@gmail.com`)
+### 관리자 ?�증
+- **Provider**: `context/AuthContext.tsx` ??`app/admin/layout.tsx` ?��??�서�??�용
+- **API**: `useAuth()` ??`adminUser`, `isAuthenticated`, `login`, `logout`, `hasPermission`
+- **로그?�웃**: `context/AuthContext.tsx` ??`localStorage.removeItem("admin_auth")` ??`/` ?�동
+- **?�증 방식**: MASTER_ACCOUNT ?�드코딩 + localStorage (`chanjeon5327@gmail.com`)
 
 ---
 
-## 3) 결제/주문/원장 플로우
+## 3) 결제/주문/?�장 ?�로??
 
 ### RPC 목록
-| RPC | 역할 | 호출 경로 |
+| RPC | ??�� | ?�출 경로 |
 |-----|------|-----------|
-| `rpc_place_order` | 주문 생성, status=PENDING | `app/api/orders/place/route.ts` |
-| `rpc_confirm_payment` | PENDING → PAID | `app/api/payments/confirm/route.ts`, `app/api/payment/stub/route.ts`, `app/api/webhook/payment/route.ts` |
-| `rpc_finalize_order` | PAID → COMPLETED, 원장 반영 | `app/api/payments/confirm/route.ts` |
-| `rpc_admin_confirm_settlement` | 정산 배치 확정 | `app/admin/settlement/[id]/page.tsx` (migration 미확인) |
-| `rpc_increment_content_metric` | content 지표 증가 | `app/api/funnel/join/route.ts`, `app/api/metrics/event/route.ts` |
-| `rpc_invest` | 모바일 투자 (레거시) | `components/mobile/MobileProductDetail.tsx` |
-| `transition_order_status` | DB 전이 규칙 검증 | migration 내 정의, 앱에서 직접 호출은 드묾 |
+| `rpc_place_order` | 주문 ?�성, status=PENDING | `app/api/orders/place/route.ts` |
+| `rpc_confirm_payment` | PENDING ??PAID | `app/api/payments/confirm/route.ts`, `app/api/payment/stub/route.ts`, `app/api/webhook/payment/route.ts` |
+| `rpc_finalize_order` | PAID ??COMPLETED, ?�장 반영 | `app/api/payments/confirm/route.ts` |
+| `rpc_admin_confirm_settlement` | ?�산 배치 ?�정 | `app/admin/settlement/[id]/page.tsx` (migration 미확?? |
+| `rpc_increment_content_metric` | content 지??증�? | `app/api/funnel/join/route.ts`, `app/api/metrics/event/route.ts` |
+| `rpc_invest` | 모바???�자 (?�거?? | `components/mobile/MobileProductDetail.tsx` |
+| `transition_order_status` | DB ?�이 규칙 검�?| migration ???�의, ?�에??직접 ?�출?� ?�묾 |
 
-### orders.status 전이
+### orders.status ?�이
 ```
-PENDING → PAID (rpc_confirm_payment)
-PAID → COMPLETED (rpc_finalize_order, 원장 반영)
-PENDING → CANCELLED
-PAID → REFUNDED (관리자 환불)
-COMPLETED → SETTLED, REFUNDED
+PENDING ??PAID (rpc_confirm_payment)
+PAID ??COMPLETED (rpc_finalize_order, ?�장 반영)
+PENDING ??CANCELLED
+PAID ??REFUNDED (관리자 ?�불)
+COMPLETED ??SETTLED, REFUNDED
 ```
 
-### payments 테이블
+### payments ?�이�?
 - **경로**: `supabase/migrations/20260213_payment_flow_standard.sql`
 - **컬럼**: `id`, `order_id`, `pg_transaction_id` (UNIQUE), `status` (payment_status), `amount`, `created_at`
 
-### refunds 테이블
-- **경로**: 동일 migration
+### refunds ?�이�?
+- **경로**: ?�일 migration
 - **컬럼**: `id`, `order_id`, `status` (refund_status), `amount`, `created_at`
 
 ### ledger_entries
@@ -96,53 +96,53 @@ COMPLETED → SETTLED, REFUNDED
 
 ---
 
-## 4) 채팅/알림
+## 4) 채팅/?�림
 
 ### 채팅
-- **컴포넌트**: `components/market/MarketChatSection.tsx` — 마켓 상세에 배치
-- **API**: `app/api/chat/route.ts` — GET/POST, `chat_messages_v2` 테이블 사용
-- **DB**: `chat_messages_v2` (room_key, sender, text) — 구현됨. `market_chat_messages` 설계는 `docs/schema/chat_and_notifications.sql`에만 존재
+- **컴포?�트**: `components/market/MarketChatSection.tsx` ??마켓 ?�세??배치
+- **API**: `app/api/chat/route.ts` ??GET/POST, `chat_messages_v2` ?�이�??�용
+- **DB**: `chat_messages_v2` (room_key, sender, text) ??구현?? `market_chat_messages` ?�계??`docs/schema/chat_and_notifications.sql`?�만 존재
 
-### 알림
-- **컴포넌트**: `components/notifications/NotificationBell.tsx` — 헤더에 배치
-- **DB**: `docs/schema/chat_and_notifications.sql` 설계만 (notifications 테이블), `supabase/schema.sql`에 notifications 존재 시 부분 구현
-- **현재**: MOCK_NOTIFICATIONS 더미 데이터 사용, `GET /api/notifications` 미구현
+### ?�림
+- **컴포?�트**: `components/notifications/NotificationBell.tsx` ???�더??배치
+- **DB**: `docs/schema/chat_and_notifications.sql` ?�계�?(notifications ?�이�?, `supabase/schema.sql`??notifications 존재 ??부�?구현
+- **?�재**: MOCK_NOTIFICATIONS ?��? ?�이???�용, `GET /api/notifications` 미구??
 
 ---
 
 ## 5) 관리자
 
-### 주요 페이지
-- `app/admin/layout.tsx` — 좌측 사이드바, RBAC 메뉴, 상단 관리자 표시
-- 대시보드, 유저, 작품승인, 주문, 정산, 채팅모더레이션, 신고, KPC, 공지, 설정
+### 주요 ?�이지
+- `app/admin/layout.tsx` ??좌측 ?�이?�바, RBAC 메뉴, ?�단 관리자 ?�시
+- ?�?�보?? ?��?, ?�품?�인, 주문, ?�산, 채팅모더?�이?? ?�고, KPC, 공�?, ?�정
 
 ### 감사 로그
-- **테이블**: `admin_audit_logs` — `supabase/migrations/20260212_admin_audit_logs.sql`
-- **API**: POST `app/api/admin/audit/route.ts` — `lib/admin/auditLog.ts`의 `logAdminAction()` 호출
-- **기록 위치**:
-  - `app/admin/content/page.tsx` — CONTENT_APPROVE, CONTENT_REJECT, CONTENT_FORCE_DELETE
-  - `app/admin/settlement/[id]/page.tsx` — SETTLEMENT_CONFIRM
-  - `app/admin/chat/moderation/page.tsx` — CHAT_DELETE, CHAT_USER_SUSPEND
-  - `app/admin/reports/page.tsx` — REPORT_RESOLVE
-  - `app/admin/kpc/page.tsx` — KPC_GRANT
-  - `app/admin/notice/page.tsx` — NOTICE_CREATE
+- **?�이�?*: `admin_audit_logs` ??`supabase/migrations/20260212_admin_audit_logs.sql`
+- **API**: POST `app/api/admin/audit/route.ts` ??`lib/admin/auditLog.ts`??`logAdminAction()` ?�출
+- **기록 ?�치**:
+  - `app/admin/content/page.tsx` ??CONTENT_APPROVE, CONTENT_REJECT, CONTENT_FORCE_DELETE
+  - `app/admin/settlement/[id]/page.tsx` ??SETTLEMENT_CONFIRM
+  - `app/admin/chat/moderation/page.tsx` ??CHAT_DELETE, CHAT_USER_SUSPEND
+  - `app/admin/reports/page.tsx` ??REPORT_RESOLVE
+  - `app/admin/kpc/page.tsx` ??KPC_GRANT
+  - `app/admin/notice/page.tsx` ??NOTICE_CREATE
 
 ---
 
-## 6) TODO (미완, 런칭 기준)
+## 6) TODO (미완, ?�칭 기�?)
 
-1. **rpc_admin_confirm_settlement** — migration 미확인, 정산 확정 RPC 존재 여부 확인 필요
-2. **settlement_batches** — 테이블/뷰 스키마 확인 및 migration 보강
-3. **market id ↔ product id 매핑** — `market/[id]`의 id가 content_items인지 products인지 명확화, rpc_place_order(product_id) 연동 검증
-4. **KCP 실제 연동** — `KCP_TEST_MODE=false` 시 결제창 URL·인증·서명 검증 완성
-5. **관리자 계정** — MASTER_ACCOUNT 하드코딩 제거, Supabase Auth 또는 별도 admin 테이블 기반 체계로 전환
-6. **알림 API** — `GET /api/notifications` 구현, notifications 테이블와 연동
-7. **채팅 신고/모더레이션 DB** — `market_chat_reports`, `market_chat_messages` 설계 → migration 적용
-8. **RBAC users 테이블** — profiles에 `role`, `status` 컬럼 migration 미적용
-9. **환불 플로우** — refunds 테이블 구조만 존재, RPC·API·UI 미구현
-10. **content_items ↔ products** — 청약/매수 시 content_id vs product_id 역할 정리 및 마이그레이션
+1. **rpc_admin_confirm_settlement** ??migration 미확?? ?�산 ?�정 RPC 존재 ?��? ?�인 ?�요
+2. **settlement_batches** ???�이�?�??�키�??�인 �?migration 보강
+3. **market id ??product id 매핑** ??`market/[id]`??id가 content_items?��? products?��? 명확?? rpc_place_order(product_id) ?�동 검�?
+4. **KCP ?�제 ?�동** ??`KCP_TEST_MODE=false` ??결제�?URL·?�증·?�명 검�??�성
+5. **관리자 계정** ??MASTER_ACCOUNT ?�드코딩 ?�거, Supabase Auth ?�는 별도 admin ?�이�?기반 체계�??�환
+6. **?�림 API** ??`GET /api/notifications` 구현, notifications ?�이블�? ?�동
+7. **채팅 ?�고/모더?�이??DB** ??`market_chat_reports`, `market_chat_messages` ?�계 ??migration ?�용
+8. **RBAC users ?�이�?* ??profiles??`role`, `status` 컬럼 migration 미적??
+9. **?�불 ?�로??* ??refunds ?�이�?구조�?존재, RPC·API·UI 미구??
+10. **content_items ??products** ??�?��/매수 ??content_id vs product_id ??�� ?�리 �?마이그레?�션
 
-**Dividend Engine:** `scripts/run-dividend-smoke-test.mjs` — create→execute→ledger 검증 (마이그레이션 20260316, 20260317 적용 후 실행)
+**Dividend Engine:** `scripts/run-dividend-smoke-test.mjs` ??create?�execute?�ledger 검�?(마이그레?�션 20260316, 20260317 ?�용 ???�행)
 
 ---
 

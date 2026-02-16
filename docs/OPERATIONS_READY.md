@@ -1,72 +1,72 @@
-# 운영 준비 매뉴얼 (OPERATIONS_READY)
+# ?�영 준�?매뉴??(OPERATIONS_READY)
 
-런칭 직전 "실제 돈이 들어와도 사고가 나지 않는 구조"를 위한 운영 체크리스트 및 절차입니다.
+?�칭 직전 "?�제 ?�이 ?�어?�???�고가 ?��? ?�는 구조"�??�한 ?�영 체크리스??�??�차?�니??
 
 ---
 
-## 1. 안전장치 요약
+## 1. ?�전?�치 ?�약
 
-| 기능 | 설명 | 위치 |
+| 기능 | ?�명 | ?�치 |
 |------|------|------|
-| 투자 한도 | 일일/월간 한도 초과 시 `INVEST_LIMIT_EXCEEDED` | profiles, RPC |
-| 이상 거래 탐지 | 10분 5회↑, 평균 5배↑, 동일 IP 다계정 → fraud_logs | payments/request |
-| 투자 중지 스위치 | `INVEST_ENABLED=false` 시 전체 투자 차단 | settings, RPC |
-| 모니터링 로그 | API 에러, 결제 실패, RPC 예외 → system_logs | lib/systemLog |
-| 데이터 백업 | 매일 02:00 logical backup, weekly snapshot | docs/BACKUP_STRATEGY.md |
+| ?�자 ?�도 | ?�일/?�간 ?�도 초과 ??`INVEST_LIMIT_EXCEEDED` | profiles, RPC |
+| ?�상 거래 ?��? | 10�?5?�↑, ?�균 5배↑, ?�일 IP ?�계????fraud_logs | payments/request |
+| ?�자 중�? ?�위�?| `INVEST_ENABLED=false` ???�체 ?�자 차단 | settings, RPC |
+| 모니?�링 로그 | API ?�러, 결제 ?�패, RPC ?�외 ??system_logs | lib/systemLog |
+| ?�이??백업 | 매일 02:00 logical backup, weekly snapshot | docs/BACKUP_STRATEGY.md |
 
 ---
 
-## 2. 사전 체크리스트
+## 2. ?�전 체크리스??
 
-### DB 마이그레이션
+### DB 마이그레?�션
 
 ```bash
 supabase db push
-# 또는
+# ?�는
 supabase migration up
 ```
 
-확인할 마이그레이션:
+?�인??마이그레?�션:
 
-- `20260217_invest_limits_profiles.sql` - profiles 한도 컬럼
+- `20260217_invest_limits_profiles.sql` - profiles ?�도 컬럼
 - `20260217_settings_table.sql` - settings, INVEST_ENABLED
 - `20260217_fraud_logs.sql` - fraud_logs
 - `20260217_payments_ip_address.sql` - payments.ip_address
 - `20260217_system_logs.sql` - system_logs
-- `20260217_rpc_invest_limits_and_guard.sql` - RPC 한도/스위치
+- `20260217_rpc_invest_limits_and_guard.sql` - RPC ?�도/?�위�?
 
-### 환경 변수
+### ?�경 변??
 
-- `SUPABASE_SERVICE_ROLE_KEY` - API에서 admin client 사용
-- `PG_SANDBOX` - true 시 결제 샌드박스 모드
-- `NEXT_PUBLIC_APP_URL` - 리다이렉트 URL
+- `SUPABASE_SERVICE_ROLE_KEY` - API?�서 admin client ?�용
+- `PG_SANDBOX` - true ??결제 ?�드박스 모드
+- `NEXT_PUBLIC_APP_URL` - 리다?�렉??URL
 
 ---
 
-## 3. 운영 절차
+## 3. ?�영 ?�차
 
-### 3.1 투자 일시 중지 (긴급)
+### 3.1 ?�자 ?�시 중�? (긴급)
 
-1. 관리자 로그인 → **설정** (`/admin/settings`)
-2. **투자 중지 스위치** → "투자 중지" 클릭
-3. 이후 모든 `rpc_invest_and_notify_from_payment` 호출 시 `INVEST_TEMP_DISABLED` 예외 발생
+1. 관리자 로그????**?�정** (`/admin/settings`)
+2. **?�자 중�? ?�위�?* ??"?�자 중�?" ?�릭
+3. ?�후 모든 `rpc_invest_and_notify_from_payment` ?�출 ??`INVEST_TEMP_DISABLED` ?�외 발생
 
-### 3.2 유저별 투자 한도 조정
+### 3.2 ?��?�??�자 ?�도 조정
 
-1. **유저 관리** (`/admin/users`) → 대상 유저 클릭
-2. **투자 한도** 탭 → 일일/월간 한도, KYC 레벨 수정 → 저장
+1. **?��? 관�?* (`/admin/users`) ???�???��? ?�릭
+2. **?�자 ?�도** ?????�일/?�간 ?�도, KYC ?�벨 ?�정 ???�??
 
-### 3.3 이상 거래 확인
+### 3.3 ?�상 거래 ?�인
 
-- `fraud_logs` 테이블 조회 (관리자만)
-- `system_logs`에서 `type='FRAUD_DETECTED'` 필터
+- `fraud_logs` ?�이�?조회 (관리자�?
+- `system_logs`?�서 `type='FRAUD_DETECTED'` ?�터
 
 ```sql
 SELECT * FROM fraud_logs ORDER BY created_at DESC LIMIT 50;
 SELECT * FROM system_logs WHERE type = 'FRAUD_DETECTED' ORDER BY created_at DESC LIMIT 20;
 ```
 
-### 3.4 모니터링 로그 확인
+### 3.4 모니?�링 로그 ?�인
 
 ```sql
 SELECT type, payload, created_at
@@ -78,32 +78,32 @@ LIMIT 100;
 
 ---
 
-## 4. 예외 코드 정리
+## 4. ?�외 코드 ?�리
 
-| 예외 | 의미 | 대응 |
+| ?�외 | ?��? | ?�??|
 |------|------|------|
-| `INVEST_TEMP_DISABLED` | 투자 일시 중지 상태 | 설정에서 INVEST_ENABLED 확인 |
-| `INVEST_LIMIT_EXCEEDED` | 일일/월간 한도 초과 | 유저 한도 상향 또는 다음 날/다음 달 대기 |
-| `FRAUD_RATE_LIMIT` | 10분 내 5회 이상 결제 시도 | fraud_logs 확인, 필요 시 유저 제재 |
-| `FRAUD_AMOUNT_ANOMALY` | 1회 금액이 평균 5배 이상 | fraud_logs 확인 |
-| `FRAUD_MULTI_ACCOUNT` | 동일 IP 다계정 시도 | fraud_logs 확인, IP/계정 제재 검토 |
+| `INVEST_TEMP_DISABLED` | ?�자 ?�시 중�? ?�태 | ?�정?�서 INVEST_ENABLED ?�인 |
+| `INVEST_LIMIT_EXCEEDED` | ?�일/?�간 ?�도 초과 | ?��? ?�도 ?�향 ?�는 ?�음 ???�음 ???��?|
+| `FRAUD_RATE_LIMIT` | 10�???5???�상 결제 ?�도 | fraud_logs ?�인, ?�요 ???��? ?�재 |
+| `FRAUD_AMOUNT_ANOMALY` | 1??금액???�균 5�??�상 | fraud_logs ?�인 |
+| `FRAUD_MULTI_ACCOUNT` | ?�일 IP ?�계???�도 | fraud_logs ?�인, IP/계정 ?�재 검??|
 
 ---
 
-## 5. 연락처 및 에스컬레이션
+## 5. ?�락�?�??�스컬레?�션
 
-- **기술 담당**: [연락처]
-- **운영 담당**: [연락처]
-- **긴급**: 투자 중지 스위치 → 설정 페이지에서 즉시 OFF
+- **기술 ?�당**: [?�락�?
+- **?�영 ?�당**: [?�락�?
+- **긴급**: ?�자 중�? ?�위�????�정 ?�이지?�서 즉시 OFF
 
 ---
 
-## 6. PG 연동 전 최종 점검
+## 6. PG ?�동 ??최종 ?��?
 
-- [ ] 모든 마이그레이션 적용 완료
-- [ ] INVEST_ENABLED = true 확인
-- [ ] 관리자 계정 로그인 테스트
-- [ ] 투자 한도 수정 API 테스트
-- [ ] 투자 중지 스위치 토글 테스트
-- [ ] fraud_logs, system_logs 조회 권한 확인
-- [ ] 백업 스크립트/크론 등록 (BACKUP_STRATEGY.md 참고)
+- [ ] 모든 마이그레?�션 ?�용 ?�료
+- [ ] INVEST_ENABLED = true ?�인
+- [ ] 관리자 계정 로그???�스??
+- [ ] ?�자 ?�도 ?�정 API ?�스??
+- [ ] ?�자 중�? ?�위�??��? ?�스??
+- [ ] fraud_logs, system_logs 조회 권한 ?�인
+- [ ] 백업 ?�크립트/?�론 ?�록 (BACKUP_STRATEGY.md 참고)

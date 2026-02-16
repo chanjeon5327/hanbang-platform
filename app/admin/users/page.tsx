@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Search, Phone, Mail, Wallet, MessageSquare, FileText, Shield } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
+import { createClient } from "@/utils/supabase/client";
 
 interface User {
   id: string;
@@ -33,6 +34,7 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
   const [monthlyLimit, setMonthlyLimit] = useState(user?.monthlyInvestLimit ?? 10000000);
   const [kycLevel, setKycLevel] = useState(user?.kycLevel ?? 1);
   const [limitsSaving, setLimitsSaving] = useState(false);
+  const [sendingReset, setSendingReset] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
@@ -47,6 +49,29 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
   const handleSaveNote = () => {
     onUpdateNote(user.id, note);
     toast("메모가 저장되었습니다.");
+  };
+
+  const handleSendPasswordReset = async () => {
+    if (!user.email) {
+      toast("이메일이 없습니다.");
+      return;
+    }
+    setSendingReset(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) {
+        toast(error.message);
+      } else {
+        toast("비밀번호 재설정 이메일을 보냈습니다.");
+      }
+    } catch (e) {
+      toast("전송 실패");
+    } finally {
+      setSendingReset(false);
+    }
   };
 
   const handleSaveLimits = async () => {
@@ -126,6 +151,23 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
             <div>
               <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>이메일</p>
               <p style={{ fontSize: "14px", color: "var(--text-primary)" }}>{user.email}</p>
+              <button
+                type="button"
+                onClick={handleSendPasswordReset}
+                disabled={sendingReset || !user.email}
+                style={{
+                  marginTop: "8px",
+                  padding: "6px 12px",
+                  fontSize: "12px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border-color)",
+                  backgroundColor: "var(--bg-secondary)",
+                  color: "var(--text-primary)",
+                  cursor: sendingReset || !user.email ? "not-allowed" : "pointer",
+                }}
+              >
+                {sendingReset ? "전송 중..." : "비밀번호 재설정 이메일 보내기"}
+              </button>
             </div>
             <div>
               <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>연락처</p>

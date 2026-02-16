@@ -18,17 +18,17 @@ export type RailItem = {
 export type Rail = { key: string; title: string; items: RailItem[] };
 
 const FALLBACK_RAILS: Rail[] = [
-  { key: 'fallback-top', title: '오늘의 추천', items: [
-    { id: FALLBACK_IDS.SAMPLE_1, title: '여행가 제이', creator_name: '유튜브', thumbnail_url: getYtThumb(0) },
-    { id: FALLBACK_IDS.SAMPLE_2, title: '먹방 로드', creator_name: '유튜브', thumbnail_url: getYtThumb(1) },
-    { id: FALLBACK_IDS.SAMPLE_3, title: '일상 브이로그', creator_name: '유튜브', thumbnail_url: getYtThumb(2) },
-    { id: FALLBACK_IDS.SAMPLE_4, title: '웹툰 작가 A', creator_name: '웹툰', thumbnail_url: getYtThumb(3) },
-    { id: FALLBACK_IDS.SAMPLE_5, title: '웹소설 작가 B', creator_name: '웹소설', thumbnail_url: getYtThumb(4) },
+  { key: 'fallback-top', title: '인기 베스트', items: [
+    { id: FALLBACK_IDS.SAMPLE_1, title: '음악의 시', creator_name: '유튜브', thumbnail_url: getYtThumb(0) },
+    { id: FALLBACK_IDS.SAMPLE_2, title: '패션 로드', creator_name: '유튜브', thumbnail_url: getYtThumb(1) },
+    { id: FALLBACK_IDS.SAMPLE_3, title: '뷰티 이미지', creator_name: '유튜브', thumbnail_url: getYtThumb(2) },
+    { id: FALLBACK_IDS.SAMPLE_4, title: '스포츠 시즌 A', creator_name: '스포츠', thumbnail_url: getYtThumb(3) },
+    { id: FALLBACK_IDS.SAMPLE_5, title: '도서 시즌 B', creator_name: '도서', thumbnail_url: getYtThumb(4) },
   ]},
-  { key: 'fallback-hot', title: '마감 임박', items: [
-    { id: FALLBACK_IDS.SAMPLE_6, title: '뮤직 비디오 프로젝트', creator_name: '음악', thumbnail_url: getYtThumb(5) },
-    { id: FALLBACK_IDS.SAMPLE_7, title: '드라마 리메이크', creator_name: 'OTT', thumbnail_url: getYtThumb(6) },
-    { id: FALLBACK_IDS.SAMPLE_8, title: '팟캐스트 시즌2', creator_name: '오디오', thumbnail_url: getYtThumb(7) },
+  { key: 'fallback-hot', title: '최근 인기', items: [
+    { id: FALLBACK_IDS.SAMPLE_6, title: '영화 블록버스터', creator_name: '영화', thumbnail_url: getYtThumb(5) },
+    { id: FALLBACK_IDS.SAMPLE_7, title: '웹소설 드라마', creator_name: 'OTT', thumbnail_url: getYtThumb(6) },
+    { id: FALLBACK_IDS.SAMPLE_8, title: '팟캐스트 시즌2', creator_name: '인기', thumbnail_url: getYtThumb(7) },
   ]},
 ];
 
@@ -48,8 +48,8 @@ function mapApiToRail(apiRail: { key?: string; title?: string; items?: unknown[]
 }
 
 /**
- * 추천 레일 API 훅 (경계 분리)
- * - /api/home/rails 사용, Stub 엔진 전환 시 이 훅만 교체
+ * 異붿쿇 ?덉씪 API ??(寃쎄퀎 遺꾨━)
+ * - /api/home/rails ?ъ슜, Stub ?붿쭊 ?꾪솚 ?????낅쭔 援먯껜
  */
 export function useRecommendedRails(enabled = true): { rails: Rail[]; loading: boolean } {
   const [rails, setRails] = useState<Rail[]>([]);
@@ -86,10 +86,10 @@ export function useRecommendedRails(enabled = true): { rails: Rail[]; loading: b
   const displayRails = loading || rails.length === 0 ? FALLBACK_RAILS : rails;
 
   const titleMap: Record<string, string> = {
-    top: '오늘의 추천',
-    experiment: '마감임박',
-    'fallback-top': '오늘의 추천',
-    'fallback-hot': '마감임박',
+    top: '?ㅻ뒛??異붿쿇',
+    experiment: '留덇컧?꾨컯',
+    'fallback-top': '?ㅻ뒛??異붿쿇',
+    'fallback-hot': '留덇컧?꾨컯',
   };
 
   const minRails: Rail[] = displayRails.slice(0, 2).map((r) => ({

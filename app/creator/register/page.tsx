@@ -163,9 +163,6 @@ export default function CreatorRegister() {
       return;
     }
 
-    // 관리자에게 전송 (console.log)
-    console.log("=== 출품 신청서 ===", formData);
-    
     // 대시보드에 프로젝트 추가
     const newProject = {
       id: `project_${Date.now()}`,

@@ -34,13 +34,7 @@ export function EnsureProfile({ children }: { children: React.ReactNode }) {
       // 1) 세션 먼저 확인 (세션 없으면 조용히 종료)
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
 
-      if (sessionError) {
-        // AuthSessionMissingError일 때는 로그 출력하지 않음
-        if (sessionError.name !== 'AuthSessionMissingError' && sessionError.message !== 'AuthSessionMissingError') {
-          console.warn('[EnsureProfile] getSession error:', sessionError)
-        }
-        return
-      }
+      if (sessionError) return
 
       const session = sessionData.session
       if (!session?.user) {

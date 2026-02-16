@@ -9,7 +9,7 @@ export function useHeroVariant(): HeroVariant {
   const [variant, setVariant] = useState<HeroVariant>('A');
 
   useEffect(() => {
-    // 세션 단위 A/B 고정
+    // ?몄뀡 ?⑥쐞 A/B 怨좎젙
     const saved = sessionStorage.getItem('hero_variant') as HeroVariant | null;
     if (saved) {
       setVariant(saved);

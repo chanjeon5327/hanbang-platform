@@ -1,28 +1,66 @@
 'use client';
 
-import InterestRail from '@/components/interest/InterestRail';
-import { useUserTaste } from '@/stores/userTaste';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getYtThumb } from '@/lib/thumbnails';
 
-/* 업비트 사용법 레퍼런스: 단계형 스텝퍼 + CTA */
 const UPBIT = { bg: '#0d0d0d', panel: '#161616', border: '#2b2b2b', bid: '#1e88e5', text: '#e0e0e0', dim: '#8e8e8e' };
 
-const items = Array.from({ length: 12 }).map((_, i) => ({
-  id: String(i),
-  title: i % 2 ? '유튜브 <여행가 제이>' : '전지적 독자 시점 웹툰',
-  subtitle: i % 2 ? '여행 / 브이로그' : '웹툰 / IP',
-  thumbUrl: getYtThumb(i),
-}));
+type Channel = { id: string; name: string; slug?: string; category?: string; thumbnail_url?: string | null };
 
 export default function OnboardingPage() {
-  const rate = useUserTaste((s) => s.rate);
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [ratings, setRatings] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+  const [completing, setCompleting] = useState(false);
   const router = useRouter();
 
-  const handleRate = (id: string, score: number) => {
-    rate(id, score);
+  useEffect(() => {
+    fetch('/api/onboarding/channels', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : { channels: [] }))
+      .then((d) => setChannels(d.channels ?? []))
+      .catch(() => setChannels([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleRate = async (channelId: string, score: number) => {
+    setRatings((prev) => ({ ...prev, [channelId]: score }));
+    await fetch('/api/onboarding/rate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ channel_id: channelId, score }),
+    });
   };
+
+  const handleComplete = async (skipped: boolean) => {
+    setCompleting(true);
+    try {
+      const res = await fetch('/api/onboarding/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          skipped,
+          summary: Object.keys(ratings).length > 0 ? { rated_count: Object.keys(ratings).length } : {},
+        }),
+      });
+      if (res.ok) {
+        router.replace('/');
+      } else {
+        const json = await res.json();
+        alert(json.error ?? '완료 처리 실패');
+      }
+    } finally {
+      setCompleting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="min-h-screen pb-24 flex items-center justify-center" style={{ backgroundColor: UPBIT.bg }}>
+        <p style={{ color: UPBIT.dim }}>로딩 중…</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen pb-24" style={{ backgroundColor: UPBIT.bg }}>
@@ -39,18 +77,65 @@ export default function OnboardingPage() {
             ))}
           </div>
           <h1 className="text-[20px] font-bold mb-1" style={{ color: UPBIT.text }}>좋아하는 콘텐츠를 평가해주세요</h1>
-          <p className="text-[13px]" style={{ color: UPBIT.dim }}>선택할수록 추천이 정확해집니다</p>
+          <p className="text-[13px]" style={{ color: UPBIT.dim }}>선택할수록 추천이 정확해집니다. 건너뛰기도 가능합니다.</p>
         </div>
 
-        <InterestRail title="관심 가는 콘텐츠" items={items} mode="onboarding" onRate={handleRate} />
+        {channels.length > 0 ? (
+          <div className="space-y-3 mb-8">
+            {channels.map((ch, i) => (
+              <div
+                key={ch.id}
+                className="rounded-xl p-4 border flex items-center gap-4"
+                style={{ backgroundColor: UPBIT.panel, borderColor: UPBIT.border }}
+              >
+                <div
+                  className="w-16 h-16 rounded-lg flex-shrink-0 bg-cover bg-center"
+                  style={{ backgroundImage: ch.thumbnail_url ? `url(${ch.thumbnail_url})` : undefined, backgroundColor: ch.thumbnail_url ? 'transparent' : UPBIT.border }}
+                >
+                  {!ch.thumbnail_url && <span className="text-[10px] text-center flex items-center justify-center w-full h-full" style={{ color: UPBIT.dim }}>{ch.name.slice(0, 2)}</span>}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[15px] font-medium truncate" style={{ color: UPBIT.text }}>{ch.name}</p>
+                  <p className="text-[12px]" style={{ color: UPBIT.dim }}>{ch.category ?? '콘텐츠'}</p>
+                </div>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => handleRate(ch.id, s)}
+                      className="w-8 h-8 rounded-full text-[12px] font-medium transition"
+                      style={{
+                        backgroundColor: (ratings[ch.id] ?? 0) >= s ? UPBIT.bid : UPBIT.border,
+                        color: (ratings[ch.id] ?? 0) >= s ? '#fff' : UPBIT.dim,
+                      }}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[14px] mb-6" style={{ color: UPBIT.dim }}>등록된 채널이 없습니다.</p>
+        )}
 
-        <div className="mt-8">
+        <div className="space-y-3">
           <button
-            onClick={() => router.push('/')}
-            className="w-full py-3.5 rounded-lg text-white text-[16px] font-bold transition active:scale-[0.98]"
+            onClick={() => handleComplete(false)}
+            disabled={completing}
+            className="w-full py-3.5 rounded-lg text-white text-[16px] font-bold transition active:scale-[0.98] disabled:opacity-60"
             style={{ backgroundColor: UPBIT.bid }}
           >
-            홈으로 이동
+            {completing ? '처리 중…' : '완료하고 시작하기'}
+          </button>
+          <button
+            onClick={() => handleComplete(true)}
+            disabled={completing}
+            className="w-full py-3 rounded-lg text-[14px] transition"
+            style={{ color: UPBIT.dim, border: `1px solid ${UPBIT.border}` }}
+          >
+            건너뛰기
           </button>
         </div>
       </div>

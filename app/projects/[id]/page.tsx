@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import Header from "@/components/Header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -36,8 +35,6 @@ export default async function ProjectDetailPage({
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-
       <div className="container py-8">
         <Link href="/">
           <Button variant="ghost" className="mb-6">

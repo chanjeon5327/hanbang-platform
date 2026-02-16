@@ -1,113 +1,113 @@
-# 결과물 제출: 마켓 플랫폼 런칭 준비
+# 결과�??�출: 마켓 ?�랫???�칭 준�?
 
-## 1. 신규 마이그레이션 통코
+## 1. ?�규 마이그레?�션 ?�코
 
-| 파일 | 설명 |
+| ?�일 | ?�명 |
 |------|------|
-| `20260214_notifications.sql` | notifications 테이블, RLS |
-| `20260214_rpc_invest_and_notify.sql` | 투자+원장+알림 원자적 RPC |
-| `20260214_profanity_filter_table.sql` | profanity_words 테이블 준비 |
-| `20260214_deadline_index.sql` | content_items deadline 인덱스 |
+| `20260214_notifications.sql` | notifications ?�이�? RLS |
+| `20260214_rpc_invest_and_notify.sql` | ?�자+?�장+?�림 ?�자??RPC |
+| `20260214_profanity_filter_table.sql` | profanity_words ?�이�?준�?|
+| `20260214_deadline_index.sql` | content_items deadline ?�덱??|
 
-## 2. 수정 마이그레이션
+## 2. ?�정 마이그레?�션
 
-| 파일 | 변경 내용 |
+| ?�일 | 변�??�용 |
 |------|-----------|
-| `20260228_popular_mv.sql` | idx_popular_content_mv_cnt_desc 추가, cron 주석 |
+| `20260228_popular_mv.sql` | idx_popular_content_mv_cnt_desc 추�?, cron 주석 |
 
-## 3. 신규 RPC
+## 3. ?�규 RPC
 
-| RPC | 용도 |
+| RPC | ?�도 |
 |-----|------|
-| `rpc_invest_and_notify` | 투자 시 order+ledger+content_items+notifications 원자적 처리 |
+| `rpc_invest_and_notify` | ?�자 ??order+ledger+content_items+notifications ?�자??처리 |
 
-## 4. 수정 API
+## 4. ?�정 API
 
-| API | 변경 내용 |
+| API | 변�??�용 |
 |-----|-----------|
-| `POST /api/orders/place` | rpc_invest_and_notify 호출로 전환 |
-| `GET/POST /api/notifications` | 실DB 연동 |
-| `PATCH /api/notifications/[id]/read` | is_read 업데이트 |
+| `POST /api/orders/place` | rpc_invest_and_notify ?�출�??�환 |
+| `GET/POST /api/notifications` | ?�DB ?�동 |
+| `PATCH /api/notifications/[id]/read` | is_read ?�데?�트 |
 | `GET /api/chat/[productId]` | cursor pagination, pinned 별도 query |
-| `GET /api/market/item/[id]` | participants 추가 |
-| `GET /api/market/recent-invest/[id]` | 신규 (orders 기반 최근 투자 로그) |
+| `GET /api/market/item/[id]` | participants 추�? |
+| `GET /api/market/recent-invest/[id]` | ?�규 (orders 기반 최근 ?�자 로그) |
 
-## 5. 데이터 흐름 다이어그램
-
-```
-┌─────────────┐     POST /api/orders/place      ┌─────────────┐
-│   Frontend  │ ──────────────────────────────►│  Place API   │
-│ (Market)    │     { product_id, amount }     │             │
-└─────────────┘                                └──────┬──────┘
-       │                                               │
-       │ invest-success event                          │ rpc_invest_and_notify
-       │                                               ▼
-       │                                      ┌────────────────┐
-       │                                      │  Supabase DB   │
-       │                                      │  (트랜잭션)    │
-       │                                      │  - orders      │
-       │                                      │  - ledger      │
-       │                                      │  - content_items│
-       │                                      │  - notifications│
-       │                                      └────────┬───────┘
-       │                                               │
-       ▼                                               │
-┌─────────────┐     GET /api/wallet/invest-summary    │
-│ InvestorDash│ ◄─────────────────────────────────────┤
-│ BoardCard   │     GET /api/notifications             │
-└─────────────┘     GET /api/market/recent-invest/[id]│
-       ▲                                               │
-       │ refetch                                       │
-       └───────────────────────────────────────────────┘
-```
-
-## 6. 상태 전이 다이어그램 (Order)
+## 5. ?�이???�름 ?�이?�그??
 
 ```
-     [투자 요청]
-          │
-          ▼
-    ┌──────────┐
-    │ COMPLETED │  ← rpc_invest_and_notify (즉시 완료)
-    └────┬─────┘
-         │
-         │ (정산 배치)
-         ▼
-    ┌──────────┐
-    │  SETTLED  │
-    └──────────┘
-
-※ 마켓 투자는 PENDING/PAID 단계 없이 즉시 COMPLETED
+?��??�?�?�?�?�?�?�?�?�?�?�?�??    POST /api/orders/place      ?��??�?�?�?�?�?�?�?�?�?�?�?�??
+??  Frontend  ???�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�│  Place API   ??
+??(Market)    ??    { product_id, amount }     ??            ??
+?��??�?�?�?�?�?�?�?�?�?�?�?�??                               ?��??�?�?�?�?�?��??�?�?�?�?�??
+       ??                                              ??
+       ??invest-success event                          ??rpc_invest_and_notify
+       ??                                              ??
+       ??                                     ?��??�?�?�?�?�?�?�?�?�?�?�?�?�?�?�??
+       ??                                     ?? Supabase DB   ??
+       ??                                     ?? (?�랜??��)    ??
+       ??                                     ?? - orders      ??
+       ??                                     ?? - ledger      ??
+       ??                                     ?? - content_items??
+       ??                                     ?? - notifications??
+       ??                                     ?��??�?�?�?�?�?�?�?��??�?�?�?�?�?�??
+       ??                                              ??
+       ??                                              ??
+?��??�?�?�?�?�?�?�?�?�?�?�?�??    GET /api/wallet/invest-summary    ??
+??InvestorDash???��??�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�??
+??BoardCard   ??    GET /api/notifications             ??
+?��??�?�?�?�?�?�?�?�?�?�?�?�??    GET /api/market/recent-invest/[id]??
+       ??                                              ??
+       ??refetch                                       ??
+       ?��??�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�??
 ```
 
-## 7. 최종 런칭 준비 체크리스트
+## 6. ?�태 ?�이 ?�이?�그??(Order)
 
-### DB / 마이그레이션
-- [ ] `supabase db push` 또는 마이그레이션 적용
-- [ ] notifications 테이블 생성 확인
-- [ ] rpc_invest_and_notify 함수 존재 확인
-- [ ] content_items.current_raise 초기값 확인 (NULL → 0)
+```
+     [?�자 ?�청]
+          ??
+          ??
+    ?��??�?�?�?�?�?�?�?�?�??
+    ??COMPLETED ?? ??rpc_invest_and_notify (즉시 ?�료)
+    ?��??�?�?�?��??�?�?�?�??
+         ??
+         ??(?�산 배치)
+         ??
+    ?��??�?�?�?�?�?�?�?�?�??
+    ?? SETTLED  ??
+    ?��??�?�?�?�?�?�?�?�?�??
+
+??마켓 ?�자??PENDING/PAID ?�계 ?�이 즉시 COMPLETED
+```
+
+## 7. 최종 ?�칭 준�?체크리스??
+
+### DB / 마이그레?�션
+- [ ] `supabase db push` ?�는 마이그레?�션 ?�용
+- [ ] notifications ?�이�??�성 ?�인
+- [ ] rpc_invest_and_notify ?�수 존재 ?�인
+- [ ] content_items.current_raise 초기�??�인 (NULL ??0)
 
 ### API
-- [ ] POST /api/orders/place → rpc_invest_and_notify 호출 동작
-- [ ] GET /api/notifications → 본인 알림 목록 반환
-- [ ] PATCH /api/notifications/[id]/read → is_read 업데이트
-- [ ] GET /api/market/recent-invest/[id] → orders 기반 로그
+- [ ] POST /api/orders/place ??rpc_invest_and_notify ?�출 ?�작
+- [ ] GET /api/notifications ??본인 ?�림 목록 반환
+- [ ] PATCH /api/notifications/[id]/read ??is_read ?�데?�트
+- [ ] GET /api/market/recent-invest/[id] ??orders 기반 로그
 
-### 프론트
-- [ ] InvestorDashboardCard 실데이터 (총 투자금, 평균 수익률, 이번 달 수익)
-- [ ] ExpectedReturnBox yield_rate DB값 사용
+### ?�론??
+- [ ] InvestorDashboardCard ?�데?�터 (�??�자�? ?�균 ?�익�? ?�번 ???�익)
+- [ ] ExpectedReturnBox yield_rate DB�??�용
 - [ ] MarketStatsBar progress = current_raise/total_raise
-- [ ] RecentInvestLog API 연동
-- [ ] NotificationBell unread count, is_read 업데이트
-- [ ] 투자 성공 시 invest-success → 대시보드 refetch
+- [ ] RecentInvestLog API ?�동
+- [ ] NotificationBell unread count, is_read ?�데?�트
+- [ ] ?�자 ?�공 ??invest-success ???�?�보??refetch
 
-### 보안 / 검증
-- [ ] ledger_entries RLS/권한 확인
-- [ ] orders UPDATE 플래그 검증 확인
-- [ ] rpc_invest_and_notify 잔액 검증
+### 보안 / 검�?
+- [ ] ledger_entries RLS/권한 ?�인
+- [ ] orders UPDATE ?�래�?검�??�인
+- [ ] rpc_invest_and_notify ?�액 검�?
 
-### 성능
-- [ ] popular_content_mv cnt desc 인덱스
-- [ ] content_items (status, deadline) 인덱스
-- [ ] product_chat_messages (product_id, created_at desc) 인덱스
+### ?�능
+- [ ] popular_content_mv cnt desc ?�덱??
+- [ ] content_items (status, deadline) ?�덱??
+- [ ] product_chat_messages (product_id, created_at desc) ?�덱??

@@ -5,10 +5,9 @@ import { logSystem } from "@/lib/systemLog";
 const PG_SANDBOX = process.env.PG_SANDBOX === "true";
 
 /**
- * POST /api/payments/confirm (PG 콜백 또는 샌드박스 redirect)
- * 1) payments.status = PAYMENT_APPROVED
- * 2) rpc_invest_and_notify_from_payment 호출
- * 3) orders.status = INVEST_CONFIRMED
+ * GET/POST /api/payments/confirm
+ * [샌드박스] PG_SANDBOX=true 또는 sandbox=1: 즉시 APPROVED → rpc_invest_and_notify_from_payment
+ * [실 PG] PG_SANDBOX=false: PG 승인 검증 후 처리 (미구현)
  */
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -57,7 +56,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL(`/market/${payment.content_id}?error=invest_failed`, req.url));
     }
   } else {
-    // TODO: 실제 PG 승인 검증 후 처리
     return NextResponse.redirect(new URL("/market?error=pg_not_ready", req.url));
   }
 
@@ -71,7 +69,7 @@ export async function POST(req: Request) {
     const pgTransactionId = body.pg_transaction_id ?? body.transaction_id;
 
     if (!paymentId) {
-      return NextResponse.json({ error: "payment_id required" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "payment_id required" }, { status: 400 });
     }
 
     const admin = createAdminClient();
@@ -82,11 +80,11 @@ export async function POST(req: Request) {
       .single();
 
     if (payErr || !payment) {
-      return NextResponse.json({ error: "PAYMENT_NOT_FOUND" }, { status: 404 });
+      return NextResponse.json({ ok: false, error: "PAYMENT_NOT_FOUND" }, { status: 404 });
     }
 
     if (payment.status === "PAYMENT_APPROVED" || payment.status === "INVEST_CONFIRMED") {
-      return NextResponse.json({ success: true, idempotent: true, order_id: payment.order_id });
+      return NextResponse.json({ ok: true, success: true, idempotent: true, order_id: payment.order_id });
     }
 
     const isSandbox = PG_SANDBOX;
@@ -110,19 +108,21 @@ export async function POST(req: Request) {
           error: rpcErr.message,
           code: rpcErr.code,
         });
-        return NextResponse.json({ error: "INVEST_FAILED", debug: rpcErr.message }, { status: 500 });
+        return NextResponse.json({ ok: false, error: "INVEST_FAILED" }, { status: 500 });
       }
 
       return NextResponse.json({
+        ok: true,
         success: true,
         order_id: (rpcResult as { order_id?: string })?.order_id ?? payment.order_id,
+        data: { order_id: (rpcResult as { order_id?: string })?.order_id ?? payment.order_id },
       });
     }
 
-    return NextResponse.json({ error: "PG_NOT_READY" }, { status: 501 });
+    return NextResponse.json({ ok: false, error: "PG_NOT_READY" }, { status: 501 });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     await logSystem("API_ERROR", { route: "/api/payments/confirm", error: msg });
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

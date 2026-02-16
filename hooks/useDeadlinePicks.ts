@@ -14,8 +14,8 @@ export type RailItem = {
 };
 
 /**
- * 마감임박 - deadline 임박 순, 같은 날 마감은 서버에서 랜덤
- * GET /api/home/deadline 경계
+ * 筌띾뜃而�?袁⑥뺏 - deadline ?袁⑥뺏 ?? 揶쏆늿? ??筌띾뜃而�?占� ?�뮆苡�?癒�苑� ?�뮆�쑁
+ * GET /api/home/deadline 野껋럡���
  */
 export function useDeadlinePicks(enabled = true): { items: RailItem[]; loading: boolean } {
   const [items, setItems] = useState<RailItem[]>([]);

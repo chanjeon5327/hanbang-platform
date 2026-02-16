@@ -13,8 +13,8 @@ export type RailItem = {
 };
 
 /**
- * 모두의 추천 - 전체 유저 관심 누적 수 기준 정렬, 동률 랜덤
- * GET /api/home/popular 경계
+ * 筌뤴뫀紐�??�빊遺우퓝 - ?袁⑷퍥 ?醫�? �꽴占�???袁⑹읅 ??疫꿸퀣? ?類ｌ졊, ?�늾履� ?�뮆�쑁
+ * GET /api/home/popular 野껋럡���
  */
 export function usePopularPicks(enabled = true): { items: RailItem[]; loading: boolean } {
   const [items, setItems] = useState<RailItem[]>([]);

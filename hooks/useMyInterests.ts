@@ -15,8 +15,8 @@ export type RailItem = {
 const FALLBACK: RailItem[] = [];
 
 /**
- * 나의 관심 - 로그인 유저가 직접 관심 표시한 작품
- * GET /api/home/my-interests 경계
+ * ?�꼷�벥 �꽴占�??- 嚥≪뮄�젃???醫�?揶쏉옙 筌욊낯�젔 �꽴占�???�뮇�뻻???臾볥��
+ * GET /api/home/my-interests 野껋럡���
  */
 export function useMyInterests(enabled: boolean): { items: RailItem[]; loading: boolean } {
   const [items, setItems] = useState<RailItem[]>([]);

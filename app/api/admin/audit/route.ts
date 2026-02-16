@@ -33,13 +33,11 @@ export async function POST(req: NextRequest) {
     });
 
     if (error) {
-      console.error('Audit log insert error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true });
   } catch (e) {
-    console.error('Audit route error:', e);
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'Internal error' }, { status: 500 });
   }
 }

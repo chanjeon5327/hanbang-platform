@@ -9,7 +9,6 @@ export function createClient() {
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!url || !anon) {
-    console.warn('Supabase env missing – returning dummy client')
     return {} as any
   }
 

@@ -11,9 +11,21 @@ export async function GET() {
       return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
     }
 
-    const { data: profile } = await (supabase as any)
+    const { data: invProfile } = await (supabase as any)
       .from("investor_profiles")
       .select("kyc_status, kyc_level, investment_limit")
+      .eq("user_id", user.id)
+      .single();
+
+    const { data: profile } = await (supabase as any)
+      .from("profiles")
+      .select("status")
+      .eq("id", user.id)
+      .single();
+
+    const { data: kycVerification } = await (supabase as any)
+      .from("kyc_verifications")
+      .select("id, status, rejection_reason, submitted_at")
       .eq("user_id", user.id)
       .single();
 
@@ -25,9 +37,11 @@ export async function GET() {
       .limit(10);
 
     return NextResponse.json({
-      kyc_status: profile?.kyc_status ?? "PENDING",
-      kyc_level: profile?.kyc_level ?? "NONE",
-      investment_limit: Number(profile?.investment_limit ?? 50000000),
+      user_status: profile?.status ?? "NEW",
+      kyc_status: invProfile?.kyc_status ?? "PENDING",
+      kyc_level: invProfile?.kyc_level ?? "NONE",
+      investment_limit: Number(invProfile?.investment_limit ?? 50000000),
+      verification: kycVerification ?? null,
       submissions: submissions ?? [],
     });
   } catch (e) {

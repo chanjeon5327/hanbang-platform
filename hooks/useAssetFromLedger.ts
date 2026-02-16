@@ -21,9 +21,9 @@ export type AssetFromLedger = {
 };
 
 /**
- * wallet/ledger 기반 자산 계산
+ * wallet/ledger 疫꿸퀡而� ?癒�沅� ��④쑴沅�
  * - balance: ledger CASH_CREDIT - CASH_DEBIT
- * - holdings: StoreContext (ledger ASSET_CREDIT와 동기화된 보유 수익권)
+ * - holdings: StoreContext (ledger ASSET_CREDIT?占� ?�늽由�?遺얜쭆 癰귣똻��� ?�꼷�뵡亦�?
  */
 export function useAssetFromLedger(isLoggedIn: boolean): {
   data: AssetFromLedger | null;

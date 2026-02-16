@@ -1,49 +1,49 @@
-# ledger_entries Insert-Only êµ¬ì¡° ì ê²€ ì‚°ì¶œë¬¼
+# ledger_entries Insert-Only êµ¬ì¡° ?ê? ?°ì¶œë¬?
 
-## 1. ê²€ìƒ‰ ê²°ê³¼ íŒŒì¼ ëª©ë¡
+## 1. ê²€??ê²°ê³¼ ?Œì¼ ëª©ë¡
 
-### 1.1 ledger_entries ì§ì ‘ ì ‘ê·¼
+### 1.1 ledger_entries ì§ì ‘ ?‘ê·¼
 
-| íŒŒì¼ | íŒ¨í„´ | ìš©ë„ | ìœ„í—˜ |
+| ?Œì¼ | ?¨í„´ | ?©ë„ | ?„í—˜ |
 |------|------|------|------|
-| `app/api/orders/place/route.ts` | `.from("ledger_entries")` | SELECT (ì”ì•¡ ê³„ì‚°) | ì•ˆì „ |
-| `app/api/wallet/ledger/route.ts` | `.from('ledger_entries')` | SELECT | ì•ˆì „ |
-| `app/admin/orders/[order_id]/page.tsx` | `.from('ledger_entries')` | SELECT | ì•ˆì „ |
-| `e2e/e2e-payment-flow.spec.ts` | `.from('ledger_entries')` | SELECT (í…ŒìŠ¤íŠ¸) | ì•ˆì „ |
-| `scripts/e2e-payment-flow.mjs` | `.from('ledger_entries')` | SELECT (í…ŒìŠ¤íŠ¸) | ì•ˆì „ |
-| `lib/supabase/types.ts` | `ledger_entries` | íƒ€ì… ì •ì˜ | - |
+| `app/api/orders/place/route.ts` | `.from("ledger_entries")` | SELECT (?”ì•¡ ê³„ì‚°) | ?ˆì „ |
+| `app/api/wallet/ledger/route.ts` | `.from('ledger_entries')` | SELECT | ?ˆì „ |
+| `app/admin/orders/[order_id]/page.tsx` | `.from('ledger_entries')` | SELECT | ?ˆì „ |
+| `e2e/e2e-payment-flow.spec.ts` | `.from('ledger_entries')` | SELECT (?ŒìŠ¤?? | ?ˆì „ |
+| `scripts/e2e-payment-flow.mjs` | `.from('ledger_entries')` | SELECT (?ŒìŠ¤?? | ?ˆì „ |
+| `lib/supabase/types.ts` | `ledger_entries` | ?€???•ì˜ | - |
 
-### 1.2 ledger_entries INSERT/UPDATE/DELETE (ì•± ì½”ë“œ)
+### 1.2 ledger_entries INSERT/UPDATE/DELETE (??ì½”ë“œ)
 
-| íŒŒì¼ | ìƒíƒœ |
+| ?Œì¼ | ?íƒœ |
 |------|------|
-| (ì—†ìŒ) | **ì§ì ‘ INSERT/UPDATE/DELETE ì œê±° ì™„ë£Œ** |
+| (?†ìŒ) | **ì§ì ‘ INSERT/UPDATE/DELETE ?œê±° ?„ë£Œ** |
 
-### 1.3 service_role / createAdminClient ì‚¬ìš©
+### 1.3 service_role / createAdminClient ?¬ìš©
 
-| íŒŒì¼ | ìš©ë„ |
+| ?Œì¼ | ?©ë„ |
 |------|------|
-| `lib/supabase/admin.ts` | supabaseAdmin ìƒì„± |
+| `lib/supabase/admin.ts` | supabaseAdmin ?ì„± |
 | `utils/supabase/server.ts` | createAdminClient() |
 | `app/api/orders/place/route.ts` | orders INSERT |
 | `app/api/payments/confirm/route.ts` | rpc_confirm_payment, rpc_finalize_order, payments INSERT |
 | `app/api/admin/audit/route.ts` | admin_audit_logs INSERT |
 | `app/api/admin/kpi/join-to-buy/route.ts` | KPI ì¡°íšŒ |
 | `app/api/chat/route.ts` | SERVICE_KEY (ì±„íŒ…) |
-| `app/api/market/tick/route.ts` | SERVICE_KEY (ì‹œì„¸) |
-| `e2e/e2e-payment-flow.spec.ts` | í…ŒìŠ¤íŠ¸ìš© ledger ì¡°íšŒ |
-| `scripts/e2e-payment-flow.mjs` | í…ŒìŠ¤íŠ¸ìš© ledger ì¡°íšŒ |
-| `scripts/reset-test-password.mjs` | í…ŒìŠ¤íŠ¸ ë¹„ë°€ë²ˆí˜¸ ë¦¬ì…‹ |
+| `app/api/market/tick/route.ts` | SERVICE_KEY (?œì„¸) |
+| `e2e/e2e-payment-flow.spec.ts` | ?ŒìŠ¤?¸ìš© ledger ì¡°íšŒ |
+| `scripts/e2e-payment-flow.mjs` | ?ŒìŠ¤?¸ìš© ledger ì¡°íšŒ |
+| `scripts/reset-test-password.mjs` | ?ŒìŠ¤??ë¹„ë?ë²ˆí˜¸ ë¦¬ì…‹ |
 
 ---
 
-## 2. ìˆ˜ì •ëœ íŒŒì¼ í†µì½”
+## 2. ?˜ì •???Œì¼ ?µì½”
 
-### 2.1 ì‹ ê·œ: `supabase/migrations/20260225_rpc_post_ledger_for_order.sql`
+### 2.1 ? ê·œ: `supabase/migrations/20260225_rpc_post_ledger_for_order.sql`
 
 ```sql
--- ledger_entries INSERT ì „ìš© RPC (place route ë“±ì—ì„œ ì‚¬ìš©)
--- SECURITY DEFINERë¡œ service_role ì—†ì´ í˜¸ì¶œ ê°€ëŠ¥
+-- ledger_entries INSERT ?„ìš© RPC (place route ?±ì—???¬ìš©)
+-- SECURITY DEFINERë¡?service_role ?†ì´ ?¸ì¶œ ê°€??
 
 CREATE OR REPLACE FUNCTION public.rpc_post_ledger_for_order(
   p_order_id uuid,
@@ -59,7 +59,7 @@ SET search_path = public
 AS $$
 BEGIN
   IF auth.uid() IS DISTINCT FROM p_user_id THEN
-    RAISE EXCEPTION 'FORBIDDEN: ë³¸ì¸ ì£¼ë¬¸ë§Œ ì›ì¥ ë°˜ì˜ ê°€ëŠ¥';
+    RAISE EXCEPTION 'FORBIDDEN: ë³¸ì¸ ì£¼ë¬¸ë§??ì¥ ë°˜ì˜ ê°€??;
   END IF;
 
   IF NOT EXISTS (
@@ -89,11 +89,11 @@ GRANT EXECUTE ON FUNCTION public.rpc_post_ledger_for_order(uuid, uuid, numeric, 
 GRANT EXECUTE ON FUNCTION public.rpc_post_ledger_for_order(uuid, uuid, numeric, uuid, numeric) TO service_role;
 ```
 
-### 2.2 ìˆ˜ì •: `app/api/orders/place/route.ts`
+### 2.2 ?˜ì •: `app/api/orders/place/route.ts`
 
 ```typescript
-// ë³€ê²½ ì „: admin.from("ledger_entries").insert(ledgerPayload)
-// ë³€ê²½ í›„: supabase.rpc("rpc_post_ledger_for_order", {...})
+// ë³€ê²??? admin.from("ledger_entries").insert(ledgerPayload)
+// ë³€ê²??? supabase.rpc("rpc_post_ledger_for_order", {...})
 
     const { error: ledgerError } = await supabase.rpc("rpc_post_ledger_for_order", {
       p_order_id: order.id,
@@ -113,80 +113,80 @@ GRANT EXECUTE ON FUNCTION public.rpc_post_ledger_for_order(uuid, uuid, numeric, 
 
 ---
 
-## 3. ìµœì¢… êµ¬ì¡° ë‹¤ì´ì–´ê·¸ë¨
+## 3. ìµœì¢… êµ¬ì¡° ?¤ì´?´ê·¸??
 
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ ledger_entries INSERT ê²½ë¡œ (ì˜¤ì§ ì•„ë˜ 3ê°€ì§€)                                      â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+?Œâ??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??
+??ledger_entries INSERT ê²½ë¡œ (?¤ì§ ?„ë˜ 3ê°€ì§€)                                      ??
+?”â??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??
 
-[1] PG ê²°ì œ í”Œë¡œìš° (payments/confirm)
-    PG ì½œë°± â†’ POST /api/payments/confirm
-      â†’ supabaseAdmin (service_role)
-      â†’ rpc_confirm_payment (PAID)
-      â†’ rpc_finalize_order (COMPLETED + ledger 2ê±´ INSERT)
-        â†’ SECURITY DEFINER, service_role í˜¸ì¶œ
+[1] PG ê²°ì œ ?Œë¡œ??(payments/confirm)
+    PG ì½œë°± ??POST /api/payments/confirm
+      ??supabaseAdmin (service_role)
+      ??rpc_confirm_payment (PAID)
+      ??rpc_finalize_order (COMPLETED + ledger 2ê±?INSERT)
+        ??SECURITY DEFINER, service_role ?¸ì¶œ
 
-[2] place í”Œë¡œìš° (ì”ì•¡ ê²°ì œ)
+[2] place ?Œë¡œ??(?”ì•¡ ê²°ì œ)
     POST /api/orders/place
-      â†’ createClient (authenticated) â†’ ledger SELECT (ì”ì•¡ í™•ì¸)
-      â†’ createAdminClient â†’ orders INSERT
-      â†’ createClient.rpc("rpc_post_ledger_for_order") â†’ ledger 2ê±´ INSERT
-        â†’ SECURITY DEFINER, auth.uid() ê²€ì¦
+      ??createClient (authenticated) ??ledger SELECT (?”ì•¡ ?•ì¸)
+      ??createAdminClient ??orders INSERT
+      ??createClient.rpc("rpc_post_ledger_for_order") ??ledger 2ê±?INSERT
+        ??SECURITY DEFINER, auth.uid() ê²€ì¦?
 
-[3] rpc_invest (ë ˆê±°ì‹œ ëª¨ë°”ì¼)
-    MobileProductDetail â†’ supabase.rpc("rpc_invest", { p_product_id })
-      â†’ SECURITY DEFINER RPC
-      â†’ orders INSERT + ledger 2ê±´ INSERT (ë‚´ë¶€)
+[3] rpc_invest (?ˆê±°??ëª¨ë°”??
+    MobileProductDetail ??supabase.rpc("rpc_invest", { p_product_id })
+      ??SECURITY DEFINER RPC
+      ??orders INSERT + ledger 2ê±?INSERT (?´ë?)
 
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ ledger_entries SELECT ê²½ë¡œ (RLS ì ìš©)                                             â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+?Œâ??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??
+??ledger_entries SELECT ê²½ë¡œ (RLS ?ìš©)                                             ??
+?”â??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??
 
-[ì¡°íšŒ] GET /api/wallet/ledger â†’ createClient().from('ledger_entries').select() â†’ RLS
-[ì¡°íšŒ] admin/orders/[id] â†’ createClient().from('ledger_entries').select() â†’ RLS (admin policy)
-[ì¡°íšŒ] place route â†’ createClient().from('ledger_entries').select() â†’ ì”ì•¡ ê³„ì‚°
+[ì¡°íšŒ] GET /api/wallet/ledger ??createClient().from('ledger_entries').select() ??RLS
+[ì¡°íšŒ] admin/orders/[id] ??createClient().from('ledger_entries').select() ??RLS (admin policy)
+[ì¡°íšŒ] place route ??createClient().from('ledger_entries').select() ???”ì•¡ ê³„ì‚°
 
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ ledger_entries INSERT/UPDATE/DELETE ì§ì ‘ ì ‘ê·¼                                     â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+?Œâ??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??
+??ledger_entries INSERT/UPDATE/DELETE ì§ì ‘ ?‘ê·¼                                     ??
+?”â??€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€??
 
-[ê¸ˆì§€] .from('ledger_entries').insert/update/delete â†’ ì•± ì½”ë“œì—ì„œ 0ê±´
-[ê¶Œí•œ] 20260222_ledger_entries_immutability.sql: anon, authenticatedì— INSERT/UPDATE/DELETE REVOKE
+[ê¸ˆì?] .from('ledger_entries').insert/update/delete ????ì½”ë“œ?ì„œ 0ê±?
+[ê¶Œí•œ] 20260222_ledger_entries_immutability.sql: anon, authenticated??INSERT/UPDATE/DELETE REVOKE
 ```
 
 ---
 
-## 4. service_role ì‚¬ìš© ìµœì†Œí™” ì ê²€
+## 4. service_role ?¬ìš© ìµœì†Œ???ê?
 
-| íŒŒì¼ | í•„ìš” ì—¬ë¶€ | ë¹„ê³  |
+| ?Œì¼ | ?„ìš” ?¬ë? | ë¹„ê³  |
 |------|-----------|------|
-| `app/api/orders/place/route.ts` | í•„ìš” | orders INSERT (RLS ìš°íšŒ) |
-| `app/api/payments/confirm/route.ts` | í•„ìš” | PG ì½œë°±, payments, orders, RPC í˜¸ì¶œ |
-| `app/api/admin/audit/route.ts` | í•„ìš” | admin_audit_logs INSERT |
-| `app/api/admin/kpi/join-to-buy/route.ts` | ê²€í†  | KPI ì¡°íšŒë§Œì´ë©´ anon/authenticated ê°€ëŠ¥í•  ìˆ˜ ìˆìŒ |
-| `app/api/chat/route.ts` | ê²€í†  | ì±„íŒ…ìš© - í•„ìš” ì‹œ ìœ ì§€ |
-| `app/api/market/tick/route.ts` | ê²€í†  | ì‹œì„¸ìš© - í•„ìš” ì‹œ ìœ ì§€ |
-| `e2e/*`, `scripts/*` | í…ŒìŠ¤íŠ¸ | ì„œë²„/ë¡œì»¬ ì „ìš©, ë…¸ì¶œ ì£¼ì˜ |
+| `app/api/orders/place/route.ts` | ?„ìš” | orders INSERT (RLS ?°íšŒ) |
+| `app/api/payments/confirm/route.ts` | ?„ìš” | PG ì½œë°±, payments, orders, RPC ?¸ì¶œ |
+| `app/api/admin/audit/route.ts` | ?„ìš” | admin_audit_logs INSERT |
+| `app/api/admin/kpi/join-to-buy/route.ts` | ê²€??| KPI ì¡°íšŒë§Œì´ë©?anon/authenticated ê°€?¥í•  ???ˆìŒ |
+| `app/api/chat/route.ts` | ê²€??| ì±„íŒ…??- ?„ìš” ??? ì? |
+| `app/api/market/tick/route.ts` | ê²€??| ?œì„¸??- ?„ìš” ??? ì? |
+| `e2e/*`, `scripts/*` | ?ŒìŠ¤??| ?œë²„/ë¡œì»¬ ?„ìš©, ?¸ì¶œ ì£¼ì˜ |
 
-**ìœ„í—˜ íŒ¨í„´**: ì—†ìŒ. ledger_entries ì§ì ‘ INSERTëŠ” ëª¨ë‘ ì œê±°ë¨.
-
----
-
-## 5. ì™„ë£Œ ì²´í¬ë¦¬ìŠ¤íŠ¸ (8ê°œ)
-
-- [x] 1. `ledger_entries` ì§ì ‘ INSERT/UPDATE/DELETE ì•± ì½”ë“œ ê²€ìƒ‰ â†’ 0ê±´
-- [x] 2. `rpc_post_ledger_for_order` RPC ìƒì„± (SECURITY DEFINER, ë©±ë“±, auth ê²€ì¦)
-- [x] 3. `app/api/orders/place/route.ts` ledger INSERT â†’ RPC í˜¸ì¶œë¡œ êµì²´
-- [x] 4. ledger SELECTë§Œ ì‚¬ìš©í•˜ëŠ” ê³³ í™•ì¸ (wallet/ledger, admin/orders, place ì”ì•¡)
-- [x] 5. service_role ì‚¬ìš© ìœ„ì¹˜ ëª©ë¡í™” ë° ê²€í† 
-- [x] 6. ìµœì¢… êµ¬ì¡° ë‹¤ì´ì–´ê·¸ë¨ ì‘ì„±
-- [x] 7. ìˆ˜ì • íŒŒì¼ í†µì½” ì‚°ì¶œ
-- [x] 8. 20260222_ledger_entries_immutability.sql ê¸°ë°˜ ê¶Œí•œ ì •ì±… ìœ ì§€ (anon/authenticated INSERT/UPDATE/DELETE REVOKE)
+**?„í—˜ ?¨í„´**: ?†ìŒ. ledger_entries ì§ì ‘ INSERT??ëª¨ë‘ ?œê±°??
 
 ---
 
-## 6. ì¶”ê°€ ì°¸ê³ 
+## 5. ?„ë£Œ ì²´í¬ë¦¬ìŠ¤??(8ê°?
 
-- **rpc_invest**: `supabase/rpc/rpc_invest.sql` - SECURITY DEFINER, ledger INSERT ë‚´ë¶€. í´ë¼ì´ì–¸íŠ¸ì—ì„œ í˜¸ì¶œ. migrationì— ë¯¸í¬í•¨ ì‹œ ë³„ë„ ì ìš© í•„ìš”.
-- **rpc_finalize_order**: `supabase/migrations/20260224_settlement_update_guard.sql` ë“± - SECURITY DEFINER, ledger INSERT. payments/confirmì—ì„œë§Œ í˜¸ì¶œ.
+- [x] 1. `ledger_entries` ì§ì ‘ INSERT/UPDATE/DELETE ??ì½”ë“œ ê²€????0ê±?
+- [x] 2. `rpc_post_ledger_for_order` RPC ?ì„± (SECURITY DEFINER, ë©±ë“±, auth ê²€ì¦?
+- [x] 3. `app/api/orders/place/route.ts` ledger INSERT ??RPC ?¸ì¶œë¡?êµì²´
+- [x] 4. ledger SELECTë§??¬ìš©?˜ëŠ” ê³??•ì¸ (wallet/ledger, admin/orders, place ?”ì•¡)
+- [x] 5. service_role ?¬ìš© ?„ì¹˜ ëª©ë¡??ë°?ê²€??
+- [x] 6. ìµœì¢… êµ¬ì¡° ?¤ì´?´ê·¸???‘ì„±
+- [x] 7. ?˜ì • ?Œì¼ ?µì½” ?°ì¶œ
+- [x] 8. 20260222_ledger_entries_immutability.sql ê¸°ë°˜ ê¶Œí•œ ?•ì±… ? ì? (anon/authenticated INSERT/UPDATE/DELETE REVOKE)
+
+---
+
+## 6. ì¶”ê? ì°¸ê³ 
+
+- **rpc_invest**: `supabase/rpc/rpc_invest.sql` - SECURITY DEFINER, ledger INSERT ?´ë?. ?´ë¼?´ì–¸?¸ì—???¸ì¶œ. migration??ë¯¸í¬????ë³„ë„ ?ìš© ?„ìš”.
+- **rpc_finalize_order**: `supabase/migrations/20260224_settlement_update_guard.sql` ??- SECURITY DEFINER, ledger INSERT. payments/confirm?ì„œë§??¸ì¶œ.

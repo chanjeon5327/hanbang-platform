@@ -18,17 +18,17 @@ export type SponsoredPick = {
 const MOCK_FALLBACK: SponsoredPick = {
   id: 'sponsored-1',
   productId: FALLBACK_IDS.SAMPLE_1,
-  title: '전문가 추천 청약/투자',
-  subtitle: '안정적이고 높은 수익률을 원한다면?',
+  title: '?袁ⓓ�揶쏉옙 �빊遺우퓝 筌�?鍮�/?�딆쁽',
+  subtitle: '?�뜆�젟?怨몄뵠���??誘�? ?�꼷�뵡�몴醫롮뱽 ?癒곕립?�끇�늺?',
   thumbnailUrl: getYtThumb(0),
   progress: 72,
   yieldRate: 8.4,
-  ctaLabel: '지금 참여하기',
+  ctaLabel: '筌욑옙疫�?筌〓챷肉�?�꼵由�',
 };
 
 /**
- * 스폰서 광고 슬롯 - /api/home/sponsored 경계
- * 관리자 설정 연동 시 이 훅만 교체
+ * ?�끋猷�??�꽴臾롰�� ?�됤�� - /api/home/sponsored 野껋럡���
+ * �꽴占썹뵳�딆쁽 ?�끉�젟 ?怨뺣짗 ?????�굝彛� �뤃癒�猿�
  */
 export function useSponsoredPick(enabled = true): {
   pick: SponsoredPick | null;

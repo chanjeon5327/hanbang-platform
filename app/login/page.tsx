@@ -24,7 +24,7 @@ export default function LoginPage() {
     const result = await login(email, password);
 
     if (result.ok) {
-      toast('로그인되었습니다.');
+      toast('????????.');
       router.replace('/');
       return;
     }
@@ -44,10 +44,10 @@ export default function LoginPage() {
         }}
       >
         <h2 className="text-[22px] font-bold mb-2 text-center" style={{ color: 'var(--text)' }}>
-          엔젤 로그인
+          ?? ???
         </h2>
         <p className="text-[13px] text-center mb-6" style={{ color: 'var(--text-secondary)' }}>
-          HANBANG에서 안전하게 엔젤 투자를 시작하세요
+          HANBANG?? ???? ?? ??? ?????
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -55,7 +55,7 @@ export default function LoginPage() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="이메일"
+            placeholder="???"
             className="w-full px-4 py-3 rounded-[12px] border"
             style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
             required
@@ -65,7 +65,7 @@ export default function LoginPage() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="비밀번호"
+            placeholder="????"
             className="w-full px-4 py-3 rounded-[12px] border"
             style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
             required
@@ -85,14 +85,20 @@ export default function LoginPage() {
               boxShadow: 'var(--shadow-royal)',
             }}
           >
-            {loading ? '로그인 중...' : '로그인'}
+            {loading ? '??? ?...' : '???'}
           </button>
         </form>
 
         <p className="text-[13px] text-center mt-6" style={{ color: 'var(--text-secondary)' }}>
-          계정이 없으신가요?{' '}
+          ????? ??????{' '}
+          <Link href="/forgot-password" className="font-semibold" style={{ color: 'var(--royal-blue)' }}>
+            ???? ??
+          </Link>
+        </p>
+        <p className="text-[13px] text-center mt-2" style={{ color: 'var(--text-secondary)' }}>
+          ??? ??????{' '}
           <Link href="/signup" className="font-semibold" style={{ color: 'var(--royal-blue)' }}>
-            엔젤 회원가입
+            ??????
           </Link>
         </p>
       </div>

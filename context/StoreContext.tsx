@@ -10,7 +10,7 @@ import React, {
 import { getYtThumb } from "@/lib/thumbnails";
 
 /* =====================
-   타입 정의
+   ?占�???類ㅼ벥
 ===================== */
 
 interface Holding {
@@ -24,7 +24,7 @@ interface Holding {
 
 interface Transaction {
   id: string;
-  type: "매수" | "매도";
+  type: "筌띲끉�땾" | "筌띲끇猷�";
   name: string;
   price: number;
   qty: number;
@@ -69,7 +69,7 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 /* =====================
-   상수
+   ?怨몃땾
 ===================== */
 
 const STORAGE_KEY = "hanbang_store";
@@ -81,27 +81,27 @@ const defaultState = {
 };
 
 /* =====================
-   상품 데이터 (SoT)
+   ?怨밸�� ?怨쀬뵠??(SoT)
 ===================== */
 
 export const products: Product[] = [
   {
     id: 1,
-    name: "웹툰 <나 혼자 만렙> 지분",
-    category: "웹툰",
+    name: "�뒪�룷痢� <�삱由쇳뵿 �쑀��� �씠踰ㅽ듃> �떆利�",
+    category: "�뒪�룷痢�",
     yield: "15.5%",
     price: 10000,
     image: getYtThumb(0),
-    description: "글로벌 히트 웹툰 투자",
+    description: "�쑀紐� �뒪��� �뒪�룷痢� �떆利�",
   },
   {
     id: 2,
-    name: "드라마 <한방의 추억> OST",
-    category: "드라마",
+    name: "�쎒�냼�꽕 <罹먮끉 �뵒�뒪�꽣�뵾�븘> OST",
+    category: "�쎒�냼�꽕",
     yield: "8.2%",
     price: 15000,
     image: getYtThumb(1),
-    description: "매달 발생하는 저작권 수익",
+    description: "�씤湲� 踰좎뒪�듃����윭 �쎒�냼�꽕 �떆利�",
   },
 ];
 
@@ -114,7 +114,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [holdings, setHoldings] = useState<Holding[]>(defaultState.holdings);
   const [history, setHistory] = useState<Transaction[]>(defaultState.history);
 
-  /* ---- 초기 로드 (자산 상태만) ---- */
+  /* ---- �룯�뜃由� 嚥≪뮆諭� (?癒�沅� ?怨밴묶筌�? ---- */
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return;
@@ -125,18 +125,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setHoldings(parsed.holdings ?? defaultState.holdings);
       setHistory(parsed.history ?? defaultState.history);
     } catch {
-      console.warn("Store restore failed, using default state.");
     }
   }, []);
 
-  /* ---- 변경 시 저장 ---- */
+  /* ---- 癰귨옙野�????占�??---- */
   useEffect(() => {
     const data = { userCash, holdings, history };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }, [userCash, holdings, history]);
 
   /* =====================
-     유틸
+     ?醫뤿뼢
   ===================== */
 
   const formatDateTime = (date: Date) =>
@@ -148,7 +147,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     ).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 
   /* =====================
-     매수 / 매도
+     筌띲끉�땾 / 筌띲끇猷�
   ===================== */
 
   const buyStock = (
@@ -199,7 +198,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setHistory((prev) => [
       {
         id: `tx-${Date.now()}`,
-        type: "매수",
+        type: "筌띲끉�땾",
         name: item.name,
         price: item.price,
         qty: count,
@@ -243,7 +242,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setHistory((prev) => [
       {
         id: `tx-${Date.now()}`,
-        type: "매도",
+        type: "筌띲끇猷�",
         name: item.name,
         price: item.price,
         qty: count,
@@ -257,7 +256,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   /* =====================
-     계산
+     ��④쑴沅�
   ===================== */
 
   const getTotalAssets = () =>

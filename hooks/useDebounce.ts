@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 
 /**
- * debounce된 값 반환
- * @param value 입력값
+ * debounce??媛?諛섑솚
+ * @param value ?낅젰媛?
  * @param delay ms
  */
 export function useDebounce<T>(value: T, delay: number): T {

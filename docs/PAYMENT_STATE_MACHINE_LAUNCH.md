@@ -1,37 +1,37 @@
-# 결제-투자 상태머신 런칭 준비 문서
+# 결제-?�자 ?�태머신 ?�칭 준�?문서
 
-## 1. 신규/수정 파일 통코
+## 1. ?�규/?�정 ?�일 ?�코
 
-### 마이그레이션
-| 파일 | 설명 |
+### 마이그레?�션
+| ?�일 | ?�명 |
 |------|------|
-| `20260216_order_status_machine.sql` | orders.status ENUM 6단계 고정 |
-| `20260216_payments_pg_table.sql` | payments 테이블 PG 대응 |
+| `20260216_order_status_machine.sql` | orders.status ENUM 6?�계 고정 |
+| `20260216_payments_pg_table.sql` | payments ?�이�?PG ?�??|
 | `20260216_rpc_invest_from_payment.sql` | rpc_invest_and_notify_from_payment |
 
 ### API
-| 파일 | 설명 |
+| ?�일 | ?�명 |
 |------|------|
-| `app/api/payments/request/route.ts` | POST 결제 요청 → order+payments 생성, redirect URL |
-| `app/api/payments/confirm/route.ts` | GET/POST PG 콜백, 샌드박스 자동 승인 |
+| `app/api/payments/request/route.ts` | POST 결제 ?�청 ??order+payments ?�성, redirect URL |
+| `app/api/payments/confirm/route.ts` | GET/POST PG 콜백, ?�드박스 ?�동 ?�인 |
 | `app/api/admin/payments/route.ts` | GET 관리자 결제 목록 |
 | `app/api/orders/place/route.ts` | @deprecated 처리 |
 
-### 프론트
-| 파일 | 설명 |
+### ?�론??
+| ?�일 | ?�명 |
 |------|------|
-| `app/admin/payments/page.tsx` | 결제 모니터링, 상태 필터, 재시도 버튼 |
-| `app/admin/layout.tsx` | 결제 모니터링 메뉴 추가 |
+| `app/admin/payments/page.tsx` | 결제 모니?�링, ?�태 ?�터, ?�시??버튼 |
+| `app/admin/layout.tsx` | 결제 모니?�링 메뉴 추�? |
 
 ### 문서
-| 파일 | 설명 |
+| ?�일 | ?�명 |
 |------|------|
-| `docs/ORDER_STATE_MACHINE.md` | 상태 전이 다이어그램 |
-| `docs/PAYMENT_STATE_MACHINE_LAUNCH.md` | 본 문서 |
+| `docs/ORDER_STATE_MACHINE.md` | ?�태 ?�이 ?�이?�그??|
+| `docs/PAYMENT_STATE_MACHINE_LAUNCH.md` | �?문서 |
 
 ---
 
-## 2. 마이그레이션 실행 순서
+## 2. 마이그레?�션 ?�행 ?�서
 
 1. `20260216_order_status_machine.sql`
 2. `20260216_payments_pg_table.sql`
@@ -39,50 +39,50 @@
 
 ---
 
-## 3. PG 연결 시 변경해야 할 부분 (5줄 요약)
+## 3. PG ?�결 ??변경해????부�?(5�??�약)
 
-1. **getPgRedirectUrl** (`app/api/payments/request/route.ts`): 실제 PG SDK로 결제 요청 URL 생성
-2. **confirm POST** (`app/api/payments/confirm/route.ts`): PG 승인 검증 로직 추가 (sandbox 분기 제거)
-3. **PG_SANDBOX=false**: `.env`에서 `PG_SANDBOX=false`로 설정
-4. **PG 콜백 URL**: PG 사에 등록할 confirm URL (`/api/payments/confirm`)
-5. **pg_transaction_id**: PG 승인 응답에서 transaction_id 추출 후 payments에 저장
+1. **getPgRedirectUrl** (`app/api/payments/request/route.ts`): ?�제 PG SDK�?결제 ?�청 URL ?�성
+2. **confirm POST** (`app/api/payments/confirm/route.ts`): PG ?�인 검�?로직 추�? (sandbox 분기 ?�거)
+3. **PG_SANDBOX=false**: `.env`?�서 `PG_SANDBOX=false`�??�정
+4. **PG 콜백 URL**: PG ?�에 ?�록??confirm URL (`/api/payments/confirm`)
+5. **pg_transaction_id**: PG ?�인 ?�답?�서 transaction_id 추출 ??payments???�??
 
 ---
 
-## 4. 상용 가능 상태 체크리스트 (20개)
+## 4. ?�용 가???�태 체크리스??(20�?
 
-### DB/마이그레이션
-- [ ] order_status 6단계 ENUM 적용
-- [ ] payments 테이블 user_id, content_id, pg_provider, approved_at 존재
+### DB/마이그레?�션
+- [ ] order_status 6?�계 ENUM ?�용
+- [ ] payments ?�이�?user_id, content_id, pg_provider, approved_at 존재
 - [ ] idx_payments_order, idx_payments_user, unique(pg_transaction_id) 존재
-- [ ] rpc_invest_and_notify_from_payment 함수 존재
+- [ ] rpc_invest_and_notify_from_payment ?�수 존재
 
-### 결제 플로우
-- [ ] POST /api/payments/request → order(PAYMENT_REQUESTED) + payment(INIT) 생성
-- [ ] redirect_url 반환 (샌드박스 시 /api/payments/confirm?payment_id=...&sandbox=1)
-- [ ] GET /api/payments/confirm → 샌드박스 시 자동 승인 → INVEST_CONFIRMED
-- [ ] POST /api/payments/confirm → 동일 처리 (PG 콜백용)
-- [ ] PG_SANDBOX=true 시 mock 승인 동작
+### 결제 ?�로??
+- [ ] POST /api/payments/request ??order(PAYMENT_REQUESTED) + payment(INIT) ?�성
+- [ ] redirect_url 반환 (?�드박스 ??/api/payments/confirm?payment_id=...&sandbox=1)
+- [ ] GET /api/payments/confirm ???�드박스 ???�동 ?�인 ??INVEST_CONFIRMED
+- [ ] POST /api/payments/confirm ???�일 처리 (PG 콜백??
+- [ ] PG_SANDBOX=true ??mock ?�인 ?�작
 
 ### RPC
-- [ ] rpc_invest_and_notify_from_payment: PAYMENT_REQUESTED/APPROVED → INVEST_CONFIRMED
-- [ ] advisory lock (pg_advisory_xact_lock) 적용
-- [ ] 중복 실행 시 idempotent return
-- [ ] set_config('app.allow_settlement','on') 사용
+- [ ] rpc_invest_and_notify_from_payment: PAYMENT_REQUESTED/APPROVED ??INVEST_CONFIRMED
+- [ ] advisory lock (pg_advisory_xact_lock) ?�용
+- [ ] 중복 ?�행 ??idempotent return
+- [ ] set_config('app.allow_settlement','on') ?�용
 
 ### 관리자
-- [ ] /admin/payments 페이지 동작
-- [ ] 상태 필터 (INIT, PAYMENT_APPROVED 등)
-- [ ] 재시도 버튼 (INIT → confirm API 호출)
-- [ ] GET /api/admin/payments requireAdmin 검증
+- [ ] /admin/payments ?�이지 ?�작
+- [ ] ?�태 ?�터 (INIT, PAYMENT_APPROVED ??
+- [ ] ?�시??버튼 (INIT ??confirm API ?�출)
+- [ ] GET /api/admin/payments requireAdmin 검�?
 
-### 보안/환경
-- [ ] PG_SANDBOX 환경변수 .env.example 문서화
+### 보안/?�경
+- [ ] PG_SANDBOX ?�경변??.env.example 문서??
 - [ ] /api/orders/place deprecated 주석
-- [ ] payments RLS: user 본인만 SELECT
+- [ ] payments RLS: user 본인�?SELECT
 
 ### 문서
-- [ ] docs/ORDER_STATE_MACHINE.md 상태 전이 다이어그램
+- [ ] docs/ORDER_STATE_MACHINE.md ?�태 ?�이 ?�이?�그??
 
-### 마켓 연동 (PG 연결 시)
-- [ ] 마켓 상세 투자 버튼 → POST /api/payments/request 호출 후 redirect_url로 이동
+### 마켓 ?�동 (PG ?�결 ??
+- [ ] 마켓 ?�세 ?�자 버튼 ??POST /api/payments/request ?�출 ??redirect_url�??�동

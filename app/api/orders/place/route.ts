@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
 /**
- * @deprecated POST /api/orders/place - 실결제 없이 즉시 투자 (잔액 차감)
- * 신규: POST /api/payments/request → PG redirect → /api/payments/confirm
- * 이 API는 샌드박스/테스트용으로만 유지
+ * POST /api/orders/place
+ * [PG] payment_method=pg: order? ??(PAYMENT_REQUESTED), request?confirm ??
+ * [??] payment_method ??: rpc_invest_and_notify ?? ??
  */
 function computeBalance(rows: { entry_type: string; amount: number }[]): number {
   let balance = 0;
@@ -28,21 +28,21 @@ export async function POST(req: Request) {
     const { data: authData, error: authError } = await supabase.auth.getUser();
 
     if (authError) {
-      return NextResponse.json(
-        { error: "AUTH_ERROR", debug: authError.message },
-        { status: 401 }
-      );
+    return NextResponse.json(
+      { ok: false, error: "AUTH_ERROR", debug: authError.message },
+      { status: 401 }
+    );
     }
 
     const user = authData?.user;
     if (!user) {
       return NextResponse.json(
-        { error: "UNAUTHORIZED", debug: "로그인이 필요합니다." },
+        { error: "UNAUTHORIZED", debug: "???? ?????." },
         { status: 401 }
       );
     }
 
-    let body: { product_id?: string; content_id?: string; amount?: unknown; idempotency_key?: string };
+    let body: { product_id?: string; content_id?: string; amount?: unknown; idempotency_key?: string; payment_method?: string };
     try {
       body = await req.json();
     } catch (parseErr) {
@@ -55,6 +55,7 @@ export async function POST(req: Request) {
 
     const contentId = body.content_id ?? body.product_id;
     const amountPositive = toPositiveAmount(body.amount);
+    const usePg = body.payment_method === "pg";
 
     if (!contentId || typeof contentId !== "string" || contentId.trim() === "") {
       return NextResponse.json(
@@ -68,6 +69,36 @@ export async function POST(req: Request) {
         { error: "INVALID_PAYLOAD", debug: "amount must be a positive number" },
         { status: 400 }
       );
+    }
+
+    if (usePg) {
+      const admin = (await import("@/utils/supabase/server")).createAdminClient();
+      const { data: order, error: orderErr } = await admin
+        .from("orders")
+        .insert({
+          user_id: user.id,
+          content_id: contentId.trim(),
+          status: "PAYMENT_REQUESTED",
+          total_amount_krw: amountPositive,
+          quantity: 1,
+          type: "BUY",
+          order_type: "MARKET",
+          price: amountPositive,
+        } as Record<string, unknown>)
+        .select("id")
+        .single();
+      if (orderErr || !order?.id) {
+        return NextResponse.json(
+          { error: "ORDER_CREATE_FAILED", debug: orderErr?.message },
+          { status: 500 }
+        );
+      }
+      return NextResponse.json({
+        ok: true,
+        success: true,
+        order_id: order.id,
+        data: { order_id: order.id },
+      });
     }
 
     const { data: ledgerRows, error: ledgerSelectError } = await supabase
@@ -86,25 +117,30 @@ export async function POST(req: Request) {
 
     if (balance < amountPositive) {
       return NextResponse.json(
-        { error: "INSUFFICIENT_FUNDS", debug: "잔액 부족" },
+        { error: "INSUFFICIENT_FUNDS", debug: "?? ??" },
         { status: 400 }
       );
     }
 
+    // ACTIVE + KYC ?? ??
+    const { data: profile } = await (supabase as any).from("profiles").select("status").eq("id", user.id).single();
+    if (profile?.status !== "ACTIVE") {
+      return NextResponse.json({ error: "STATUS_REQUIRED", debug: "????? KYC ? ???? ??????." }, { status: 403 });
+    }
     try {
       const { data: invProfile } = await (supabase as any).from("investor_profiles").select("investment_limit, kyc_status").eq("user_id", user.id).single();
       const limit = Number(invProfile?.investment_limit ?? 50000000);
-      const kyc = invProfile?.kyc_status ?? "VERIFIED";
-      if (kyc !== "VERIFIED") {
-        return NextResponse.json({ error: "KYC_REQUIRED", debug: "KYC 인증이 필요합니다" }, { status: 403 });
+      const kyc = invProfile?.kyc_status ?? "PENDING";
+      if (kyc !== "APPROVED") {
+        return NextResponse.json({ error: "KYC_REQUIRED", debug: "KYC ??? ?????." }, { status: 403 });
       }
       const { data: totalInv } = await (supabase as any).from("ledger_entries").select("amount").eq("user_id", user.id).eq("entry_type", "CASH_DEBIT");
       const invested = (totalInv ?? []).reduce((s: number, r: { amount?: number }) => s + Math.abs(Number(r.amount ?? 0)), 0);
       if (invested + amountPositive > limit) {
-        return NextResponse.json({ error: "INVESTMENT_LIMIT_EXCEEDED", debug: "투자 한도 초과" }, { status: 400 });
+        return NextResponse.json({ error: "INVESTMENT_LIMIT_EXCEEDED", debug: "?? ?? ??" }, { status: 400 });
       }
     } catch {
-      /* investor_profiles 미존재 시 패스 */
+      /* investor_profiles ??? ? ?? */
     }
 
     const { data: rpcResult, error: rpcError } = await supabase.rpc("rpc_invest_and_notify", {
@@ -118,7 +154,7 @@ export async function POST(req: Request) {
       const msg = rpcError.message ?? "";
       if (msg.includes("INSUFFICIENT_FUNDS")) {
         return NextResponse.json(
-          { error: "INSUFFICIENT_FUNDS", debug: "잔액 부족" },
+          { error: "INSUFFICIENT_FUNDS", debug: "?? ??" },
           { status: 400 }
         );
       }
@@ -138,7 +174,7 @@ export async function POST(req: Request) {
         p_metadata: { content_id: contentId, amount: amountPositive },
       });
     } catch {
-      /* audit 실패 시 무시 */
+      /* audit ?? ? ?? */
     }
     let executed_quantity = amountPositive;
     let remaining_quantity = 0;
@@ -150,10 +186,10 @@ export async function POST(req: Request) {
       remaining_quantity = Math.max(0, qty - filled);
     }
     return NextResponse.json({
+      ok: true,
       success: true,
       order_id: orderId,
-      executed_quantity: executed_quantity,
-      remaining_quantity: remaining_quantity,
+      data: { order_id: orderId, executed_quantity: executed_quantity, remaining_quantity: remaining_quantity },
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";

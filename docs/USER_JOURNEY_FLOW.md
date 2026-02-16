@@ -1,122 +1,122 @@
 # HANBANG User Journey Flow
 
-> 유저 + 마이페이지 + 판매자 + 관리자 전체 흐름 (Mermaid)
+> ?��? + 마이?�이지 + ?�매??+ 관리자 ?�체 ?�름 (Mermaid)
 
 ---
 
-## 1) 전체 플로우차트
+## 1) ?�체 ?�로?�차??
 
 ```mermaid
 flowchart TD
   %% =========================
   %% INVESTOR / USER JOURNEY
   %% =========================
-  A[유입: 광고/검색/공유링크] --> B[메인/랜딩\n넷플릭스 레일 + 토스 톤]
-  B --> C{로그인 상태?}
-  C -- 아니오 --> L[/login 또는 LoginModal]
-  L --> L1[이메일/소셜 OAuth]
+  A[?�입: 광고/검??공유링크] --> B[메인/?�딩\n?�플�?�� ?�일 + ?�스 ??
+  B --> C{로그???�태?}
+  C -- ?�니??--> L[/login ?�는 LoginModal]
+  L --> L1[?�메???�셜 OAuth]
   L1 --> C
 
-  C -- 예 --> O{첫 방문/온보딩 완료?}
-  O -- 아니오 --> OB[채널평가 온보딩\n채널평가 온보딩]
-  OB --> OB1[취향벡터 생성\ntaste_score 등]
-  OB1 --> R[개인화 레일/추천]
-  O -- 예 --> R
+  C -- ??--> O{�?방문/?�보???�료?}
+  O -- ?�니??--> OB[채널?��? ?�보??n채널?��? ?�보??
+  OB --> OB1[취향벡터 ?�성\ntaste_score ??
+  OB1 --> R[개인???�일/추천]
+  O -- ??--> R
 
-  R --> S[탐색\n레일/카테고리/검색]
-  S --> D[상품 상세\n설명/지표/리스크/CTA]
-  D --> T[거래 화면 업비트형\n헤더/차트/호가/주문패널/스티키]
+  R --> S[?�색\n?�일/카테고리/검??
+  S --> D[?�품 ?�세\n?�명/지??리스??CTA]
+  D --> T[거래 ?�면 ?�비?�형\n?�더/차트/?��?/주문?�널/?�티??
   T --> X{매수/매도?}
-  X -- 아니오 --> S
-  X -- 예 --> U[주문 입력\n지정가/시장가/수량]
-  U --> U1[주문 생성\norders: created]
+  X -- ?�니??--> S
+  X -- ??--> U[주문 ?�력\n지?��?/?�장가/?�량]
+  U --> U1[주문 ?�성\norders: created]
 
-  U1 --> P{KRW 결제 필요?}
-  P -- 예 --> K[PG 결제 KCP\n또는 /api/payment/stub]
-  K --> K1[서버 검증\nrpc_confirm_payment]
-  K1 --> Z[상태 전이\npaid → completed]
-  P -- 아니오 --> Z
+  U1 --> P{KRW 결제 ?�요?}
+  P -- ??--> K[PG 결제 KCP\n?�는 /api/payment/stub]
+  K --> K1[?�버 검�?nrpc_confirm_payment]
+  K1 --> Z[?�태 ?�이\npaid ??completed]
+  P -- ?�니??--> Z
 
-  Z --> G[원장 자동기록\nCASH_DEBIT + ASSET_CREDIT]
-  G --> H[/order/success\n주문ID/상태]
-  H --> MY[마이페이지]
+  Z --> G[?�장 ?�동기록\nCASH_DEBIT + ASSET_CREDIT]
+  G --> H[/order/success\n주문ID/?�태]
+  H --> MY[마이?�이지]
   H --> W[/wallet]
 
   %% =========================
   %% MY PAGE
   %% =========================
-  subgraph MYPAGE[마이페이지 투자자 허브]
-    MY --> MY1[내 자산 요약\nKRW 잔고/평가손익/보유수익권]
-    MY --> MY2[보유 자산\n상품별 수량/평단/평가]
-    MY --> MY3[주문 내역\npending/paid/completed]
-    MY --> MY4[원장 내역\nledger_entries]
-    MY --> MY5[입금/출금\n상태/주의/수수료]
-    MY --> MY6[관심목록/알림]
-    MY --> MY7[프로필/보안/설정]
+  subgraph MYPAGE[마이?�이지 ?�자???�브]
+    MY --> MY1[???�산 ?�약\nKRW ?�고/?��??�익/보유?�익�?
+    MY --> MY2[보유 ?�산\n?�품�??�량/?�단/?��?]
+    MY --> MY3[주문 ?�역\npending/paid/completed]
+    MY --> MY4[?�장 ?�역\nledger_entries]
+    MY --> MY5[?�금/출금\n?�태/주의/?�수�?
+    MY --> MY6[관?�목�??�림]
+    MY --> MY7[?�로??보안/?�정]
   end
 
   %% =========================
   %% WALLET
   %% =========================
-  W --> WD[지갑 상세\n잔고/원장/입출금 CTA]
+  W --> WD[지�??�세\n?�고/?�장/?�출�?CTA]
   WD --> T
 
   %% =========================
   %% SELLER JOURNEY
   %% =========================
-  subgraph SELLER[판매자 크리에이터]
-    S0[/creator/dashboard] --> S1[상품 등록/출품\n/creator/register]
-    S1 --> S2[상품 관리\n상태/노출/수정]
-    S2 --> S3[판매/주문 현황]
-    S3 --> S4[정산 내역/정산 상태\nseller_settlement_daily/monthly]
-    S4 --> S5[정산 요청/정보]
+  subgraph SELLER[?�매???�리?�이??
+    S0[/creator/dashboard] --> S1[?�품 ?�록/출품\n/creator/register]
+    S1 --> S2[?�품 관�?n?�태/?�출/?�정]
+    S2 --> S3[?�매/주문 ?�황]
+    S3 --> S4[?�산 ?�역/?�산 ?�태\nseller_settlement_daily/monthly]
+    S4 --> S5[?�산 ?�청/?�보]
   end
 
   %% =========================
   %% ADMIN / SETTLEMENT
   %% =========================
-  subgraph ADMIN[관리자 주문·정산·감사]
-    A0[/admin] --> A1[주문 관리\n/admin/orders/order_id]
-    A0 --> A2[정산 관리\n/admin/settlement]
-    A2 --> A3[정산 배치 생성/조회]
-    A3 --> A4[정산 확정 RPC\nrpc_admin_confirm_settlement]
+  subgraph ADMIN[관리자 주문·?�산·감사]
+    A0[/admin] --> A1[주문 관�?n/admin/orders/order_id]
+    A0 --> A2[?�산 관�?n/admin/settlement]
+    A2 --> A3[?�산 배치 ?�성/조회]
+    A3 --> A4[?�산 ?�정 RPC\nrpc_admin_confirm_settlement]
     A4 --> A5[orders.status = settled]
     A5 --> A6[ledger_posted_at 기록]
     A6 --> A7[감사로그 admin_audit_logs]
-    A7 --> A8[재수정 불가]
-    A0 --> A9[상품/판매자 심사]
+    A7 --> A8[?�수??불�?]
+    A0 --> A9[?�품/?�매???�사]
   end
 ```
 
 ---
 
-## 2) 실제 라우트 매핑
+## 2) ?�제 ?�우??매핑
 
-| 플로우 노드 | 실제 라우트 | 파일 |
+| ?�로???�드 | ?�제 ?�우??| ?�일 |
 |-------------|-------------|------|
-| 메인/랜딩 | `/` | `app/page.tsx` |
-| 로그인 | `/login` | `app/login/page.tsx` |
-| 온보딩 | `/onboarding` | `app/onboarding/page.tsx` |
-| 거래 상세 | `/market/[id]` | `app/market/[id]/page.tsx` |
-| 주문 생성 | POST `/api/orders/place` | `app/api/orders/place/route.ts` |
-| 결제 스텁 | POST `/api/payment/stub` | `app/api/payment/stub/route.ts` |
-| PG 웹훅 | POST `/api/webhook/payment` | `app/api/webhook/payment/route.ts` |
-| 주문 성공 | `/order/success?order_id=` | `app/order/success/page.tsx` |
-| 지갑 | `/wallet` | `app/wallet/page.tsx` |
-| 마이페이지 | `/mypage` | `app/mypage/page.tsx` |
-| 판매자 대시 | `/creator/dashboard` | `app/creator/dashboard/page.tsx` |
-| 관리자 정산 | `/admin/settlement` | `app/admin/settlement/page.tsx` |
+| 메인/?�딩 | `/` | `app/page.tsx` |
+| 로그??| `/login` | `app/login/page.tsx` |
+| ?�보??| `/onboarding` | `app/onboarding/page.tsx` |
+| 거래 ?�세 | `/market/[id]` | `app/market/[id]/page.tsx` |
+| 주문 ?�성 | POST `/api/orders/place` | `app/api/orders/place/route.ts` |
+| 결제 ?�텁 | POST `/api/payment/stub` | `app/api/payment/stub/route.ts` |
+| PG ?�훅 | POST `/api/webhook/payment` | `app/api/webhook/payment/route.ts` |
+| 주문 ?�공 | `/order/success?order_id=` | `app/order/success/page.tsx` |
+| 지�?| `/wallet` | `app/wallet/page.tsx` |
+| 마이?�이지 | `/mypage` | `app/mypage/page.tsx` |
+| ?�매???�??| `/creator/dashboard` | `app/creator/dashboard/page.tsx` |
+| 관리자 ?�산 | `/admin/settlement` | `app/admin/settlement/page.tsx` |
 | 관리자 주문 | `/admin/orders/[order_id]` | `app/admin/orders/[order_id]/page.tsx` |
 
 ---
 
-## 3) 데이터 소스 연결
+## 3) ?�이???�스 ?�결
 
-| 화면 | 데이터 소스 | API/테이블 |
+| ?�면 | ?�이???�스 | API/?�이�?|
 |------|-------------|------------|
-| 메인 레일 | `content_items`, `v_content_metrics_7d` | `/api/home/rails` |
+| 메인 ?�일 | `content_items`, `v_content_metrics_7d` | `/api/home/rails` |
 | 주문 | `orders` | `rpc_place_order`, `rpc_confirm_payment` |
-| 원장 | `ledger_entries` | `/api/wallet/ledger`, `tg_post_ledger_on_order_completed` |
-| 마이페이지 | **미연결** | `MyAssetSummary` 등 하드코딩 |
-| 관리자 정산 | `settlement_batches` | `rpc_admin_confirm_settlement` |
-| 판매자 정산 | `seller_settlement_daily/monthly` | 뷰 (RLS 정책) |
+| ?�장 | `ledger_entries` | `/api/wallet/ledger`, `tg_post_ledger_on_order_completed` |
+| 마이?�이지 | **미연�?* | `MyAssetSummary` ???�드코딩 |
+| 관리자 ?�산 | `settlement_batches` | `rpc_admin_confirm_settlement` |
+| ?�매???�산 | `seller_settlement_daily/monthly` | �?(RLS ?�책) |

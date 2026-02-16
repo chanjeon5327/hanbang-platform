@@ -23,11 +23,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const ROLE_NAMES: Record<AdminRole, string> = {
-  1: "인턴",
-  2: "사원",
-  3: "팀장",
-  4: "이사",
-  5: "마스터",
+  1: "愿�由ъ옄",
+  2: "�슫�쁺",
+  3: "�렪吏�",
+  4: "寃��넗",
+  5: "留덉뒪�꽣",
 };
 
 function profileRoleToAdminRole(role: string | null): AdminRole {
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const role = profileRoleToAdminRole(profile?.role ?? null);
     setAdminUser({
       email: user.email,
-      name: profile?.display_name ?? user.email?.split("@")[0] ?? "관리자",
+      name: profile?.display_name ?? user.email?.split("@")[0] ?? "�꽴占썹뵳�딆쁽",
       role,
       roleName: ROLE_NAMES[role],
     });

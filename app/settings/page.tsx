@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ArrowLeft, ChevronRight, User } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -44,6 +45,13 @@ export default function SettingsPage() {
 
         {/* 그룹 A: 일반 */}
         <div className="bg-white rounded-2xl mb-3 overflow-hidden">
+          <Link href="/onboarding" className="px-4 py-3 active:bg-gray-50 transition-colors flex items-center justify-between border-b border-gray-100">
+            <span className="text-base text-[#191F28]">나의취향</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500">콘텐츠 취향 등록</span>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </div>
+          </Link>
           <div className="px-4 py-3 active:bg-gray-50 transition-colors flex items-center justify-between border-b border-gray-100">
             <span className="text-base text-[#191F28]">언어</span>
             <div className="flex items-center gap-2">

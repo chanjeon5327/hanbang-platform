@@ -1,9 +1,9 @@
-# Supabase 실제 DB 스키마 (gen types 기준)
+# Supabase ?�제 DB ?�키�?(gen types 기�?)
 
-## public.tables 전체 목록
+## public.tables ?�체 목록
 
 - admin_audit_logs, admin_home_config, admin_rail_config
-- chat_messages, chat_messages_v2 (미포함 시 별도)
+- chat_messages, chat_messages_v2 (미포????별도)
 - interest_registrations, kyc_requests, kyc_verifications
 - ledger_entries, market_state, ohlc_candles
 - order_intents, orderbook_levels, **orders**
@@ -13,7 +13,7 @@
 - trades, ui_events, user_interest_ratings, user_tastes, users
 - Views: admin_settlement_daily, seller_daily_settlement_*, ui_funnel_*, user_emails, user_taste_score
 
-## 주요 테이블 상세
+## 주요 ?�이�??�세
 
 ### orders
 | column | type | nullable |
@@ -32,7 +32,7 @@
 | settled_at | string | Y |
 | created_at | string | N |
 
-※ buyer_id, total_amount_krw 없음 → user_id, price*quantity 사용
+??buyer_id, total_amount_krw ?�음 ??user_id, price*quantity ?�용
 
 ### profiles
 | column | type | nullable |
@@ -44,7 +44,7 @@
 | role | string | N |
 | created_at | string | N |
 
-※ status 없음 → requireActiveUser는 role/별도 로직 필요
+??status ?�음 ??requireActiveUser??role/별도 로직 ?�요
 
 ### ledger_entries
 | column | type | nullable |
@@ -79,7 +79,7 @@
 | confirmed_by | string | Y |
 
 ### payments, refunds
-※ 실제 DB에 없음 (migrations 미적용 또는 별도 스키마)
+???�제 DB???�음 (migrations 미적???�는 별도 ?�키�?
 
 ## Functions
 
@@ -92,8 +92,8 @@
 - Returns: Json
 
 ### rpc_admin_confirm_settlement
-- Args: p_batch_id (또는 p_seller_id, p_settlement_date)
+- Args: p_batch_id (?�는 p_seller_id, p_settlement_date)
 - Returns: undefined | Json
 
 ### rpc_confirm_payment, rpc_finalize_order
-※ 실제 DB에 없음
+???�제 DB???�음

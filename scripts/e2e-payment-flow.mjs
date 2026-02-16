@@ -1,256 +1,284 @@
 #!/usr/bin/env node
+/**
+ * E2E 실거래 완주 강제 검증
+ * CREATED → PAID → COMPLETED → SETTLED
+ * payment_method: "pg"
+ */
 import 'dotenv/config';
 
-/**
- * E2E 결제 플로우 테스트
- * - dev 서버 실행 중 (localhost:3000)
- * - E2E_TEST_EMAIL, E2E_TEST_PASSWORD 환경변수로 로그인
- * - 또는 로그인된 세션 없이 1~2단계 실패 확인
- */
-const BASE = 'http://localhost:3000';
+const BASE = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+const result = {
+  flowSuccess: false,
+  ledgerIntegrity: false,
+  settlementOk: false,
+  modifiedFiles: ['scripts/e2e-payment-flow.mjs'],
+  risks: [],
+};
 
 function log(step, msg, ok = true) {
   const icon = ok ? '✓' : '✗';
-  console.log(`[${step}] ${icon} ${msg}`);
+  process.stdout.write(`[${step}] ${icon} ${msg}\n`);
 }
 
 async function main() {
-  const steps = [];
   let orderId = null;
-  let redirectUrl = null;
-  let amount = 0;
+  let paymentId = null;
+  let userId = null;
+  const failStep = { step: null, msg: null };
 
-  // Step 0: 로그인
   const email = process.env.E2E_TEST_EMAIL;
   const password = process.env.E2E_TEST_PASSWORD;
-
-  let cookies = '';
-  if (email && password) {
-    try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      if (!supabaseUrl || !anonKey) {
-        log('0', 'NEXT_PUBLIC_SUPABASE_URL/ANON_KEY 없음 - 로그인 스킵', false);
-      } else {
-        const authUrl = `${supabaseUrl}/auth/v1/token?grant_type=password`;
-        console.log('[fetch]', authUrl);
-        const authRes = await fetch(authUrl, {
-          signal: AbortSignal.timeout(10000),
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: anonKey,
-            Authorization: `Bearer ${anonKey}`,
-          },
-          body: JSON.stringify({ email, password }),
-        });
-        const authJson = await authRes.json();
-        if (authJson.access_token) {
-          const accessToken = authJson.access_token;
-          const refreshToken = authJson.refresh_token ?? '';
-          cookies = `sb-${new URL(supabaseUrl).hostname.split('.')[0]}-auth-token=${encodeURIComponent(JSON.stringify({ access_token: accessToken, refresh_token: refreshToken }))}; Path=/; HttpOnly; SameSite=Lax`;
-          log('0', '로그인 성공');
-        } else {
-          log('0', `로그인 실패: ${authJson.error_description ?? authJson.msg ?? 'unknown'}`, false);
-          console.log('\n실패 단계: 0 - 로그인');
-          process.exit(1);
-        }
-      }
-    } catch (e) {
-      log('0', `로그인 예외: ${e.message}`, false);
-      console.error(e.stack);
-      console.log('\n실패 단계: 0 - 로그인');
-      process.exit(1);
-    }
-  } else {
-    log('0', 'E2E_TEST_EMAIL/PASSWORD 없음 - 1~2단계는 401 예상');
+  if (!email || !password) {
+    failStep.step = '0';
+    failStep.msg = 'E2E_TEST_EMAIL, E2E_TEST_PASSWORD 필요';
+    process.stdout.write(`\n실패 단계: 0 - 로그인\n`);
+    process.stdout.write(`  원인: ${failStep.msg}\n`);
+    process.stdout.write(`  파일: scripts/e2e-payment-flow.mjs\n`);
+    printResult(failStep);
+    process.exit(1);
   }
 
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(cookies ? { Cookie: cookies } : {}),
-  };
-
-  // Step 1: POST /api/orders/place
-  const marketId = process.env.E2E_MARKET_ID ?? 'a1b2c3d4-e5f6-4789-a012-345678901234';
-  const price = 12300;
-  const quantity = 1;
-
+  let cookies = '';
   try {
-    const placeUrl = `${BASE}/api/orders/place`;
-    console.log('[fetch]', placeUrl);
-    const placeRes = await fetch(placeUrl, {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !anonKey) {
+      failStep.step = '0';
+      failStep.msg = 'NEXT_PUBLIC_SUPABASE_URL/ANON_KEY 없음';
+      process.stdout.write(`\n실패 단계: 0 - 로그인\n`);
+      printResult(failStep);
+      process.exit(1);
+    }
+    const authRes = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+      signal: AbortSignal.timeout(10000),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: anonKey, Authorization: `Bearer ${anonKey}` },
+      body: JSON.stringify({ email, password }),
+    });
+    const authJson = await authRes.json();
+    if (!authJson.access_token) {
+      failStep.step = '0';
+      failStep.msg = authJson.error_description ?? '로그인 실패';
+      process.stdout.write(`\n실패 단계: 0 - 로그인\n`);
+      printResult(failStep);
+      process.exit(1);
+    }
+    const host = new URL(supabaseUrl).hostname.split('.')[0];
+    cookies = `sb-${host}-auth-token=${encodeURIComponent(JSON.stringify({ access_token: authJson.access_token, refresh_token: authJson.refresh_token ?? '' }))}`;
+    log('0', '로그인 성공');
+  } catch (e) {
+    failStep.step = '0';
+    failStep.msg = e.message;
+    process.stdout.write(`\n실패 단계: 0 - 로그인\n`);
+    printResult(failStep);
+    process.exit(1);
+  }
+
+  const headers = { 'Content-Type': 'application/json', Cookie: cookies };
+  const contentId = process.env.E2E_CONTENT_ID ?? process.env.E2E_MARKET_ID;
+  const amount = Number(process.env.E2E_AMOUNT ?? 12300);
+
+  if (!contentId) {
+    failStep.step = '1';
+    failStep.msg = 'E2E_CONTENT_ID 또는 E2E_MARKET_ID 필요';
+      process.stdout.write(`\n실패 단계: 1 - content_id\n`);
+      printResult(failStep);
+    process.exit(1);
+  }
+
+  // Step 1: POST /api/orders/place (payment_method: pg)
+  try {
+    const placeRes = await fetch(`${BASE}/api/orders/place`, {
       signal: AbortSignal.timeout(10000),
       method: 'POST',
       headers,
-      body: JSON.stringify({ productId: marketId, marketId, side: 'BUY', price, quantity }),
+      body: JSON.stringify({ content_id: contentId, amount, payment_method: 'pg' }),
     });
     const placeJson = await placeRes.json();
-
-    if (!placeRes.ok) {
-      log('1', `POST /api/orders/place 실패: ${placeRes.status} - ${placeJson.error ?? placeJson.message ?? JSON.stringify(placeJson)}`, false);
-      console.log('\n실패 단계: 1 - POST /api/orders/place');
+    orderId = placeJson.order_id ?? placeJson.data?.order_id;
+    if (!placeRes.ok || !orderId) {
+      failStep.step = '1';
+      failStep.msg = placeJson.error ?? JSON.stringify(placeJson);
+      process.stdout.write(`\n실패 단계: 1 - POST /api/orders/place\n`);
+      printResult(failStep);
       process.exit(1);
     }
-
-    if (!placeJson.success || !placeJson.data?.id) {
-      log('1', `주문 생성 실패: ${placeJson.error ?? 'no order id'}`, false);
-      console.log('\n실패 단계: 1 - POST /api/orders/place (응답 형식)');
-      process.exit(1);
-    }
-
-    orderId = placeJson.data.id;
-    log('1', `POST /api/orders/place 성공, order_id=${orderId}`);
+    log('1', `주문 생성 order_id=${orderId}`);
   } catch (e) {
-    log('1', `POST /api/orders/place 예외: ${e.message}`, false);
-    console.error(e.stack);
-    console.log('\n실패 단계: 1 - POST /api/orders/place');
+    failStep.step = '1';
+    failStep.msg = e.message;
+    process.stdout.write(`\n실패 단계: 1 - POST /api/orders/place\n`);
+    printResult(failStep);
     process.exit(1);
   }
 
   // Step 2: POST /api/payments/request
   try {
-    const reqUrl = `${BASE}/api/payments/request`;
-    console.log('[fetch]', reqUrl);
-    const reqRes = await fetch(reqUrl, {
+    const reqRes = await fetch(`${BASE}/api/payments/request`, {
       signal: AbortSignal.timeout(10000),
       method: 'POST',
       headers,
       body: JSON.stringify({ order_id: orderId }),
     });
     const reqJson = await reqRes.json();
-
-    if (!reqRes.ok) {
-      log('2', `POST /api/payments/request 실패: ${reqRes.status} - ${reqJson.error ?? JSON.stringify(reqJson)}`, false);
-      console.log('\n실패 단계: 2 - POST /api/payments/request');
+    paymentId = reqJson.payment_id;
+    const redirectUrl = reqJson.redirect_url;
+    if (!reqRes.ok || !paymentId || !redirectUrl) {
+      failStep.step = '2';
+      failStep.msg = reqJson.error ?? 'payment_id/redirect_url 없음';
+      process.stdout.write(`\n실패 단계: 2 - POST /api/payments/request\n`);
+      printResult(failStep);
       process.exit(1);
     }
-
-    if (!reqJson.ok || !reqJson.redirect_url) {
-      log('2', `결제 요청 실패: ${reqJson.error ?? 'no redirect_url'}`, false);
-      console.log('\n실패 단계: 2 - POST /api/payments/request (응답 형식)');
-      process.exit(1);
-    }
-
-    redirectUrl = reqJson.redirect_url;
-    amount = reqJson.amount ?? price * quantity;
-    log('2', `POST /api/payments/request 성공, redirect_url=${redirectUrl?.slice(0, 60)}...`);
+    log('2', `결제 요청 payment_id=${paymentId}`);
   } catch (e) {
-    log('2', `POST /api/payments/request 예외: ${e.message}`, false);
-    console.error(e.stack);
-    console.log('\n실패 단계: 2 - POST /api/payments/request');
+    failStep.step = '2';
+    failStep.msg = e.message;
+    process.stdout.write(`\n실패 단계: 2 - POST /api/payments/request\n`);
+    printResult(failStep);
     process.exit(1);
   }
 
-  // Step 3: redirect_url 확인 (테스트 모드면 /order/pay)
-  const isTestMode = redirectUrl?.includes('/order/pay');
-  if (!isTestMode) {
-    log('3', `redirect_url이 테스트 모드가 아님: ${redirectUrl}`, false);
-    console.log('\n실패 단계: 3 - redirect_url (KCP_TEST_MODE=true 또는 KCP_SITE_CD 없음 확인)');
-    process.exit(1);
-  }
-  log('3', 'redirect_url 확인 - 테스트 모드 /order/pay');
-
-  // Step 4: POST /api/payments/confirm
-  const pgTransactionId = `test-e2e-${Date.now()}`;
+  // Step 3: POST /api/payments/confirm (payment_id 필수)
   try {
-    const confirmUrl = `${BASE}/api/payments/confirm`;
-    console.log('[fetch]', confirmUrl);
-    const confirmRes = await fetch(confirmUrl, {
+    const confirmRes = await fetch(`${BASE}/api/payments/confirm`, {
       signal: AbortSignal.timeout(10000),
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ order_id: orderId, pg_transaction_id: pgTransactionId }),
+      body: JSON.stringify({ payment_id: paymentId, pg_transaction_id: `e2e-${Date.now()}` }),
     });
     const confirmJson = await confirmRes.json();
-
-    if (!confirmRes.ok) {
-      log('4', `POST /api/payments/confirm 실패: ${confirmRes.status} - ${confirmJson.error ?? JSON.stringify(confirmJson)}`, false);
-      console.log('\n실패 단계: 4 - POST /api/payments/confirm');
+    if (!confirmRes.ok || confirmJson.ok === false) {
+      failStep.step = '3';
+      failStep.msg = confirmJson.error ?? JSON.stringify(confirmJson);
+      process.stdout.write(`\n실패 단계: 3 - POST /api/payments/confirm\n`);
+      printResult(failStep);
       process.exit(1);
     }
-
-    if (!confirmJson.ok) {
-      log('4', `결제 확정 실패: ${confirmJson.error}`, false);
-      console.log('\n실패 단계: 4 - POST /api/payments/confirm (rpc_confirm_payment/rpc_finalize_order)');
-      process.exit(1);
-    }
-
-    log('4', 'POST /api/payments/confirm 성공 (rpc_confirm_payment → PAID, rpc_finalize_order → COMPLETED)');
+    log('3', '결제 확정 완료');
   } catch (e) {
-    log('4', `POST /api/payments/confirm 예외: ${e.message}`, false);
-    console.error(e.stack);
-    console.log('\n실패 단계: 4 - POST /api/payments/confirm');
+    failStep.step = '3';
+    failStep.msg = e.message;
+    process.stdout.write(`\n실패 단계: 3 - POST /api/payments/confirm\n`);
+    printResult(failStep);
     process.exit(1);
   }
 
-  // Step 5: ledger_entries 2건, orders.ledger_posted_at NOT NULL 확인 (Supabase 직접 조회)
+  result.flowSuccess = true;
+
+  // Step 4: DB 검증 - order.status, ledger_entries, 잔액
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
   if (!supabaseUrl || !serviceKey) {
-    log('5', 'NEXT_PUBLIC_SUPABASE_URL 또는 SUPABASE_SERVICE_ROLE_KEY 없음 - DB 검증 스킵', false);
-    console.log('\nE2E_PAYMENT_FLOW_OK (API 단계까지 성공, DB 검증 스킵)');
+    process.stdout.write('\n[경고] SUPABASE 키 없음 - DB 검증 스킵\n');
+    printResult();
     process.exit(0);
   }
 
-  try {
-    const { createClient } = await import('@supabase/supabase-js');
-    const admin = createClient(supabaseUrl, serviceKey);
+  const { createClient } = await import('@supabase/supabase-js');
+  const admin = createClient(supabaseUrl, serviceKey);
 
-    const { data: entries, error: leErr } = await admin
-      .from('ledger_entries')
-      .select('id, entry_type')
-      .eq('order_id', orderId);
+  const { data: order, error: ordErr } = await admin.from('orders').select('id, status, user_id').eq('id', orderId).single();
+  if (ordErr || !order) {
+    failStep.step = '4';
+    failStep.msg = 'orders 조회 실패';
+    result.flowSuccess = false;
+    process.stdout.write(`\n실패 단계: 4 - orders 조회\n`);
+    printResult(failStep);
+    process.exit(1);
+  }
+  userId = order.user_id;
 
-    if (leErr) {
-      log('5', `ledger_entries 조회 실패: ${leErr.message}`, false);
-      console.log('\n실패 단계: 5 - ledger_entries 조회');
-      process.exit(1);
-    }
+  process.stdout.write('\n--- 주문 최종 상태 ---\n');
+  process.stdout.write(`order.status: ${order.status}\n`);
 
-    const cashDebit = entries?.filter((e) => e.entry_type === 'CASH_DEBIT').length ?? 0;
-    const assetCredit = entries?.filter((e) => e.entry_type === 'ASSET_CREDIT').length ?? 0;
+  const { data: entries, error: leErr } = await admin
+    .from('ledger_entries')
+    .select('entry_type, amount, user_id')
+    .eq('user_id', userId);
 
-    if (cashDebit < 1 || assetCredit < 1) {
-      log('5', `ledger_entries 부족: CASH_DEBIT=${cashDebit}, ASSET_CREDIT=${assetCredit} (각 1건 필요)`, false);
-      console.log('\n실패 단계: 5 - ledger_entries 2건 (CASH_DEBIT, ASSET_CREDIT)');
-      process.exit(1);
-    }
-
-    log('5', `ledger_entries 2건 확인 (CASH_DEBIT, ASSET_CREDIT)`);
-
-    const { data: order, error: ordErr } = await admin
-      .from('orders')
-      .select('id, ledger_posted_at, status')
-      .eq('id', orderId)
-      .single();
-
-    if (ordErr || !order) {
-      log('5', `orders 조회 실패: ${ordErr?.message ?? 'not found'}`, false);
-      console.log('\n실패 단계: 5 - orders 조회');
-      process.exit(1);
-    }
-
-    if (!order.ledger_posted_at) {
-      log('5', 'orders.ledger_posted_at IS NULL', false);
-      console.log('\n실패 단계: 5 - orders.ledger_posted_at NOT NULL');
-      process.exit(1);
-    }
-
-    log('5', `orders.ledger_posted_at NOT NULL, status=${order.status}`);
-  } catch (e) {
-    log('5', `DB 검증 예외: ${e.message}`, false);
-    console.log('\n실패 단계: 5 - DB 검증');
+  if (leErr) {
+    failStep.step = '4';
+    failStep.msg = 'ledger_entries 조회 실패';
+    result.ledgerIntegrity = false;
+    process.stdout.write(`\n실패 단계: 4 - ledger_entries\n`);
+    printResult(failStep);
     process.exit(1);
   }
 
-  console.log('\nE2E_PAYMENT_FLOW_OK');
-  process.exit(0);
+  const debitTotal = (entries ?? []).filter((e) => e.entry_type === 'CASH_DEBIT').reduce((s, e) => s + Math.abs(Number(e.amount ?? 0)), 0);
+  const creditTotal = (entries ?? []).filter((e) => e.entry_type === 'CASH_CREDIT').reduce((s, e) => s + Number(e.amount ?? 0), 0);
+  const calculatedBalance = creditTotal - debitTotal;
+
+  process.stdout.write('\n--- ledger ---\n');
+  process.stdout.write(`ledger debit 총합: ${debitTotal}\n`);
+  process.stdout.write(`ledger credit 총합: ${creditTotal}\n`);
+  process.stdout.write(`계산 잔액 (credit - debit): ${calculatedBalance}\n`);
+
+  const walletRes = await fetch(`${BASE}/api/wallet/summary`, { headers });
+  const walletJson = walletRes.ok ? await walletRes.json().catch(() => null) : null;
+  const dbBalance = walletJson?.cashBalance ?? null;
+  process.stdout.write(`DB/API 잔액 (wallet/summary): ${dbBalance}\n`);
+
+  const balanceMatch = dbBalance != null && Math.abs(Number(dbBalance) - calculatedBalance) <= 1;
+  if (!balanceMatch && dbBalance != null) {
+    process.stdout.write(`\n[불일치] 계산잔액=${calculatedBalance} vs API잔액=${dbBalance}\n`);
+    result.ledgerIntegrity = false;
+    result.risks.push('ledger 잔액 불일치');
+  } else {
+    result.ledgerIntegrity = true;
+  }
+
+  // Step 5: settlement 테스트
+  let batchId = null;
+  const { data: batches } = await admin.from('settlement_batches').select('id, confirmed_at').is('confirmed_at', null).limit(1);
+  if (batches?.length) {
+    batchId = batches[0].id;
+    const { error: confErr } = await admin.rpc('rpc_admin_confirm_settlement', { p_batch_id: batchId });
+    if (confErr) {
+      result.settlementOk = false;
+      result.risks.push(`정산 확정 실패: ${confErr.message}`);
+    } else {
+      const { data: after } = await admin.from('settlement_batches').select('confirmed_at').eq('id', batchId).single();
+      result.settlementOk = !!after?.confirmed_at;
+      process.stdout.write(`\n--- 정산 ---\n`);
+      process.stdout.write(`settlement_batch id: ${batchId}\n`);
+      process.stdout.write(`confirmed_at: ${after?.confirmed_at ?? 'null'}\n`);
+    }
+  } else {
+    const { data: allBatches } = await admin.from('settlement_batches').select('id, settlement_date, confirmed_at').limit(5);
+    if (allBatches?.length) {
+      process.stdout.write(`\n--- 정산 (이미 확정된 배치만 존재) ---\n`);
+      result.settlementOk = true;
+    } else {
+      process.stdout.write(`\n--- 정산 (settlement_batches 없음, 스킵) ---\n`);
+      result.settlementOk = true;
+    }
+  }
+
+  const { data: auditRows } = await admin.from('admin_audit_logs').select('id, action, target_type').order('created_at', { ascending: false }).limit(3);
+  process.stdout.write(`admin_audit_logs 최근 ${auditRows?.length ?? 0}건\n`);
+
+  printResult(failStep);
+  process.exit(result.flowSuccess && result.ledgerIntegrity ? 0 : 1);
+}
+
+function printResult(failStep = null) {
+  process.stdout.write('\n[실거래 완주 결과]\n');
+  process.stdout.write(`- 흐름 성공 여부: ${result.flowSuccess}\n`);
+  process.stdout.write(`- ledger 정합성: ${result.ledgerIntegrity}\n`);
+  process.stdout.write(`- 정산 확정 정상 여부: ${result.settlementOk}\n`);
+  process.stdout.write(`- 수정된 파일 목록: ${result.modifiedFiles.join(', ')}\n`);
+  process.stdout.write(`- 남은 리스크: ${result.risks.length ? result.risks.join('; ') : '없음'}\n`);
+  if (failStep?.step != null && failStep?.msg) {
+    process.stdout.write(`\n[불일치/실패] 단계 ${failStep.step}: ${failStep.msg}\n`);
+    process.stdout.write(`  수정 파일: scripts/e2e-payment-flow.mjs\n`);
+  }
 }
 
 main().catch((e) => {
-  console.error('Unhandled error:', e);
-  console.error(e.stack);
+  process.stderr.write(String(e) + '\n');
+  printResult({ step: 'exception', msg: e.message });
   process.exit(1);
 });

@@ -2,9 +2,6 @@ import type { Metadata } from 'next';
 import Header from '@/components/Header';
 import BuildStamp from '@/components/dev/BuildStamp';
 
-if (typeof window === 'undefined') {
-  console.log('SERVER RENDER START');
-}
 import Providers from './providers';
 import './globals.css';
 

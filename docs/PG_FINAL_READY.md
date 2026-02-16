@@ -1,36 +1,36 @@
-# PG(페이먼트 게이트웨이) 실전 대비 최종 문서
+# PG(?�이먼트 게이?�웨?? ?�전 ?��?최종 문서
 
-## 1. orders.status ENUM 점검
+## 1. orders.status ENUM ?��?
 
-| 현재 값 | PG 권장 | 비고 |
+| ?�재 �?| PG 권장 | 비고 |
 |---------|---------|------|
-| PENDING | PENDING | 결제 대기 |
-| PAID | PAID | 결제 완료 |
-| COMPLETED | CONFIRMED | 주문 확정 (마켓 투자는 즉시 COMPLETED) |
-| SETTLED | SETTLED | 정산 완료 |
+| PENDING | PENDING | 결제 ?��?|
+| PAID | PAID | 결제 ?�료 |
+| COMPLETED | CONFIRMED | 주문 ?�정 (마켓 ?�자??즉시 COMPLETED) |
+| SETTLED | SETTLED | ?�산 ?�료 |
 
-※ 마켓 투자 플로우는 PENDING/PAID 단계 없이 즉시 COMPLETED. 기존 ENUM 유지.
+??마켓 ?�자 ?�로?�는 PENDING/PAID ?�계 ?�이 즉시 COMPLETED. 기존 ENUM ?��?.
 
 ## 2. idempotency_key
 
-- `orders.idempotency_key` text, unique (null 제외)
-- 클라이언트가 동일 결제 요청 시 동일 키 전달 → 중복 주문 방지
-- `rpc_invest_and_notify(p_idempotency_key)` 지원
+- `orders.idempotency_key` text, unique (null ?�외)
+- ?�라?�언?��? ?�일 결제 ?�청 ???�일 ???�달 ??중복 주문 방�?
+- `rpc_invest_and_notify(p_idempotency_key)` 지??
 
-## 3. Double-Spend 방지 구조
+## 3. Double-Spend 방�? 구조
 
-1. **잔액 검증**: 투자 전 ledger 합산
-2. **원자적 RPC**: order + ledger + content_items + notifications 단일 트랜잭션
-3. **idempotency_key**: 동일 요청 재전송 시 기존 주문 반환
-4. **ledger CASH_DEBIT 중복 체크**: order_id당 1회만
+1. **?�액 검�?*: ?�자 ??ledger ?�산
+2. **?�자??RPC**: order + ledger + content_items + notifications ?�일 ?�랜??��
+3. **idempotency_key**: ?�일 ?�청 ?�전????기존 주문 반환
+4. **ledger CASH_DEBIT 중복 체크**: order_id??1?�만
 
 ## 4. content_id 중심 구조
 
-- 마켓 기준 ID = content_items.id
+- 마켓 기�? ID = content_items.id
 - orders.content_id, ledger asset_id, notifications reference_id 모두 content_id
-- product_id는 듀얼 운영, 추후 제거
+- product_id???�???�영, 추후 ?�거
 
-## 5. 마이그레이션 실행 순서
+## 5. 마이그레?�션 ?�행 ?�서
 
 1. `20260215_products_content_id.sql`
 2. `20260215_orders_content_id_dual.sql`

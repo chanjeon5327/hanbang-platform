@@ -1,69 +1,69 @@
-# HANBANG 다음 스프린트 — Compose 프롬프트
+# HANBANG ?�음 ?�프린트 ??Compose ?�롬?�트
 
-> 가장 가치 큰 다음 1개 스프린트용 프롬프트
+> 가??가�????�음 1�??�프린트???�롬?�트
 
 ---
 
-## 스프린트: 마이페이지 완성 (투자자 허브)
+## ?�프린트: 마이?�이지 ?�성 (?�자???�브)
 
 ### 목표
 
-마이페이지(`/mypage`)에서 **내 자산 요약 / 보유 자산 / 주문 내역 / 원장 내역**을 orders, ledger_entries 기반으로 실제 데이터로 표시한다.
+마이?�이지(`/mypage`)?�서 **???�산 ?�약 / 보유 ?�산 / 주문 ?�역 / ?�장 ?�역**??orders, ledger_entries 기반?�로 ?�제 ?�이?�로 ?�시?�다.
 
 ### 범위
 
-- **MyAssetSummary**: `GET /api/wallet/ledger` 또는 `orders` 집계로 총 자산·예수금·평가손익 계산
-- **MyInvestList**: `ledger_entries`(ASSET_CREDIT) 또는 `orders` + `products` 조인으로 보유 수익권 목록
-- **MyHistory**: `orders` 또는 `ledger_entries` 기반 주문/거래 내역
-- **주문 내역 / 정산 내역 / 입출금 기록**: 링크 클릭 시 해당 화면으로 이동 (또는 모달)
+- **MyAssetSummary**: `GET /api/wallet/ledger` ?�는 `orders` 집계�?�??�산·?�수금·평가?�익 계산
+- **MyInvestList**: `ledger_entries`(ASSET_CREDIT) ?�는 `orders` + `products` 조인?�로 보유 ?�익�?목록
+- **MyHistory**: `orders` ?�는 `ledger_entries` 기반 주문/거래 ?�역
+- **주문 ?�역 / ?�산 ?�역 / ?�출�?기록**: 링크 ?�릭 ???�당 ?�면?�로 ?�동 (?�는 모달)
 
-### 제약
+### ?�약
 
-- DB 스키마/기존 RPC 최대한 유지
-- 로직 변경 최소화
-- Tailwind 유지, 새 UI 라이브러리 추가 금지
-- 모바일 우선
+- DB ?�키�?기존 RPC 최�????��?
+- 로직 변�?최소??
+- Tailwind ?��?, ??UI ?�이브러�?추�? 금�?
+- 모바???�선
 
-### 완료 기준
+### ?�료 기�?
 
-- [ ] MyAssetSummary: orders·ledger 집계 기반 총 자산 표시
-- [ ] MyInvestList: 실제 보유 자산(상품별 수량/평단) 표시
-- [ ] MyHistory 또는 주문 내역: orders(status 포함) 목록 표시
-- [ ] 원장 내역: ledger_entries 또는 `/api/wallet/ledger` 연동
-- [ ] 타입/빌드 에러 없음
+- [ ] MyAssetSummary: orders·ledger 집계 기반 �??�산 ?�시
+- [ ] MyInvestList: ?�제 보유 ?�산(?�품�??�량/?�단) ?�시
+- [ ] MyHistory ?�는 주문 ?�역: orders(status ?�함) 목록 ?�시
+- [ ] ?�장 ?�역: ledger_entries ?�는 `/api/wallet/ledger` ?�동
+- [ ] ?�??빌드 ?�러 ?�음
 
-### 참고 파일
+### 참고 ?�일
 
-| 파일 | 용도 |
+| ?�일 | ?�도 |
 |------|------|
-| `app/mypage/page.tsx` | 마이페이지 진입점 |
-| `components/mypage/MyAssetSummary.tsx` | 자산 요약 카드 |
-| `components/mypage/MyInvestList.tsx` | 보유 수익권 목록 |
+| `app/mypage/page.tsx` | 마이?�이지 진입??|
+| `components/mypage/MyAssetSummary.tsx` | ?�산 ?�약 카드 |
+| `components/mypage/MyInvestList.tsx` | 보유 ?�익�?목록 |
 | `components/mypage/MyHistory.tsx` | 기록 메뉴 |
-| `app/api/wallet/ledger/route.ts` | 원장 API (세션 기반) |
+| `app/api/wallet/ledger/route.ts` | ?�장 API (?�션 기반) |
 | `app/api/orders/[id]/route.ts` | 주문 조회 |
-| `supabase/migrations/202601290539_ledger.sql` | ledger_entries 스키마 |
+| `supabase/migrations/202601290539_ledger.sql` | ledger_entries ?�키�?|
 
 ---
 
-## Cursor Compose 프롬프트 (복사용)
+## Cursor Compose ?�롬?�트 (복사??
 
 ```
-[HANBANG 마이페이지 완성 스프린트]
+[HANBANG 마이?�이지 ?�성 ?�프린트]
 
 목표:
-- /mypage에서 내 자산/보유/주문/원장을 orders, ledger_entries 기반 실제 데이터로 표시
+- /mypage?�서 ???�산/보유/주문/?�장??orders, ledger_entries 기반 ?�제 ?�이?�로 ?�시
 
 범위:
-- MyAssetSummary: orders·ledger 집계로 총 자산/예수금/평가손익
-- MyInvestList: ledger_entries(ASSET_CREDIT) 또는 orders+products로 보유 수익권
-- MyHistory: orders 목록 또는 ledger 기반 거래 내역
-- 주문 내역/정산 내역/입출금 링크 → 해당 화면 또는 모달
+- MyAssetSummary: orders·ledger 집계�?�??�산/?�수�??��??�익
+- MyInvestList: ledger_entries(ASSET_CREDIT) ?�는 orders+products�?보유 ?�익�?
+- MyHistory: orders 목록 ?�는 ledger 기반 거래 ?�역
+- 주문 ?�역/?�산 ?�역/?�출�?링크 ???�당 ?�면 ?�는 모달
 
-제약:
-- DB/RPC 최대한 유지, 로직 변경 최소
-- Tailwind 유지, 새 UI 라이브러리 금지
-- 모바일 우선
+?�약:
+- DB/RPC 최�????��?, 로직 변�?최소
+- Tailwind ?��?, ??UI ?�이브러�?금�?
+- 모바???�선
 
 참고: docs/SCREENS_MAP.md, docs/STATUS_BOARD.md, app/api/wallet/ledger/route.ts
 ```

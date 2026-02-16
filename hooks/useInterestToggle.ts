@@ -25,10 +25,10 @@ export function useInterestToggle(contentId: string | undefined, initial = false
         setIsInterested(json.isInterested);
         options?.onSuccess?.(json.isInterested);
       } else {
-        options?.onError?.(json?.error ?? '실패');
+        options?.onError?.(json?.error ?? '?ㅽ뙣');
       }
     } catch {
-      options?.onError?.('네트워크 오류');
+      options?.onError?.('?ㅽ듃?뚰겕 ?ㅻ쪟');
     } finally {
       setLoading(false);
     }
