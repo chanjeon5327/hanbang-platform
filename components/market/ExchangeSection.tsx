@@ -12,6 +12,8 @@ type Props = {
   contentId: string;
   sharePriceUsd: number;
   fxRate: number;
+  /** false면 주문/호가 비활성, empty state 표시 */
+  isTradable?: boolean;
   isLoggedIn: boolean;
   userId?: string | null;
   totalSupplyShares?: number | null;
@@ -24,6 +26,7 @@ export default function ExchangeSection({
   contentId,
   sharePriceUsd,
   fxRate,
+  isTradable = true,
   isLoggedIn,
   userId,
   totalSupplyShares,
@@ -71,9 +74,35 @@ export default function ExchangeSection({
   }, [fetchMyOrderbookOrders]);
 
   return (
-    <div className="space-y-4">
-      {/* 상단: 현재가 + 차트 고정 */}
-      <div className="sticky top-14 z-10 bg-white rounded-xl border p-4" style={{ borderColor: 'var(--upbit-border)' }}>
+    <div className={!isTradable ? 'opacity-60' : ''} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
+      {isTradable && (
+        <div
+          className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg caption"
+          style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', width: 'fit-content' }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--emerald)] animate-pulse" style={{ animationDuration: '1.5s' }} />
+          실시간 시장 데이터
+        </div>
+      )}
+      {!isTradable && (
+        <div
+          className="py-2 px-4 rounded-xl caption text-center"
+          style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}
+        >
+          거래 준비 중
+        </div>
+      )}
+
+      {/* 상단: 현재가 + 차트 (sticky: header 56px + tab ~48px = 104px) */}
+      <div
+        className="sticky z-10 rounded-[20px] p-4 shadow-sm"
+        style={{
+          top: '104px',
+          backgroundColor: 'var(--card)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-lg)',
+        }}
+      >
         <PriceHeader
           sharePriceUsd={lastTradePrice ?? sharePriceUsd}
           fxRate={fxRate}
@@ -88,22 +117,30 @@ export default function ExchangeSection({
         />
       </div>
 
-      {/* 좌우: 호가 | 주문+포지션 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-1 rounded-xl border p-4" style={{ borderColor: 'var(--upbit-border)' }}>
-          <h3 className="text-[12px] font-semibold mb-3" style={{ color: 'var(--upbit-text-dim)' }}>
+      {/* 좌우: 호가 | 주문+포지션 (2열 grid gap 24px) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3" style={{ gap: 'var(--space-lg)' }}>
+        <div
+          className="lg:col-span-1 rounded-[20px] p-4 shadow-sm"
+          style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)' }}
+        >
+          <h3 className="caption mb-3" style={{ color: 'var(--text-secondary)' }}>
             호가
           </h3>
           <OrderBookRealtime
             contentId={contentId}
             currentPriceUsd={sharePriceUsd}
             myOrderPrices={myOrderPrices}
+            disabled={!isTradable}
           />
         </div>
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
           <div
-            className="rounded-xl border p-4 md:relative md:min-h-0 max-md:sticky max-md:bottom-0 max-md:z-20 max-md:bg-white max-md:border-t max-md:rounded-t-xl max-md:pb-[env(safe-area-inset-bottom,0px)] max-md:shadow-[0_-4px_12px_rgba(0,0,0,0.06)]"
-            style={{ borderColor: 'var(--upbit-border)' }}
+            className="rounded-[20px] p-4 shadow-sm md:relative md:min-h-0 max-md:sticky max-md:bottom-0 max-md:z-20 max-md:pb-[env(safe-area-inset-bottom,0px)]"
+            style={{
+              backgroundColor: 'var(--card)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-lg)',
+            }}
           >
             <TradingPanelV2
               contentId={contentId}
@@ -113,6 +150,7 @@ export default function ExchangeSection({
               totalSupplyShares={totalSupplyShares}
               onToast={onToast}
               variant="order-only"
+              disabled={!isTradable}
             />
           </div>
           <PositionPanel
@@ -125,11 +163,14 @@ export default function ExchangeSection({
       </div>
 
       {/* 하단: 체결내역 */}
-      <div className="rounded-xl border p-4" style={{ borderColor: 'var(--upbit-border)' }}>
-        <h3 className="text-[12px] font-semibold mb-3" style={{ color: 'var(--upbit-text-dim)' }}>
+      <div
+        className="rounded-[20px] p-4 shadow-sm"
+        style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)' }}
+      >
+        <h3 className="caption mb-3" style={{ color: 'var(--text-secondary)' }}>
           체결내역
         </h3>
-        <TradeHistoryRealtime contentId={contentId} onTrade={handleTrade} />
+        <TradeHistoryRealtime contentId={contentId} onTrade={handleTrade} disabled={!isTradable} />
       </div>
     </div>
   );

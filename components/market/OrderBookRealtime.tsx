@@ -15,9 +15,11 @@ type Props = {
   currentPriceUsd?: number | null;
   /** 내 주문이 있는 가격(USD) 목록 - 해당 호가 행 배경 강조 */
   myOrderPrices?: number[];
+  /** true면 거래 불가, empty state 메시지 표시 */
+  disabled?: boolean;
 };
 
-export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderPrices = [] }: Props) {
+export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderPrices = [], disabled }: Props) {
   const [bids, setBids] = useState<OrderbookRow[]>([]);
   const [asks, setAsks] = useState<OrderbookRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,8 +83,18 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
   if (loading) {
     return (
       <div className="grid grid-cols-2 gap-4 py-4">
-        <div className="animate-pulse h-48 rounded-lg bg-[var(--upbit-bg)]" />
-        <div className="animate-pulse h-48 rounded-lg bg-[var(--upbit-bg)]" />
+        <div className="animate-pulse h-48 rounded-lg" style={{ backgroundColor: 'var(--border)' }} />
+        <div className="animate-pulse h-48 rounded-lg" style={{ backgroundColor: 'var(--border)' }} />
+      </div>
+    );
+  }
+
+  if (disabled) {
+    return (
+      <div className="py-6 text-center">
+        <p className="caption" style={{ color: 'var(--text-secondary)' }}>
+          현재는 거래가 준비 중이에요. 배당 정보만 확인할 수 있어요.
+        </p>
       </div>
     );
   }
@@ -90,7 +102,7 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
   return (
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <div className="text-[11px] mb-1 font-medium" style={{ color: 'var(--upbit-text-dim)' }}>
+        <div className="caption mb-1 font-medium" style={{ color: 'var(--text-secondary)' }}>
           매수 호가
         </div>
         <div className="space-y-0.5">
@@ -100,12 +112,12 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
             return (
               <div
                 key={`bid-${i}-${b.price_usd}`}
-                className="flex justify-between items-center text-[13px] relative py-1 px-2 rounded transition-colors"
+                className="flex justify-between items-center body-sm relative py-1 px-2 rounded transition-colors"
                 style={{
                   backgroundColor: isMyOrder
-                    ? 'rgba(30,136,229,0.2)'
+                    ? 'rgba(5,150,105,0.15)'
                     : isCurrentPrice
-                      ? 'rgba(30,136,229,0.12)'
+                      ? 'rgba(5,150,105,0.08)'
                       : undefined,
                 }}
               >
@@ -113,30 +125,30 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
                   className="absolute left-0 top-0 bottom-0 rounded-r"
                   style={{
                     width: `${Math.min(100, (b.quantity / maxBidQty) * 100)}%`,
-                    background: 'linear-gradient(90deg, rgba(30,136,229,0.35) 0%, rgba(30,136,229,0.08) 100%)',
+                    background: 'linear-gradient(90deg, rgba(5,150,105,0.2) 0%, rgba(5,150,105,0.05) 100%)',
                   }}
                 />
                 <span
-                  className="font-semibold tabular-nums relative z-10"
-                  style={{ color: isCurrentPrice ? 'var(--upbit-bid)' : 'var(--upbit-bid)' }}
+                  className="font-semibold metric-number relative z-10"
+                  style={{ color: 'var(--emerald)' }}
                 >
                   {formatUsd(b.price_usd)}
                 </span>
-                <span className="tabular-nums relative z-10" style={{ color: 'var(--upbit-text-dim)' }}>
+                <span className="metric-number relative z-10" style={{ color: 'var(--text-secondary)' }}>
                   {formatQty(b.quantity)}
                 </span>
               </div>
             );
           })}
           {bidRows.length === 0 && (
-            <p className="text-[12px] py-4 text-center" style={{ color: 'var(--upbit-text-dim)' }}>
+            <p className="caption py-4 text-center" style={{ color: 'var(--text-secondary)' }}>
               매수 호가 없음
             </p>
           )}
         </div>
       </div>
       <div>
-        <div className="text-[11px] mb-1 font-medium" style={{ color: 'var(--upbit-text-dim)' }}>
+        <div className="caption mb-1 font-medium" style={{ color: 'var(--text-secondary)' }}>
           매도 호가
         </div>
         <div className="space-y-0.5">
@@ -146,12 +158,12 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
             return (
               <div
                 key={`ask-${i}-${a.price_usd}`}
-                className="flex justify-between items-center text-[13px] relative py-1 px-2 rounded transition-colors"
+                className="flex justify-between items-center body-sm relative py-1 px-2 rounded transition-colors"
                 style={{
                   backgroundColor: isMyOrder
-                    ? 'rgba(229,57,53,0.2)'
+                    ? 'rgba(220,38,38,0.15)'
                     : isCurrentPrice
-                      ? 'rgba(229,57,53,0.12)'
+                      ? 'rgba(220,38,38,0.08)'
                       : undefined,
                 }}
               >
@@ -159,25 +171,25 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
                   className="absolute right-0 top-0 bottom-0 rounded-l"
                   style={{
                     width: `${Math.min(100, (a.quantity / maxAskQty) * 100)}%`,
-                    background: 'linear-gradient(270deg, rgba(229,57,53,0.35) 0%, rgba(229,57,53,0.08) 100%)',
+                    background: 'linear-gradient(270deg, rgba(220,38,38,0.2) 0%, rgba(220,38,38,0.05) 100%)',
                     right: 0,
                     left: 'auto',
                   }}
                 />
                 <span
-                  className="font-semibold tabular-nums relative z-10"
-                  style={{ color: isCurrentPrice ? 'var(--upbit-ask)' : 'var(--upbit-ask)' }}
+                  className="font-semibold metric-number relative z-10"
+                  style={{ color: 'var(--accent-loss)' }}
                 >
                   {formatUsd(a.price_usd)}
                 </span>
-                <span className="tabular-nums relative z-10" style={{ color: 'var(--upbit-text-dim)' }}>
+                <span className="metric-number relative z-10" style={{ color: 'var(--text-secondary)' }}>
                   {formatQty(a.quantity)}
                 </span>
               </div>
             );
           })}
           {askRows.length === 0 && (
-            <p className="text-[12px] py-4 text-center" style={{ color: 'var(--upbit-text-dim)' }}>
+            <p className="caption py-4 text-center" style={{ color: 'var(--text-secondary)' }}>
               매도 호가 없음
             </p>
           )}

@@ -2,14 +2,14 @@
 @import "tailwindcss";
 
 /* ===== HANBANG 디자인 시스템 ===== */
-/* 토스증권형 × 엔젤투자 × 배당 중심 × 로얄블루 */
+/* 토스증권형 × 투자 × 배당 중심 × 로얄블루 */
 
 @layer base {
   :root {
     /* 메인 컬러 */
-    --royal-blue: #1E3A8A;
+    --royal-blue: #1E40AF;
     --royal-blue-light: #2563EB;
-    --royal-blue-dark: #1E40AF;
+    --royal-blue-dark: #1D4ED8;
     --midnight-navy: #0F172A;
     --midnight-navy-light: #1E293B;
 
@@ -20,7 +20,7 @@
     --accent-loss-light: #EF4444;
 
     /* 배경/카드 */
-    --bg: #F8FAFC;
+    --bg: #F3F6FB;
     --bg-secondary: #F1F5F9;
     --card: #FFFFFF;
     --card-elevated: #FFFFFF;
@@ -31,7 +31,7 @@
     --text-muted: #94A3B8;
 
     /* 테두리 */
-    --border: #E2E8F0;
+    --border: #E6ECF5;
     --border-strong: #CBD5E1;
 
     /* 그림자 */
@@ -93,7 +93,7 @@
   }
   .btn-primary:hover:not(:disabled) {
     background: var(--royal-blue-dark);
-    transform: translateY(-1px);
+    opacity: 0.95;
   }
 
   .btn-secondary {
@@ -132,15 +132,40 @@
     border: 1px solid var(--border);
     box-shadow: var(--shadow-sm);
   }
+
+  .card-depth {
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  }
   .card:hover {
     box-shadow: var(--shadow-md);
   }
 
   .card-royal {
     @apply rounded-[16px] p-6;
-    background: linear-gradient(135deg, var(--royal-blue) 0%, var(--royal-blue-dark) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--royal-blue),
+      var(--royal-blue-dark)
+    );
     color: white;
-    box-shadow: var(--shadow-royal);
+    box-shadow: 0 20px 40px rgba(30, 64, 175, 0.25);
+  }
+
+  .hero-glow {
+    position: relative;
+  }
+
+  .hero-glow::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-base);
+    background: radial-gradient(
+      circle at 30% 20%,
+      rgba(255,255,255,0.15),
+      transparent 60%
+    );
+    pointer-events: none;
   }
 
   /* 숫자 전용 */
@@ -177,7 +202,7 @@
 
   /* 페이지 컨테이너 */
   .page-wrap {
-    @apply max-w-3xl mx-auto px-4 pb-32;
+    @apply pb-32;
   }
 
   /* glass-card */
@@ -197,17 +222,28 @@
     background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #3B82F6 100%);
   }
 
-  /* subtle-divider */
+  /* subtle-divider: 카드 내부 구분선 (border 박스 대신 사용) */
   .subtle-divider {
-    height: 1px;
-    background: var(--border);
-    opacity: 0.6;
+    height: 0;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+  .subtle-divider-b {
+    border-bottom: 1px solid var(--border);
   }
 
-  /* metric-number */
-  .metric-number {
+  /* metric-number: 숫자 전용 tabular-nums (수치 표시 전역 강제) */
+  .metric-number,
+  .metric, .metric-lg, .metric-xl {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
+  }
+
+  /* 카드 내부 섹션 간격 (12~16px, 24px는 카드 간에만) */
+  .card-inner-gap {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
   }
 
   /* 버튼 상태 통일 */
@@ -245,3 +281,52 @@
     100% { background-position: -200% 0; }
   }
 }
+
+/* =========================
+   DESIGN SYSTEM v2 TOKENS
+========================= */
+
+:root {
+  /* Radius */
+  --radius-base: 16px;
+  --radius-lg: 20px;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Typography scale */
+  --font-display: 28px;
+  --font-title: 22px;
+  --font-subtitle: 18px;
+  --font-body: 14px;
+  --font-caption: 12px;
+
+  /* 타이포 시스템 */
+  --h1: 2rem;        /* 32px */
+  --h2: 1.5rem;     /* 24px */
+  --h3: 1.25rem;    /* 20px */
+  --body-lg: 1.125rem; /* 18px */
+  --body: 1rem;     /* 16px */
+  --body-sm: 0.875rem; /* 14px */
+  --caption: 0.75rem; /* 12px */
+}
+
+/* Utility typography classes */
+.text-display { font-size: var(--font-display); font-weight: 700; }
+.text-title { font-size: var(--font-title); font-weight: 600; }
+.text-subtitle { font-size: var(--font-subtitle); font-weight: 600; }
+.text-body { font-size: var(--font-body); }
+.text-caption { font-size: var(--font-caption); color: var(--text-muted); }
+
+/* 타이포 시스템 + line-height 통일 */
+.h1 { font-size: var(--h1); font-weight: 800; line-height: 1.25; } /* leading-tight */
+.h2 { font-size: var(--h2); font-weight: 700; line-height: 1.375; } /* leading-snug */
+.h3 { font-size: var(--h3); font-weight: 600; line-height: 1.375; } /* leading-snug */
+.body-lg { font-size: var(--body-lg); line-height: 1.5; }
+.body { font-size: var(--body); line-height: 1.5; }
+.body-sm { font-size: var(--body-sm); line-height: 1.5; }
+.caption { font-size: var(--caption); line-height: 1; } /* leading-none */

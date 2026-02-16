@@ -2,9 +2,10 @@
 
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
-import MarketGridCard from '@/components/market/MarketGridCard';
+import CardV5MarketCard from '@/components/market/CardV5MarketCard';
+import TopAppBar from '@/components/ui/TopAppBar';
 import { useMarketTab, type RailItem } from '@/hooks/useMarketTab';
 import { useMemo, useState, useEffect, Suspense } from 'react';
 
@@ -66,88 +67,89 @@ function MarketPageContent() {
   const [activePreviewId, setActivePreviewId] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen pb-8" style={{ backgroundColor: 'var(--toss-bg)' }}>
-      <header className="sticky top-0 z-50 bg-[var(--toss-card)] border-b border-black/5">
-        <div className="flex items-center h-14 px-4 max-w-lg mx-auto gap-2">
-          <Link href="/" className="p-2 -ml-2 rounded-xl" style={{ color: 'var(--toss-text-secondary)' }} aria-label="뒤로">
-            <ArrowLeft size={24} strokeWidth={2} />
-          </Link>
-          <h1 className="flex-1 text-center text-[17px] font-bold" style={{ color: 'var(--toss-text)' }}>수익권 마켓</h1>
-          <div className="w-10" />
+    <div className="pb-8" style={{ backgroundColor: 'var(--bg)' }}>
+      <TopAppBar title="수익권 마켓" backHref="/" />
+      <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}>
+        <div className="relative">
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-secondary)' }} />
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="작품명, 크리에이터명 검색"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border body-sm focus:outline-none focus:ring-2 focus:ring-[var(--royal-blue)]"
+            style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
+            aria-label="작품명, 크리에이터명 검색"
+          />
         </div>
-        <div className="px-4 pb-3">
-          <div className="relative">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--toss-text-secondary)' }} />
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="작품명, 크리에이터명 검색"
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)]"
-              style={{ backgroundColor: 'var(--toss-bg)', borderColor: 'var(--toss-border)', color: 'var(--toss-text)' }}
-              aria-label="작품명, 크리에이터명 검색"
-            />
-          </div>
-        </div>
+      </div>
 
-        {/* SortDropdown */}
-        <div className="px-4 py-2 border-b border-black/5">
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="w-full max-w-[140px] px-3 py-2 rounded-lg text-[13px] font-medium border"
-            style={{ backgroundColor: 'var(--toss-bg)', color: 'var(--toss-text)', borderColor: 'var(--toss-border)' }}
+      <div className="px-4 py-2 border-b" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="w-full max-w-[140px] px-3 py-2 rounded-xl body-sm font-medium border"
+          style={{ backgroundColor: 'var(--bg)', color: 'var(--text)', borderColor: 'var(--border)' }}
+        >
+          {SORT_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex overflow-x-auto no-scrollbar gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)', gap: 'var(--space-md)' }}>
+        {TABS.filter((t) => t.key !== 'my' || showMyTab).map((t) => (
+          <Link
+            key={t.key}
+            href={t.key === 'category' ? '/market?tab=category' : `/market?tab=${t.key}`}
+            className={`shrink-0 px-4 h-8 flex items-center rounded-xl body-sm font-semibold transition ${
+              tab === t.key ? 'text-white' : 'hover:opacity-80'
+            }`}
+            style={{
+              backgroundColor: tab === t.key ? 'var(--royal-blue)' : 'var(--bg-secondary)',
+              color: tab === t.key ? '#fff' : 'var(--text-secondary)',
+            }}
           >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-        </div>
+            {t.label}
+          </Link>
+        ))}
+      </div>
 
-        {/* 탭 */}
-        <div className="flex overflow-x-auto no-scrollbar gap-1 px-4 pb-2 border-b border-black/5">
-          {TABS.filter((t) => t.key !== 'my' || showMyTab).map((t) => (
-            <Link
-              key={t.key}
-              href={t.key === 'category' ? '/market?tab=category' : `/market?tab=${t.key}`}
-              className={`shrink-0 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition ${
-                tab === t.key ? 'bg-[var(--toss-blue)] text-white' : 'text-[var(--toss-text-secondary)] hover:bg-black/5'
-              }`}
-            >
-              {t.label}
-            </Link>
-          ))}
-        </div>
+      <div className="flex overflow-x-auto no-scrollbar gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}>
+        {filters.categories.map((c) => (
+          <Link
+            key={c}
+            href={`/market?tab=category&category=${encodeURIComponent(c)}`}
+            className={`shrink-0 px-3 py-1.5 rounded-xl caption font-medium transition ${
+              category === c ? 'text-white' : 'hover:opacity-80'
+            }`}
+            style={{
+              backgroundColor: category === c ? 'var(--royal-blue)' : 'var(--bg-secondary)',
+              color: category === c ? '#fff' : 'var(--text-secondary)',
+            }}
+          >
+            {c}
+          </Link>
+        ))}
+        {filters.artist_keywords.map((kw) => (
+          <button
+            key={kw}
+            type="button"
+            onClick={() => setArtistKeyword(artistKeyword === kw ? null : kw)}
+            className={`shrink-0 px-3 py-1.5 rounded-xl caption font-medium transition ${
+              artistKeyword === kw ? 'text-black' : 'hover:opacity-80'
+            }`}
+            style={{
+              backgroundColor: artistKeyword === kw ? '#C5A059' : 'var(--bg-secondary)',
+              color: artistKeyword === kw ? '#000' : 'var(--text-secondary)',
+            }}
+          >
+            {kw}
+          </button>
+        ))}
+      </div>
 
-        {/* 필터 칩: 카테고리 + artist_keyword */}
-        <div className="flex overflow-x-auto no-scrollbar gap-2 px-4 py-3 border-b border-black/5">
-          {filters.categories.map((c) => (
-            <Link
-              key={c}
-              href={`/market?tab=category&category=${encodeURIComponent(c)}`}
-              className={`shrink-0 px-3 py-1.5 rounded-lg text-[12px] font-medium transition ${
-                category === c ? 'bg-[var(--toss-blue)] text-white' : 'bg-black/5 text-[var(--toss-text-secondary)] hover:bg-black/10'
-              }`}
-            >
-              {c}
-            </Link>
-          ))}
-          {filters.artist_keywords.map((kw) => (
-            <button
-              key={kw}
-              type="button"
-              onClick={() => setArtistKeyword(artistKeyword === kw ? null : kw)}
-              className={`shrink-0 px-3 py-1.5 rounded-lg text-[12px] font-medium transition ${
-                artistKeyword === kw ? 'bg-[#C5A059] text-black' : 'bg-black/5 text-[var(--toss-text-secondary)] hover:bg-black/10'
-              }`}
-            >
-              {kw}
-            </button>
-          ))}
-        </div>
-      </header>
-
-      <main className="max-w-lg mx-auto px-4 pt-4 pb-8">
+      <div className="pt-4 pb-8 px-4" style={{ paddingTop: 'var(--space-lg)' }}>
         {loading && items.length === 0 ? (
           <div className="grid grid-cols-2 gap-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -158,9 +160,9 @@ function MarketPageContent() {
           <EmptyState tab={effectiveTab} isLoggedIn={!!user} />
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2" style={{ gap: 'var(--space-md)' }}>
               {filteredItems.map((item: RailItem, i: number) => (
-                <MarketGridCard
+                <CardV5MarketCard
                   key={item.id}
                   item={item}
                   index={i}
@@ -176,8 +178,8 @@ function MarketPageContent() {
                   type="button"
                   onClick={loadMore}
                   disabled={loading}
-                  className="px-6 py-3 rounded-xl text-[14px] font-semibold disabled:opacity-50"
-                  style={{ backgroundColor: 'var(--toss-blue)', color: '#fff' }}
+                  className="px-6 py-3 rounded-xl body-sm font-semibold disabled:opacity-50"
+                  style={{ backgroundColor: 'var(--royal-blue)', color: '#fff' }}
                 >
                   {loading ? '로딩 중...' : '더보기'}
                 </button>
@@ -185,7 +187,7 @@ function MarketPageContent() {
             )}
           </>
         )}
-      </main>
+      </div>
     </div>
   );
 }
@@ -193,8 +195,8 @@ function MarketPageContent() {
 export default function MarketPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--toss-bg)' }}>
-        <div className="animate-pulse text-[var(--toss-text-secondary)]">로딩 중...</div>
+      <div className="flex items-center justify-center" style={{ backgroundColor: 'var(--bg)' }}>
+        <div className="animate-pulse body-sm" style={{ color: 'var(--text-secondary)' }}>로딩 중...</div>
       </div>
     }>
       <MarketPageContent />
@@ -206,24 +208,24 @@ function EmptyState({ tab, isLoggedIn }: { tab: string; isLoggedIn: boolean }) {
   if (tab === 'my') {
     return (
       <div className="py-16 text-center">
-        <p className="text-[15px] font-medium" style={{ color: 'var(--toss-text)' }}>
+        <p className="body font-medium" style={{ color: 'var(--text)' }}>
           관심이 없습니다
         </p>
-        <p className="text-[13px] mt-2" style={{ color: 'var(--toss-text-secondary)' }}>
+        <p className="body-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
           홈에서 관심 버튼을 눌러주세요
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
           <Link
             href="/"
-            className="px-6 py-3 rounded-xl text-[14px] font-semibold"
-            style={{ backgroundColor: 'var(--toss-blue)', color: '#fff' }}
+            className="px-6 py-3 rounded-xl body-sm font-semibold"
+            style={{ backgroundColor: 'var(--royal-blue)', color: '#fff' }}
           >
             홈으로
           </Link>
           <Link
             href="/market?tab=popular"
-            className="px-6 py-3 rounded-xl text-[14px] font-semibold border"
-            style={{ borderColor: 'var(--toss-border)', color: 'var(--toss-text)' }}
+            className="px-6 py-3 rounded-xl body-sm font-semibold border"
+            style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
           >
             인기 보러가기
           </Link>
@@ -234,7 +236,7 @@ function EmptyState({ tab, isLoggedIn }: { tab: string; isLoggedIn: boolean }) {
   if (tab === 'deadline') {
     return (
       <div className="py-16 text-center">
-        <p className="text-[15px] font-medium" style={{ color: 'var(--toss-text)' }}>
+        <p className="body font-medium" style={{ color: 'var(--text)' }}>
           마감 예정이 없습니다
         </p>
       </div>
@@ -242,7 +244,7 @@ function EmptyState({ tab, isLoggedIn }: { tab: string; isLoggedIn: boolean }) {
   }
   return (
     <div className="py-16 text-center">
-      <p className="text-[15px] font-medium" style={{ color: 'var(--toss-text-secondary)' }}>
+      <p className="body font-medium" style={{ color: 'var(--text-secondary)' }}>
         조건에 맞는 수익권이 없습니다
       </p>
     </div>

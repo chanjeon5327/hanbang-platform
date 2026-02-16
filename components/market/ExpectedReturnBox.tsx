@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import MetricRow from '@/components/ui/MetricRow';
+import { CardV5 } from '@/components/ui/CardV5';
 
-const TAX_RATE = 0.154; // 15.4% 세금
+const TAX_RATE = 0.154;
 
 type Props = {
-  yieldRate?: number; // 월 수익률 %
+  yieldRate?: number;
   defaultAmount?: number;
   onAmountChange?: (amount: number) => void;
 };
@@ -47,74 +49,46 @@ export default function ExpectedReturnBox({
     onAmountChange?.(clamped);
   };
 
+  const summaryItems = [
+    { label: '예상 월 수익률', value: `${monthlyRate}%`, tone: 'positive' as const },
+    { label: '월 예상 수익', value: formatPrice(Math.round(displayMonthlyProfit)) },
+    { label: '연 환산', value: `${annualRate}% · ${formatPrice(Math.round(displayAnnualProfit))}` },
+  ];
+
+  const periodItems = [
+    { label: '3개월', value: formatPrice(Math.round(calc.m3)) },
+    { label: '6개월', value: formatPrice(Math.round(calc.m6)) },
+    { label: '12개월', value: formatPrice(Math.round(calc.m12)), tone: 'positive' as const },
+  ];
+
   return (
-    <div className="rounded-3xl p-4" style={{ backgroundColor: 'rgba(49,130,246,0.06)' }}>
-      <h3 className="text-[15px] font-bold mb-3" style={{ color: 'var(--upbit-text)' }}>예상 수익 계산기</h3>
+    <CardV5 style={{ backgroundColor: 'rgba(49,130,246,0.04)' }}>
+      <h3 className="body font-bold mb-4" style={{ color: 'var(--text)' }}>예상 수익 계산기</h3>
 
       <div className="mb-4">
-        <label className="text-[12px] block mb-1" style={{ color: 'var(--upbit-text-dim)' }}>투자 금액</label>
+        <label className="caption block mb-1" style={{ color: 'var(--text-secondary)' }}>투자 금액</label>
         <input
           type="text"
           inputMode="numeric"
           value={amount ? amount.toLocaleString() : ''}
           onChange={handleInput}
           placeholder="100,000"
-          className="w-full px-4 py-3 rounded-lg border text-[16px] font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--upbit-bid)]"
-          style={{ backgroundColor: 'var(--upbit-bg)', borderColor: 'var(--upbit-border)', color: 'var(--upbit-text)' }}
+          className="w-full px-4 py-3 rounded-xl border body font-semibold metric-number focus:outline-none focus:ring-2 focus:ring-[var(--royal-blue)]"
+          style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text)' }}
         />
       </div>
 
-      {/* 메인 KPI: 예상 월 수익률 */}
-      <div className="mb-2">
-        <label className="text-[12px] block mb-1" style={{ color: 'var(--upbit-text-dim)' }}>예상 월 수익률</label>
-        <p className="text-[24px] font-extrabold tabular-nums" style={{ color: 'var(--upbit-positive)' }}>{monthlyRate}%</p>
-      </div>
-
-      {/* 월 예상 수익 금액 강조 */}
-      <p className="text-[18px] font-extrabold tabular-nums mb-3" style={{ color: 'var(--upbit-text)' }}>
-        월 예상 수익 {formatPrice(Math.round(displayMonthlyProfit))}
-      </p>
-
-      {/* 연 환산 보조 */}
-      <p className="text-[12px] mb-4" style={{ color: 'var(--upbit-text-dim)' }}>
-        연 환산 {annualRate}% · {formatPrice(Math.round(displayAnnualProfit))} (단리 기준)
-      </p>
-
-      {/* 3/6/12개월 - 월 기준 */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="rounded-lg p-3 text-center" style={{ backgroundColor: 'rgba(49,130,246,0.08)' }}>
-          <div className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>3개월</div>
-          <div className="text-[14px] font-extrabold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
-            {formatPrice(Math.round(calc.m3))}
-          </div>
-        </div>
-        <div className="rounded-lg p-3 text-center" style={{ backgroundColor: 'rgba(49,130,246,0.08)' }}>
-          <div className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>6개월</div>
-          <div className="text-[14px] font-extrabold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
-            {formatPrice(Math.round(calc.m6))}
-          </div>
-        </div>
-        <div className="rounded-lg p-3 text-center" style={{ backgroundColor: 'rgba(49,130,246,0.08)' }}>
-          <div className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>12개월</div>
-          <div className="text-[14px] font-extrabold tabular-nums" style={{ color: 'var(--upbit-positive)' }}>
-            {formatPrice(Math.round(calc.m12))}
-          </div>
-        </div>
-      </div>
+      <MetricRow items={summaryItems} columns={3} dense className="mb-4" />
+      <MetricRow items={periodItems} columns={3} dense className="mb-4" />
 
       <label className="flex items-center gap-2 cursor-pointer mb-2">
-        <input
-          type="checkbox"
-          checked={showAfterTax}
-          onChange={(e) => setShowAfterTax(e.target.checked)}
-          className="rounded"
-        />
-        <span className="text-[12px]" style={{ color: 'var(--upbit-text-dim)' }}>세후 (15.4% 세금 적용)</span>
+        <input type="checkbox" checked={showAfterTax} onChange={(e) => setShowAfterTax(e.target.checked)} className="rounded" />
+        <span className="caption" style={{ color: 'var(--text-secondary)' }}>세후 (15.4% 세금 적용)</span>
       </label>
 
-      <p className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>
+      <p className="caption" style={{ color: 'var(--text-secondary)' }}>
         * 가정 기반 계산입니다. 실제 수익은 콘텐츠 성과에 따라 달라질 수 있습니다.
       </p>
-    </div>
+    </CardV5>
   );
 }

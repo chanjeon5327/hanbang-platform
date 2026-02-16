@@ -30,7 +30,7 @@ export default function SupportBubble() {
           style={{ backgroundColor: TOSS.card, borderColor: TOSS.border }}
         >
           <div className="flex justify-between items-center px-4 py-3 border-b" style={{ borderColor: TOSS.border }}>
-            <span className="text-[15px] font-bold" style={{ color: TOSS.text }}>고객센터</span>
+            <span className="body font-bold" style={{ color: TOSS.text }}>고객센터</span>
             <button
               onClick={() => setOpen(false)}
               className="p-1 rounded-lg hover:bg-black/5 transition"
@@ -48,20 +48,20 @@ export default function SupportBubble() {
                 style={{ color: TOSS.text }}
               >
                 <Icon size={18} strokeWidth={2} style={{ color: TOSS.blue }} />
-                <span className="text-[14px] font-medium">{label}</span>
+                <span className="body-sm font-medium">{label}</span>
               </Link>
             ))}
           </nav>
           <div className="px-4 py-3 border-t" style={{ borderColor: TOSS.border, backgroundColor: 'rgba(0,0,0,0.02)' }}>
-            <p className="text-[12px] font-medium" style={{ color: TOSS.secondary }}>운영시간</p>
-            <p className="text-[13px] mt-0.5" style={{ color: TOSS.text }}>평일 09:00 ~ 18:00</p>
-            <p className="text-[12px] mt-2 font-semibold" style={{ color: TOSS.blue }}>응답 SLA: 24시간 이내</p>
+            <p className="caption font-medium" style={{ color: TOSS.secondary }}>운영시간</p>
+            <p className="body-sm mt-0.5" style={{ color: TOSS.text }}>평일 09:00 ~ 18:00</p>
+            <p className="caption mt-2 font-semibold" style={{ color: TOSS.blue }}>응답 SLA: 24시간 이내</p>
           </div>
         </div>
       )}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition hover:scale-105 active:scale-95"
+        className="flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition hover:opacity-90 active:opacity-80"
         style={{ backgroundColor: TOSS.blue, color: TOSS.card }}
         aria-label={open ? '고객센터 메뉴 닫기' : '고객센터 메뉴 열기'}
       >

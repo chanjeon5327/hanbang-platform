@@ -24,7 +24,7 @@ export default function MobileHome() {
 
   return (
     // [배경색 변경] 블랙 -> 연한 회색 (#F2F4F6)
-    <div className="min-h-screen bg-[#F2F4F6] pb-[90px] text-[#191F28]">
+    <div className="bg-[#F2F4F6] pb-[90px] text-[#191F28]">
       
       {/* 상단 헤더 (화이트 + 블러 효과) */}
       <header className="sticky top-0 z-50 flex items-center justify-between px-5 py-2 bg-white/80 backdrop-blur-md border-b border-gray-100">
@@ -58,7 +58,7 @@ export default function MobileHome() {
       </header>
       
       {/* 메인 콘텐츠 */}
-      <main className="px-5 pt-32 flex flex-col gap-4">
+      <div className="px-5 pt-32 flex flex-col gap-4">
         
         {/* 1. 자산 현황 카드 (화이트 박스) */}
         <section className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100">
@@ -146,7 +146,7 @@ export default function MobileHome() {
                      fill
                      className="object-cover"
                    />
-                   {i < 3 && <div className="absolute top-2 left-2 bg-[#ef4444] text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md">HOT</div>}
+                   {i < 3 && <div className="absolute top-2 left-2 bg-[#ef4444] text-white caption font-bold px-2 py-1 rounded-full shadow-md">HOT</div>}
                 </div>
                 <div className="p-4">
                   <div className="text-sm font-bold text-[#191F28] truncate mb-1">
@@ -201,7 +201,7 @@ export default function MobileHome() {
           </ul>
         </section>
 
-      </main>
+      </div>
 
       {/* 1:1 상담 플로팅 버튼 */}
       {/* 채팅창 */}
@@ -252,11 +252,11 @@ export default function MobileHome() {
       {/* 플로팅 버튼 */}
       <button 
         onClick={() => setIsChatOpen(!isChatOpen)}
-        className="fixed bottom-[100px] right-5 z-40 flex flex-col items-center justify-center transition-transform active:scale-90 hover:scale-105"
+        className="fixed bottom-[100px] right-5 z-40 flex flex-col items-center justify-center transition-transform active:opacity-90 hover:opacity-95"
       >
         <div className="w-[56px] h-[56px] bg-[#7c3aed] rounded-full shadow-lg shadow-purple-500/40 flex flex-col items-center justify-center text-white border-2 border-white">
           <MessageCircle size={20} fill="white" className="mb-0.5" />
-          <span className="text-[10px] font-bold leading-none">1:1</span>
+          <span className="caption font-bold leading-none">1:1</span>
         </div>
       </button>
 

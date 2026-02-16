@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { formatQty } from '@/lib/utils/format';
+import Divider from '@/components/ui/Divider';
 
 const TRADE_SOUND_PATH = '/sounds/trade.mp3';
 
@@ -21,9 +22,11 @@ function formatUsd(n: number): string {
 type Props = {
   contentId: string;
   onTrade?: (priceUsd: number) => void;
+  /** true면 거래 불가, empty state 메시지 표시 */
+  disabled?: boolean;
 };
 
-export default function TradeHistoryRealtime({ contentId, onTrade }: Props) {
+export default function TradeHistoryRealtime({ contentId, onTrade, disabled }: Props) {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
   const [blinkId, setBlinkId] = useState<string | null>(null);
@@ -130,64 +133,73 @@ export default function TradeHistoryRealtime({ contentId, onTrade }: Props) {
 
   if (loading) {
     return (
-      <div className="py-4 space-y-2">
+      <div className="py-2 space-y-1">
         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-          <div key={i} className="animate-pulse h-8 rounded bg-[var(--upbit-bg)]" />
+          <div key={i} className="animate-pulse h-6 rounded" style={{ backgroundColor: 'var(--border)' }} />
         ))}
+      </div>
+    );
+  }
+
+  if (disabled) {
+    return (
+      <div className="py-6 text-center">
+        <p className="caption" style={{ color: 'var(--text-secondary)' }}>
+          현재는 거래가 준비 중이에요. 배당 정보만 확인할 수 있어요.
+        </p>
       </div>
     );
   }
 
   return (
     <div className="space-y-0 max-h-[240px] overflow-y-auto">
-      <div className="grid grid-cols-3 gap-2 text-[11px] font-medium mb-2 px-2" style={{ color: 'var(--upbit-text-dim)' }}>
-        <span>체결가</span>
+      <div className="grid grid-cols-3 gap-2 caption font-medium mb-1.5 px-1" style={{ color: 'var(--text-secondary)' }}>
+        <span className="text-right">체결가</span>
         <span className="text-right">수량</span>
         <span className="text-right">시간</span>
       </div>
       {trades.length === 0 ? (
-        <p className="text-[13px] py-8 text-center" style={{ color: 'var(--upbit-text-dim)' }}>
+        <p className="caption py-6 text-center" style={{ color: 'var(--text-secondary)' }}>
           아직 체결 내역이 없습니다.
         </p>
       ) : (
-        trades.map((t) => {
+        trades.map((t, idx) => {
           const isBuy = t.side === 'buy';
           const isBlink = blinkId === t.id;
           return (
-            <div
-              key={t.id}
-              className={`grid grid-cols-3 gap-2 py-1.5 px-2 text-[13px] items-center ${
-                isBlink ? (isBuy ? 'trade-blink-buy' : 'trade-blink-sell') : ''
-              }`}
-              style={{
-                borderBottom: '1px solid var(--upbit-border)',
-              }}
-            >
+            <React.Fragment key={t.id}>
+              <div
+                className={`grid grid-cols-3 gap-2 py-2 px-1 body-sm items-center transition-colors ${
+                  isBlink ? (isBuy ? 'trade-blink-buy' : 'trade-blink-sell') : ''
+                }`}
+              >
               <span
-                className="font-semibold tabular-nums"
+                className="font-semibold metric-number text-right"
                 style={{
-                  color: isBuy ? 'var(--upbit-bid)' : 'var(--upbit-ask)',
+                  color: isBuy ? 'var(--emerald)' : 'var(--accent-loss)',
                 }}
               >
                 {isBuy ? '▲' : '▼'} {formatUsd(t.price_usd)}
               </span>
-              <span className="tabular-nums text-right" style={{ color: 'var(--upbit-text-dim)' }}>
+              <span className="metric-number text-right" style={{ color: 'var(--text-secondary)' }}>
                 {formatQty(t.quantity)}
               </span>
-              <span className="text-[11px] text-right" style={{ color: 'var(--upbit-text-dim)' }}>
+              <span className="metric-number caption text-right" style={{ color: 'var(--text-muted)' }}>
                 {new Date(t.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </span>
             </div>
+            {idx < trades.length - 1 && <Divider />}
+          </React.Fragment>
           );
         })
       )}
       <style>{`
         @keyframes tradeBlinkBuy {
-          0% { background-color: rgba(30,136,229,0.5); }
+          0% { background-color: rgba(5,150,105,0.3); }
           100% { background-color: transparent; }
         }
         @keyframes tradeBlinkSell {
-          0% { background-color: rgba(229,57,53,0.5); }
+          0% { background-color: rgba(220,38,38,0.3); }
           100% { background-color: transparent; }
         }
         .trade-blink-buy { animation: tradeBlinkBuy 0.3s ease-out forwards; }

@@ -49,33 +49,33 @@ function ListCard({ item, index }: { item: MarketCardItem; index: number }) {
     <Link
       href={`/market/${item.id}`}
       data-testid="market-card"
-      className="group flex gap-4 p-4 rounded-2xl border border-black/5 active:scale-[0.99] transition-all focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-2"
+      className="group flex gap-4 p-4 rounded-2xl border border-black/5 active:opacity-95 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--toss-blue)] focus:ring-offset-2"
       style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
       aria-label={`${item.title} 수익권 상세 보기`}
     >
       {/* 썸네일 */}
       <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-black/5">
-        <img src={thumbSrc} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+        <img src={thumbSrc} alt="" className="w-full h-full object-cover group-hover:opacity-95 transition-transform" loading="lazy" />
       </div>
 
       <div className="flex-1 min-w-0">
         {/* 작품명 + 수익모델 */}
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-[15px] font-bold line-clamp-1" style={{ color: TOSS.text }}>{item.title}</h3>
+          <h3 className="body font-bold line-clamp-1" style={{ color: TOSS.text }}>{item.title}</h3>
           {item.revenueBadge && (
-            <span className="shrink-0 rounded-lg px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: 'rgba(49,130,246,0.12)', color: TOSS.blue }}>
+            <span className="shrink-0 rounded-lg px-2 py-0.5 caption font-semibold" style={{ backgroundColor: 'rgba(49,130,246,0.12)', color: TOSS.blue }}>
               {item.revenueBadge}
             </span>
           )}
         </div>
 
         {/* 요약 (크리에이터) */}
-        <p className="text-[12px] mt-0.5 line-clamp-2" style={{ color: TOSS.secondary }}>{summary}</p>
+        <p className="caption mt-0.5 line-clamp-2" style={{ color: TOSS.secondary }}>{summary}</p>
 
         {/* 가격 + 등락률 */}
         <div className="flex items-baseline gap-2 mt-2">
-          <span className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>₩{price.toLocaleString()}</span>
-          <span className="text-[12px] font-semibold tabular-nums" style={{ color: change >= 0 ? TOSS.positive : TOSS.negative }}>
+          <span className="body-sm font-bold tabular-nums" style={{ color: TOSS.text }}>₩{price.toLocaleString()}</span>
+          <span className="caption font-semibold tabular-nums" style={{ color: change >= 0 ? TOSS.positive : TOSS.negative }}>
             {change >= 0 ? '+' : ''}{change}%
           </span>
         </div>
@@ -84,7 +84,7 @@ function ListCard({ item, index }: { item: MarketCardItem; index: number }) {
         <div className="flex items-center gap-3 mt-2">
           {progress > 0 && (
             <div className="flex-1 min-w-0">
-              <div className="flex justify-between text-[10px] mb-0.5" style={{ color: TOSS.secondary }}>
+              <div className="flex justify-between caption mb-0.5" style={{ color: TOSS.secondary }}>
                 <span>모집률</span>
                 <span className="font-medium" style={{ color: TOSS.text }}>{progress}%</span>
               </div>
@@ -94,7 +94,7 @@ function ListCard({ item, index }: { item: MarketCardItem; index: number }) {
             </div>
           )}
           {item.remainingText && (
-            <span className="shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(235,77,61,0.12)', color: TOSS.negative }}>
+            <span className="shrink-0 caption font-semibold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(235,77,61,0.12)', color: TOSS.negative }}>
               {item.remainingText}
             </span>
           )}
@@ -122,30 +122,30 @@ export default function MarketCard({ item, index, variant = 'list' }: Props) {
       <Link
         href={`/market/${item.id}`}
         data-testid="market-card"
-        className="group flex gap-4 p-4 rounded-2xl border border-black/5 active:scale-[0.99] transition-all"
+        className="group flex gap-4 p-4 rounded-2xl border border-black/5 active:opacity-95 transition-all"
         style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
         aria-label={`${item.title} 수익권 보기`}
       >
         <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0">
-          <img src={thumbSrc} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+          <img src={thumbSrc} alt="" className="w-full h-full object-cover group-hover:opacity-95 transition-transform" loading="lazy" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-[15px] font-bold line-clamp-1" style={{ color: TOSS.text }}>{item.title}</h3>
+            <h3 className="body font-bold line-clamp-1" style={{ color: TOSS.text }}>{item.title}</h3>
             {item.revenueBadge && (
-              <span className="shrink-0 rounded px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: 'rgba(49,130,246,0.15)', color: TOSS.blue }}>{item.revenueBadge}</span>
+              <span className="shrink-0 rounded px-2 py-0.5 caption font-semibold" style={{ backgroundColor: 'rgba(49,130,246,0.15)', color: TOSS.blue }}>{item.revenueBadge}</span>
             )}
           </div>
-          <p className="text-[12px] mt-0.5 truncate" style={{ color: TOSS.secondary }}>{summary}</p>
+          <p className="caption mt-0.5 truncate" style={{ color: TOSS.secondary }}>{summary}</p>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>₩{price.toLocaleString()}</span>
-            <span className="text-[12px] font-semibold tabular-nums" style={{ color: change >= 0 ? TOSS.positive : TOSS.negative }}>
+            <span className="body-sm font-bold tabular-nums" style={{ color: TOSS.text }}>₩{price.toLocaleString()}</span>
+            <span className="caption font-semibold tabular-nums" style={{ color: change >= 0 ? TOSS.positive : TOSS.negative }}>
               {change >= 0 ? '+' : ''}{change}%
             </span>
           </div>
           {progress > 0 && (
             <div className="mt-2">
-              <div className="flex justify-between text-[11px] mb-1" style={{ color: TOSS.secondary }}>
+              <div className="flex justify-between caption mb-1" style={{ color: TOSS.secondary }}>
                 <span>모집률</span>
                 <span>{progress}%</span>
               </div>
@@ -155,7 +155,7 @@ export default function MarketCard({ item, index, variant = 'list' }: Props) {
             </div>
           )}
           {item.remainingText && (
-            <p className="text-[11px] mt-1" style={{ color: TOSS.negative }}>{item.remainingText}</p>
+            <p className="caption mt-1" style={{ color: TOSS.negative }}>{item.remainingText}</p>
           )}
         </div>
       </Link>
@@ -170,25 +170,25 @@ export default function MarketCard({ item, index, variant = 'list' }: Props) {
       style={{ width: 160 }}
       aria-label={`${item.title} 수익권 보기`}
     >
-      <div className="relative overflow-hidden rounded-2xl border border-black/5 active:scale-[0.97] transition-all duration-200" style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div className="relative overflow-hidden rounded-2xl border border-black/5 active:opacity-95 transition-all duration-200" style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
         <div className="aspect-[4/5] relative overflow-hidden">
-          <img src={thumbSrc} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+          <img src={thumbSrc} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:opacity-95" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" aria-hidden />
           {item.revenueBadge && (
-            <span className="absolute top-2 left-2 rounded px-2 py-0.5 text-[10px] font-semibold text-white" style={{ backgroundColor: TOSS.blue }}>{item.revenueBadge}</span>
+            <span className="absolute top-2 left-2 rounded px-2 py-0.5 caption font-semibold text-white" style={{ backgroundColor: TOSS.blue }}>{item.revenueBadge}</span>
           )}
           {item.remainingText && (
-            <span className="absolute top-2 right-2 rounded px-2 py-0.5 text-[10px] font-bold text-white" style={{ backgroundColor: TOSS.negative }}>{item.remainingText}</span>
+            <span className="absolute top-2 right-2 rounded px-2 py-0.5 caption font-bold text-white" style={{ backgroundColor: TOSS.negative }}>{item.remainingText}</span>
           )}
           <div className="absolute bottom-2 left-2 right-2">
-            <span className="text-[13px] font-bold text-white drop-shadow-md line-clamp-1">{item.title}</span>
-            <span className="text-[11px] text-white/90">{item.creator_name ?? item.category ?? '-'}</span>
+            <span className="body-sm font-bold text-white drop-shadow-md line-clamp-1">{item.title}</span>
+            <span className="caption text-white/90">{item.creator_name ?? item.category ?? '-'}</span>
           </div>
         </div>
         <div className="p-3">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>₩{price.toLocaleString()}</span>
-            <span className="text-[12px] font-semibold tabular-nums" style={{ color: change >= 0 ? TOSS.positive : TOSS.negative }}>
+            <span className="body-sm font-bold tabular-nums" style={{ color: TOSS.text }}>₩{price.toLocaleString()}</span>
+            <span className="caption font-semibold tabular-nums" style={{ color: change >= 0 ? TOSS.positive : TOSS.negative }}>
               {change >= 0 ? '+' : ''}{change}%
             </span>
           </div>
@@ -197,7 +197,7 @@ export default function MarketCard({ item, index, variant = 'list' }: Props) {
               <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: TOSS.border }}>
                 <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, progress)}%`, backgroundColor: TOSS.blue }} />
               </div>
-              <p className="text-[10px] mt-0.5" style={{ color: TOSS.secondary }}>모집 {progress}%</p>
+              <p className="caption mt-0.5" style={{ color: TOSS.secondary }}>모집 {progress}%</p>
             </div>
           )}
         </div>

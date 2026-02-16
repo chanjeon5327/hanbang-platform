@@ -40,17 +40,17 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <>
-      <Card className="group h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer rounded-3xl border-none shadow-md">
+      <Card className="group h-full transition-all hover:shadow-md hover:opacity-95 cursor-pointer rounded-3xl border-none shadow-md">
         <Link href={`/projects/${project.id}`}>
           <div className="relative aspect-video w-full overflow-hidden rounded-t-3xl">
             <Image
               src={project.thumbnail_url || getYtThumb(project.id?.length ?? 0)}
               alt={project.title}
               fill
-              className="object-cover transition-transform group-hover:scale-110"
+              className="object-cover transition-transform group-hover:opacity-95"
             />
             <div className="absolute top-3 right-3">
-              <Badge variant="secondary">기타</Badge>
+              <Badge variant="secondary">??</Badge>
             </div>
           </div>
 
@@ -67,7 +67,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">예상 수익률</span>
+              <span className="text-sm text-muted-foreground">?? ???</span>
               <span className="text-2xl font-bold text-red-500">
                 {formatRate(Number(project.yield_rate))}
               </span>
@@ -75,7 +75,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">모집 진행률</span>
+                <span className="text-muted-foreground">???</span>
                 <span className="font-medium">
                   {progressPercentage.toFixed(1)}%
                 </span>
@@ -94,7 +94,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             </div>
 
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">최소 투자금액</span>
+              <span className="text-muted-foreground">?? ????</span>
               <span className="font-semibold">
                 {formatKrw(project.min_investment || 10000)}
               </span>
@@ -108,7 +108,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             variant="default"
             onClick={handleInvestClick}
           >
-            엔젤로 참여
+            ??
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </CardFooter>
@@ -121,4 +121,3 @@ export function ProjectCard({ project }: ProjectCardProps) {
     </>
   )
 }
-

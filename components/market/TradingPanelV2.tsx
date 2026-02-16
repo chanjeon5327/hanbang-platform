@@ -26,6 +26,8 @@ type Props = {
   onToast?: (message: string) => void;
   /** 'order-only': 호가/체결/내주문/포지션 탭 숨김, 주문 폼만 표시 (거래소 레이아웃용) */
   variant?: 'full' | 'order-only';
+  /** true면 입력/버튼 비활성 + 안내 메시지 */
+  disabled?: boolean;
 };
 
 function formatUsd(n: number): string {
@@ -40,6 +42,7 @@ export default function TradingPanelV2({
   totalSupplyShares,
   onToast,
   variant = 'full',
+  disabled = false,
 }: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'호가' | '주문' | '체결' | '내주문' | '포지션'>('호가');
@@ -176,6 +179,7 @@ export default function TradingPanelV2({
   }, [sharePriceUsd]);
 
   const handlePlaceOrder = useCallback(async () => {
+    if (disabled) return;
     if (!isLoggedIn) {
       router.push('/login');
       return;
@@ -317,6 +321,7 @@ export default function TradingPanelV2({
     fetchMyOrders,
     fetchPosition,
     fetchUserCash,
+    disabled,
   ]);
 
   const maxBid = bids.length > 0 ? Math.max(...bids.map((b) => b.quantity)) : 1;
@@ -332,7 +337,7 @@ export default function TradingPanelV2({
   const showTabs = variant === 'full';
 
   return (
-    <div className="py-4" style={{ borderBottom: showTabs ? '1px solid var(--upbit-border)' : 'none' }}>
+    <div className="py-4" style={{ borderBottom: showTabs ? '1px solid var(--border)' : 'none' }}>
       <style>{`
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -344,10 +349,10 @@ export default function TradingPanelV2({
             key={t}
             type="button"
             onClick={() => setActiveTab(t)}
-            className="flex-1 py-2 text-[13px] font-semibold rounded-lg transition-opacity duration-150"
+            className="flex-1 py-2 body-sm font-semibold rounded-xl transition-opacity duration-150"
             style={{
-              backgroundColor: activeTab === t ? 'var(--primary)' : 'transparent',
-              color: activeTab === t ? '#fff' : 'var(--upbit-text-dim)',
+              backgroundColor: activeTab === t ? 'var(--royal-blue)' : 'transparent',
+              color: activeTab === t ? '#fff' : 'var(--text-secondary)',
             }}
           >
             {t}
@@ -366,27 +371,27 @@ export default function TradingPanelV2({
           ) : (
             <>
               <div>
-                <div className="text-[11px] mb-1" style={{ color: 'var(--upbit-text-dim)' }}>매수 호가</div>
+                <div className="caption mb-1" style={{ color: 'var(--text-secondary)' }}>매수 호가</div>
                 <div className="space-y-0.5">
                   {bids.slice(0, 5).map((b, i) => (
                     <div
                       key={i}
-                      className="flex justify-between items-center text-[13px] relative py-0.5"
-                      style={{
-                        backgroundColor: bestBid === b.price_usd ? 'rgba(30,136,229,0.12)' : undefined,
-                      }}
+                      className="flex justify-between items-center body-sm relative py-0.5"
+                        style={{
+                          backgroundColor: bestBid === b.price_usd ? 'rgba(5,150,105,0.08)' : undefined,
+                        }}
                     >
                       <div
                         className="absolute left-0 top-0 bottom-0 rounded-r opacity-15"
                         style={{
                           width: `${(b.quantity / maxBid) * 100}%`,
-                          backgroundColor: 'var(--upbit-bid)',
+                          backgroundColor: 'var(--emerald)',
                         }}
                       />
-                      <span className="font-semibold tabular-nums relative z-10" style={{ color: 'var(--upbit-bid)' }}>
+                      <span className="font-semibold tabular-nums text-right relative z-10" style={{ color: 'var(--emerald)' }}>
                         {formatUsd(b.price_usd)}
                       </span>
-                      <span className="tabular-nums relative z-10" style={{ color: 'var(--upbit-text-dim)' }}>
+                      <span className="tabular-nums text-right relative z-10" style={{ color: 'var(--text-secondary)' }}>
                         {formatQty(b.quantity)}
                       </span>
                     </div>
@@ -394,29 +399,29 @@ export default function TradingPanelV2({
                 </div>
               </div>
               <div>
-                <div className="text-[11px] mb-1" style={{ color: 'var(--upbit-text-dim)' }}>매도 호가</div>
+                <div className="caption mb-1" style={{ color: 'var(--text-secondary)' }}>매도 호가</div>
                 <div className="space-y-0.5">
                   {asks.slice(0, 5).map((a, i) => (
                     <div
                       key={i}
-                      className="flex justify-between items-center text-[13px] relative py-0.5"
-                      style={{
-                        backgroundColor: bestAsk === a.price_usd ? 'rgba(229,57,53,0.12)' : undefined,
-                      }}
+                      className="flex justify-between items-center body-sm relative py-0.5"
+                        style={{
+                          backgroundColor: bestAsk === a.price_usd ? 'rgba(220,38,38,0.08)' : undefined,
+                        }}
                     >
                       <div
                         className="absolute right-0 top-0 bottom-0 rounded-l opacity-15"
                         style={{
                           width: `${(a.quantity / maxAsk) * 100}%`,
-                          backgroundColor: 'var(--upbit-ask)',
+                          backgroundColor: 'var(--accent-loss)',
                           right: 0,
                           left: 'auto',
                         }}
                       />
-                      <span className="font-semibold tabular-nums relative z-10" style={{ color: 'var(--upbit-ask)' }}>
+                      <span className="font-semibold tabular-nums text-right relative z-10" style={{ color: 'var(--accent-loss)' }}>
                         {formatUsd(a.price_usd)}
                       </span>
-                      <span className="tabular-nums relative z-10" style={{ color: 'var(--upbit-text-dim)' }}>
+                      <span className="tabular-nums text-right relative z-10" style={{ color: 'var(--text-secondary)' }}>
                         {formatQty(a.quantity)}
                       </span>
                     </div>
@@ -429,16 +434,23 @@ export default function TradingPanelV2({
       )}
 
       {(showTabs ? activeTab === '주문' : true) && (
-        <div className="space-y-3 animate-[fadeIn_0.15s_ease-out]">
+        <div className="space-y-3 animate-[fadeIn_0.15s_ease-out] relative">
+          {disabled && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg" style={{ minHeight: 100, backgroundColor: 'var(--bg-secondary)' }}>
+              <p className="caption text-center px-4" style={{ color: 'var(--text-secondary)' }}>
+                현재는 거래가 준비 중이에요.
+              </p>
+            </div>
+          )}
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setOrderTab('지정가')}
-              disabled={loading}
-              className="flex-1 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ease-out disabled:opacity-50"
+              disabled={loading || disabled}
+              className="flex-1 py-2 body-sm font-semibold rounded-xl transition-all duration-200 ease-out disabled:opacity-50"
               style={{
-                backgroundColor: orderTab === '지정가' ? 'var(--primary)' : 'rgba(0,0,0,0.06)',
-                color: orderTab === '지정가' ? '#fff' : 'var(--upbit-text)',
+                backgroundColor: orderTab === '지정가' ? 'var(--royal-blue)' : 'var(--bg-secondary)',
+                color: orderTab === '지정가' ? '#fff' : 'var(--text)',
               }}
             >
               지정가
@@ -446,11 +458,11 @@ export default function TradingPanelV2({
             <button
               type="button"
               onClick={() => setOrderTab('시장가')}
-              disabled={loading}
-              className="flex-1 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ease-out disabled:opacity-50"
+              disabled={loading || disabled}
+              className="flex-1 py-2 body-sm font-semibold rounded-xl transition-all duration-200 ease-out disabled:opacity-50"
               style={{
-                backgroundColor: orderTab === '시장가' ? 'var(--primary)' : 'rgba(0,0,0,0.06)',
-                color: orderTab === '시장가' ? '#fff' : 'var(--upbit-text)',
+                backgroundColor: orderTab === '시장가' ? 'var(--royal-blue)' : 'var(--bg-secondary)',
+                color: orderTab === '시장가' ? '#fff' : 'var(--text)',
               }}
             >
               시장가
@@ -461,10 +473,10 @@ export default function TradingPanelV2({
               type="button"
               onClick={() => setOrderSide('bid')}
               disabled={loading}
-              className="flex-1 py-2 text-[13px] font-semibold rounded-lg transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
+              className="flex-1 py-2 body-sm font-semibold rounded-xl transition hover:opacity-90 disabled:opacity-50"
               style={{
-                backgroundColor: orderSide === 'bid' ? 'var(--upbit-bid)' : 'rgba(0,0,0,0.06)',
-                color: orderSide === 'bid' ? '#fff' : 'var(--upbit-text)',
+                backgroundColor: orderSide === 'bid' ? 'var(--emerald)' : 'var(--bg-secondary)',
+                color: orderSide === 'bid' ? '#fff' : 'var(--text)',
               }}
             >
               매수
@@ -473,10 +485,10 @@ export default function TradingPanelV2({
               type="button"
               onClick={() => setOrderSide('ask')}
               disabled={loading}
-              className="flex-1 py-2 text-[13px] font-semibold rounded-lg transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
+              className="flex-1 py-2 body-sm font-semibold rounded-xl transition hover:opacity-90 disabled:opacity-50"
               style={{
-                backgroundColor: orderSide === 'ask' ? 'var(--upbit-ask)' : 'rgba(0,0,0,0.06)',
-                color: orderSide === 'ask' ? '#fff' : 'var(--upbit-text)',
+                backgroundColor: orderSide === 'ask' ? 'var(--accent-loss)' : 'var(--bg-secondary)',
+                color: orderSide === 'ask' ? '#fff' : 'var(--text)',
               }}
             >
               매도
@@ -484,81 +496,82 @@ export default function TradingPanelV2({
           </div>
           {orderTab === '지정가' && (
             <div className="animate-[fadeIn_0.2s_ease-out]">
-              <label className="text-[12px] block mb-1" style={{ color: 'var(--upbit-text-dim)' }}>가격 (USD)</label>
+              <label className="caption block mb-1" style={{ color: 'var(--text-secondary)' }}>가격 (USD)</label>
               <input
                 type="text"
                 inputMode="decimal"
                 value={orderPrice}
                 onChange={(e) => setOrderPrice(e.target.value)}
                 disabled={loading}
-                className="w-full px-3 py-2 rounded-lg border text-[14px] tabular-nums disabled:opacity-60"
+                className="w-full px-3 py-2 rounded-xl border body-sm tabular-nums disabled:opacity-60 focus:ring-2 focus:ring-[var(--royal-blue)]/40 focus:outline-none"
                 style={{
-                  backgroundColor: 'var(--upbit-bg)',
-                  borderColor: 'var(--upbit-border)',
-                  color: 'var(--upbit-text)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  borderColor: 'var(--border)',
+                  color: 'var(--text)',
                 }}
               />
             </div>
           )}
           {orderTab === '시장가' && (
-            <div className="text-[13px] animate-[fadeIn_0.2s_ease-out]" style={{ color: 'var(--upbit-text-dim)' }}>
+            <div className="body-sm animate-[fadeIn_0.2s_ease-out]" style={{ color: 'var(--text-secondary)' }}>
               시장가: {formatUsd(sharePriceUsd)} ({formatKrw(sharePriceUsd * fxRate)})
             </div>
           )}
           <div>
-            <label className="text-[12px] block mb-1" style={{ color: 'var(--upbit-text-dim)' }}>수량</label>
+            <label className="caption block mb-1" style={{ color: 'var(--text-secondary)' }}>수량</label>
             <input
               type="number"
               min={1}
               value={orderQty}
               onChange={(e) => setOrderQty(Math.max(1, Number(e.target.value) || 0))}
               disabled={loading}
-              className="w-full px-3 py-2 rounded-lg border text-[14px] tabular-nums disabled:opacity-60"
+              className="w-full px-3 py-2 rounded-xl border body-sm tabular-nums disabled:opacity-60 focus:ring-2 focus:ring-[var(--royal-blue)]/40 focus:outline-none"
               style={{
-                backgroundColor: 'var(--upbit-bg)',
-                borderColor: 'var(--upbit-border)',
-                color: 'var(--upbit-text)',
+                backgroundColor: 'var(--bg-secondary)',
+                borderColor: 'var(--border)',
+                color: 'var(--text)',
               }}
             />
           </div>
-          <div className="flex justify-between text-[13px]">
-            <span style={{ color: 'var(--upbit-text-dim)' }}>총액</span>
-            <span className="font-semibold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
+          <div className="flex justify-between body-sm">
+            <span style={{ color: 'var(--text-secondary)' }}>총액</span>
+            <span className="font-semibold tabular-nums text-right" style={{ color: 'var(--text)' }}>
               {formatKrw(totalAmountKrw)}
             </span>
           </div>
           {isLoggedIn && (
-            <div className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>
-              예수금 {formatKrw(userCash)}
+            <div className="flex justify-between caption metric-number" style={{ color: 'var(--text-secondary)' }}>
+              <span>예수금</span>
+              <span>{formatKrw(userCash)}</span>
             </div>
           )}
           {insufficientFunds && (
-            <p className="text-[12px]" style={{ color: 'var(--upbit-ask)' }}>
+            <p className="caption" style={{ color: 'var(--accent-loss)' }}>
               예수금이 부족합니다.
             </p>
           )}
           {insufficientAssets && (
-            <p className="text-[12px]" style={{ color: 'var(--upbit-ask)' }}>
+            <p className="caption" style={{ color: 'var(--accent-loss)' }}>
               보유 수량이 부족합니다.
             </p>
           )}
           {lockBusyRetrying && (
-            <p className="text-[12px] text-center py-1" style={{ color: 'var(--upbit-ask)' }}>
+            <p className="caption text-center py-1" style={{ color: 'var(--accent-loss)' }}>
               재시도 가능합니다. 아래 버튼을 다시 눌러주세요.
             </p>
           )}
           <button
             type="button"
             onClick={handlePlaceOrder}
-            disabled={loading || !isLoggedIn || insufficientFunds || insufficientAssets}
-            className={`w-full py-3 rounded-lg text-[15px] font-bold transition-all duration-200 hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:opacity-50 ${matchResultFlash ? 'ring-2 ring-green-400 ring-offset-2' : ''}`}
+            disabled={loading || disabled || !isLoggedIn || insufficientFunds || insufficientAssets}
+            className={`w-full py-3 rounded-xl body font-bold transition-opacity duration-200 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed ${matchResultFlash ? 'ring-2 ring-green-400 ring-offset-2' : ''}`}
             style={{
-              backgroundColor: orderSide === 'bid' ? 'var(--upbit-bid)' : 'var(--upbit-ask)',
+              backgroundColor: orderSide === 'bid' ? 'var(--emerald)' : 'var(--accent-loss)',
               color: '#fff',
-              border: insufficientFunds || insufficientAssets ? '2px solid var(--upbit-ask)' : 'none',
+              border: insufficientFunds || insufficientAssets ? '1px solid var(--accent-loss)' : 'none',
             }}
           >
-            {!isLoggedIn ? '로그인 후 주문' : insufficientFunds ? '잔고 부족' : insufficientAssets ? '보유 부족' : loading ? '처리 중…' : orderSide === 'bid' ? '매수하기' : '매도하기'}
+            {disabled ? '거래 준비 중' : !isLoggedIn ? '로그인 후 주문' : insufficientFunds ? '잔고 부족' : insufficientAssets ? '보유 부족' : loading ? '처리 중…' : orderSide === 'bid' ? '매수하기' : '매도하기'}
           </button>
         </div>
       )}
@@ -572,28 +585,28 @@ export default function TradingPanelV2({
               ))}
             </div>
           ) : trades.length === 0 ? (
-            <p className="text-[13px] py-8 text-center" style={{ color: 'var(--upbit-text-dim)' }}>
+            <p className="body-sm py-8 text-center" style={{ color: 'var(--text-secondary)' }}>
               아직 체결 내역이 없습니다.
             </p>
           ) : (
             trades.map((t) => (
               <div
                 key={t.id}
-                className="flex justify-between py-2 text-[13px] animate-[fadeIn_0.2s_ease-out]"
-                style={{ borderBottom: '1px solid var(--upbit-border)' }}
+                className="flex justify-between py-2 body-sm animate-[fadeIn_0.2s_ease-out]"
+                style={{ borderBottom: '1px solid var(--border)' }}
               >
                 <span
-                  className="tabular-nums font-semibold"
+                  className="tabular-nums font-semibold text-right"
                   style={{
-                    color: t.side === 'buy' ? 'var(--upbit-bid)' : 'var(--upbit-ask)',
+                    color: t.side === 'buy' ? 'var(--emerald)' : 'var(--accent-loss)',
                   }}
                 >
                   {t.side === 'buy' ? '▲' : '▼'} {formatUsd(t.price_usd)}
                 </span>
-                <span className="tabular-nums" style={{ color: 'var(--upbit-text-dim)' }}>
+                <span className="tabular-nums text-right" style={{ color: 'var(--text-secondary)' }}>
                   {formatQty(t.quantity)}
                 </span>
-                <span className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>
+                <span className="caption tabular-nums text-right" style={{ color: 'var(--text-secondary)' }}>
                   {new Date(t.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
@@ -605,8 +618,8 @@ export default function TradingPanelV2({
       {showTabs && activeTab === '내주문' && (
         <div className="space-y-1 max-h-[200px] overflow-y-auto animate-[fadeIn_0.15s_ease-out]">
           {!isLoggedIn ? (
-            <p className="text-[13px] py-8 text-center" style={{ color: 'var(--upbit-text-dim)' }}>
-              <Link href="/login" className="font-semibold" style={{ color: 'var(--upbit-bid)' }}>로그인</Link> 후 주문 내역을 확인하세요
+            <p className="body-sm py-8 text-center" style={{ color: 'var(--text-secondary)' }}>
+              <Link href="/login" className="font-semibold" style={{ color: 'var(--emerald)' }}>로그인</Link> 후 주문 내역을 확인하세요
             </p>
           ) : myOrdersLoading ? (
             <div className="py-4 space-y-2">
@@ -615,21 +628,21 @@ export default function TradingPanelV2({
               ))}
             </div>
           ) : myOrders.length === 0 ? (
-            <p className="text-[13px] py-8 text-center" style={{ color: 'var(--upbit-text-dim)' }}>주문 내역이 없습니다.</p>
+            <p className="body-sm py-8 text-center" style={{ color: 'var(--text-secondary)' }}>주문 내역이 없습니다.</p>
           ) : (
             myOrders.map((o) => (
               <div
                 key={o.id}
-                className="flex justify-between py-2 text-[13px]"
-                style={{ borderBottom: '1px solid var(--upbit-border)' }}
+                className="flex justify-between py-2 body-sm"
+                style={{ borderBottom: '1px solid var(--border)' }}
               >
-                <span className="font-semibold" style={{ color: o.type === 'BUY' ? 'var(--upbit-bid)' : 'var(--upbit-ask)' }}>
+                <span className="font-semibold tabular-nums text-right" style={{ color: o.type === 'BUY' ? 'var(--emerald)' : 'var(--accent-loss)' }}>
                   {o.type === 'BUY' ? '매수' : '매도'} {formatKrw(o.price)}
                 </span>
-                <span className="tabular-nums" style={{ color: 'var(--upbit-text-dim)' }}>
+                <span className="tabular-nums text-right" style={{ color: 'var(--text-secondary)' }}>
                   {o.executed_quantity}/{o.quantity}
                 </span>
-                <span className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>
+                <span className="caption tabular-nums text-right" style={{ color: 'var(--text-secondary)' }}>
                   {new Date(o.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
@@ -641,8 +654,8 @@ export default function TradingPanelV2({
       {showTabs && activeTab === '포지션' && (
         <div className="space-y-3 animate-[fadeIn_0.15s_ease-out]">
           {!isLoggedIn ? (
-            <p className="text-[13px] py-8 text-center" style={{ color: 'var(--upbit-text-dim)' }}>
-              <Link href="/login" className="font-semibold" style={{ color: 'var(--upbit-bid)' }}>
+            <p className="body-sm py-8 text-center" style={{ color: 'var(--text-secondary)' }}>
+              <Link href="/login" className="font-semibold" style={{ color: 'var(--emerald)' }}>
                 로그인
               </Link>
               후 포지션을 확인하세요
@@ -654,46 +667,46 @@ export default function TradingPanelV2({
               <Skeleton className="h-10 w-full" />
             </div>
           ) : !position || position.quantity <= 0 ? (
-            <p className="text-[13px] py-8 text-center" style={{ color: 'var(--upbit-text-dim)' }}>
+            <p className="body-sm py-8 text-center" style={{ color: 'var(--text-secondary)' }}>
               보유 자산이 없습니다.
             </p>
           ) : (
-            <div className="space-y-2 text-[13px]">
+            <div className="space-y-2 body-sm">
               <div className="flex justify-between">
-                <span style={{ color: 'var(--upbit-text-dim)' }}>보유수량</span>
-                <span className="font-semibold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>보유수량</span>
+                <span className="font-semibold tabular-nums text-right" style={{ color: 'var(--text)' }}>
                   {formatQty(position.quantity)}주
                 </span>
               </div>
               <div className="flex justify-between">
-                <span style={{ color: 'var(--upbit-text-dim)' }}>평균매입가</span>
-                <span className="font-semibold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>평균매입가</span>
+                <span className="font-semibold tabular-nums text-right" style={{ color: 'var(--text)' }}>
                   {formatKrw(position.avg_price)}
                 </span>
               </div>
               {holdRatio != null && (
                 <div className="flex justify-between">
-                  <span style={{ color: 'var(--upbit-text-dim)' }}>보유 비율</span>
-                  <span className="font-semibold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>보유 비율</span>
+                  <span className="font-semibold tabular-nums text-right" style={{ color: 'var(--text)' }}>
                     {formatRate(holdRatio)}
                   </span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span style={{ color: 'var(--upbit-text-dim)' }}>평가금액</span>
-                <span className="font-semibold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>평가금액</span>
+                <span className="font-semibold tabular-nums text-right" style={{ color: 'var(--text)' }}>
                   {formatKrw(position.current_value ?? sharePriceUsd * fxRate * position.quantity)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span style={{ color: 'var(--upbit-text-dim)' }}>평가손익</span>
+                <span style={{ color: 'var(--text-secondary)' }}>평가손익</span>
                 <span
-                  className="font-extrabold tabular-nums"
+                  className="font-extrabold tabular-nums text-right"
                   style={{
                     color:
                       (position.unrealized_pnl ?? sharePriceUsd * fxRate * position.quantity - position.total_cost) >= 0
-                        ? 'var(--upbit-positive)'
-                        : 'var(--upbit-ask)',
+                        ? 'var(--emerald)'
+                        : 'var(--accent-loss)',
                   }}
                 >
                   {(() => {
@@ -703,14 +716,14 @@ export default function TradingPanelV2({
                 </span>
               </div>
               <div className="flex justify-between">
-                <span style={{ color: 'var(--upbit-text-dim)' }}>수익률</span>
+                <span style={{ color: 'var(--text-secondary)' }}>수익률</span>
                 <span
-                  className="font-extrabold tabular-nums"
+                  className="font-extrabold tabular-nums text-right"
                   style={{
                     color:
                       (position.unrealized_rate ?? 0) >= 0
-                        ? 'var(--upbit-positive)'
-                        : 'var(--upbit-ask)',
+                        ? 'var(--emerald)'
+                        : 'var(--accent-loss)',
                   }}
                 >
                   {position.unrealized_rate != null ? formatRate(position.unrealized_rate) : (position.avg_price > 0 ? formatRate(((sharePriceUsd * fxRate - position.avg_price) / position.avg_price) * 100) : '-')}
@@ -718,8 +731,8 @@ export default function TradingPanelV2({
               </div>
               <Link
                 href="/wallet"
-                className="block mt-3 py-2 text-center text-[13px] font-semibold rounded-lg border transition active:scale-[0.98]"
-                style={{ borderColor: 'var(--upbit-border)', color: 'var(--upbit-bid)' }}
+                className="block mt-3 py-2 text-center body-sm font-semibold rounded-xl border transition hover:opacity-90"
+                style={{ borderColor: 'var(--border)', color: 'var(--emerald)' }}
               >
                 지갑에서 자세히 보기
               </Link>
