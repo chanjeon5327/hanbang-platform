@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Header from '@/components/Header';
 import BuildStamp from '@/components/dev/BuildStamp';
+import AppContainer from '@/components/layout/AppContainer';
 
 import Providers from './providers';
 import './globals.css';
@@ -20,7 +21,11 @@ export default function RootLayout({
       <body>
         <Providers>
           <Header />
-          <main>{children}</main>
+          <main>
+            <AppContainer>
+              {children}
+            </AppContainer>
+          </main>
         </Providers>
         <BuildStamp />
       </body>

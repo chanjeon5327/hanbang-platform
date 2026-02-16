@@ -105,9 +105,9 @@ export default function AdminKycPage() {
         KYC ?? ??
       </h1>
       {loading ? (
-        <p className="text-[14px]" style={{ color: 'var(--text-secondary)' }}>?? ??</p>
+        <p className="body-sm" style={{ color: 'var(--text-secondary)' }}>?? ??</p>
       ) : users.length === 0 ? (
-        <p className="text-[14px]" style={{ color: 'var(--text-secondary)' }}>KYC ?? ?? ????.</p>
+        <p className="body-sm" style={{ color: 'var(--text-secondary)' }}>KYC ?? ?? ????.</p>
       ) : (
         <div className="space-y-3">
           {users.map((u) => (
@@ -118,8 +118,8 @@ export default function AdminKycPage() {
               onClick={() => setSelectedId(u.id)}
             >
               <div>
-                <p className="text-[14px] font-semibold">{u.email}</p>
-                <p className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>{u.id}</p>
+                <p className="body-sm font-semibold">{u.email}</p>
+                <p className="caption" style={{ color: 'var(--text-secondary)' }}>{u.id}</p>
               </div>
               <Shield size={20} style={{ color: 'var(--text-secondary)' }} />
             </div>
@@ -139,7 +139,7 @@ export default function AdminKycPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-bold mb-4">KYC ??</h2>
-            <div className="space-y-2 text-[14px] mb-4">
+            <div className="space-y-2 body-sm mb-4">
               <p><strong>???:</strong> {detail.profile?.email ?? '-'}</p>
               <p><strong>??:</strong> {detail.kyc_verification?.real_name ?? '-'}</p>
               <p><strong>???:</strong> {detail.kyc_verification?.phone ?? '-'}</p>
@@ -165,7 +165,7 @@ export default function AdminKycPage() {
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                   placeholder="?? ??"
-                  className="w-full px-3 py-2 rounded border text-[13px]"
+                  className="w-full px-3 py-2 rounded border body-sm"
                   style={{ borderColor: 'var(--border)' }}
                 />
                 <button

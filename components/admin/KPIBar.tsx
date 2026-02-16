@@ -13,8 +13,8 @@ export default function KPIBar() {
           key={item.label}
           className="bg-white rounded-[16px] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-[var(--toss-border)]"
         >
-          <div className="text-[13px] text-[var(--toss-text-secondary)]">{item.label}</div>
-          <div className="text-[24px] font-bold text-[var(--toss-text)] mt-1" style={{ fontVariantNumeric: 'tabular-nums' }}>
+          <div className="body-sm text-[var(--toss-text-secondary)]">{item.label}</div>
+          <div className="h2 font-bold text-[var(--toss-text)] mt-1" style={{ fontVariantNumeric: 'tabular-nums' }}>
             {item.value}
           </div>
         </div>

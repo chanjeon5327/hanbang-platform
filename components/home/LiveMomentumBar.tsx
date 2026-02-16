@@ -42,7 +42,7 @@ export default function LiveMomentumBar() {
 
   return (
     <div
-      className="w-full py-2 px-4 flex items-center justify-center gap-4 text-[12px] font-medium"
+      className="w-full py-2 px-4 flex items-center justify-center gap-4 caption font-medium"
       style={{ backgroundColor: '#000', color: '#C5A059' }}
     >
       <span className="inline-flex items-center gap-1.5">

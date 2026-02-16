@@ -47,7 +47,7 @@ export default function AdminRailConfigPage() {
 
   const Rail = ({ rail }: { rail: string }) => (
     <div className="mb-6">
-      <h2 className="mb-2 text-[16px] font-bold">{rail.toUpperCase()}</h2>
+      <h2 className="mb-2 body font-bold">{rail.toUpperCase()}</h2>
       <div className="space-y-2">
         {allItems.map((it) => (
           <button
@@ -67,10 +67,10 @@ export default function AdminRailConfigPage() {
   );
 
   return (
-    <main className="p-4">
-      <h1 className="mb-4 text-[18px] font-bold">레일 고정 순서</h1>
+    <div className="p-4">
+      <h1 className="mb-4 body-lg font-bold">레일 고정 순서</h1>
       <Rail rail="hot" />
       <Rail rail="popular" />
-    </main>
+    </div>
   );
 }

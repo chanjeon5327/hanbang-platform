@@ -27,7 +27,7 @@ export default function CurationSection({ title = '모두의 추천', enabled = 
       <SectionHeader title={title} viewAllHref="/market?tab=popular" />
       {items.length > 0 ? (
         <>
-          <p className="text-[12px] mb-2" style={{ color: 'var(--toss-text-secondary)' }}>누적 추천(관심) 수 기반 정렬 · 동률이면 랜덤으로 큐레이팅됨</p>
+          <p className="caption mb-2" style={{ color: 'var(--toss-text-secondary)' }}>누적 추천(관심) 수 기반 정렬 · 동률이면 랜덤으로 큐레이팅됨</p>
           <div className="flex gap-3 overflow-x-auto no-scrollbar">
             {items.map((item, i) => (
               <InterestCard key={item.id} id={item.id} index={i} title={item.title} thumbUrl={item.thumbnail_url} />
@@ -35,7 +35,7 @@ export default function CurationSection({ title = '모두의 추천', enabled = 
           </div>
         </>
       ) : (
-        <p className="text-[13px] py-6 text-center" style={{ color: 'var(--toss-text-secondary)' }}>아직 추천 작품이 없습니다.</p>
+        <p className="body-sm py-6 text-center" style={{ color: 'var(--toss-text-secondary)' }}>아직 추천 작품이 없습니다.</p>
       )}
     </section>
   );

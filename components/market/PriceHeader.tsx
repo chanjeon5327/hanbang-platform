@@ -42,28 +42,27 @@ export default function PriceHeader({
   const isDown = changeRate < 0;
 
   return (
-    <div className="py-4" style={{ borderBottom: '1px solid var(--upbit-border)' }}>
-      <div className="text-[12px] mb-0.5" style={{ color: 'var(--upbit-text-dim)' }}>주당 가격</div>
+    <div className="pb-3">
       <div className="flex items-baseline gap-3 flex-wrap">
-        <span className="text-[28px] sm:text-[32px] font-extrabold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
+        <span className="metric-xl font-extrabold tabular-nums tracking-tight" style={{ color: 'var(--text)' }}>
+          {formatKrw(krw)}
+        </span>
+        <span className="caption tabular-nums" style={{ color: 'var(--text-secondary)' }}>
           {formatUsd(sharePriceUsd)}
         </span>
-        <span className="text-[14px] font-semibold tabular-nums" style={{ color: 'var(--upbit-text-dim)' }}>
-          {formatKrwShort(krw)}
-        </span>
-        {prevCloseUsd != null && prevCloseUsd !== sharePriceUsd && (
-          <span
-            className="text-[14px] font-semibold tabular-nums inline-flex items-center gap-0.5"
-            style={{
-              color: isUp ? 'var(--upbit-bid)' : isDown ? 'var(--upbit-ask)' : 'var(--upbit-text-dim)',
-            }}
-          >
-            {isUp ? '▲' : isDown ? '▼' : ''} {isUp ? '+' : ''}{formatRate(changeRate)} ({isUp ? '+' : ''}{formatKrw(changeAmount)})
-          </span>
-        )}
       </div>
+      {prevCloseUsd != null && prevCloseUsd !== sharePriceUsd && (
+        <span
+          className="metric-lg font-bold tabular-nums inline-flex items-center gap-0.5 mt-1"
+          style={{
+            color: isUp ? 'var(--emerald)' : isDown ? 'var(--accent-loss)' : 'var(--text-secondary)',
+          }}
+        >
+          {isUp ? '▲' : isDown ? '▼' : ''} {isUp ? '+' : ''}{formatRate(changeRate)} ({isUp ? '+' : ''}{formatKrw(changeAmount)})
+        </span>
+      )}
       {volume24h != null && volume24h > 0 && (
-        <div className="text-[11px] mt-1" style={{ color: 'var(--upbit-text-dim)' }}>
+        <div className="caption mt-1" style={{ color: 'var(--text-secondary)' }}>
           거래량 {formatKrwShort(volume24h)}
         </div>
       )}

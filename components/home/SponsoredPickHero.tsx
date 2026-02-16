@@ -81,19 +81,19 @@ export default function SponsoredPickHero() {
 
       {/* 텍스트 영역 - z-10으로 버튼 위에 (CTA 클릭 가능) */}
       <div className="absolute bottom-0 left-0 right-0 p-4 text-white z-10">
-        <h3 className="text-[14px] font-bold">
+        <h3 className="body-sm font-bold">
           {pick.title}
         </h3>
-        <p className="text-[12px] opacity-80">
+        <p className="caption opacity-80">
           {pick.subtitle}
         </p>
 
         <Link
           href={`/market/${pick.productId}`}
-          className="inline-block mt-3 px-5 py-2.5 rounded-[12px] text-[13px] font-bold tap-scale"
+          className="inline-block mt-3 px-5 py-2.5 rounded-[12px] body-sm font-bold tap-scale"
           style={{ backgroundColor: 'var(--royal-blue)', boxShadow: 'var(--shadow-royal)' }}
         >
-          엔젤로 참여하기
+          매수하기
         </Link>
       </div>
 

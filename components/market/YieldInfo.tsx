@@ -16,19 +16,19 @@ export default function YieldInfo({
 }: Props) {
   return (
     <section className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}>
-      <h3 className="px-4 py-3 font-bold text-[15px] border-b" style={{ color: 'var(--upbit-text)', borderColor: 'var(--upbit-border)' }}>
+      <h3 className="px-4 py-3 font-bold body border-b" style={{ color: 'var(--upbit-text)', borderColor: 'var(--upbit-border)' }}>
         수익률 안내
       </h3>
       <div className="p-4 space-y-4">
         <div>
-          <h4 className="text-[13px] font-semibold mb-1" style={{ color: 'var(--upbit-text)' }}>예상 수익률</h4>
-          <p className="text-[14px] font-bold tabular-nums" style={{ color: 'var(--upbit-positive)' }}>{expectedRange}</p>
-          <p className="text-[12px] mt-1 leading-relaxed" style={{ color: 'var(--upbit-text-dim)' }}>
+          <h4 className="body-sm font-semibold mb-1" style={{ color: 'var(--upbit-text)' }}>예상 수익률</h4>
+          <p className="body-sm font-bold tabular-nums" style={{ color: 'var(--upbit-positive)' }}>{expectedRange}</p>
+          <p className="caption mt-1 leading-relaxed" style={{ color: 'var(--upbit-text-dim)' }}>
             (가정) {assumption}
           </p>
         </div>
         <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(107, 118, 132, 0.12)', border: '1px solid var(--upbit-border)' }}>
-          <p className="text-[12px] leading-relaxed" style={{ color: 'var(--upbit-text-dim)' }}>
+          <p className="caption leading-relaxed" style={{ color: 'var(--upbit-text-dim)' }}>
             ⚠ {riskNote}
           </p>
         </div>

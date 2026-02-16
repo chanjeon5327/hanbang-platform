@@ -122,21 +122,21 @@ export default function AdminDividendPage() {
       <GlobalLoader visible={loading} />
       <header className="sticky top-0 z-50 border-b px-4 py-3" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
         <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <Link href="/admin" className="text-[14px] font-medium" style={{ color: 'var(--text-secondary)' }}>
+          <Link href="/admin" className="body-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
             ← 관리자
           </Link>
-          <h1 className="text-[17px] font-bold" style={{ color: 'var(--text)' }}>배당 설정</h1>
+          <h1 className="body-lg font-bold" style={{ color: 'var(--text)' }}>배당 설정</h1>
           <span className="w-14" />
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         <div className="rounded-[16px] p-6 border card">
-          <h2 className="text-[16px] font-bold mb-4" style={{ color: 'var(--text)' }}>배당 시뮬레이션</h2>
+          <h2 className="body font-bold mb-4" style={{ color: 'var(--text)' }}>배당 시뮬레이션</h2>
 
           <div className="space-y-4">
             <div>
-              <label className="text-[13px] font-medium block mb-2" style={{ color: 'var(--text-secondary)' }}>
+              <label className="body-sm font-medium block mb-2" style={{ color: 'var(--text-secondary)' }}>
                 콘텐츠 ID (content_items.id, UUID)
               </label>
               <input
@@ -149,7 +149,7 @@ export default function AdminDividendPage() {
               />
             </div>
             <div>
-              <label className="text-[13px] font-medium block mb-2" style={{ color: 'var(--text-secondary)' }}>
+              <label className="body-sm font-medium block mb-2" style={{ color: 'var(--text-secondary)' }}>
                 월 매출 (원)
               </label>
               <input
@@ -161,7 +161,7 @@ export default function AdminDividendPage() {
               />
             </div>
             <div>
-              <label className="text-[13px] font-medium block mb-2" style={{ color: 'var(--text-secondary)' }}>
+              <label className="body-sm font-medium block mb-2" style={{ color: 'var(--text-secondary)' }}>
                 배당 비율: {(dividendRatio * 100).toFixed(0)}%
               </label>
               <input
@@ -176,7 +176,7 @@ export default function AdminDividendPage() {
               />
             </div>
             <div>
-              <label className="text-[13px] font-medium block mb-2" style={{ color: 'var(--text-secondary)' }}>
+              <label className="body-sm font-medium block mb-2" style={{ color: 'var(--text-secondary)' }}>
                 총 발행 지분 (주)
               </label>
               <input
@@ -190,19 +190,19 @@ export default function AdminDividendPage() {
           </div>
 
           <div className="mt-6 pt-6 space-y-2" style={{ borderTop: '1px solid var(--border)' }}>
-            <div className="flex justify-between text-[14px]">
+            <div className="flex justify-between body-sm">
               <span style={{ color: 'var(--text-secondary)' }}>배당 가능액</span>
               <span className="font-bold tabular-nums metric" style={{ color: 'var(--text)' }}>
                 {formatKrw(distributable)}
               </span>
             </div>
-            <div className="flex justify-between text-[14px]">
+            <div className="flex justify-between body-sm">
               <span style={{ color: 'var(--text-secondary)' }}>1주당 월 배당</span>
               <span className="font-bold tabular-nums metric" style={{ color: 'var(--royal-blue)' }}>
                 {formatKrw(dividendPerShare)}
               </span>
             </div>
-            <div className="flex justify-between text-[14px]">
+            <div className="flex justify-between body-sm">
               <span style={{ color: 'var(--text-secondary)' }}>연환산 예상 수익률</span>
               <span className="font-bold tabular-nums metric" style={{ color: 'var(--royal-blue)' }}>
                 {formatRate(expectedAnnualYield)}
@@ -251,8 +251,8 @@ export default function AdminDividendPage() {
 
         {dividendId && (
           <div className="rounded-[16px] p-6 border card" style={{ borderColor: 'var(--royal-blue)' }}>
-            <h3 className="text-[14px] font-bold mb-3" style={{ color: 'var(--royal-blue)' }}>결과</h3>
-            <div className="space-y-2 text-[13px]">
+            <h3 className="body-sm font-bold mb-3" style={{ color: 'var(--royal-blue)' }}>결과</h3>
+            <div className="space-y-2 body-sm">
               <div className="flex justify-between">
                 <span style={{ color: 'var(--text-secondary)' }}>dividend_id</span>
                 <span className="font-mono truncate max-w-[200px]" style={{ color: 'var(--text)' }}>{dividendId}</span>
@@ -270,7 +270,7 @@ export default function AdminDividendPage() {
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

@@ -15,7 +15,7 @@ export default function AdSlot({ position }: Props) {
       style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}
       data-ad-slot={position}
     >
-      <span className="text-[12px]" style={{ color: 'var(--upbit-text-dim)' }}>
+      <span className="caption" style={{ color: 'var(--upbit-text-dim)' }}>
         광고 영역 ({position})
       </span>
     </div>

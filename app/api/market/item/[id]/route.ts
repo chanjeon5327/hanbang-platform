@@ -45,13 +45,30 @@ export async function GET(
     }
 
     let participants = 0;
+    let settlementCount = 0;
+    let integrityOk = false;
     try {
       const { data: orderRows } = await supabase
         .from("orders")
-        .select("user_id")
+        .select("user_id, status")
         .or(`content_id.eq.${contentId},product_id.eq.${contentId}`)
         .in("status", ["INVEST_CONFIRMED", "COMPLETED", "SETTLED"]);
       participants = new Set((orderRows ?? []).map((r) => r.user_id).filter(Boolean)).size;
+      settlementCount = (orderRows ?? []).filter((r) => r.status === "SETTLED" || r.status === "COMPLETED").length;
+    } catch {
+      // ignore
+    }
+    try {
+      const { data: integrityRow } = await supabase
+        .from("v_integrity_check")
+        .select("orders_sum, current_raise")
+        .eq("content_id", contentId)
+        .maybeSingle();
+      if (integrityRow) {
+        const os = Number((integrityRow as { orders_sum?: number }).orders_sum ?? 0);
+        const cr = Number((integrityRow as { current_raise?: number }).current_raise ?? 0);
+        integrityOk = os === cr;
+      }
     } catch {
       // ignore
     }
@@ -130,6 +147,8 @@ export async function GET(
       dividendRatio,
       dividendPerShare,
       expectedAnnualYield,
+      integrity_ok: integrityOk,
+      settlement_count: settlementCount,
     };
 
     return NextResponse.json(item);

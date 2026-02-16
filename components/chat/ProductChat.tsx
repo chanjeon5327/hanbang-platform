@@ -163,7 +163,7 @@ export default function ProductChat({ productId }: Props) {
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--upbit-border)' }}>
         <div className="flex items-center gap-2">
           <MessageCircle size={18} strokeWidth={2} style={{ color: 'var(--upbit-bid)' }} />
-          <span className="font-bold text-[15px]" style={{ color: 'var(--upbit-text)' }}>엔젤 채팅</span>
+          <span className="font-bold body" style={{ color: 'var(--upbit-text)' }}>종목 채팅</span>
         </div>
       </div>
 
@@ -172,9 +172,9 @@ export default function ProductChat({ productId }: Props) {
         <div className="px-4 py-3" style={{ backgroundColor: 'rgba(30, 136, 229, 0.08)', borderBottom: '1px solid var(--upbit-border)' }}>
           {pinned.map((m) => (
             <div key={m.id}>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--upbit-bid)', color: '#fff' }}>공지</span>
-              <p className="text-[13px] mt-2" style={{ color: 'var(--upbit-text)' }}>{m.message}</p>
-              <span className="text-[11px] mt-1 block" style={{ color: 'var(--upbit-text-dim)' }}>{formatTime(m.created_at)}</span>
+              <span className="caption font-semibold px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--upbit-bid)', color: '#fff' }}>공지</span>
+              <p className="body-sm mt-2" style={{ color: 'var(--upbit-text)' }}>{m.message}</p>
+              <span className="caption mt-1 block" style={{ color: 'var(--upbit-text-dim)' }}>{formatTime(m.created_at)}</span>
             </div>
           ))}
         </div>
@@ -183,9 +183,9 @@ export default function ProductChat({ productId }: Props) {
       {/* 메시지 목록 */}
       <div className="max-h-[200px] overflow-y-auto px-4 py-3 space-y-3">
         {loading ? (
-          <p className="text-[13px]" style={{ color: 'var(--upbit-text-dim)' }}>로딩 중...</p>
+          <p className="body-sm" style={{ color: 'var(--upbit-text-dim)' }}>로딩 중...</p>
         ) : displayMessages.length === 0 ? (
-          <p className="text-[13px]" style={{ color: 'var(--upbit-text-dim)' }}>아직 메시지가 없습니다.</p>
+          <p className="body-sm" style={{ color: 'var(--upbit-text-dim)' }}>아직 메시지가 없습니다.</p>
         ) : (
           displayMessages.map((m) => (
             <div key={m.id} className="flex items-start gap-2">
@@ -212,17 +212,17 @@ export default function ProductChat({ productId }: Props) {
               )}
               <div className="flex-1 min-w-0">
                 {m.user_id === 'seed' ? (
-                  <span className="text-[12px] font-medium inline-flex items-center gap-1.5" style={{ color: 'var(--upbit-text-dim)' }}>
+                  <span className="caption font-medium inline-flex items-center gap-1.5" style={{ color: 'var(--upbit-text-dim)' }}>
                     {m.nickname}
-                    <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--upbit-border)', color: 'var(--upbit-text-dim)' }}>봇</span>
+                    <span className="caption px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--upbit-border)', color: 'var(--upbit-text-dim)' }}>봇</span>
                   </span>
                 ) : (
-                  <Link href={`/profile/${m.user_id}`} className="text-[12px] font-medium hover:underline" style={{ color: 'var(--upbit-text)' }}>
+                  <Link href={`/profile/${m.user_id}`} className="caption font-medium hover:underline" style={{ color: 'var(--upbit-text)' }}>
                     {m.nickname}
                   </Link>
                 )}
-                <span className="text-[11px] ml-2" style={{ color: 'var(--upbit-text-dim)' }}>{formatTime(m.created_at)}</span>
-                <p className="text-[13px] mt-0.5" style={{ color: 'var(--upbit-text)' }}>{m.message}</p>
+                <span className="caption ml-2" style={{ color: 'var(--upbit-text-dim)' }}>{formatTime(m.created_at)}</span>
+                <p className="body-sm mt-0.5" style={{ color: 'var(--upbit-text)' }}>{m.message}</p>
               </div>
             </div>
           ))
@@ -240,7 +240,7 @@ export default function ProductChat({ productId }: Props) {
               placeholder={`메시지를 입력하세요 (${MAX_MESSAGE_LENGTH}자 이내)`}
               maxLength={MAX_MESSAGE_LENGTH}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-              className="flex-1 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none border"
+              className="flex-1 rounded-lg px-4 py-2.5 body-sm focus:outline-none border"
               style={{ backgroundColor: 'var(--upbit-bg)', borderColor: 'var(--upbit-border)', color: 'var(--upbit-text)' }}
             />
             <button
@@ -256,7 +256,7 @@ export default function ProductChat({ productId }: Props) {
         ) : (
           <Link
             href="/login"
-            className="flex-1 py-2.5 rounded-lg text-center text-[14px] font-medium"
+            className="flex-1 py-2.5 rounded-lg text-center body-sm font-medium"
             style={{ backgroundColor: 'var(--upbit-border)', color: 'var(--upbit-text-dim)' }}
           >
             로그인 후 참여

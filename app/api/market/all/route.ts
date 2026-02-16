@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
     let query = supabase
       .from("content_items")
-      .select("id, title, thumbnail_url, creator_name, category, platform, deadline, total_raise, current_raise, event_date, artist_keyword")
+      .select("id, title, thumbnail_url, creator_name, category, platform, deadline, total_raise, current_raise, event_date, artist_keyword, product_type")
       .eq("status", "active");
 
     if (category && CATEGORIES.includes(category as (typeof CATEGORIES)[number])) {
@@ -99,6 +99,7 @@ export async function GET(req: NextRequest) {
         event_date: r.event_date ?? null,
         integrity_ok: integrityMap[cid] ?? false,
         settlement_count: settledByContent[cid] ?? 0,
+        product_type: r.product_type ?? "DIVIDEND_ONLY",
       };
     });
 

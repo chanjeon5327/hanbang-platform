@@ -40,14 +40,14 @@ export default function LoginPage() {
         style={{
           backgroundColor: 'var(--card)',
           borderColor: 'var(--border)',
-          boxShadow: 'var(--shadow-lg)',
+          boxShadow: 'var(--shadow-sm)',
         }}
       >
-        <h2 className="text-[22px] font-bold mb-2 text-center" style={{ color: 'var(--text)' }}>
-          ?? ???
+        <h2 className="h2 font-bold mb-2 text-center" style={{ color: 'var(--text)' }}>
+          ???
         </h2>
-        <p className="text-[13px] text-center mb-6" style={{ color: 'var(--text-secondary)' }}>
-          HANBANG?? ???? ?? ??? ?????
+        <p className="body-sm text-center mb-6" style={{ color: 'var(--text-secondary)' }}>
+          HANBANG? ????? ??? ?????
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -72,7 +72,7 @@ export default function LoginPage() {
           />
 
           {error && (
-            <p className="text-[13px]" style={{ color: 'var(--accent-loss)' }}>{error}</p>
+            <p className="body-sm" style={{ color: 'var(--accent-loss)' }}>{error}</p>
           )}
 
           <button
@@ -89,16 +89,16 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-[13px] text-center mt-6" style={{ color: 'var(--text-secondary)' }}>
+        <p className="body-sm text-center mt-6" style={{ color: 'var(--text-secondary)' }}>
           ????? ??????{' '}
           <Link href="/forgot-password" className="font-semibold" style={{ color: 'var(--royal-blue)' }}>
             ???? ??
           </Link>
         </p>
-        <p className="text-[13px] text-center mt-2" style={{ color: 'var(--text-secondary)' }}>
+        <p className="body-sm text-center mt-2" style={{ color: 'var(--text-secondary)' }}>
           ??? ??????{' '}
           <Link href="/signup" className="font-semibold" style={{ color: 'var(--royal-blue)' }}>
-            ??????
+            ????
           </Link>
         </p>
       </div>

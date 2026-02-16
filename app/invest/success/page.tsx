@@ -20,14 +20,14 @@ export default function InvestSuccessPage() {
   }, [router]);
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-4" style={{ backgroundColor: 'var(--upbit-bg)' }}>
+    <div className="flex flex-col items-center justify-center px-4" style={{ backgroundColor: 'var(--upbit-bg)' }}>
       <CheckCircle size={64} className="text-emerald-500 mb-4" strokeWidth={2} />
-      <h1 className="text-[20px] font-bold" style={{ color: 'var(--upbit-text)' }}>
+      <h1 className="h3 font-bold" style={{ color: 'var(--upbit-text)' }}>
         투자 확정 완료
       </h1>
-      <p className="text-[14px] mt-2" style={{ color: 'var(--upbit-text-dim)' }}>
+      <p className="body-sm mt-2" style={{ color: 'var(--upbit-text-dim)' }}>
         투자 현황으로 이동합니다...
       </p>
-    </main>
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/components/auth/AuthProvider';
-import HomeView from '@/components/home/HomeView';
+import HomeV4 from '@/components/home/HomeV4';
 import { useAssetFromLedger } from '@/hooks/useAssetFromLedger';
 
 export default function HomePage() {
@@ -10,7 +10,7 @@ export default function HomePage() {
   const { data: assetData, loading: assetLoading } = useAssetFromLedger(isLoggedIn);
 
   return (
-    <HomeView
+    <HomeV4
       assetData={assetData}
       assetLoading={isLoggedIn && (authLoading || assetLoading)}
       isLoggedIn={isLoggedIn}

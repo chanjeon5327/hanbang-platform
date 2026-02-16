@@ -44,8 +44,8 @@ export default function LoginModal({ open, onOpenChange, onSuccess }: LoginModal
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
       <div className="w-full max-w-[360px] rounded-[16px] overflow-hidden" style={{ backgroundColor: UPBIT.panel, border: `1px solid ${UPBIT.border}` }}>
         <div className="px-4 py-3 border-b flex justify-between items-center" style={{ borderColor: UPBIT.border }}>
-          <h2 className="font-bold text-[16px]" style={{ color: UPBIT.text }}>로그인</h2>
-          <button onClick={() => onOpenChange(false)} className="text-[14px]" style={{ color: UPBIT.dim }}>닫기</button>
+          <h2 className="font-bold body" style={{ color: UPBIT.text }}>로그인</h2>
+          <button onClick={() => onOpenChange(false)} className="body-sm" style={{ color: UPBIT.dim }}>닫기</button>
         </div>
 
         <div className="p-4">
@@ -58,7 +58,7 @@ export default function LoginModal({ open, onOpenChange, onSuccess }: LoginModal
               />
             ))}
           </div>
-          <p className="text-[13px] mb-4" style={{ color: UPBIT.dim }}>1. 로그인 → 2. 고객확인 → 3. 원화입금</p>
+          <p className="body-sm mb-4" style={{ color: UPBIT.dim }}>1. 로그인 → 2. 고객확인 → 3. 원화입금</p>
 
           <form onSubmit={handleLogin} className="space-y-3">
             <input
@@ -67,7 +67,7 @@ export default function LoginModal({ open, onOpenChange, onSuccess }: LoginModal
               onChange={(e) => setEmail(e.target.value)}
               placeholder="이메일"
               required
-              className="w-full rounded-lg px-4 py-3 text-[15px] focus:outline-none border"
+              className="w-full rounded-lg px-4 py-3 body focus:outline-none border"
               style={{ backgroundColor: UPBIT.bg, borderColor: UPBIT.border, color: UPBIT.text }}
             />
             <input
@@ -76,14 +76,14 @@ export default function LoginModal({ open, onOpenChange, onSuccess }: LoginModal
               onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호"
               required
-              className="w-full rounded-lg px-4 py-3 text-[15px] focus:outline-none border"
+              className="w-full rounded-lg px-4 py-3 body focus:outline-none border"
               style={{ backgroundColor: UPBIT.bg, borderColor: UPBIT.border, color: UPBIT.text }}
             />
-            {error && <p className="text-[13px]" style={{ color: '#e53935' }}>{error}</p>}
+            {error && <p className="body-sm" style={{ color: '#e53935' }}>{error}</p>}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-lg text-white text-[16px] font-bold transition disabled:opacity-50"
+              className="w-full py-3.5 rounded-lg text-white body font-bold transition disabled:opacity-50"
               style={{ backgroundColor: UPBIT.bid }}
             >
               {loading ? '처리 중…' : '이메일로 로그인'}

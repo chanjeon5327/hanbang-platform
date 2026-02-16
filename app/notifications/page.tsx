@@ -44,26 +44,26 @@ export default function NotificationsPage() {
   }, [user]);
 
   return (
-    <div className="min-h-screen pb-24" style={{ backgroundColor: 'var(--toss-bg)' }}>
+    <div className="pb-24" style={{ backgroundColor: 'var(--toss-bg)' }}>
       <header className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 border-b" style={{ backgroundColor: 'var(--toss-card)', borderColor: 'var(--toss-border)' }}>
         <Link href="/" className="p-2 -ml-2 rounded-lg hover:bg-black/5 transition" aria-label="뒤로">
           <ArrowLeft size={22} strokeWidth={2} style={{ color: 'var(--toss-text)' }} />
         </Link>
-        <h1 className="text-[18px] font-bold flex-1" style={{ color: 'var(--toss-text)' }}>알림</h1>
+        <h1 className="body-lg font-bold flex-1" style={{ color: 'var(--toss-text)' }}>알림</h1>
         <Bell size={22} strokeWidth={2} style={{ color: 'var(--toss-text-secondary)' }} />
       </header>
 
-      <main className="max-w-lg mx-auto px-4 py-4">
+      <div className="py-4">
         {!user ? (
           <div className="py-12 text-center">
-            <p className="text-[15px]" style={{ color: 'var(--toss-text-secondary)' }}>로그인 후 알림을 확인하세요</p>
-            <Link href="/login" className="inline-block mt-4 px-6 py-2.5 rounded-xl text-[14px] font-semibold" style={{ backgroundColor: 'var(--toss-blue)', color: '#fff' }}>
+            <p className="body" style={{ color: 'var(--toss-text-secondary)' }}>로그인 후 알림을 확인하세요</p>
+            <Link href="/login" className="inline-block mt-4 px-6 py-2.5 rounded-xl body-sm font-semibold" style={{ backgroundColor: 'var(--toss-blue)', color: '#fff' }}>
               로그인
             </Link>
           </div>
         ) : notifications.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="text-[15px]" style={{ color: 'var(--toss-text-secondary)' }}>알림이 없습니다</p>
+            <p className="body" style={{ color: 'var(--toss-text-secondary)' }}>알림이 없습니다</p>
           </div>
         ) : (
           <ul className="space-y-0">
@@ -85,11 +85,11 @@ export default function NotificationsPage() {
                       <span className="w-2 h-2 rounded-full shrink-0 mt-2" style={{ backgroundColor: 'var(--toss-blue)' }} />
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className={`text-[15px] ${!n.is_read ? 'font-semibold' : 'font-medium'}`} style={{ color: 'var(--toss-text)' }}>{n.title}</p>
+                      <p className={`body ${!n.is_read ? 'font-semibold' : 'font-medium'}`} style={{ color: 'var(--toss-text)' }}>{n.title}</p>
                       {n.content && (
-                        <p className="text-[13px] mt-0.5" style={{ color: 'var(--toss-text-secondary)' }}>{n.content}</p>
+                        <p className="body-sm mt-0.5" style={{ color: 'var(--toss-text-secondary)' }}>{n.content}</p>
                       )}
-                      <span className="text-[12px] mt-1 block" style={{ color: 'var(--toss-text-dim)' }}>{formatTime(n.created_at)}</span>
+                      <span className="caption mt-1 block" style={{ color: 'var(--toss-text-dim)' }}>{formatTime(n.created_at)}</span>
                     </div>
                   </div>
                 </Link>
@@ -97,7 +97,7 @@ export default function NotificationsPage() {
             ))}
           </ul>
         )}
-      </main>
+      </div>
 
       <BottomNavigation />
     </div>

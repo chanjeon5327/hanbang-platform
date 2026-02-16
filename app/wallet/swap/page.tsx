@@ -78,23 +78,23 @@ export default function SwapPage() {
   };
 
   return (
-    <div className="min-h-screen pb-24" style={{ backgroundColor: 'var(--upbit-bg)' }}>
+    <div className="pb-24" style={{ backgroundColor: 'var(--upbit-bg)' }}>
       <header className="sticky top-0 z-50 border-b px-4 py-3 flex items-center" style={{ borderColor: 'var(--upbit-border)', backgroundColor: 'var(--upbit-bg)' }}>
         <Link href="/wallet" className="text-sm" style={{ color: 'var(--upbit-text-dim)' }}>‹ 뒤로</Link>
-        <h1 className="flex-1 text-center text-[16px] font-bold" style={{ color: 'var(--upbit-text)' }}>토큰 교환</h1>
+        <h1 className="flex-1 text-center body font-bold" style={{ color: 'var(--upbit-text)' }}>토큰 교환</h1>
         <span className="w-6" />
       </header>
 
-      <main className="px-4 py-6">
+      <div className="py-6">
         <div className="rounded-2xl border overflow-hidden" style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}>
           {/* From */}
           <div className="p-4 border-b" style={{ borderColor: 'var(--upbit-border)' }}>
-            <div className="text-[12px] mb-2" style={{ color: 'var(--upbit-text-dim)' }}>출금 (From)</div>
+            <div className="caption mb-2" style={{ color: 'var(--upbit-text-dim)' }}>출금 (From)</div>
             <div className="flex items-center gap-3">
               <select
                 value={fromToken}
                 onChange={(e) => setFromToken(e.target.value as TokenId)}
-                className="px-3 py-2.5 rounded-lg text-[14px] font-semibold border"
+                className="px-3 py-2.5 rounded-lg body-sm font-semibold border"
                 style={{ backgroundColor: 'var(--upbit-bg)', borderColor: 'var(--upbit-border)', color: 'var(--upbit-text)' }}
               >
                 {TOKEN_IDS.map((id) => (
@@ -109,7 +109,7 @@ export default function SwapPage() {
                 value={fromAmount}
                 onChange={(e) => setFromAmount(e.target.value)}
                 placeholder="0"
-                className="flex-1 text-right text-[18px] font-bold bg-transparent focus:outline-none"
+                className="flex-1 text-right body-lg font-bold bg-transparent focus:outline-none"
                 style={{ color: 'var(--upbit-text)' }}
               />
             </div>
@@ -130,12 +130,12 @@ export default function SwapPage() {
 
           {/* To */}
           <div className="p-4">
-            <div className="text-[12px] mb-2" style={{ color: 'var(--upbit-text-dim)' }}>입금 (To)</div>
+            <div className="caption mb-2" style={{ color: 'var(--upbit-text-dim)' }}>입금 (To)</div>
             <div className="flex items-center gap-3">
               <select
                 value={toToken}
                 onChange={(e) => setToToken(e.target.value as TokenId)}
-                className="px-3 py-2.5 rounded-lg text-[14px] font-semibold border"
+                className="px-3 py-2.5 rounded-lg body-sm font-semibold border"
                 style={{ backgroundColor: 'var(--upbit-bg)', borderColor: 'var(--upbit-border)', color: 'var(--upbit-text)' }}
               >
                 {TOKEN_IDS.filter((id) => id !== fromToken).map((id) => (
@@ -144,7 +144,7 @@ export default function SwapPage() {
                   </option>
                 ))}
               </select>
-              <div className="flex-1 text-right text-[18px] font-bold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
+              <div className="flex-1 text-right body-lg font-bold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
                 {fromAmount ? formatDisplay(toAmount, toToken) : '-'}
               </div>
             </div>
@@ -153,7 +153,7 @@ export default function SwapPage() {
 
         {/* Rate */}
         {fromToken !== toToken && (
-          <p className="text-[12px] mt-3 text-center" style={{ color: 'var(--upbit-text-dim)' }}>
+          <p className="caption mt-3 text-center" style={{ color: 'var(--upbit-text-dim)' }}>
             1 {TOKENS.find((t) => t.id === fromToken)?.symbol} = {rate.toLocaleString(undefined, { maximumFractionDigits: 8 })} {TOKENS.find((t) => t.id === toToken)?.symbol}
           </p>
         )}
@@ -161,16 +161,16 @@ export default function SwapPage() {
         <button
           onClick={handleSwap}
           disabled={loading || !fromAmount || parseFloat(fromAmount) <= 0 || fromToken === toToken}
-          className="w-full mt-6 py-4 rounded-xl text-[16px] font-bold text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full mt-6 py-4 rounded-xl body font-bold text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ backgroundColor: 'var(--upbit-bid)' }}
         >
           {loading ? '처리 중…' : '교환하기'}
         </button>
 
-        <p className="text-[11px] mt-4 text-center leading-relaxed" style={{ color: 'var(--upbit-text-dim)' }}>
+        <p className="caption mt-4 text-center leading-relaxed" style={{ color: 'var(--upbit-text-dim)' }}>
           * 교환은 실시간 환율로 처리됩니다. 수수료가 적용될 수 있습니다.
         </p>
-      </main>
+      </div>
     </div>
   );
 }

@@ -43,18 +43,18 @@ export default function AdminFunnelPage() {
 
   if (loading) {
     return (
-      <main className="p-4">
+      <div className="p-4">
         <div className="text-sm">로딩중…</div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="p-4">
-      <h1 className="mb-4 text-[18px] font-bold">퍼널 분석</h1>
+    <div className="p-4">
+      <h1 className="mb-4 body-lg font-bold">퍼널 분석</h1>
 
       <div className="overflow-x-auto rounded-xl ring-1 ring-black/10">
-        <table className="w-full border-collapse text-[13px]">
+        <table className="w-full border-collapse body-sm">
           <thead className="bg-black/5">
             <tr>
               <th className="px-3 py-2 text-left">날짜</th>
@@ -98,6 +98,6 @@ export default function AdminFunnelPage() {
           </tbody>
         </table>
       </div>
-    </main>
+    </div>
   );
 }

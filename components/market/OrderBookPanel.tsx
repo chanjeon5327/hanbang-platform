@@ -33,7 +33,7 @@ const MOCK_TRADES = [
 function OrderRow({ price, size, isAsk, max, formatPrice }: { price: number; size: number; isAsk: boolean; max: number; formatPrice: (n: number) => string }) {
   const pct = max > 0 ? (size / max) * 100 : 0;
   return (
-    <div className="relative grid grid-cols-3 px-2 py-1 text-[12px]">
+    <div className="relative grid grid-cols-3 px-2 py-1 caption">
       <div
         className="absolute inset-y-0 opacity-15"
         style={{
@@ -66,7 +66,7 @@ export default function OrderBookPanel() {
 
   return (
     <section className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}>
-      <div className="grid grid-cols-3 text-[11px] px-2 py-2 border-b" style={{ color: 'var(--upbit-text-dim)', borderColor: 'var(--upbit-border)' }}>
+      <div className="grid grid-cols-3 caption px-2 py-2 border-b" style={{ color: 'var(--upbit-text-dim)', borderColor: 'var(--upbit-border)' }}>
         <span>매도호가</span>
         <span className="text-center">수량</span>
         <span className="text-right">매수호가</span>
@@ -76,20 +76,20 @@ export default function OrderBookPanel() {
       ))}
       <div className="grid grid-cols-3 px-2 py-2 my-1" style={{ backgroundColor: 'var(--upbit-border)', opacity: 0.3 }}>
         <span />
-        <span className="text-center font-bold text-[13px] tabular-nums" style={{ color: 'var(--upbit-text)' }}>{formatPrice(12300)}</span>
+        <span className="text-center font-bold body-sm tabular-nums" style={{ color: 'var(--upbit-text)' }}>{formatPrice(12300)}</span>
         <span />
       </div>
       {MOCK_BIDS.map((r) => (
         <OrderRow key={`b-${r.price}`} price={r.price} size={r.size} isAsk={false} max={totalMax} formatPrice={formatPrice} />
       ))}
       <div className="border-t mt-2 pt-2" style={{ borderColor: 'var(--upbit-border)' }}>
-        <div className="grid grid-cols-3 text-[11px] px-2 py-1" style={{ color: 'var(--upbit-text-dim)' }}>
+        <div className="grid grid-cols-3 caption px-2 py-1" style={{ color: 'var(--upbit-text-dim)' }}>
           <span>체결가</span>
           <span className="text-center">수량</span>
           <span className="text-right">시간</span>
         </div>
         {MOCK_TRADES.slice(0, 5).map((t, i) => (
-          <div key={i} className="grid grid-cols-3 px-2 py-1 text-[12px]">
+          <div key={i} className="grid grid-cols-3 px-2 py-1 caption">
             <span className="tabular-nums font-medium" style={{ color: t.side === 'buy' ? 'var(--upbit-bid)' : 'var(--upbit-ask)' }}>{formatPrice(t.price)}</span>
             <span className="text-center tabular-nums" style={{ color: 'var(--upbit-text-dim)' }}>{t.size}</span>
             <span className="text-right tabular-nums" style={{ color: 'var(--upbit-text-dim)' }}>{t.time}</span>

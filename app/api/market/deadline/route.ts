@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
 
     const { data: rows, error } = await supabase
       .from("content_items")
-      .select("id, title, thumbnail_url, creator_name, category, platform, deadline, total_raise, current_raise, event_date")
+      .select("id, title, thumbnail_url, creator_name, category, platform, deadline, total_raise, current_raise, event_date, product_type")
       .eq("status", "active")
       .gt("deadline", now)
       .order("deadline", { ascending: true })
@@ -131,6 +131,7 @@ export async function GET(req: NextRequest) {
         event_date: r.event_date ?? null,
         integrity_ok: integrityMap[cid] ?? false,
         settlement_count: settledByContent[cid] ?? 0,
+        product_type: r.product_type ?? "DIVIDEND_ONLY",
       };
     });
 

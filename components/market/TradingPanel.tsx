@@ -78,7 +78,7 @@ export default function TradingPanel({ mode: initialMode, price, productId, isLo
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
-            className="flex-1 py-3 text-[14px] font-semibold transition"
+            className="flex-1 py-3 body-sm font-semibold transition"
             style={{
               backgroundColor: activeTab === tab ? 'var(--upbit-bid)' : 'transparent',
               color: activeTab === tab ? '#fff' : 'var(--upbit-text-dim)',
@@ -90,26 +90,26 @@ export default function TradingPanel({ mode: initialMode, price, productId, isLo
       </div>
       <div className="p-4 space-y-4">
         <div>
-          <label className="text-[12px] block mb-1" style={{ color: 'var(--upbit-text-dim)' }}>수량</label>
+          <label className="caption block mb-1" style={{ color: 'var(--upbit-text-dim)' }}>수량</label>
           <input
             type="number"
             min={1}
             value={qty}
             onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 0))}
-            className="w-full rounded-lg px-4 py-3 text-[16px] focus:outline-none border"
+            className="w-full rounded-lg px-4 py-3 body focus:outline-none border"
             style={{ backgroundColor: 'var(--upbit-bg)', borderColor: 'var(--upbit-border)', color: 'var(--upbit-text)' }}
           />
         </div>
         <div className="space-y-2">
-          <div className="flex justify-between text-[13px]">
+          <div className="flex justify-between body-sm">
             <span style={{ color: 'var(--upbit-text-dim)' }}>예상 금액</span>
             <span className="font-semibold tabular-nums" style={{ color: 'var(--upbit-text)' }}>{formatPrice(amount)}</span>
           </div>
-          <div className="flex justify-between text-[13px]">
+          <div className="flex justify-between body-sm">
             <span style={{ color: 'var(--upbit-text-dim)' }}>예상 수익 (연 12% 가정)</span>
             <span className="font-semibold tabular-nums" style={{ color: 'var(--upbit-positive)' }}>{formatPrice(expectedProfit)}</span>
           </div>
-          <div className="flex justify-between text-[12px]">
+          <div className="flex justify-between caption">
             <span style={{ color: 'var(--upbit-text-dim)' }}>수수료 (0.1%)</span>
             <span className="tabular-nums" style={{ color: 'var(--upbit-text-dim)' }}>{formatPrice(fee)}</span>
           </div>
@@ -118,12 +118,12 @@ export default function TradingPanel({ mode: initialMode, price, productId, isLo
           onClick={handleCta}
           disabled={loading}
           data-testid="trade-cta"
-          className="w-full py-3.5 rounded-lg text-white text-[16px] font-semibold transition disabled:opacity-60 flex items-center justify-center gap-2"
+          className="w-full py-3.5 rounded-lg text-white body font-semibold transition disabled:opacity-60 flex items-center justify-center gap-2"
           style={{ backgroundColor: 'var(--upbit-bid)' }}
         >
           {loading ? '처리 중…' : !isLoggedIn ? ctaLabel : ctaLabel}
         </button>
-        <p className="text-[11px] text-center" style={{ color: 'var(--upbit-text-dim)' }}>결제 후 즉시 참여됩니다</p>
+        <p className="caption text-center" style={{ color: 'var(--upbit-text-dim)' }}>결제 후 즉시 참여됩니다</p>
       </div>
     </div>
   );

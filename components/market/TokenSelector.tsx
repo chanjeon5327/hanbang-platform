@@ -33,9 +33,9 @@ export default function TokenSelector() {
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <span className="text-[14px]">{current?.icon ?? '₩'}</span>
-        <span className="text-[13px] font-semibold">{current?.symbol ?? 'KRW'}</span>
-        <span className="text-[10px]" style={{ color: 'var(--upbit-text-dim)' }}>▾</span>
+        <span className="body-sm">{current?.icon ?? '₩'}</span>
+        <span className="body-sm font-semibold">{current?.symbol ?? 'KRW'}</span>
+        <span className="caption" style={{ color: 'var(--upbit-text-dim)' }}>▾</span>
       </button>
 
       {open && (
@@ -57,7 +57,7 @@ export default function TokenSelector() {
                   setQuoteToken(t.id as TokenId);
                   setOpen(false);
                 }}
-                className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-[14px] transition hover:bg-black/5"
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-left body-sm transition hover:bg-black/5"
                 style={{
                   color: quoteToken === t.id ? 'var(--upbit-bid)' : 'var(--upbit-text)',
                   fontWeight: quoteToken === t.id ? 600 : 400,
@@ -65,7 +65,7 @@ export default function TokenSelector() {
               >
                 <span>{t.icon}</span>
                 <span>{t.symbol}</span>
-                <span className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>
+                <span className="caption" style={{ color: 'var(--upbit-text-dim)' }}>
                   {t.name}
                 </span>
               </button>

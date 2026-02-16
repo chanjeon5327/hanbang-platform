@@ -97,7 +97,7 @@ export default function MobileOrderPanel({
           <h2 className="font-bold text-lg" style={{ color: 'var(--upbit-text)' }}>
             {isBuy ? '매수' : '매도'}
           </h2>
-          <button onClick={onClose} className="text-[14px]" style={{ color: 'var(--upbit-text-dim)' }}>닫기</button>
+          <button onClick={onClose} className="body-sm" style={{ color: 'var(--upbit-text-dim)' }}>닫기</button>
         </div>
 
         {/* 지정가/시장가 탭 */}
@@ -105,7 +105,7 @@ export default function MobileOrderPanel({
           <button
             type="button"
             onClick={() => setOrderType('limit')}
-            className="flex-1 py-2.5 text-[14px] font-semibold transition"
+            className="flex-1 py-2.5 body-sm font-semibold transition"
             style={{ backgroundColor: orderType === 'limit' ? 'var(--upbit-bid)' : 'transparent', color: orderType === 'limit' ? '#fff' : 'var(--upbit-text-dim)' }}
           >
             지정가
@@ -113,7 +113,7 @@ export default function MobileOrderPanel({
           <button
             type="button"
             onClick={() => setOrderType('market')}
-            className="flex-1 py-2.5 text-[14px] font-semibold transition"
+            className="flex-1 py-2.5 body-sm font-semibold transition"
             style={{ backgroundColor: orderType === 'market' ? 'var(--upbit-bid)' : 'transparent', color: orderType === 'market' ? '#fff' : 'var(--upbit-text-dim)' }}
           >
             시장가
@@ -122,26 +122,26 @@ export default function MobileOrderPanel({
 
         {orderType === 'limit' && (
           <div className="mb-4">
-            <label className="text-[12px] block mb-1" style={{ color: 'var(--upbit-text-dim)' }}>지정가</label>
+            <label className="caption block mb-1" style={{ color: 'var(--upbit-text-dim)' }}>지정가</label>
             <input
               type="number"
               value={limitPrice}
               onChange={(e) => setLimitPrice(Number(e.target.value) || 0)}
-              className="w-full rounded-lg px-4 py-3 text-[16px] focus:outline-none border border-[var(--upbit-border)]"
+              className="w-full rounded-lg px-4 py-3 body focus:outline-none border border-[var(--upbit-border)]"
               style={{ backgroundColor: 'var(--upbit-bg)', color: 'var(--upbit-text)' }}
             />
           </div>
         )}
 
         <div className="mb-4">
-          <label className="text-[12px] block mb-1" style={{ color: 'var(--upbit-text-dim)' }}>수량</label>
+          <label className="caption block mb-1" style={{ color: 'var(--upbit-text-dim)' }}>수량</label>
           <input
             type="number"
             inputMode="numeric"
             min={0}
             value={qty}
             onChange={(e) => setQty(Number(e.target.value))}
-            className="w-full rounded-lg px-4 py-3 text-[16px] focus:outline-none border border-[var(--upbit-border)] mb-2"
+            className="w-full rounded-lg px-4 py-3 body focus:outline-none border border-[var(--upbit-border)] mb-2"
             style={{ backgroundColor: 'var(--upbit-bg)', color: 'var(--upbit-text)' }}
             placeholder="0"
           />
@@ -151,7 +151,7 @@ export default function MobileOrderPanel({
                 key={r}
                 type="button"
                 onClick={() => setQty(Math.round(maxQty * r))}
-                className="py-2 rounded-lg border text-[13px] transition border-[var(--upbit-border)]"
+                className="py-2 rounded-lg border body-sm transition border-[var(--upbit-border)]"
                 style={{ color: 'var(--upbit-text)' }}
               >
                 {r * 100}%
@@ -160,7 +160,7 @@ export default function MobileOrderPanel({
           </div>
         </div>
 
-        <div className="flex justify-between text-[14px] mb-4">
+        <div className="flex justify-between body-sm mb-4">
           <span style={{ color: 'var(--upbit-text-dim)' }}>예상 금액</span>
           <span className="font-bold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
             {formatPrice(estAmountKrw)}
@@ -171,13 +171,13 @@ export default function MobileOrderPanel({
           disabled={loading}
           onClick={placeOrder}
           data-testid="trade-primary-action"
-          className="w-full py-3.5 rounded-lg text-white text-[16px] font-semibold transition disabled:opacity-60"
+          className="w-full py-3.5 rounded-lg text-white body font-semibold transition disabled:opacity-60"
           style={{ backgroundColor: isBuy ? 'var(--upbit-bid)' : 'var(--upbit-ask)' }}
         >
           {loading ? '주문 처리 중...' : requireLogin ? '로그인 후 거래' : (isBuy ? '매수' : '매도')}
         </button>
 
-        <p className="text-[11px] mt-3 leading-relaxed" style={{ color: 'var(--upbit-text-dim)' }}>
+        <p className="caption mt-3 leading-relaxed" style={{ color: 'var(--upbit-text-dim)' }}>
           * 주문은 created 상태로 접수되며, 결제 완료 후 completed 시 원장에 기록됩니다.
         </p>
       </div>

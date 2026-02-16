@@ -20,15 +20,15 @@ export default function MobilizationGoal({ progress, participants, remainingText
 
   return (
     <section className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}>
-      <h3 className="px-4 py-3 font-bold text-[15px] border-b" style={{ color: 'var(--upbit-text)', borderColor: 'var(--upbit-border)' }}>
+      <h3 className="px-4 py-3 font-bold body border-b" style={{ color: 'var(--upbit-text)', borderColor: 'var(--upbit-border)' }}>
         모집 현황
       </h3>
       <div className="p-4 space-y-4">
         {/* 목표 도달률 프로그레스 */}
         <div>
           <div className="flex justify-between items-center mb-2">
-            <span className="text-[12px]" style={{ color: 'var(--upbit-text-dim)' }}>목표 도달률</span>
-            <span className="text-[16px] font-bold tabular-nums" style={{ color: 'var(--upbit-bid)' }}>{progress}%</span>
+            <span className="caption" style={{ color: 'var(--upbit-text-dim)' }}>목표 도달률</span>
+            <span className="body font-bold tabular-nums" style={{ color: 'var(--upbit-bid)' }}>{progress}%</span>
           </div>
           <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--upbit-border)' }}>
             <div
@@ -36,7 +36,7 @@ export default function MobilizationGoal({ progress, participants, remainingText
               style={{ width: `${Math.min(100, progress)}%`, backgroundColor: 'var(--upbit-bid)' }}
             />
           </div>
-          <div className="flex justify-between text-[11px] mt-1" style={{ color: 'var(--upbit-text-dim)' }}>
+          <div className="flex justify-between caption mt-1" style={{ color: 'var(--upbit-text-dim)' }}>
             <span>{formatPrice(currentAmount)}</span>
             <span>{formatPrice(targetAmount)}</span>
           </div>
@@ -47,15 +47,15 @@ export default function MobilizationGoal({ progress, participants, remainingText
           <div className="flex items-center gap-2 p-3 rounded-lg" style={{ backgroundColor: 'var(--upbit-bg)' }}>
             <Users size={18} style={{ color: 'var(--upbit-bid)' }} />
             <div>
-              <div className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>참여자</div>
-              <div className="text-[15px] font-bold tabular-nums" style={{ color: 'var(--upbit-text)' }}>{participants}명</div>
+              <div className="caption" style={{ color: 'var(--upbit-text-dim)' }}>참여자</div>
+              <div className="body font-bold tabular-nums" style={{ color: 'var(--upbit-text)' }}>{participants}명</div>
             </div>
           </div>
           <div className="flex items-center gap-2 p-3 rounded-lg" style={{ backgroundColor: 'var(--upbit-bg)' }}>
             <Clock size={18} style={{ color: 'var(--upbit-ask)' }} />
             <div>
-              <div className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>남은 시간</div>
-              <div className="text-[15px] font-bold" style={{ color: 'var(--upbit-text)' }}>{remainingText}</div>
+              <div className="caption" style={{ color: 'var(--upbit-text-dim)' }}>남은 시간</div>
+              <div className="body font-bold" style={{ color: 'var(--upbit-text)' }}>{remainingText}</div>
             </div>
           </div>
         </div>

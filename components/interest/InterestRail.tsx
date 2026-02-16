@@ -18,7 +18,7 @@ export default function InterestRail({
   return (
     <section className="py-2">
       <div className="px-4 mb-2">
-        <h2 className="text-[17px] font-bold">{title}</h2>
+        <h2 className="body-lg font-bold">{title}</h2>
       </div>
 
       <div className="no-scrollbar flex gap-2 overflow-x-auto px-4">

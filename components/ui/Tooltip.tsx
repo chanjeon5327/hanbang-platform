@@ -18,7 +18,7 @@ export default function Tooltip({ content, children }: Props) {
       {children}
       {show && (
         <span
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[12px] whitespace-nowrap z-[100]"
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded caption whitespace-nowrap z-[100]"
           style={{ backgroundColor: 'var(--text)', color: '#fff' }}
         >
           {content}

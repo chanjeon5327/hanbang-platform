@@ -272,7 +272,7 @@ export default function MobilePriceChart() {
   return (
     <section className="px-4 mt-4">
       <div className="flex flex-wrap items-center gap-2 mb-2">
-        <span className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>보조지표</span>
+        <span className="caption" style={{ color: 'var(--upbit-text-dim)' }}>보조지표</span>
         {INDICATORS.map(({ id, label }) => {
           const isOn = indicators[id];
           const btnColor = id === 'sma5' ? colors.sma5 : id === 'sma20' ? colors.sma20 : colors.rsi;
@@ -281,7 +281,7 @@ export default function MobilePriceChart() {
               key={id}
               type="button"
               onClick={() => toggleIndicator(id)}
-              className="px-2.5 py-1 rounded-md text-[12px] font-medium transition border"
+              className="px-2.5 py-1 rounded-md caption font-medium transition border"
               style={{
                 backgroundColor: isOn ? btnColor : 'var(--upbit-panel)',
                 borderColor: isOn ? btnColor : 'var(--upbit-border)',
@@ -301,7 +301,7 @@ export default function MobilePriceChart() {
           <button
             key={k}
             onClick={() => setTf(k)}
-            className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition ${
+            className={`px-3 py-1.5 rounded-lg body-sm font-medium transition ${
               tf === k
                 ? 'bg-[var(--upbit-bid)] text-white'
                 : 'bg-[var(--upbit-panel)] text-[var(--upbit-text-dim)] border border-[var(--upbit-border)]'

@@ -27,7 +27,7 @@ export default function BottomNav() {
           >
             <menu.Icon size={26} strokeWidth={2} className="mb-1" />
             <span
-              className={`text-[10px] font-medium ${
+              className={`caption font-medium ${
                 isActive ? 'text-black' : 'text-gray-300'
               }`}
             >

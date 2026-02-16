@@ -36,17 +36,17 @@ export default function AdminIntegrityPage() {
         <Link href="/admin" className="p-2 -ml-2 rounded-lg hover:bg-black/5 transition" aria-label="뒤로">
           <ArrowLeft size={22} strokeWidth={2} style={{ color: "var(--text-primary)" }} />
         </Link>
-        <h1 className="text-[18px] font-bold" style={{ color: "var(--text-primary)" }}>데이터 정합성 점검</h1>
+        <h1 className="body-lg font-bold" style={{ color: "var(--text-primary)" }}>데이터 정합성 점검</h1>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6">
+      <div className="max-w-4xl mx-auto px-4 py-6">
         {loading ? (
           <div className="py-12 text-center" style={{ color: "var(--text-secondary)" }}>로딩 중...</div>
         ) : items.length === 0 ? (
           <div className="py-12 text-center" style={{ color: "var(--text-secondary)" }}>확인할 데이터가 없습니다.</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-[13px]">
+            <table className="w-full text-left body-sm">
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border-color)" }}>
                   <th className="py-3 pr-4" style={{ color: "var(--text-secondary)" }}>content_id</th>
@@ -93,7 +93,7 @@ export default function AdminIntegrityPage() {
             </table>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

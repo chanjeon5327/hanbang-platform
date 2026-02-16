@@ -42,6 +42,8 @@ export type MarketItem = {
   growth_reason_2?: string | null;
   growth_reason_3?: string | null;
   total_shares?: number | null;
+  integrity_ok?: boolean;
+  settlement_count?: number;
 };
 
 export function useMarketItem(id: string | undefined) {

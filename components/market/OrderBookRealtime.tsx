@@ -75,11 +75,6 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
     return { bidRows: bidSorted, askRows: askSorted };
   }, [bids, asks]);
 
-  const maxBidQty = bidRows.length > 0 ? Math.max(...bidRows.map((b) => b.quantity)) : 1;
-  const maxAskQty = askRows.length > 0 ? Math.max(...askRows.map((a) => a.quantity)) : 1;
-  const bestBid = bidRows[0]?.price_usd;
-  const bestAsk = askRows[0]?.price_usd;
-
   if (loading) {
     return (
       <div className="grid grid-cols-2 gap-4 py-4">
@@ -92,9 +87,7 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
   if (disabled) {
     return (
       <div className="py-6 text-center">
-        <p className="caption" style={{ color: 'var(--text-secondary)' }}>
-          현재는 거래가 준비 중이에요. 배당 정보만 확인할 수 있어요.
-        </p>
+        <p className="caption" style={{ color: 'var(--text-secondary)' }}>거래 준비 중</p>
       </div>
     );
   }
@@ -105,41 +98,24 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
         <div className="caption mb-1 font-medium" style={{ color: 'var(--text-secondary)' }}>
           매수 호가
         </div>
-        <div className="space-y-0.5">
-          {bidRows.map((b, i) => {
-            const isCurrentPrice = currentPriceUsd != null && Math.abs(b.price_usd - currentPriceUsd) < 0.01;
-            const isMyOrder = myOrderPrices.some((p) => Math.abs(p - b.price_usd) < 0.01);
-            return (
+        <div className="flex flex-col" style={{ gap: 2 }}>
+          {bidRows.map((b, i) => (
               <div
                 key={`bid-${i}-${b.price_usd}`}
-                className="flex justify-between items-center body-sm relative py-1 px-2 rounded transition-colors"
-                style={{
-                  backgroundColor: isMyOrder
-                    ? 'rgba(5,150,105,0.15)'
-                    : isCurrentPrice
-                      ? 'rgba(5,150,105,0.08)'
-                      : undefined,
-                }}
+                className="grid grid-cols-[60%_40%] items-center body-sm py-0.5 px-1"
+                style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}
               >
-                <div
-                  className="absolute left-0 top-0 bottom-0 rounded-r"
-                  style={{
-                    width: `${Math.min(100, (b.quantity / maxBidQty) * 100)}%`,
-                    background: 'linear-gradient(90deg, rgba(5,150,105,0.2) 0%, rgba(5,150,105,0.05) 100%)',
-                  }}
-                />
                 <span
-                  className="font-semibold metric-number relative z-10"
+                  className="font-semibold metric-number text-right"
                   style={{ color: 'var(--emerald)' }}
                 >
                   {formatUsd(b.price_usd)}
                 </span>
-                <span className="metric-number relative z-10" style={{ color: 'var(--text-secondary)' }}>
+                <span className="caption metric-number text-right" style={{ color: 'var(--text-muted)' }}>
                   {formatQty(b.quantity)}
                 </span>
               </div>
-            );
-          })}
+            ))}
           {bidRows.length === 0 && (
             <p className="caption py-4 text-center" style={{ color: 'var(--text-secondary)' }}>
               매수 호가 없음
@@ -151,43 +127,24 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
         <div className="caption mb-1 font-medium" style={{ color: 'var(--text-secondary)' }}>
           매도 호가
         </div>
-        <div className="space-y-0.5">
-          {askRows.map((a, i) => {
-            const isCurrentPrice = currentPriceUsd != null && Math.abs(a.price_usd - currentPriceUsd) < 0.01;
-            const isMyOrder = myOrderPrices.some((p) => Math.abs(p - a.price_usd) < 0.01);
-            return (
+        <div className="flex flex-col" style={{ gap: 2 }}>
+          {askRows.map((a, i) => (
               <div
                 key={`ask-${i}-${a.price_usd}`}
-                className="flex justify-between items-center body-sm relative py-1 px-2 rounded transition-colors"
-                style={{
-                  backgroundColor: isMyOrder
-                    ? 'rgba(220,38,38,0.15)'
-                    : isCurrentPrice
-                      ? 'rgba(220,38,38,0.08)'
-                      : undefined,
-                }}
+                className="grid grid-cols-[60%_40%] items-center body-sm py-0.5 px-1"
+                style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}
               >
-                <div
-                  className="absolute right-0 top-0 bottom-0 rounded-l"
-                  style={{
-                    width: `${Math.min(100, (a.quantity / maxAskQty) * 100)}%`,
-                    background: 'linear-gradient(270deg, rgba(220,38,38,0.2) 0%, rgba(220,38,38,0.05) 100%)',
-                    right: 0,
-                    left: 'auto',
-                  }}
-                />
                 <span
-                  className="font-semibold metric-number relative z-10"
+                  className="font-semibold metric-number text-right"
                   style={{ color: 'var(--accent-loss)' }}
                 >
                   {formatUsd(a.price_usd)}
                 </span>
-                <span className="metric-number relative z-10" style={{ color: 'var(--text-secondary)' }}>
+                <span className="caption metric-number text-right" style={{ color: 'var(--text-muted)' }}>
                   {formatQty(a.quantity)}
                 </span>
               </div>
-            );
-          })}
+            ))}
           {askRows.length === 0 && (
             <p className="caption py-4 text-center" style={{ color: 'var(--text-secondary)' }}>
               매도 호가 없음

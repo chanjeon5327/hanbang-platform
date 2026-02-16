@@ -86,7 +86,7 @@
 @layer components {
   /* 버튼 스타일 */
   .btn-primary {
-    @apply rounded-2xl px-6 py-3.5 font-bold transition-all active:scale-[0.98] disabled:opacity-50;
+    @apply rounded-2xl px-6 py-3.5 font-bold transition-all active:opacity-90 disabled:opacity-50;
     background: var(--royal-blue);
     color: white;
     box-shadow: var(--shadow-royal);
@@ -97,7 +97,7 @@
   }
 
   .btn-secondary {
-    @apply rounded-2xl px-6 py-3.5 font-bold transition-all active:scale-[0.98] disabled:opacity-50 border-2;
+    @apply rounded-2xl px-6 py-3.5 font-bold transition-all active:opacity-90 disabled:opacity-50 border-2;
     background: transparent;
     border-color: var(--royal-blue);
     color: var(--royal-blue);
@@ -107,7 +107,7 @@
   }
 
   .btn-ghost {
-    @apply rounded-2xl px-6 py-3.5 font-semibold transition-all active:scale-[0.98] disabled:opacity-50;
+    @apply rounded-2xl px-6 py-3.5 font-semibold transition-all active:opacity-90 disabled:opacity-50;
     background: transparent;
     color: var(--text-secondary);
   }
@@ -117,7 +117,7 @@
   }
 
   .btn-danger {
-    @apply rounded-2xl px-6 py-3.5 font-bold transition-all active:scale-[0.98] disabled:opacity-50;
+    @apply rounded-2xl px-6 py-3.5 font-bold transition-all active:opacity-90 disabled:opacity-50;
     background: var(--accent-loss);
     color: white;
   }
@@ -197,7 +197,7 @@
 
   /* 공통 active scale */
   .tap-scale {
-    @apply transition-transform active:scale-[0.98];
+    @apply transition-transform active:opacity-90;
   }
 
   /* 페이지 컨테이너 */

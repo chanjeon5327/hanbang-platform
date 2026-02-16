@@ -31,7 +31,7 @@ export default function BuildStamp() {
 
   return (
     <div
-      className="fixed bottom-2 right-2 z-[9999] px-2 py-1 rounded text-[10px] opacity-70 bg-black/60 text-white font-mono"
+      className="fixed bottom-2 right-2 z-[9999] px-2 py-1 rounded caption opacity-70 bg-black/60 text-white font-mono"
       aria-label="빌드 정보"
     >
       Build: {info.commit} · Env: {info.env}

@@ -51,9 +51,7 @@ export default function DividendInfo({
         <MetricRow items={items} columns={2} dense />
       {showHelp && (
         <div className="mt-3 p-3 rounded-xl caption" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
-          <p>· 기준일: 매월 말일 23:59:59 보유자 기준</p>
-          <p>· 정산일: 매월 {payoutDay}일 지급</p>
-          <p>· 실제 수익은 콘텐츠 성과에 따라 변동될 수 있습니다.</p>
+          말일 보유자 기준 · 정산 {payoutDay}일 · 수익 변동 가능
         </div>
       )}
       </div>

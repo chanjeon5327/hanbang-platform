@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatKrw, formatRate, formatQty } from '@/lib/utils/format';
 import Skeleton from '@/components/ui/Skeleton';
+import MetricRow from '@/components/ui/MetricRow';
 
 type OrderbookLevel = { price_usd: number; quantity: number };
 type Trade = { id: string; price_usd: number; quantity: number; side: string; created_at: string };
@@ -376,7 +377,7 @@ export default function TradingPanelV2({
                   {bids.slice(0, 5).map((b, i) => (
                     <div
                       key={i}
-                      className="flex justify-between items-center body-sm relative py-0.5"
+                      className="grid grid-cols-[60%_40%] items-center body-sm relative py-0.5"
                         style={{
                           backgroundColor: bestBid === b.price_usd ? 'rgba(5,150,105,0.08)' : undefined,
                         }}
@@ -404,7 +405,7 @@ export default function TradingPanelV2({
                   {asks.slice(0, 5).map((a, i) => (
                     <div
                       key={i}
-                      className="flex justify-between items-center body-sm relative py-0.5"
+                      className="grid grid-cols-[60%_40%] items-center body-sm relative py-0.5"
                         style={{
                           backgroundColor: bestAsk === a.price_usd ? 'rgba(220,38,38,0.08)' : undefined,
                         }}
@@ -442,6 +443,16 @@ export default function TradingPanelV2({
               </p>
             </div>
           )}
+          <MetricRow
+            items={[
+              { label: '예상 체결가', value: formatKrw(orderTab === '시장가' ? currentPriceKrw : parseFloat(orderPrice || '0') * fxRate) },
+              { label: '수수료', value: '—' },
+              { label: '체결가능', value: orderSide === 'bid' ? `${Math.floor(userCash / (orderTab === '시장가' ? currentPriceKrw : parseFloat(orderPrice || '0') * fxRate) || 1)}주` : `${position?.quantity ?? 0}주` },
+            ]}
+            columns={2}
+            dense
+            compact
+          />
           <div className="flex gap-2">
             <button
               type="button"
@@ -513,8 +524,8 @@ export default function TradingPanelV2({
             </div>
           )}
           {orderTab === '시장가' && (
-            <div className="body-sm animate-[fadeIn_0.2s_ease-out]" style={{ color: 'var(--text-secondary)' }}>
-              시장가: {formatUsd(sharePriceUsd)} ({formatKrw(sharePriceUsd * fxRate)})
+            <div className="caption metric-number animate-[fadeIn_0.2s_ease-out]" style={{ color: 'var(--text-secondary)' }}>
+              {formatUsd(sharePriceUsd)} ({formatKrw(sharePriceUsd * fxRate)})
             </div>
           )}
           <div>
@@ -539,26 +550,14 @@ export default function TradingPanelV2({
               {formatKrw(totalAmountKrw)}
             </span>
           </div>
-          {isLoggedIn && (
-            <div className="flex justify-between caption metric-number" style={{ color: 'var(--text-secondary)' }}>
-              <span>예수금</span>
-              <span>{formatKrw(userCash)}</span>
-            </div>
-          )}
           {insufficientFunds && (
-            <p className="caption" style={{ color: 'var(--accent-loss)' }}>
-              예수금이 부족합니다.
-            </p>
+            <p className="caption" style={{ color: 'var(--accent-loss)' }}>예수금 부족</p>
           )}
           {insufficientAssets && (
-            <p className="caption" style={{ color: 'var(--accent-loss)' }}>
-              보유 수량이 부족합니다.
-            </p>
+            <p className="caption" style={{ color: 'var(--accent-loss)' }}>보유 부족</p>
           )}
           {lockBusyRetrying && (
-            <p className="caption text-center py-1" style={{ color: 'var(--accent-loss)' }}>
-              재시도 가능합니다. 아래 버튼을 다시 눌러주세요.
-            </p>
+            <p className="caption" style={{ color: 'var(--accent-loss)' }}>잠시 후 재시도</p>
           )}
           <button
             type="button"
@@ -731,8 +730,8 @@ export default function TradingPanelV2({
               </div>
               <Link
                 href="/wallet"
-                className="block mt-3 py-2 text-center body-sm font-semibold rounded-xl border transition hover:opacity-90"
-                style={{ borderColor: 'var(--border)', color: 'var(--emerald)' }}
+                className="block py-2 text-center body-sm font-semibold rounded-xl border transition hover:opacity-90"
+                style={{ borderColor: 'var(--border)', color: 'var(--emerald)', marginTop: 'var(--space-md)' }}
               >
                 지갑에서 자세히 보기
               </Link>

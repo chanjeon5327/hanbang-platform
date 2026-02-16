@@ -56,17 +56,17 @@ export default function OnboardingPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen pb-24 flex items-center justify-center" style={{ backgroundColor: UPBIT.bg }}>
+      <div className="pb-24 flex items-center justify-center" style={{ backgroundColor: UPBIT.bg }}>
         <p style={{ color: UPBIT.dim }}>로딩 중…</p>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen pb-24" style={{ backgroundColor: UPBIT.bg }}>
+    <div className="pb-24" style={{ backgroundColor: UPBIT.bg }}>
       <header className="sticky top-0 z-50 border-b px-4 py-3 flex items-center justify-between" style={{ backgroundColor: UPBIT.bg, borderColor: UPBIT.border }}>
         <Link href="/" className="text-sm" style={{ color: UPBIT.dim }}>‹ 뒤로</Link>
-        <span className="text-[12px] px-2 py-1 rounded" style={{ backgroundColor: UPBIT.panel, color: UPBIT.dim }}>취향 파악</span>
+        <span className="caption px-2 py-1 rounded" style={{ backgroundColor: UPBIT.panel, color: UPBIT.dim }}>취향 파악</span>
       </header>
 
       <div className="px-4 py-6">
@@ -76,8 +76,8 @@ export default function OnboardingPage() {
               <div key={s} className="flex-1 h-1 rounded-full" style={{ backgroundColor: s === 1 ? UPBIT.bid : UPBIT.border }} />
             ))}
           </div>
-          <h1 className="text-[20px] font-bold mb-1" style={{ color: UPBIT.text }}>좋아하는 콘텐츠를 평가해주세요</h1>
-          <p className="text-[13px]" style={{ color: UPBIT.dim }}>선택할수록 추천이 정확해집니다. 건너뛰기도 가능합니다.</p>
+          <h1 className="h3 font-bold mb-1" style={{ color: UPBIT.text }}>좋아하는 콘텐츠를 평가해주세요</h1>
+          <p className="body-sm" style={{ color: UPBIT.dim }}>선택할수록 추천이 정확해집니다. 건너뛰기도 가능합니다.</p>
         </div>
 
         {channels.length > 0 ? (
@@ -92,18 +92,18 @@ export default function OnboardingPage() {
                   className="w-16 h-16 rounded-lg flex-shrink-0 bg-cover bg-center"
                   style={{ backgroundImage: ch.thumbnail_url ? `url(${ch.thumbnail_url})` : undefined, backgroundColor: ch.thumbnail_url ? 'transparent' : UPBIT.border }}
                 >
-                  {!ch.thumbnail_url && <span className="text-[10px] text-center flex items-center justify-center w-full h-full" style={{ color: UPBIT.dim }}>{ch.name.slice(0, 2)}</span>}
+                  {!ch.thumbnail_url && <span className="caption text-center flex items-center justify-center w-full h-full" style={{ color: UPBIT.dim }}>{ch.name.slice(0, 2)}</span>}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[15px] font-medium truncate" style={{ color: UPBIT.text }}>{ch.name}</p>
-                  <p className="text-[12px]" style={{ color: UPBIT.dim }}>{ch.category ?? '콘텐츠'}</p>
+                  <p className="body font-medium truncate" style={{ color: UPBIT.text }}>{ch.name}</p>
+                  <p className="caption" style={{ color: UPBIT.dim }}>{ch.category ?? '콘텐츠'}</p>
                 </div>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((s) => (
                     <button
                       key={s}
                       onClick={() => handleRate(ch.id, s)}
-                      className="w-8 h-8 rounded-full text-[12px] font-medium transition"
+                      className="w-8 h-8 rounded-full caption font-medium transition"
                       style={{
                         backgroundColor: (ratings[ch.id] ?? 0) >= s ? UPBIT.bid : UPBIT.border,
                         color: (ratings[ch.id] ?? 0) >= s ? '#fff' : UPBIT.dim,
@@ -117,14 +117,14 @@ export default function OnboardingPage() {
             ))}
           </div>
         ) : (
-          <p className="text-[14px] mb-6" style={{ color: UPBIT.dim }}>등록된 채널이 없습니다.</p>
+          <p className="body-sm mb-6" style={{ color: UPBIT.dim }}>등록된 채널이 없습니다.</p>
         )}
 
         <div className="space-y-3">
           <button
             onClick={() => handleComplete(false)}
             disabled={completing}
-            className="w-full py-3.5 rounded-lg text-white text-[16px] font-bold transition active:scale-[0.98] disabled:opacity-60"
+            className="w-full py-3.5 rounded-lg text-white body font-bold transition active:opacity-90 disabled:opacity-60"
             style={{ backgroundColor: UPBIT.bid }}
           >
             {completing ? '처리 중…' : '완료하고 시작하기'}
@@ -132,13 +132,13 @@ export default function OnboardingPage() {
           <button
             onClick={() => handleComplete(true)}
             disabled={completing}
-            className="w-full py-3 rounded-lg text-[14px] transition"
+            className="w-full py-3 rounded-lg body-sm transition"
             style={{ color: UPBIT.dim, border: `1px solid ${UPBIT.border}` }}
           >
             건너뛰기
           </button>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

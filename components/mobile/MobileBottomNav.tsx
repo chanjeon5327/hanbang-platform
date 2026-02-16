@@ -43,7 +43,7 @@ export function MobileBottomNav() {
             }}
           >
             <Icon size={24} className={isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"} />
-            <span className={`text-[11px] ${isActive ? "font-bold text-blue-600 dark:text-blue-400" : "font-normal text-gray-400 dark:text-gray-500"}`}>
+            <span className={`caption ${isActive ? "font-bold text-blue-600 dark:text-blue-400" : "font-normal text-gray-400 dark:text-gray-500"}`}>
               {item.label}
             </span>
           </Link>

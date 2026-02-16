@@ -8,10 +8,10 @@ export default function MarketDetailPage() {
   const [obOpen, setObOpen] = useState(false);
 
   return (
-    <main className="relative pb-32">
+    <div className="relative pb-32">
       <MobilePriceChart />
       <OrderBookSummary onOpen={() => setObOpen(true)} />
       <OrderBookPanel open={obOpen} onClose={() => setObOpen(false)} />
-    </main>
+    </div>
   );
 }

@@ -1,20 +1,77 @@
 # 금융 신뢰 지수 자체 평가 (10점 만점)
 
-## 홈 (8.5/10)
-- **강점**: 공식 스폰서 픽 배지, 카드 hover opacity 전환, shadow-sm 적용, active:scale→opacity 치환.
-- **보완**: 비로그인 시 자산 요약 빈 카드. 스폰서 픽 외 레일에 원장검증·배당진행중 배지 API 연동 시 노출.
-- **남은 0.2점 후보**: ① 비로그인 홈 자산 카드 placeholder ② 레일 카드 원장/정산 배지 API ③ Hero drop-shadow 제거 ④ CTA tap 피드백 opacity 통일 ⑤ 스폰서 픽 caption 톤 정리
+## 정보 계층 압축 적용 (2026-02-17)
 
-## 마켓 (8.5/10)
-- **강점**: 원장검증·정산완료 N건·배당진행중 배지(caption, border, rounded-full), 카드 hover 시 배지 opacity 강조.
-- **보완**: 마켓 리스트 API(product_type, integrity_ok) 연동. D-day 배지와 신뢰 배지 우선순위 정리.
-- **남은 0.2점 후보**: ① 배지 1개만 노출 시 우선순위 ② API 미연동 시 placeholder ③ 카드 내 MetricRow 정렬 ④ 빈 호가/체결 empty state ⑤ 정렬 옵션 토스형 정리
-
-## 상세 (9.0/10)
-- **강점**: SummaryFinancialCard "원장 기록 기반"(Check)·"실시간 체결 데이터"(녹색 dot 1.5s pulse)·"정산 이력 공개" 링크. 거래 탭 "실시간 시장 데이터" 배지(border, rounded-full). 투자 CTA 위 "투자 후 매월 배당 · 원장 자동 기록". disabled 시 "지연 가능" caption.
-- **보완**: 정산 이력 /trust 고정. 상품별 정산 페이지 있으면 링크 개선.
-- **남은 0.2점 후보**: ① 상품별 정산 이력 링크 ② 누적 배당 지급액 API 연동 ③ 정보탭 핵심 숫자 카드 ④ CTA animate-pulse D-day만 유지 ⑤ 거래 탭 sticky top 검증
+### 숫자 설득 1→2→3 구조
+- **상세**: 현재가(metric-xl) > 예상수익률(80%) > 모집률(MetricRow) > 참여·오늘(muted). **PASS**
+- **마켓**: 현재가(metric-lg) > 수익률(body) > 모집률. 배지 opacity 0.75. **PASS**
+- **거래**: 예상 체결가/수수료/체결가능 MetricRow 3열. 호가 가격 굵게·수량 얇게. 배경 강조 제거. **PASS**
 
 ---
 
-**종합**: 금융 신뢰 레이어(원장·실시간·정산 공개)가 홈/마켓/상세에 적용. hover:scale·active:scale→opacity, shadow-lg→shadow-sm 치환 완료. dot pulse(1.5s)만 유지.
+## 홈 (8.5/10)
+- **강점**: 공식 스폰서 픽, opacity 전환, shadow-sm.
+- **보완**: 비로그인 자산 빈 카드, 레일 배지 API.
+- **남은 0.2점 후보**: ① 비로그인 placeholder ② 레일 배지 API ③ CTA 피드백 통일
+
+## 마켓 (9.0/10)
+- **강점**: 숫자 위계(metric-lg > body > 모집률), 배지 caption opacity 0.75.
+- **보완**: API 연동, 배지 우선순위.
+- **남은 0.2점 후보**: ① 배지 1개 우선순위 ② MetricRow 정렬 ③ 빈 호가 empty state
+
+## 상세 (9.2/10)
+- **강점**: 현재가 압도 → 수익률 80% → 모집률 MetricRow. 참여·오늘 muted.
+- **보완**: 정산 링크 /trust 고정.
+- **남은 0.2점 후보**: ① 상품별 정산 링크 ② 누적 배당 API ③ 정보탭 숫자 카드
+
+## 거래 (9.0/10)
+- **강점**: 예상 체결가/수수료/체결가능 MetricRow. 호가 가격 굵게·수량 caption. 설명문 압축.
+- **보완**: 수수료 API 연동.
+- **남은 0.2점 후보**: ① 수수료 표시 ② 체결가능 실시간 ③ lockBusy 안내 1줄
+
+---
+
+**종합**: 숫자 계층 1-2-3 구조 완성. 금융 설득 밀도 9.0/10.
+
+---
+
+## 숫자 지배력 20% 상승 (2026-02-17)
+
+### 시각적 힘 조정
+- **상세**: 현재가 margin-top·letter-spacing·line-height 강화. 예상수익률 opacity 0.75. 모집률 caption. progress 4px.
+- **마켓**: 현재가 상단 20px. 배지 0.7rem. progress 4px.
+- **거래**: MetricRow compact(gap 12px, label opacity 0.6). OrderBook 행간 2px, 구분선 opacity 0.4.
+- **여백**: Section 간격 var(--space-lg) 24px 통일.
+
+### 점수
+| 항목 | 점수 |
+|------|------|
+| 시각 지배력 | 9.2/10 |
+| 금융 설득 밀도 | 9.2/10 |
+| 종합 | 9.2/10 |
+
+---
+
+## 숫자 공간 지배력 (2026-02-17)
+
+### 3구역 재비율
+- **ZONE A**: 현재가 padding 28/16px, Divider로 분리
+- **ZONE B**: 예상수익률 단독 행, 모집률 MetricRow, progress bar
+- **ZONE C**: 참여/오늘 + extraMetrics MetricRow compact
+
+### 마켓 카드
+- 현재가 위 24px, 썸네일 aspect 2/1, progress bar 하단 이동
+- 배지 0.65rem
+
+### 거래 탭
+- OrderBook 가격 60% / 수량 40%, 숫자 오른쪽 정렬
+- MetricRow 2열 (예상체결가·수수료 | 체결가능)
+- 예수금 라인 제거
+
+### 점수
+| 항목 | 점수 |
+|------|------|
+| 시각 지배력 | 9.5/10 |
+| 설득 밀도 | 9.5/10 |
+| 종합 | 9.5/10 |
+| 9.8 도달 | 보완 후보: 수수료 API, 체결가능 실시간 |

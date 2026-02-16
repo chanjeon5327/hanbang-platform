@@ -14,7 +14,7 @@ export default function ArtistBadge({ artist, amount }: ArtistBadgeProps) {
   const formatted = amount.toLocaleString("ko-KR");
   return (
     <span
-      className="inline-flex items-center px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap"
+      className="inline-flex items-center px-3 py-1.5 rounded-full caption font-medium whitespace-nowrap"
       style={{
         backgroundColor: "#000000",
         border: "1px solid #C5A059",

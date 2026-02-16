@@ -27,13 +27,13 @@ export default function MobileOrderStickyBar({
     >
       <div className="flex justify-between items-center mb-2">
         <div>
-          <div className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>현재가</div>
+          <div className="caption" style={{ color: 'var(--upbit-text-dim)' }}>현재가</div>
           <div className="font-bold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
             {formatPrice(price)}
           </div>
         </div>
         <div
-          className="text-[14px] font-semibold tabular-nums"
+          className="body-sm font-semibold tabular-nums"
           style={{ color: change >= 0 ? 'var(--upbit-positive)' : 'var(--upbit-ask)' }}
         >
           {change > 0 ? '+' : ''}{change}%

@@ -26,8 +26,8 @@ export default function IpNewsSection() {
   return (
     <section className="mb-6">
       <div className="flex justify-between items-center mb-3">
-        <h2 className="text-[17px] font-bold tracking-tight" style={{ color: TOSS.text }}>IP 수익 뉴스</h2>
-        <Link href="/news" className="text-[13px] font-semibold" style={{ color: TOSS.blue }}>전체보기</Link>
+        <h2 className="body-lg font-bold tracking-tight" style={{ color: TOSS.text }}>IP 수익 뉴스</h2>
+        <Link href="/news" className="body-sm font-semibold" style={{ color: TOSS.blue }}>전체보기</Link>
       </div>
       <div className="rounded-2xl border overflow-hidden" style={{ backgroundColor: TOSS.card, borderColor: TOSS.border }}>
         {MOCK_NEWS.map((item) => (
@@ -37,8 +37,8 @@ export default function IpNewsSection() {
             className="block px-4 py-3 border-b last:border-b-0 hover:bg-black/[0.02] transition"
             style={{ borderColor: TOSS.border }}
           >
-            <p className="text-[14px] font-medium line-clamp-2" style={{ color: TOSS.text }}>{item.title}</p>
-            <p className="text-[12px] mt-1" style={{ color: TOSS.secondary }}>{item.source} · {item.date}</p>
+            <p className="body-sm font-medium line-clamp-2" style={{ color: TOSS.text }}>{item.title}</p>
+            <p className="caption mt-1" style={{ color: TOSS.secondary }}>{item.source} · {item.date}</p>
           </Link>
         ))}
       </div>

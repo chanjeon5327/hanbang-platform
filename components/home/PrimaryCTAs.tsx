@@ -11,7 +11,7 @@ const ROYAL = {
   secondary: 'var(--text-secondary)',
 } as const;
 
-/** 로그인 유저용 다음 행동 CTA: 현금 충전, 수익권 둘러보기 (엔젤 대시보드) */
+/** 로그인 유저용 다음 행동 CTA: 현금 충전, 수익권 둘러보기 (투자 대시보드) */
 export default function PrimaryCTAs({ enabled = true }: { enabled?: boolean }) {
   const { items: deadlineItems } = useDeadlinePicks(enabled);
   const urgentCount = deadlineItems.length;
@@ -26,8 +26,8 @@ export default function PrimaryCTAs({ enabled = true }: { enabled?: boolean }) {
         >
           <Download size={29} strokeWidth={2} aria-hidden />
           <div className="text-left">
-            <div className="text-[15px] font-bold">현금 충전</div>
-            <div className="text-[12px] opacity-90">KRW 입금</div>
+            <div className="body font-bold">현금 충전</div>
+            <div className="caption opacity-90">KRW 입금</div>
           </div>
         </Link>
         <Link
@@ -37,12 +37,12 @@ export default function PrimaryCTAs({ enabled = true }: { enabled?: boolean }) {
         >
           <TrendingUp size={29} strokeWidth={2} aria-hidden />
           <div className="text-left">
-            <div className="text-[15px] font-bold" style={{ color: ROYAL.text }}>수익권 둘러보기</div>
-            <div className="text-[12px]" style={{ color: ROYAL.secondary }}>엔젤로 참여하기</div>
+            <div className="body font-bold" style={{ color: ROYAL.text }}>수익권 둘러보기</div>
+            <div className="caption" style={{ color: ROYAL.secondary }}>매수하기</div>
           </div>
         </Link>
       </div>
-      <p className="text-[11px] text-center" style={{ color: ROYAL.secondary }}>
+      <p className="caption text-center" style={{ color: ROYAL.secondary }}>
         마감임박 {urgentCount}건
       </p>
     </div>

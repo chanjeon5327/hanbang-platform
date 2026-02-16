@@ -31,8 +31,8 @@ function AdminLoginContent() {
   };
 
   return (
-    <main className="p-4" data-testid="admin-login-page">
-      <h1 className="mb-4 text-[20px] font-bold">관리자 로그인</h1>
+    <div className="p-4" data-testid="admin-login-page">
+      <h1 className="mb-4 h3 font-bold">관리자 로그인</h1>
 
       <input
         className="mb-2 w-full rounded border px-3 py-2"
@@ -62,13 +62,13 @@ function AdminLoginContent() {
           비밀번호 찾기
         </Link>
       </p>
-    </main>
+    </div>
   );
 }
 
 export default function AdminLoginPage() {
   return (
-    <Suspense fallback={<main className="p-4"><p>로딩 중...</p></main>}>
+    <Suspense fallback={<div className="p-4"><p>로딩 중...</p></div>}>
       <AdminLoginContent />
     </Suspense>
   );

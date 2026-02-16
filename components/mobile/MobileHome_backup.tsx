@@ -15,10 +15,10 @@ export default function MobileHome() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F2F4F6] pb-[85px]">
+    <div className="bg-[#F2F4F6] pb-[85px]">
       <Header />
       
-      <main className="px-5 pt-4 flex flex-col gap-4">
+      <div className="px-5 pt-4 flex flex-col gap-4">
         
         {/* 1. KPC 및 자산 현황 */}
         <section className="bg-white rounded-[24px] p-6 shadow-sm">
@@ -100,7 +100,7 @@ export default function MobileHome() {
               >
                 <div className="h-[150px] bg-gray-200 relative">
                    <img src={`https://source.unsplash.com/random/300x300/?webtoon,poster&sig=${i}`} className="w-full h-full object-cover" />
-                   {i < 3 && <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">HOT</div>}
+                   {i < 3 && <div className="absolute top-2 left-2 bg-red-500 text-white caption font-bold px-2 py-1 rounded-full">HOT</div>}
                 </div>
                 <div className="p-4">
                   <div className="text-sm font-bold text-gray-900 truncate mb-1">나 혼자 만렙 {i+1}</div>
@@ -151,14 +151,14 @@ export default function MobileHome() {
           </ul>
         </section>
 
-      </main>
+      </div>
 
       {/* 1:1 상담 플로팅 버튼 (신규 추가) */}
       <button className="fixed bottom-[90px] right-5 z-50 flex flex-col items-center justify-center transition-transform active:scale-90 hover:scale-105">
         <div className="w-[52px] h-[52px] bg-[#3182F6] rounded-full shadow-lg shadow-blue-300/50 flex items-center justify-center text-2xl border-2 border-white">
           🙂
         </div>
-        <span className="bg-white text-[#3182F6] text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-md -mt-2.5 z-10 border border-blue-100">
+        <span className="bg-white text-[#3182F6] caption font-extrabold px-2 py-0.5 rounded-full shadow-md -mt-2.5 z-10 border border-blue-100">
           1:1
         </span>
       </button>

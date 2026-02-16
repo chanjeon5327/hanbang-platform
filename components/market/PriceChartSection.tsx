@@ -62,7 +62,7 @@ export default function PriceChartSection({ mode, isMobilization }: Props) {
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
-            className="flex-1 py-3 text-[14px] font-semibold transition"
+            className="flex-1 py-3 body-sm font-semibold transition"
             style={{
               backgroundColor: activeTab === tab ? 'var(--upbit-bid)' : 'transparent',
               color: activeTab === tab ? '#fff' : 'var(--upbit-text-dim)',

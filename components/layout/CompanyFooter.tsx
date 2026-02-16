@@ -16,12 +16,12 @@ const env = {
 export default function CompanyFooter() {
   return (
     <footer
-      className="py-6 px-4 border-t"
+      className="py-6 border-t"
       style={{ borderColor: TOSS.border, backgroundColor: 'rgba(0,0,0,0.02)' }}
       role="contentinfo"
     >
-      <div className="max-w-lg mx-auto text-[11px] leading-relaxed" style={{ color: TOSS.secondary }}>
-        <p className="text-[10px] mb-3 font-medium" style={{ color: 'var(--toss-text)' }}>
+      <div className="caption leading-relaxed" style={{ color: TOSS.secondary }}>
+        <p className="caption mb-3 font-medium" style={{ color: 'var(--toss-text)' }}>
           수익권 투자는 원금 손실 위험이 있으며, 과거 수익이 미래 수익을 보장하지 않습니다.
         </p>
         <p className="font-semibold" style={{ color: 'var(--toss-text)' }}>{env.companyName}</p>

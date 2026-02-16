@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Check, Upload, Shield } from 'lucide-react';
 
-const STEPS = ['본인인증', '신분증 업로드', '승인 대기'];
+const STEPS = ['????', '??? ??', '?? ??'];
 
 export default function KycPage() {
   const [step, setStep] = useState(0);
@@ -32,41 +32,41 @@ export default function KycPage() {
   const isApproved = kycStatus === 'APPROVED';
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
+    <div style={{ backgroundColor: 'var(--bg)' }}>
       <header className="sticky top-0 z-50 border-b px-4 py-3" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <Link href="/mypage" className="text-[14px] font-medium" style={{ color: 'var(--text-secondary)' }}>
-            ← 뒤로
+        <div className="flex items-center justify-between">
+          <Link href="/mypage" className="body-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+            ? ??
           </Link>
-          <h1 className="text-[17px] font-bold" style={{ color: 'var(--text)' }}>엔젤 KYC 인증</h1>
+          <h1 className="body-lg font-bold" style={{ color: 'var(--text)' }}>??? ??(KYC)</h1>
           <span className="w-14" />
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6">
+      <div className="py-6">
         <div className="rounded-[16px] p-4 mb-6" style={{ backgroundColor: 'rgba(30, 58, 138, 0.08)', border: '1px solid rgba(30, 58, 138, 0.2)' }}>
-          <p className="text-[13px]" style={{ color: 'var(--text)' }}>
-            <strong>KYC가 왜 필요한가요?</strong> 엔젤 투자 시 금융당국 규정에 따라 본인 확인이 필요합니다. 안전한 투자 환경을 위해 최소한의 정보만 수집합니다.
+          <p className="body-sm" style={{ color: 'var(--text)' }}>
+            <strong>KYC? ? ??????</strong> ?? ? ???? ??? ?? ?? ??? ?????. ??? ?? ??? ?? ???? ??? ?????.
           </p>
         </div>
 
         {rejectionReason && (
           <div className="rounded-[12px] p-3 mb-4" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
-            <p className="text-[13px]" style={{ color: 'var(--accent-loss)' }}>반려 사유: {rejectionReason}</p>
+            <p className="body-sm" style={{ color: 'var(--accent-loss)' }}>?? ??: {rejectionReason}</p>
           </div>
         )}
 
         {isSubmitted && !isApproved && (
           <div className="rounded-[12px] p-4 mb-6" style={{ backgroundColor: 'rgba(234, 179, 8, 0.1)', border: '1px solid rgba(234, 179, 8, 0.3)' }}>
-            <p className="text-[14px] font-medium" style={{ color: 'var(--text)' }}>승인 대기 중입니다.</p>
-            <p className="text-[12px] mt-1" style={{ color: 'var(--text-secondary)' }}>검토 후 이메일로 알려드립니다.</p>
+            <p className="body-sm font-medium" style={{ color: 'var(--text)' }}>?? ?? ??????.</p>
+            <p className="caption mt-1" style={{ color: 'var(--text-secondary)' }}>??? ?? 1~2? ?? ??????.</p>
           </div>
         )}
 
         {isApproved && (
           <div className="rounded-[12px] p-4 mb-6" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
-            <p className="text-[14px] font-medium" style={{ color: 'var(--emerald)' }}>KYC 승인 완료</p>
-            <Link href="/onboarding" className="text-[13px] mt-2 block" style={{ color: 'var(--royal-blue)' }}>온보딩 진행 →</Link>
+            <p className="body-sm font-medium" style={{ color: 'var(--emerald)' }}>KYC ?? ??</p>
+            <Link href="/onboarding" className="body-sm mt-2 block" style={{ color: 'var(--royal-blue)' }}>??? ?? ?</Link>
           </div>
         )}
 
@@ -80,18 +80,18 @@ export default function KycPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-[13px] mb-1" style={{ color: 'var(--text-secondary)' }}>실명 *</label>
+                <label className="block body-sm mb-1" style={{ color: 'var(--text-secondary)' }}>?? *</label>
                 <input
                   type="text"
                   value={realName}
                   onChange={(e) => setRealName(e.target.value)}
-                  placeholder="홍길동"
+                  placeholder="???"
                   className="w-full px-4 py-3 rounded-[12px] border"
                   style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                 />
               </div>
               <div>
-                <label className="block text-[13px] mb-1" style={{ color: 'var(--text-secondary)' }}>연락처</label>
+                <label className="block body-sm mb-1" style={{ color: 'var(--text-secondary)' }}>???</label>
                 <input
                   type="tel"
                   value={phone}
@@ -102,7 +102,7 @@ export default function KycPage() {
                 />
               </div>
               <div>
-                <label className="block text-[13px] mb-1" style={{ color: 'var(--text-secondary)' }}>신분증 앞면 URL (테스트용)</label>
+                <label className="block body-sm mb-1" style={{ color: 'var(--text-secondary)' }}>??? ?? URL (????)</label>
                 <input
                   type="url"
                   value={idCardFrontUrl}
@@ -113,7 +113,7 @@ export default function KycPage() {
                 />
               </div>
               <div>
-                <label className="block text-[13px] mb-1" style={{ color: 'var(--text-secondary)' }}>신분증 뒷면 URL (테스트용)</label>
+                <label className="block body-sm mb-1" style={{ color: 'var(--text-secondary)' }}>??? ?? URL (????)</label>
                 <input
                   type="url"
                   value={idCardBackUrl}
@@ -145,7 +145,7 @@ export default function KycPage() {
                   if (json.ok) {
                     setUserStatus('KYC_SUBMITTED');
                   } else {
-                    alert(json.error ?? '제출 실패');
+                    alert(json.error ?? '?? ??');
                   }
                 } finally {
                   setSubmitting(false);
@@ -154,11 +154,11 @@ export default function KycPage() {
               className="w-full mt-8 py-4 rounded-[16px] font-bold tap-scale disabled:opacity-60"
               style={{ backgroundColor: 'var(--royal-blue)', color: '#fff', boxShadow: 'var(--shadow-royal)' }}
             >
-              {submitting ? '제출 중…' : '제출하기'}
+              {submitting ? '?? ??' : '????'}
             </button>
           </>
         )}
-      </main>
+      </div>
     </div>
   );
 }

@@ -173,40 +173,36 @@ function SummaryFinancialCard({
   contentId?: string;
 }) {
   const extraMetrics = [
-    { label: '누적 배당 지급액', value: cumulativeDividend != null && cumulativeDividend > 0 ? formatKrw(cumulativeDividend) : '—' },
-    { label: '정산 횟수', value: settlementCount != null ? `${settlementCount}건` : '—' },
-    { label: '평균 월배당', value: avgMonthlyDividend != null ? formatKrw(avgMonthlyDividend) : '—' },
+    { label: '누적 배당', value: cumulativeDividend != null && cumulativeDividend > 0 ? formatKrw(cumulativeDividend) : '—' },
+    { label: '정산', value: settlementCount != null ? `${settlementCount}건` : '—' },
+    { label: '월배당', value: avgMonthlyDividend != null ? formatKrw(avgMonthlyDividend) : '—' },
   ];
   return (
     <CardV5 style={{ marginTop: 'var(--space-lg)' }} className="card-inner-gap">
-      <div>
-        <div className="metric-xl metric-number font-extrabold" style={{ color: 'var(--text)' }}>
+      {/* ZONE A: 현재가 단독 영역 */}
+      <div style={{ paddingTop: 28, paddingBottom: 16 }}>
+        <div className="metric-xl metric-number font-extrabold" style={{ color: 'var(--text)', letterSpacing: '-0.5px', lineHeight: 1.05 }}>
           {formatKrw(currentPriceKrw)}
         </div>
         <p className="caption" style={{ color: 'var(--text-secondary)' }}>현재가</p>
       </div>
-      <div>
-        <div className="metric-lg metric-number font-bold" style={{ color: 'var(--emerald)' }}>
+      <Divider />
+      {/* ZONE B: 예상수익률 + 모집률 */}
+      <div style={{ opacity: 0.75 }}>
+        <div className="body font-bold metric-number" style={{ color: 'var(--emerald)', fontSize: '0.85em' }}>
           {formatRate(expectedYield)}
         </div>
         <p className="caption" style={{ color: 'var(--text-secondary)' }}>예상 연수익률</p>
       </div>
-      <div>
-        <div className="flex justify-between items-center mb-1">
-          <span className="caption" style={{ color: 'var(--text-secondary)' }}>모집률</span>
-          <span className="caption font-bold metric-number" style={{ color: 'var(--text)' }}>{progress.toFixed(1)}%</span>
-        </div>
-        <div className="w-full rounded-full overflow-hidden" style={{ height: 8, backgroundColor: 'var(--border)' }}>
-          <div
-            className="h-full rounded-full transition-all"
-            style={{ width: `${Math.min(100, progress)}%`, backgroundColor: 'var(--royal-blue)' }}
-          />
-        </div>
+      <MetricRow items={[{ label: '모집률', value: `${progress.toFixed(1)}%` }]} columns={2} dense valueClassName="caption" />
+      <div className="w-full rounded-full overflow-hidden" style={{ height: 4, backgroundColor: 'var(--border)' }}>
+        <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, progress)}%`, backgroundColor: 'var(--royal-blue)' }} />
       </div>
-      <p className="caption metric-number" style={{ color: 'var(--text-secondary)' }}>
-        {participants}명 참여 · 오늘 확정 {todayCount}건
+      {/* ZONE C: 참여/오늘/정산 */}
+      <p className="caption metric-number" style={{ color: 'var(--text-muted)' }}>
+        {participants}명 · 오늘 {todayCount}건
       </p>
-      <MetricRow items={extraMetrics} columns={3} dense />
+      <MetricRow items={extraMetrics} columns={3} dense compact />
       <Divider />
       <div className="flex flex-wrap items-center gap-2 pt-2">
         <span className="inline-flex items-center gap-1 caption px-2 py-0.5 rounded-full border" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border)', backgroundColor: 'var(--bg-secondary)' }}>

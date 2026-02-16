@@ -18,6 +18,7 @@ export type RailItem = {
   artist_keyword?: string | null;
   integrity_ok?: boolean;
   settlement_count?: number;
+  product_type?: 'DIVIDEND_ONLY' | 'DIVIDEND_TRADABLE';
 };
 
 const TAB_APIS: Record<string, string> = {

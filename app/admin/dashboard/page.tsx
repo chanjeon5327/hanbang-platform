@@ -139,17 +139,17 @@ export default function AdminDashboardPage() {
               <h2 className="text-sm font-semibold mb-4 opacity-80">오늘 매출 요약</h2>
               <div className="grid grid-cols-3 gap-4">
                 <div className="p-4 rounded border" style={{ borderColor: STYLE.text }}>
-                  <div className="text-[11px] opacity-70 mb-1">오늘 확정 건수</div>
+                  <div className="caption opacity-70 mb-1">오늘 확정 건수</div>
                   <div className="text-lg font-bold tabular-nums">{daily?.confirmed_count ?? 0}건</div>
                 </div>
                 <div className="p-4 rounded border" style={{ borderColor: STYLE.text }}>
-                  <div className="text-[11px] opacity-70 mb-1">오늘 확정 금액</div>
+                  <div className="caption opacity-70 mb-1">오늘 확정 금액</div>
                   <div className="text-lg font-bold tabular-nums">
                     ₩{(daily?.confirmed_amount ?? 0).toLocaleString()}
                   </div>
                 </div>
                 <div className="p-4 rounded border" style={{ borderColor: STYLE.text }}>
-                  <div className="text-[11px] opacity-70 mb-1">오늘 취소 건수</div>
+                  <div className="caption opacity-70 mb-1">오늘 취소 건수</div>
                   <div className="text-lg font-bold tabular-nums">{daily?.cancelled_count ?? 0}건</div>
                 </div>
               </div>

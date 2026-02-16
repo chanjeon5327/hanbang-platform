@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { formatKrw, formatRate, formatQuantity } from '@/lib/utils/format';
 import Skeleton from '@/components/ui/Skeleton';
 import EmptyState from '@/components/ui/EmptyState';
+import { CardV5 } from '@/components/ui/CardV5';
 
 type Props = {
   investAmount?: number;
@@ -44,36 +45,36 @@ export default function DividendSimulatorV2({
 
   if (loading) {
     return (
-      <div className="rounded-[16px] p-6 card">
+      <CardV5>
         <Skeleton className="h-8 w-32 mb-4" />
         <Skeleton className="h-12 w-full mb-4" />
         <Skeleton className="h-24 w-full" />
-      </div>
+      </CardV5>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-[16px] p-6 card">
+      <CardV5>
         <EmptyState title="시뮬레이션 로드 실패" description={error} />
-      </div>
+      </CardV5>
     );
   }
 
   return (
-    <div className="rounded-[16px] p-6 card">
+    <CardV5>
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-[16px] font-bold" style={{ color: 'var(--text)' }}>수익률 시뮬레이터</h3>
-        <span className="text-[11px] px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>B) 시뮬레이션 기반 예상치</span>
+        <h3 className="body font-bold" style={{ color: 'var(--text)' }}>수익률 시뮬레이터</h3>
+        <span className="caption px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>B) 시뮬레이션 기반 예상치</span>
       </div>
 
       <div className="mb-4">
-        <label className="text-[12px] font-medium block mb-2" style={{ color: 'var(--text-secondary)' }}>투자금 (KRW)</label>
+        <label className="caption font-medium block mb-2" style={{ color: 'var(--text-secondary)' }}>투자금 (KRW)</label>
         <input
           type="number"
           value={investAmount}
           onChange={(e) => setInvestAmount(Math.max(0, Number(e.target.value) || 0))}
-          className="w-full rounded-xl px-4 py-3 text-[16px] font-bold tabular-nums border metric-number"
+          className="w-full rounded-xl px-4 py-3 body font-bold tabular-nums border metric-number"
           style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
           min={10000}
           step={10000}
@@ -81,19 +82,19 @@ export default function DividendSimulatorV2({
       </div>
 
       <div className="space-y-3 mb-6">
-        <div className="flex justify-between text-[14px]">
+        <div className="flex justify-between body-sm">
           <span style={{ color: 'var(--text-secondary)' }}>예상 보유 수량</span>
           <span className="font-bold tabular-nums" style={{ color: 'var(--text)' }}>{formatQuantity(quantity)}주</span>
         </div>
-        <div className="flex justify-between text-[14px]">
+        <div className="flex justify-between body-sm">
           <span style={{ color: 'var(--text-secondary)' }}>월 배당</span>
           <span className="font-bold tabular-nums text-profit">{formatKrw(monthlyDividend)}</span>
         </div>
-        <div className="flex justify-between text-[14px]">
+        <div className="flex justify-between body-sm">
           <span style={{ color: 'var(--text-secondary)' }}>연 배당</span>
           <span className="font-bold tabular-nums text-profit">{formatKrw(annualDividend)}</span>
         </div>
-        <div className="flex justify-between text-[14px]">
+        <div className="flex justify-between body-sm">
           <span style={{ color: 'var(--text-secondary)' }}>연환산 예상 수익률</span>
           <span className="font-bold tabular-nums" style={{ color: 'var(--royal-blue)' }}>{formatRate(expectedYield)}</span>
         </div>
@@ -102,10 +103,10 @@ export default function DividendSimulatorV2({
       <button
         type="button"
         onClick={() => onInvestClick?.(investAmount)}
-        className="w-full rounded-[16px] py-4 text-[16px] font-bold tap-scale btn-primary"
+        className="w-full rounded-[20px] py-4 body font-bold tap-scale btn-primary"
       >
-        {formatKrw(investAmount)} 엔젤로 참여
+        {formatKrw(investAmount)} 매수
       </button>
-    </div>
+    </CardV5>
   );
 }

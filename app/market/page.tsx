@@ -173,7 +173,7 @@ function MarketPageContent() {
               ))}
             </div>
             {nextCursor != null && !searchQuery && (
-              <div className="mt-6 text-center">
+              <div className="text-center" style={{ marginTop: 'var(--space-lg)' }}>
                 <button
                   type="button"
                   onClick={loadMore}
@@ -214,7 +214,7 @@ function EmptyState({ tab, isLoggedIn }: { tab: string; isLoggedIn: boolean }) {
         <p className="body-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
           홈에서 관심 버튼을 눌러주세요
         </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center" style={{ marginTop: 'var(--space-lg)' }}>
           <Link
             href="/"
             className="px-6 py-3 rounded-xl body-sm font-semibold"

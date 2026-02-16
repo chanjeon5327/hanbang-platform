@@ -12,12 +12,12 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-[var(--toss-card)] border-b border-black/5">
-      <div className="flex items-center justify-between h-14 px-4 max-w-lg mx-auto">
+      <div className="flex items-center justify-between h-14">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-[20px] font-black tracking-tight text-[var(--toss-text)]">HANBANG</span>
-          <span className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white bg-[var(--toss-blue)]">베타</span>
+          <span className="h3 font-black tracking-tight text-[var(--toss-text)]">HANBANG</span>
+          <span className="rounded-full px-2 py-0.5 caption font-bold text-white bg-[var(--toss-blue)]">베타</span>
           {process.env.NEXT_PUBLIC_SIMULATION_MODE === 'true' && (
-            <span className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white bg-red-600">SIMULATION MODE</span>
+            <span className="rounded-full px-2 py-0.5 caption font-bold text-white bg-red-600">SIMULATION MODE</span>
           )}
         </Link>
         <div className="flex items-center gap-0.5">

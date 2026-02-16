@@ -35,7 +35,7 @@ export default function ArtistProgressCard({
           border: "1px solid " + GOLD,
         }}
       >
-        <p className="text-[11px] font-medium mb-1.5" style={{ color: GOLD }}>
+        <p className="caption font-medium mb-1.5" style={{ color: GOLD }}>
           [{artist}] 공식 파트너십 도달률
         </p>
         <div
@@ -47,7 +47,7 @@ export default function ArtistProgressCard({
             style={{ width: `${percent}%`, backgroundColor: GOLD }}
           />
         </div>
-        <p className="text-[10px]" style={{ color: GOLD }}>
+        <p className="caption" style={{ color: GOLD }}>
           {percent}% · ₩{totalFormatted} / ₩{targetFormatted}
         </p>
       </div>
@@ -62,7 +62,7 @@ export default function ArtistProgressCard({
         border: "1px solid " + GOLD,
       }}
     >
-      <h3 className="text-[14px] font-semibold mb-3" style={{ color: GOLD }}>
+      <h3 className="body-sm font-semibold mb-3" style={{ color: GOLD }}>
         [{artist}] 공식 파트너십 도달률
       </h3>
       <div
@@ -74,10 +74,10 @@ export default function ArtistProgressCard({
           style={{ width: `${percent}%`, backgroundColor: GOLD }}
         />
       </div>
-      <p className="text-[14px] font-bold mb-1" style={{ color: GOLD }}>
+      <p className="body-sm font-bold mb-1" style={{ color: GOLD }}>
         {percent}%
       </p>
-      <p className="text-[12px]" style={{ color: "rgba(197,160,89,0.9)" }}>
+      <p className="caption" style={{ color: "rgba(197,160,89,0.9)" }}>
         ₩{totalFormatted} / ₩{targetFormatted}
       </p>
     </div>

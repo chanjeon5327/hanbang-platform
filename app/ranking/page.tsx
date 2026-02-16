@@ -33,18 +33,18 @@ export default function RankingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen pb-24" style={{ backgroundColor: 'var(--toss-bg)' }}>
+    <div className="pb-24" style={{ backgroundColor: 'var(--toss-bg)' }}>
       <header className="sticky top-0 z-50 bg-[var(--toss-card)] border-b border-black/5">
         <div className="flex items-center h-14 px-4 max-w-lg mx-auto gap-2">
           <Link href="/" className="p-2 -ml-2 rounded-xl" style={{ color: 'var(--toss-text-secondary)' }} aria-label="뒤로">
             <ArrowLeft size={24} strokeWidth={2} />
           </Link>
-          <h1 className="flex-1 text-center text-[17px] font-bold" style={{ color: 'var(--toss-text)' }}>랭킹</h1>
+          <h1 className="flex-1 text-center body-lg font-bold" style={{ color: 'var(--toss-text)' }}>랭킹</h1>
           <div className="w-10" />
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 pt-4 pb-8 space-y-8">
+      <div className="max-w-lg mx-auto px-4 pt-4 pb-8 space-y-8">
         {loading ? (
           <div className="space-y-6">
             {[1, 2, 3].map((i) => (
@@ -56,7 +56,7 @@ export default function RankingPage() {
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <Heart size={20} style={{ color: 'var(--toss-blue)' }} />
-                <h2 className="text-[17px] font-bold" style={{ color: 'var(--toss-text)' }}>관심 수 TOP10</h2>
+                <h2 className="body-lg font-bold" style={{ color: 'var(--toss-text)' }}>관심 수 TOP10</h2>
               </div>
               <div className="space-y-2">
                 {interest.map((item, i) => (
@@ -69,7 +69,7 @@ export default function RankingPage() {
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp size={20} style={{ color: 'var(--toss-blue)' }} />
-                <h2 className="text-[17px] font-bold" style={{ color: 'var(--toss-text)' }}>모집률 TOP10</h2>
+                <h2 className="body-lg font-bold" style={{ color: 'var(--toss-text)' }}>모집률 TOP10</h2>
               </div>
               <div className="space-y-2">
                 {progress.map((item, i) => (
@@ -82,7 +82,7 @@ export default function RankingPage() {
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <Zap size={20} style={{ color: 'var(--toss-blue)' }} />
-                <h2 className="text-[17px] font-bold" style={{ color: 'var(--toss-text)' }}>최근 급상승 TOP10</h2>
+                <h2 className="body-lg font-bold" style={{ color: 'var(--toss-text)' }}>최근 급상승 TOP10</h2>
               </div>
               <div className="space-y-2">
                 {surge.map((item, i) => (
@@ -93,7 +93,7 @@ export default function RankingPage() {
             </section>
           </>
         )}
-      </main>
+      </div>
     </div>
   );
 }
@@ -106,18 +106,18 @@ function RankRow({ rank, item, extra }: { rank: number; item: RankItem; extra?: 
       className="flex items-center gap-3 p-3 rounded-xl border"
       style={{ backgroundColor: 'var(--toss-card)', borderColor: 'var(--toss-border)' }}
     >
-      <span className="w-6 text-center text-[14px] font-bold" style={{ color: rank <= 3 ? 'var(--toss-blue)' : 'var(--toss-text-secondary)' }}>
+      <span className="w-6 text-center body-sm font-bold" style={{ color: rank <= 3 ? 'var(--toss-blue)' : 'var(--toss-text-secondary)' }}>
         {rank}
       </span>
       <img src={thumb} alt="" className="w-12 h-12 rounded-lg object-cover" />
       <div className="flex-1 min-w-0">
-        <div className="text-[14px] font-semibold truncate" style={{ color: 'var(--toss-text)' }}>{item.title}</div>
+        <div className="body-sm font-semibold truncate" style={{ color: 'var(--toss-text)' }}>{item.title}</div>
         {item.creator_name && (
-          <div className="text-[12px] truncate" style={{ color: 'var(--toss-text-secondary)' }}>{item.creator_name}</div>
+          <div className="caption truncate" style={{ color: 'var(--toss-text-secondary)' }}>{item.creator_name}</div>
         )}
       </div>
       {extra && (
-        <span className="text-[12px] font-medium shrink-0" style={{ color: 'var(--toss-blue)' }}>{extra}</span>
+        <span className="caption font-medium shrink-0" style={{ color: 'var(--toss-blue)' }}>{extra}</span>
       )}
     </Link>
   );
@@ -125,7 +125,7 @@ function RankRow({ rank, item, extra }: { rank: number; item: RankItem; extra?: 
 
 function EmptyState() {
   return (
-    <div className="py-8 text-center text-[14px]" style={{ color: 'var(--toss-text-secondary)' }}>
+    <div className="py-8 text-center body-sm" style={{ color: 'var(--toss-text-secondary)' }}>
       데이터가 없습니다.
     </div>
   );

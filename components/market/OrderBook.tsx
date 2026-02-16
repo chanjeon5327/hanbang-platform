@@ -21,7 +21,7 @@ function OrderRow({
 }) {
   const pct = max > 0 ? (size / max) * 100 : 0;
   return (
-    <div className="relative grid grid-cols-3 px-3 py-1.5 text-[13px]">
+    <div className="relative grid grid-cols-3 px-3 py-1.5 body-sm">
       <div
         className="absolute inset-y-0 opacity-15"
         style={{
@@ -77,7 +77,7 @@ export function OrderBookSummary({ onOpen }: { onOpen: () => void }) {
         onClick={onOpen}
         className="bg-[var(--upbit-panel)] rounded-[var(--upbit-radius)] border border-[var(--upbit-border)] overflow-hidden"
       >
-        <div className="grid grid-cols-3 text-[11px] text-[var(--upbit-text-dim)] px-3 py-2 border-b border-[var(--upbit-border)]">
+        <div className="grid grid-cols-3 caption text-[var(--upbit-text-dim)] px-3 py-2 border-b border-[var(--upbit-border)]">
           <span>매도호가</span>
           <span className="text-center">수량</span>
           <span className="text-right">매수호가</span>
@@ -96,7 +96,7 @@ export function OrderBookSummary({ onOpen }: { onOpen: () => void }) {
           <OrderRow key={r.price} price={r.price} size={r.size} isAsk={false} max={totalMax} formatPrice={formatPrice} />
         ))}
       </div>
-      <p className="text-[11px] text-center text-[var(--upbit-text-dim)] mt-2">탭하여 전체 호가 보기</p>
+      <p className="caption text-center text-[var(--upbit-text-dim)] mt-2">탭하여 전체 호가 보기</p>
     </section>
   );
 }
@@ -116,12 +116,12 @@ export function OrderBookPanel({ open, onClose }: { open: boolean; onClose: () =
       <div className="w-full max-h-[85vh] bg-[var(--upbit-bg)] border-t border-[var(--upbit-border)] rounded-t-2xl">
         <div className="flex justify-between items-center px-4 py-3 border-b border-[var(--upbit-border)]">
           <h2 className="font-bold text-[var(--upbit-text)]">호가</h2>
-          <button onClick={onClose} className="text-[14px] text-[var(--upbit-bid)] font-medium">
+          <button onClick={onClose} className="body-sm text-[var(--upbit-bid)] font-medium">
             닫기
           </button>
         </div>
         <div className="overflow-y-auto max-h-[70vh] p-4">
-          <div className="grid grid-cols-3 text-[11px] text-[var(--upbit-text-dim)] mb-2">
+          <div className="grid grid-cols-3 caption text-[var(--upbit-text-dim)] mb-2">
             <span>매도호가</span>
             <span className="text-center">수량</span>
             <span className="text-right">매수호가</span>

@@ -13,13 +13,13 @@ const items = Array.from({ length: 10 }).map((_, i) => ({
 
 export default function InterestDemoPage() {
   return (
-    <main className="min-h-screen bg-[#f7f8fa]">
+    <div className="bg-[#f7f8fa]">
       <div className="mx-auto max-w-[520px] py-4">
         <InterestRail
           title="지금 뜨는 조각"
           items={items}
         />
       </div>
-    </main>
+    </div>
   );
 }

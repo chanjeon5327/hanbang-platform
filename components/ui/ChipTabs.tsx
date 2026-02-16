@@ -15,7 +15,7 @@ export default function ChipTabs({ tabs, active, onChange }: Props) {
           key={t.id}
           type="button"
           onClick={() => onChange(t.id)}
-          className="flex-1 py-2 px-4 rounded-lg text-[14px] font-semibold transition-all tap-scale"
+          className="flex-1 py-2 px-4 rounded-lg body-sm font-semibold transition-all tap-scale"
           style={{
             backgroundColor: active === t.id ? 'var(--royal-blue)' : 'transparent',
             color: active === t.id ? '#fff' : 'var(--text-secondary)',

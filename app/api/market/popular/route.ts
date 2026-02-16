@@ -101,7 +101,7 @@ export async function GET(req: NextRequest) {
 
     let query = supabase
       .from("content_items")
-      .select("id, title, thumbnail_url, creator_name, category, platform, total_raise, current_raise, event_date, deadline, artist_keyword")
+      .select("id, title, thumbnail_url, creator_name, category, platform, total_raise, current_raise, event_date, deadline, artist_keyword, product_type")
       .eq("status", "active");
 
     if (category) query = query.eq("category", category);
@@ -150,7 +150,7 @@ async function fetchAndEnrich(
   if (!rows) {
     const { data } = await supabase
       .from("content_items")
-      .select("id, title, thumbnail_url, creator_name, category, platform, total_raise, current_raise, event_date, artist_keyword")
+      .select("id, title, thumbnail_url, creator_name, category, platform, total_raise, current_raise, event_date, artist_keyword, product_type")
       .in("id", pageIds)
       .eq("status", "active");
     rows = (data ?? []) as Record<string, unknown>[];
@@ -212,6 +212,7 @@ async function fetchAndEnrich(
       artist_keyword: r.artist_keyword ?? null,
       integrity_ok: integrityMap[cid] ?? false,
       settlement_count: settledByContent[cid] ?? 0,
+      product_type: r.product_type ?? "DIVIDEND_ONLY",
     };
   });
 

@@ -95,31 +95,31 @@ export default function CardV5MarketCard({
           <h3 className="body font-bold line-clamp-2 leading-snug flex-1" style={{ color: 'var(--text)' }}>
             {item.title}
           </h3>
-          <div className="flex flex-wrap justify-end gap-1 shrink-0">
+          <div className="flex flex-wrap justify-end gap-1 shrink-0 opacity-75" style={{ fontSize: '0.7rem' }}>
             {item.integrity_ok && (item.settlement_count ?? 0) > 0 && (
-              <span className="rounded-full px-2 py-0.5 caption border transition-opacity duration-200 group-hover:opacity-100 opacity-90" style={{ backgroundColor: 'var(--emerald)', color: '#fff', borderColor: 'var(--emerald)' }}>
-                정산완료 {item.settlement_count}건
+              <span className="rounded-full px-1.5 py-0.5 caption border" style={{ backgroundColor: 'var(--emerald)', color: '#fff', borderColor: 'var(--emerald)' }}>
+                정산 {item.settlement_count}건
               </span>
             )}
             {item.integrity_ok && (item.settlement_count ?? 0) === 0 && (
-              <span className="rounded-full px-2 py-0.5 caption border transition-opacity duration-200 group-hover:opacity-100 opacity-90" style={{ backgroundColor: 'var(--royal-blue)', color: '#fff', borderColor: 'var(--royal-blue)' }}>
+              <span className="rounded-full px-1.5 py-0.5 caption border" style={{ backgroundColor: 'var(--royal-blue)', color: '#fff', borderColor: 'var(--royal-blue)' }}>
                 원장검증
               </span>
             )}
             {item.product_type === 'DIVIDEND_TRADABLE' && !item.integrity_ok && (
-              <span className="rounded-full px-2 py-0.5 caption border transition-opacity duration-200 group-hover:opacity-100 opacity-90" style={{ backgroundColor: 'var(--emerald)', color: '#fff', borderColor: 'var(--emerald)' }}>
+              <span className="rounded-full px-1.5 py-0.5 caption border" style={{ backgroundColor: 'var(--emerald)', color: '#fff', borderColor: 'var(--emerald)' }}>
                 배당진행중
               </span>
             )}
             {dday != null && (
-              <span className="rounded px-1.5 py-0.5 caption font-bold text-white" style={{ backgroundColor: 'var(--accent-loss)' }}>
+              <span className="rounded px-1.5 py-0.5 caption font-bold text-white" style={{ backgroundColor: 'var(--accent-loss)', opacity: 0.8 }}>
                 D-{dday}
               </span>
             )}
           </div>
         </div>
 
-        <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', backgroundColor: 'var(--border)' }}>
+        <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '2/1', backgroundColor: 'var(--border)' }}>
           {showPreview && youtubeId ? (
             <iframe
               src={PREVIEW_URL(youtubeId)}
@@ -149,12 +149,12 @@ export default function CardV5MarketCard({
           )}
         </div>
 
-        <div>
-          <div className="metric-xl metric-number font-extrabold" style={{ color: 'var(--text)' }}>
+        <div style={{ marginTop: 24 }}>
+          <div className="metric-lg metric-number font-extrabold" style={{ color: 'var(--text)', letterSpacing: '-0.03em' }}>
             {totalRaise > 0 ? formatKrw(totalRaise) : '—'}
           </div>
           <div
-            className="metric-lg metric-number font-bold mt-0.5"
+            className="body font-bold metric-number mt-0.5"
             style={{
               color:
                 change !== undefined && change !== 0
@@ -166,19 +166,19 @@ export default function CardV5MarketCard({
           </div>
         </div>
 
+        <MetricRow items={metricItems} columns={3} dense />
+
         {totalRaise > 0 && (
           <div>
-            <div className="flex justify-between caption mb-1" style={{ color: 'var(--text-secondary)' }}>
+            <div className="flex justify-between caption mb-0.5" style={{ color: 'var(--text-secondary)' }}>
               <span>모집률</span>
               <span className="font-medium metric-number" style={{ color: 'var(--text)' }}>{progress.toFixed(0)}%</span>
             </div>
-            <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border)' }}>
+            <div className="rounded-full overflow-hidden" style={{ height: 4, backgroundColor: 'var(--border)' }}>
               <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, backgroundColor: 'var(--royal-blue)' }} />
             </div>
           </div>
         )}
-
-        <MetricRow items={metricItems} columns={3} dense />
       </div>
     </Link>
   );

@@ -78,9 +78,12 @@ export function useWalletLedger() {
   const refetch = useCallback(() => {
     setLoading(true);
     setError(null);
-    fetch('/api/wallet/ledger', { cache: 'no-store' })
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 10000);
+    fetch('/api/wallet/ledger', { cache: 'no-store', signal: ctrl.signal })
       .then((res) => {
-        if (!res.ok) throw new Error('鈺곌퀬�돳 ?�끋�솭');
+        clearTimeout(t);
+        if (!res.ok) throw new Error('조회 실패');
         return res.json();
       })
       .then((data) => {
@@ -89,10 +92,14 @@ export function useWalletLedger() {
         setFetchedAt(new Date().toISOString());
       })
       .catch((e) => {
-        setError(e.message);
+        clearTimeout(t);
+        setError(e.name === 'AbortError' ? '시간 초과' : e.message);
         setEntries([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        clearTimeout(t);
+        setLoading(false);
+      });
   }, []);
 
   useEffect(() => {

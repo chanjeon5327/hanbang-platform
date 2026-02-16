@@ -20,12 +20,12 @@ export default function TrustBadges({ settlementCount = 127 }: Props) {
 
   return (
     <div className="rounded-3xl p-4" style={{ backgroundColor: 'var(--primary)' }}>
-      <h3 className="text-[13px] font-bold mb-3 text-white">투자 신뢰 요소</h3>
+      <h3 className="body-sm font-bold mb-3 text-white">투자 신뢰 요소</h3>
       <div className="grid grid-cols-2 gap-2">
         {BADGES.map((b, i) => (
           <div key={b.label} className="flex items-center gap-2 py-2">
             <b.icon size={18} strokeWidth={2} className="text-white" />
-            <span className="text-[12px] font-medium text-white">{labels[i]}</span>
+            <span className="caption font-medium text-white">{labels[i]}</span>
           </div>
         ))}
       </div>

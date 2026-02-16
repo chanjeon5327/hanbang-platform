@@ -32,8 +32,8 @@ export default function LevelCard({ level = 3, showProgress = false }: Props) {
     >
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-[11px] font-medium mb-0.5" style={{ color: TOSS.secondary }}>나의 레벨</div>
-          <span className="text-[15px] font-bold" style={{ color: TOSS.text }}>LV{level}</span>
+          <div className="caption font-medium mb-0.5" style={{ color: TOSS.secondary }}>나의 레벨</div>
+          <span className="body font-bold" style={{ color: TOSS.text }}>LV{level}</span>
         </div>
         <span className="shrink-0" style={{ fontSize: 36 }} title={cfg.label} aria-hidden>{cfg.icon}</span>
       </div>

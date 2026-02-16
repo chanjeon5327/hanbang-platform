@@ -1,11 +1,11 @@
 'use client';
 
-import HomeView from '@/components/home/HomeView';
+import HomeV4 from '@/components/home/HomeV4';
 
 /** 공개 모델하우스 — 로그인 없이 접근 가능 */
 export default function DemoPage() {
   return (
-    <HomeView
+    <HomeV4
       assetData={null}
       isLoggedIn={false}
       demoMode

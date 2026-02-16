@@ -50,13 +50,13 @@ export default function AdminHomeConfigPage() {
     toast(id ? `히어로 고정: ${id}` : '히어로 고정 해제');
   };
 
-  if (loading) return <main className="p-4">로딩중…</main>;
+  if (loading) return <div className="p-4">로딩중…</div>;
 
   return (
-    <main className="p-4">
-      <h1 className="mb-3 text-[18px] font-bold">홈 히어로 설정</h1>
+    <div className="p-4">
+      <h1 className="mb-3 body-lg font-bold">홈 히어로 설정</h1>
 
-      <div className="mb-3 text-[13px] text-black/60">
+      <div className="mb-3 body-sm text-black/60">
         선택하면 홈 히어로가 고정됩니다. (해제하면 자동정렬)
       </div>
 
@@ -82,6 +82,6 @@ export default function AdminHomeConfigPage() {
           </button>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

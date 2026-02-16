@@ -8,7 +8,7 @@ export default function HomeLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div className="bg-white pb-20">
       <header className="h-14 px-4 flex items-center justify-between border-b">
         <div className="font-bold text-lg">HANBANG</div>
         <div className="flex gap-3 text-sm text-gray-500">
@@ -17,7 +17,7 @@ export default function HomeLayout({
         </div>
       </header>
 
-      <main>{children}</main>
+      <div>{children}</div>
     </div>
   );
 }

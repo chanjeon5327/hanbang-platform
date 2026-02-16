@@ -99,19 +99,19 @@ export default function AssetCard({ data, loading }: Props) {
       className="rounded-2xl p-5 border"
       style={{ backgroundColor: ROYAL.card, borderColor: ROYAL.border, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
     >
-      <div className="text-[13px] font-medium mb-2" style={{ color: ROYAL.secondary }}>내 자산</div>
-      <div className="text-[26px] font-bold tracking-tight tabular-nums" style={{ color: ROYAL.text }}>
+      <div className="body-sm font-medium mb-2" style={{ color: ROYAL.secondary }}>내 자산</div>
+      <div className="h2 font-bold tracking-tight tabular-nums" style={{ color: ROYAL.text }}>
         {formatKrw(totalAssets)}
       </div>
       <div className="flex items-baseline gap-2 mt-1">
         <span
-          className="text-[14px] font-semibold tabular-nums"
+          className="body-sm font-semibold tabular-nums"
           style={{ color: isPositive ? ROYAL.positive : ROYAL.negative }}
         >
           {isPositive ? '+' : ''}{formatKrw(returnAmount)}
         </span>
         <span
-          className="text-[13px] font-medium tabular-nums"
+          className="body-sm font-medium tabular-nums"
           style={{ color: isRatePositive ? ROYAL.positive : ROYAL.negative }}
         >
           ({isRatePositive ? '+' : ''}{formatRate(returnRate)})
@@ -119,7 +119,7 @@ export default function AssetCard({ data, loading }: Props) {
       </div>
       {/* 오늘 등락률 강조 - API 없으면 0 fallback */}
       <div
-        className="flex items-center gap-1.5 mt-2 text-[13px] font-semibold tabular-nums"
+        className="flex items-center gap-1.5 mt-2 body-sm font-semibold tabular-nums"
         style={{ color: isDailyPositive ? ROYAL.positive : isDailyNegative ? ROYAL.negative : ROYAL.secondary }}
       >
         {isDailyPositive && <TrendingUp size={14} strokeWidth={2.5} aria-hidden />}
@@ -131,22 +131,22 @@ export default function AssetCard({ data, loading }: Props) {
       </div>
       <div className="grid grid-cols-2 gap-4 mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
         <div>
-          <div className="text-[11px] font-medium" style={{ color: ROYAL.secondary }}>예수금</div>
-          <div className="text-[14px] font-semibold tabular-nums mt-0.5" style={{ color: ROYAL.text }}>{formatKrw(userCash)}</div>
+          <div className="caption font-medium" style={{ color: ROYAL.secondary }}>예수금</div>
+          <div className="body-sm font-semibold tabular-nums mt-0.5" style={{ color: ROYAL.text }}>{formatKrw(userCash)}</div>
         </div>
         <div>
-          <div className="text-[11px] font-medium" style={{ color: ROYAL.secondary }}>보유평가</div>
-          <div className="text-[14px] font-semibold tabular-nums mt-0.5" style={{ color: ROYAL.text }}>{formatKrw(holdingsValue)}</div>
+          <div className="caption font-medium" style={{ color: ROYAL.secondary }}>보유평가</div>
+          <div className="body-sm font-semibold tabular-nums mt-0.5" style={{ color: ROYAL.text }}>{formatKrw(holdingsValue)}</div>
         </div>
         <div>
-          <div className="text-[11px] font-medium" style={{ color: ROYAL.secondary }}>손익</div>
-          <div className="text-[14px] font-semibold tabular-nums mt-0.5" style={{ color: isPositive ? ROYAL.positive : ROYAL.negative }}>
+          <div className="caption font-medium" style={{ color: ROYAL.secondary }}>손익</div>
+          <div className="body-sm font-semibold tabular-nums mt-0.5" style={{ color: isPositive ? ROYAL.positive : ROYAL.negative }}>
             {isPositive ? '+' : ''}{formatKrw(returnAmount)}
           </div>
         </div>
         <div>
-          <div className="text-[11px] font-medium" style={{ color: ROYAL.secondary }}>예상 배당 수익률</div>
-          <div className="text-[14px] font-semibold tabular-nums mt-0.5" style={{ color: isRatePositive ? ROYAL.positive : ROYAL.negative }}>
+          <div className="caption font-medium" style={{ color: ROYAL.secondary }}>예상 배당 수익률</div>
+          <div className="body-sm font-semibold tabular-nums mt-0.5" style={{ color: isRatePositive ? ROYAL.positive : ROYAL.negative }}>
             {isRatePositive ? '+' : ''}{formatRate(returnRate)}
           </div>
         </div>

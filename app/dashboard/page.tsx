@@ -53,14 +53,14 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-white p-4">
-        <h1 className="text-xl font-bold mb-4">투자 대시보드</h1>
+      <div className="bg-white p-4">
+        <h1 className="text-xl font-bold mb-4">?? ????</h1>
         <div className="space-y-4">
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-48 w-full" />
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -75,33 +75,33 @@ export default function DashboardPage() {
   const perf = performance ?? { monthly_dividends: [], asset_returns: [] };
 
   return (
-    <main className="min-h-screen bg-white pb-24">
-      <div className="max-w-lg mx-auto px-4 pt-6">
-        <h1 className="text-[22px] font-bold mb-6">투자 대시보드</h1>
+    <div className="bg-white pb-24">
+      <div className="pt-6">
+        <h1 className="h2 font-bold mb-6">?? ????</h1>
 
         <div className="grid grid-cols-2 gap-3 mb-6">
           <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>총 투자금</div>
-            <div className="text-[18px] font-bold tabular-nums mt-1" style={{ color: 'var(--text)' }}>
+            <div className="caption" style={{ color: 'var(--text-secondary)' }}>? ???</div>
+            <div className="body-lg font-bold tabular-nums mt-1" style={{ color: 'var(--text)' }}>
               {formatKrw(p.total_invested)}
             </div>
           </div>
           <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>총 평가액</div>
-            <div className="text-[18px] font-bold tabular-nums mt-1" style={{ color: 'var(--text)' }}>
+            <div className="caption" style={{ color: 'var(--text-secondary)' }}>? ???</div>
+            <div className="body-lg font-bold tabular-nums mt-1" style={{ color: 'var(--text)' }}>
               {formatKrw(p.total_value)}
             </div>
           </div>
           <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>누적 배당</div>
-            <div className="text-[18px] font-bold tabular-nums mt-1" style={{ color: 'var(--upbit-positive)' }}>
+            <div className="caption" style={{ color: 'var(--text-secondary)' }}>?? ??</div>
+            <div className="body-lg font-bold tabular-nums mt-1" style={{ color: 'var(--upbit-positive)' }}>
               {formatKrw(p.total_dividend)}
             </div>
           </div>
           <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>총 수익률</div>
+            <div className="caption" style={{ color: 'var(--text-secondary)' }}>? ???</div>
             <div
-              className="text-[18px] font-bold tabular-nums mt-1"
+              className="body-lg font-bold tabular-nums mt-1"
               style={{ color: (irrData?.irr ?? p.total_return_rate) >= 0 ? 'var(--upbit-positive)' : 'var(--upbit-ask)' }}
             >
               {formatRate(irrData?.irr ?? p.total_return_rate)}
@@ -111,14 +111,14 @@ export default function DashboardPage() {
 
         {perf.monthly_dividends.length > 0 && (
           <div className="rounded-xl p-4 border mb-6" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="text-[14px] font-semibold mb-4">월별 배당</div>
+            <div className="body-sm font-semibold mb-4">?? ??</div>
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={perf.monthly_dividends}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 10000).toFixed(0)}만`} />
-                  <Tooltip formatter={(v: number | undefined) => [formatKrw(v ?? 0), '배당']} />
+                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 10000).toFixed(0)}?`} />
+                  <Tooltip formatter={(v: number | undefined) => [formatKrw(v ?? 0), '??']} />
                   <Bar dataKey="amount" fill="var(--upbit-bid)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -127,16 +127,16 @@ export default function DashboardPage() {
         )}
 
         <div className="space-y-3">
-          <div className="text-[14px] font-semibold">종목별 보유</div>
+          <div className="body-sm font-semibold">??? ??</div>
           {p.positions.length === 0 ? (
             <div
-              className="rounded-xl p-8 text-center text-[13px]"
+              className="rounded-xl p-8 text-center body-sm"
               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', border: '1px solid' }}
             >
-              보유 종목이 없습니다.
+              ?? ??? ????.
               <br />
               <Link href="/market" className="font-semibold mt-2 inline-block" style={{ color: 'var(--upbit-bid)' }}>
-                마켓에서 투자하기
+                ???? ????
               </Link>
             </div>
           ) : (
@@ -149,11 +149,11 @@ export default function DashboardPage() {
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="font-semibold text-[14px]" style={{ color: 'var(--text)' }}>
+                    <div className="font-semibold body-sm" style={{ color: 'var(--text)' }}>
                       {pos.title}
                     </div>
-                    <div className="text-[12px] mt-1" style={{ color: 'var(--text-secondary)' }}>
-                      {pos.quantity}주 · 평균 {formatKrw(pos.avg_price)}
+                    <div className="caption mt-1" style={{ color: 'var(--text-secondary)' }}>
+                      {pos.quantity}? ? ?? {formatKrw(pos.avg_price)}
                     </div>
                   </div>
                   <div className="text-right">
@@ -161,7 +161,7 @@ export default function DashboardPage() {
                       {formatKrw(pos.current_value)}
                     </div>
                     <div
-                      className="text-[12px] tabular-nums"
+                      className="caption tabular-nums"
                       style={{ color: pos.unrealized_rate >= 0 ? 'var(--upbit-positive)' : 'var(--upbit-ask)' }}
                     >
                       {formatRate(pos.unrealized_rate)}
@@ -173,6 +173,6 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
-    </main>
+    </div>
   );
 }

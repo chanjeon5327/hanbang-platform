@@ -96,15 +96,15 @@ export default function MarketChatSection({ marketId }: Props) {
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--upbit-border)' }}>
         <div className="flex items-center gap-2">
           <MessageCircle size={18} strokeWidth={2} style={{ color: 'var(--upbit-bid)' }} />
-          <span className="font-bold text-[15px]" style={{ color: 'var(--upbit-text)' }}>엔젤 채팅</span>
+          <span className="font-bold body" style={{ color: 'var(--upbit-text)' }}>종목 채팅</span>
         </div>
       </div>
 
       {/* 관리자 공지 고정 (pinned) */}
       <div className="px-4 py-3" style={{ backgroundColor: 'rgba(30, 136, 229, 0.08)', borderBottom: '1px solid var(--upbit-border)' }}>
-        <span className="text-[10px] font-semibold px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--upbit-bid)', color: '#fff' }}>공지</span>
-        <p className="text-[13px] mt-2" style={{ color: 'var(--upbit-text)' }}>{MOCK_PINNED.text}</p>
-        <span className="text-[11px] mt-1 block" style={{ color: 'var(--upbit-text-dim)' }}>{MOCK_PINNED.timestamp}</span>
+        <span className="caption font-semibold px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--upbit-bid)', color: '#fff' }}>공지</span>
+        <p className="body-sm mt-2" style={{ color: 'var(--upbit-text)' }}>{MOCK_PINNED.text}</p>
+        <span className="caption mt-1 block" style={{ color: 'var(--upbit-text-dim)' }}>{MOCK_PINNED.timestamp}</span>
       </div>
 
       {/* 메시지 목록 */}
@@ -118,10 +118,10 @@ export default function MarketChatSection({ marketId }: Props) {
             >
               <div className={`flex-1 min-w-0 ${isOwn ? 'text-right' : ''}`}>
                 <div className={`flex items-center gap-2 ${isOwn ? 'justify-end' : ''}`}>
-                  <span className="text-[12px] font-medium" style={{ color: 'var(--upbit-text)' }}>{m.user}</span>
-                  <span className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>{m.timestamp}</span>
+                  <span className="caption font-medium" style={{ color: 'var(--upbit-text)' }}>{m.user}</span>
+                  <span className="caption" style={{ color: 'var(--upbit-text-dim)' }}>{m.timestamp}</span>
                 </div>
-                <p className={`text-[13px] mt-0.5 ${isOwn ? 'ml-auto' : ''}`} style={{ color: 'var(--upbit-text)', maxWidth: '85%' }}>{m.text}</p>
+                <p className={`body-sm mt-0.5 ${isOwn ? 'ml-auto' : ''}`} style={{ color: 'var(--upbit-text)', maxWidth: '85%' }}>{m.text}</p>
               </div>
               {!isOwn && (
                 <div className="flex shrink-0 gap-1">
@@ -160,7 +160,7 @@ export default function MarketChatSection({ marketId }: Props) {
             placeholder={canWrite ? `메시지를 입력하세요 (${MAX_MESSAGE_LENGTH}자 이내)` : '로그인 후 작성 가능합니다'}
             disabled={!canWrite}
             maxLength={MAX_MESSAGE_LENGTH}
-            className="w-full rounded-lg px-4 py-2.5 text-[14px] focus:outline-none border"
+            className="w-full rounded-lg px-4 py-2.5 body-sm focus:outline-none border"
             style={{
               backgroundColor: canWrite ? 'var(--upbit-bg)' : 'var(--upbit-border)',
               borderColor: 'var(--upbit-border)',
@@ -169,7 +169,7 @@ export default function MarketChatSection({ marketId }: Props) {
             }}
           />
           {canWrite && input.length > 0 && (
-            <span className="text-[11px] mt-0.5 block" style={{ color: 'var(--upbit-text-dim)' }}>{input.length}/{MAX_MESSAGE_LENGTH}</span>
+            <span className="caption mt-0.5 block" style={{ color: 'var(--upbit-text-dim)' }}>{input.length}/{MAX_MESSAGE_LENGTH}</span>
           )}
         </div>
         <button
@@ -187,8 +187,8 @@ export default function MarketChatSection({ marketId }: Props) {
       {reportConfirm && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="bg-white rounded-xl p-4 max-w-sm w-full" style={{ color: 'var(--upbit-text)' }}>
-            <h3 className="font-bold text-[16px] mb-2">메시지 신고</h3>
-            <p className="text-[14px] mb-4" style={{ color: 'var(--upbit-text-dim)' }}>해당 메시지를 신고하시겠습니까? 검토 후 조치됩니다.</p>
+            <h3 className="font-bold body mb-2">메시지 신고</h3>
+            <p className="body-sm mb-4" style={{ color: 'var(--upbit-text-dim)' }}>해당 메시지를 신고하시겠습니까? 검토 후 조치됩니다.</p>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -215,8 +215,8 @@ export default function MarketChatSection({ marketId }: Props) {
       {blockTarget && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="bg-white rounded-xl p-4 max-w-sm w-full" style={{ color: 'var(--upbit-text)' }}>
-            <h3 className="font-bold text-[16px] mb-2">사용자 차단</h3>
-            <p className="text-[14px] mb-4" style={{ color: 'var(--upbit-text-dim)' }}>해당 사용자를 차단하시겠습니까? 차단 시 해당 사용자의 메시지가 보이지 않습니다.</p>
+            <h3 className="font-bold body mb-2">사용자 차단</h3>
+            <p className="body-sm mb-4" style={{ color: 'var(--upbit-text-dim)' }}>해당 사용자를 차단하시겠습니까? 차단 시 해당 사용자의 메시지가 보이지 않습니다.</p>
             <div className="flex gap-2">
               <button
                 type="button"

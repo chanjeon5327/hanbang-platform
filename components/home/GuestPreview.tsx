@@ -19,12 +19,12 @@ function PreviewCard({ item, index }: { item: RailItem; index: number }) {
         <img src={thumbSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" aria-hidden />
         <div className="absolute bottom-2 left-2 right-2">
-          <span className="inline-block rounded-lg px-2 py-0.5 text-[10px] font-semibold text-white" style={{ backgroundColor: TOSS.blue }}>수익권</span>
+          <span className="inline-block rounded-lg px-2 py-0.5 caption font-semibold text-white" style={{ backgroundColor: TOSS.blue }}>수익권</span>
         </div>
       </div>
       <div className="p-3">
-        <div className="text-[13px] font-bold line-clamp-1" style={{ color: TOSS.text }}>{item.title}</div>
-        {item.creator_name && <div className="text-[11px] mt-0.5 truncate" style={{ color: TOSS.secondary }}>{item.creator_name}</div>}
+        <div className="body-sm font-bold line-clamp-1" style={{ color: TOSS.text }}>{item.title}</div>
+        {item.creator_name && <div className="caption mt-0.5 truncate" style={{ color: TOSS.secondary }}>{item.creator_name}</div>}
       </div>
     </Link>
   );
@@ -40,8 +40,8 @@ export default function GuestPreview({ enabled = true }: { enabled?: boolean }) 
   return (
     <section className="mb-6">
       <div className="flex justify-between items-center mb-3">
-        <h3 className="text-[15px] font-bold" style={{ color: TOSS.text }}>인기 수익권</h3>
-        <Link href="/market" className="text-[13px] font-medium" style={{ color: TOSS.blue }}>전체보기</Link>
+        <h3 className="body font-bold" style={{ color: TOSS.text }}>인기 수익권</h3>
+        <Link href="/market" className="body-sm font-medium" style={{ color: TOSS.blue }}>전체보기</Link>
       </div>
       <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 -mx-1">
         {items.map((item, i) => (

@@ -11,7 +11,7 @@ export default function SettingsPage() {
   const [blockOverseasLogin, setBlockOverseasLogin] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#F2F4F6] pb-[90px]">
+    <div className="bg-[#F2F4F6] pb-[90px]">
       {/* 헤더 */}
       <header className="sticky top-0 bg-white z-50 border-b border-gray-200">
         <div className="px-4 py-3 flex items-center">
@@ -26,7 +26,7 @@ export default function SettingsPage() {
         </div>
       </header>
 
-      <main className="px-5 pt-4 pb-8">
+      <div className="px-5 pt-4 pb-8">
         {/* 프로필 섹션 */}
         <div className="bg-white rounded-2xl p-4 mb-4 active:bg-gray-50 transition-colors">
           <div className="flex items-center justify-between">
@@ -146,7 +146,7 @@ export default function SettingsPage() {
             오픈소스 라이선스 보기
           </button>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

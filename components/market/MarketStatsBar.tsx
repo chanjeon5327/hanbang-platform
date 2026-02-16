@@ -34,12 +34,12 @@ export default function MarketStatsBar({
       {/* 배지 */}
       <div className="flex gap-2 mb-3">
         {isLive && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: TOSS.negative, color: '#fff' }}>
+          <span className="caption font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: TOSS.negative, color: '#fff' }}>
             LIVE
           </span>
         )}
         {isDeadlineSoon && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: TOSS.negative, color: '#fff' }}>
+          <span className="caption font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: TOSS.negative, color: '#fff' }}>
             마감임박
           </span>
         )}
@@ -48,8 +48,8 @@ export default function MarketStatsBar({
       {/* 모집률 - 크게 강조 */}
       <div className="mb-4">
         <div className="flex justify-between items-baseline mb-1">
-          <span className="text-[12px]" style={{ color: TOSS.secondary }}>모집률</span>
-          <span className="text-[28px] font-extrabold tabular-nums" style={{ color: TOSS.text }}>{progress.toFixed(2)}%</span>
+          <span className="caption" style={{ color: TOSS.secondary }}>모집률</span>
+          <span className="h1 font-extrabold tabular-nums" style={{ color: TOSS.text }}>{progress.toFixed(2)}%</span>
         </div>
         <div className="w-full rounded-full h-2 overflow-hidden" style={{ backgroundColor: 'var(--upbit-border)' }}>
           <div
@@ -60,22 +60,22 @@ export default function MarketStatsBar({
       </div>
 
       {/* 통계 그리드 */}
-      <div className="grid grid-cols-2 gap-3 text-[12px]">
+      <div className="grid grid-cols-2 gap-3 caption">
         <div>
           <div style={{ color: TOSS.secondary }}>총 모집 금액</div>
-          <div className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>{formatKrw(targetAmount)}</div>
+          <div className="body-sm font-bold tabular-nums" style={{ color: TOSS.text }}>{formatKrw(targetAmount)}</div>
         </div>
         <div>
           <div style={{ color: TOSS.secondary }}>현재 참여자</div>
-          <div className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>{participants}명</div>
+          <div className="body-sm font-bold tabular-nums" style={{ color: TOSS.text }}>{participants}명</div>
         </div>
         <div>
           <div style={{ color: TOSS.secondary }}>현재 모집액</div>
-          <div className="text-[18px] font-extrabold tabular-nums" style={{ color: TOSS.positive }}>{formatKrw(currentAmount)}</div>
+          <div className="body-lg font-extrabold tabular-nums" style={{ color: TOSS.positive }}>{formatKrw(currentAmount)}</div>
         </div>
         <div>
           <div style={{ color: TOSS.secondary }}>남은 금액</div>
-          <div className="text-[14px] font-bold tabular-nums" style={{ color: TOSS.text }}>{formatKrw(remainingAmount)}</div>
+          <div className="body-sm font-bold tabular-nums" style={{ color: TOSS.text }}>{formatKrw(remainingAmount)}</div>
         </div>
       </div>
     </div>

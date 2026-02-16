@@ -84,7 +84,7 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
     <button
       type="button"
       onClick={onClick}
-      className="px-3 py-1.5 rounded-full text-[13px] font-medium transition shrink-0"
+      className="px-3 py-1.5 rounded-full body-sm font-medium transition shrink-0"
       style={{
         backgroundColor: active ? TOSS.blue : 'var(--toss-bg)',
         color: active ? '#fff' : TOSS.secondary,
@@ -143,7 +143,7 @@ export default function MarketFilterBar({ filters, onChange }: Props) {
           <button
             type="button"
             onClick={resetFilters}
-            className="flex items-center gap-1 px-2 py-1 rounded text-[12px]" style={{ color: TOSS.secondary }}
+            className="flex items-center gap-1 px-2 py-1 rounded caption" style={{ color: TOSS.secondary }}
           >
             <X size={14} />
             초기화

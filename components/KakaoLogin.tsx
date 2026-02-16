@@ -32,7 +32,7 @@ export default function KakaoLogin() {
   return (
     <button
       onClick={handleKakaoLogin}
-      className="flex items-center justify-center gap-3 w-full max-w-sm px-6 py-4 bg-[#FEE500] hover:bg-[#FDD835] rounded-lg font-semibold text-[#000000] text-[15px] shadow-md hover:shadow-lg transition-all duration-200 active:scale-[0.98]"
+      className="flex items-center justify-center gap-3 w-full max-w-sm px-6 py-4 bg-[#FEE500] hover:bg-[#FDD835] rounded-lg font-semibold text-[#000000] body shadow-md hover:opacity-95 transition-opacity duration-200 active:opacity-90"
     >
       <svg
         width="20"

@@ -20,7 +20,7 @@ export default function MobilizationInfo({ progress, participants, remainingText
     <section className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)' }}>
       <div className="p-4 space-y-4">
         <div>
-          <div className="flex justify-between text-[12px] mb-2">
+          <div className="flex justify-between caption mb-2">
             <span style={{ color: 'var(--upbit-text-dim)' }}>모집률</span>
             <span className="font-semibold tabular-nums" style={{ color: 'var(--upbit-bid)' }}>{progress}%</span>
           </div>
@@ -33,22 +33,22 @@ export default function MobilizationInfo({ progress, participants, remainingText
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <div className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>참여자</div>
-            <div className="text-[15px] font-bold tabular-nums" style={{ color: 'var(--upbit-text)' }}>{participants}명</div>
+            <div className="caption" style={{ color: 'var(--upbit-text-dim)' }}>참여자</div>
+            <div className="body font-bold tabular-nums" style={{ color: 'var(--upbit-text)' }}>{participants}명</div>
           </div>
           <div>
-            <div className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>남은 시간</div>
-            <div className="text-[15px] font-bold" style={{ color: 'var(--upbit-text)' }}>{remainingText}</div>
+            <div className="caption" style={{ color: 'var(--upbit-text-dim)' }}>남은 시간</div>
+            <div className="body font-bold" style={{ color: 'var(--upbit-text)' }}>{remainingText}</div>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4 pt-2" style={{ borderTop: '1px solid var(--upbit-border)' }}>
           <div>
-            <div className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>목표 금액</div>
-            <div className="text-[14px] font-semibold tabular-nums" style={{ color: 'var(--upbit-text)' }}>{formatPrice(targetAmount)}</div>
+            <div className="caption" style={{ color: 'var(--upbit-text-dim)' }}>목표 금액</div>
+            <div className="body-sm font-semibold tabular-nums" style={{ color: 'var(--upbit-text)' }}>{formatPrice(targetAmount)}</div>
           </div>
           <div>
-            <div className="text-[11px]" style={{ color: 'var(--upbit-text-dim)' }}>현재 모집</div>
-            <div className="text-[14px] font-semibold tabular-nums" style={{ color: 'var(--upbit-bid)' }}>{formatPrice(currentAmount)}</div>
+            <div className="caption" style={{ color: 'var(--upbit-text-dim)' }}>현재 모집</div>
+            <div className="body-sm font-semibold tabular-nums" style={{ color: 'var(--upbit-bid)' }}>{formatPrice(currentAmount)}</div>
           </div>
         </div>
       </div>

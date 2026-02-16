@@ -21,7 +21,7 @@ function formatKrw(n: number, fx: number): string {
 
 function SkeletonChart() {
   return (
-    <div className="h-[200px] rounded-lg animate-pulse" style={{ backgroundColor: 'var(--upbit-border)' }} />
+    <div className="h-[200px] rounded-lg animate-pulse" style={{ backgroundColor: 'var(--border)' }} />
   );
 }
 
@@ -37,17 +37,17 @@ export default function PriceChartBlock({ sharePriceUsd, totalRaiseUsd, currentR
   if (!hasUsd) return null;
 
   return (
-    <div className="py-4" style={{ borderBottom: '1px solid var(--upbit-border)' }}>
+    <div className="pt-4" style={{ marginTop: 'var(--space-md)', borderTop: '1px solid var(--border)' }}>
       <div className="flex gap-1 mb-3">
         {(['1D', '1W', '1M'] as const).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setChartTab(t)}
-            className="px-3 py-1.5 text-[12px] font-semibold rounded-lg transition"
+            className="px-3 py-1.5 caption font-semibold rounded-lg transition"
             style={{
               backgroundColor: chartTab === t ? 'var(--primary)' : 'transparent',
-              color: chartTab === t ? '#fff' : 'var(--upbit-text-dim)',
+              color: chartTab === t ? '#fff' : 'var(--text-secondary)',
             }}
           >
             {t}
@@ -57,10 +57,10 @@ export default function PriceChartBlock({ sharePriceUsd, totalRaiseUsd, currentR
 
       {sharePriceUsd != null && (
         <div className="flex items-baseline gap-2 mb-3">
-          <span className="text-[20px] font-extrabold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
+          <span className="h3 font-extrabold tabular-nums" style={{ color: 'var(--text)' }}>
             {formatUsd(sharePriceUsd)}
           </span>
-          <span className="text-[13px] font-semibold tabular-nums" style={{ color: 'var(--upbit-text-dim)' }}>
+          <span className="body-sm font-semibold tabular-nums" style={{ color: 'var(--text-secondary)' }}>
             {formatKrw(sharePriceUsd, fxRate)}
           </span>
         </div>
@@ -72,13 +72,13 @@ export default function PriceChartBlock({ sharePriceUsd, totalRaiseUsd, currentR
 
       {totalRaiseUsd != null && currentRaiseUsd != null && (
         <div>
-          <div className="flex justify-between text-[12px] mb-1" style={{ color: 'var(--upbit-text-dim)' }}>
+          <div className="flex justify-between caption mb-1" style={{ color: 'var(--text-secondary)' }}>
             <span>모집 진행</span>
-            <span className="tabular-nums font-semibold" style={{ color: 'var(--upbit-text)' }}>
+            <span className="tabular-nums font-semibold" style={{ color: 'var(--text)' }}>
               {formatUsd(currentRaiseUsd)} / {formatUsd(totalRaiseUsd)} ({Math.round(progress)}%)
             </span>
           </div>
-          <div className="w-full rounded-full h-2 overflow-hidden" style={{ backgroundColor: 'var(--upbit-border)' }}>
+          <div className="w-full rounded-full h-2 overflow-hidden" style={{ backgroundColor: 'var(--border)' }}>
             <div
               className="h-2 rounded-full transition-all"
               style={{ width: `${progress}%`, backgroundColor: 'var(--primary)' }}

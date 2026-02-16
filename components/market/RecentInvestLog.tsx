@@ -39,14 +39,14 @@ export default function RecentInvestLog({ items }: Props) {
   return (
     <div className="bg-white pt-4" style={{ borderTop: '1px solid var(--upbit-border)' }}>
       <div className="px-0 pb-3">
-        <h3 className="text-[14px] font-bold" style={{ color: TOSS.text }}>최근 참여</h3>
+        <h3 className="body-sm font-bold" style={{ color: TOSS.text }}>최근 참여</h3>
       </div>
       <ul className="divide-y" style={{ borderColor: 'var(--upbit-border)' }}>
         {items.map((log, i) => (
           <li key={i} className="flex justify-between items-center gap-2 py-2.5">
-            <span className="text-[13px] shrink-0" style={{ color: TOSS.secondary }}>{maskNickname(log.nickname)}</span>
-            <span className="text-[13px] font-semibold tabular-nums truncate" style={{ color: TOSS.text }}>{formatAmount(log.amount)}</span>
-            <span className="text-[11px] shrink-0" style={{ color: TOSS.secondary }}>{formatTimeAgo(log.created_at)}</span>
+            <span className="body-sm shrink-0" style={{ color: TOSS.secondary }}>{maskNickname(log.nickname)}</span>
+            <span className="body-sm font-semibold tabular-nums truncate" style={{ color: TOSS.text }}>{formatAmount(log.amount)}</span>
+            <span className="caption shrink-0" style={{ color: TOSS.secondary }}>{formatTimeAgo(log.created_at)}</span>
           </li>
         ))}
       </ul>

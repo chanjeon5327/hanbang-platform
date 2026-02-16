@@ -25,7 +25,7 @@ export default function BottomNavigation({ demoMode }: { demoMode?: boolean }) {
         <Link
           key={item.href}
           href={item.href}
-          className="flex flex-col items-center justify-center gap-0.5 flex-1 py-2 text-[11px] font-medium transition"
+          className="flex flex-col items-center justify-center gap-0.5 flex-1 py-2 caption font-medium transition"
           style={{ color: item.primary ? 'var(--toss-blue)' : 'var(--toss-text-secondary)' }}
           aria-label={item.label}
         >

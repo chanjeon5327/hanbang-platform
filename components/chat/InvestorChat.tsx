@@ -13,7 +13,7 @@ export default function InvestorChat() {
             className="fixed right-4 bottom-4 w-14 h-14 rounded-full
                        bg-purple-600 text-white shadow-xl
                        flex flex-col items-center justify-center
-                       text-[10px] font-bold z-50"
+                       caption font-bold z-50"
           >
             💬
             <span>Talk</span>
@@ -25,7 +25,7 @@ export default function InvestorChat() {
                           bg-white border rounded-xl shadow-xl
                           flex flex-col z-50">
             <div className="px-4 py-2 border-b font-bold text-sm flex justify-between">
-              엔젤 채팅
+              종목 채팅
               <button onClick={() => setOpen(false)}>✕</button>
             </div>
   

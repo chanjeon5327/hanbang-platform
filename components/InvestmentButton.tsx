@@ -31,7 +31,7 @@ export function InvestmentButton({ projectId }: InvestmentButtonProps) {
   return (
     <>
       <Button onClick={handleInvest} className="w-full" size="lg">
-        엔젤로 참여
+        매수
         <TrendingUp className="ml-2 h-4 w-4" />
       </Button>
 
