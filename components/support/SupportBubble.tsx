@@ -26,7 +26,7 @@ export default function SupportBubble() {
     <div className="fixed bottom-24 right-4 z-[100] md:bottom-6 md:right-6" aria-label="고객센터">
       {open && (
         <div
-          className="absolute bottom-full right-0 mb-2 w-[280px] md:w-[320px] rounded-2xl border shadow-lg overflow-hidden"
+          className="absolute bottom-full right-0 mb-2 w-[280px] md:w-[320px] rounded-2xl border shadow-sm overflow-hidden"
           style={{ backgroundColor: TOSS.card, borderColor: TOSS.border }}
         >
           <div className="flex justify-between items-center px-4 py-3 border-b" style={{ borderColor: TOSS.border }}>
@@ -61,7 +61,7 @@ export default function SupportBubble() {
       )}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition hover:opacity-90 active:opacity-80"
+        className="flex items-center justify-center w-14 h-14 rounded-full shadow-sm transition hover:opacity-90 active:opacity-80"
         style={{ backgroundColor: TOSS.blue, color: TOSS.card }}
         aria-label={open ? '고객센터 메뉴 닫기' : '고객센터 메뉴 열기'}
       >

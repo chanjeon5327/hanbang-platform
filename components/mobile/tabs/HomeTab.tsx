@@ -50,9 +50,9 @@ export default function HomeTab() {
               <Link
                 key={item.id}
                 href={`/market/${item.id}`}
-                className="w-[160px] flex-shrink-0 snap-start no-underline text-inherit active:scale-95 transition-transform cursor-pointer"
+                className="w-[160px] flex-shrink-0 snap-start no-underline text-inherit active:opacity-90 transition-transform cursor-pointer"
               >
-                <div className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-lg shadow-gray-200/50 relative">
+                <div className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm relative">
                   {/* 세로형 포스터 카드 */}
                   <div className="relative h-[240px]">
                     <Image src={item.image} alt={item.name} fill className="object-cover" />
@@ -61,7 +61,7 @@ export default function HomeTab() {
                     </div>
                     <button
                       onClick={(e) => toggleFavorite(item.id, e)}
-                      className="absolute bottom-2 right-2 p-1.5 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md active:scale-95 transition-transform cursor-pointer"
+                      className="absolute bottom-2 right-2 p-1.5 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md active:opacity-90 transition-transform cursor-pointer"
                     >
                       <Heart
                         size={16}

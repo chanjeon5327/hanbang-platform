@@ -63,7 +63,7 @@ export default function NotificationBell() {
         <Bell size={22} strokeWidth={2} />
         {unreadCount > 0 && (
           <span
-            className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+            className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center caption font-bold text-white"
             style={{ backgroundColor: 'var(--toss-negative, #eb4d3d)' }}
           >
             {unreadCount > 99 ? '99+' : unreadCount}
@@ -75,15 +75,15 @@ export default function NotificationBell() {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden />
           <div
-            className="absolute right-0 top-full mt-1 z-50 w-[320px] max-h-[400px] overflow-hidden rounded-xl border shadow-lg"
+            className="absolute right-0 top-full mt-1 z-50 w-[320px] max-h-[400px] overflow-hidden rounded-xl border shadow-sm"
             style={{ backgroundColor: 'var(--toss-card)', borderColor: 'var(--toss-border)' }}
           >
             <div className="flex justify-between items-center px-4 py-3 border-b" style={{ borderColor: 'var(--toss-border)' }}>
-              <h3 className="font-bold text-[15px]" style={{ color: 'var(--toss-text)' }}>알림</h3>
+              <h3 className="font-bold body" style={{ color: 'var(--toss-text)' }}>알림</h3>
               {displayList.length > 0 && (
                 <Link
                   href="/notifications"
-                  className="text-[13px] font-semibold"
+                  className="body-sm font-semibold"
                   style={{ color: 'var(--toss-blue)' }}
                   onClick={() => setOpen(false)}
                 >
@@ -93,7 +93,7 @@ export default function NotificationBell() {
             </div>
             <div className="max-h-[320px] overflow-y-auto">
               {displayList.length === 0 ? (
-                <div className="px-4 py-8 text-center text-[14px]" style={{ color: 'var(--toss-text-secondary)' }}>
+                <div className="px-4 py-8 text-center body-sm" style={{ color: 'var(--toss-text-secondary)' }}>
                   {user ? '알림이 없습니다' : '로그인 후 알림을 확인하세요'}
                 </div>
               ) : (
@@ -117,11 +117,11 @@ export default function NotificationBell() {
                         <span className="w-2 h-2 rounded-full shrink-0 mt-1.5" style={{ backgroundColor: 'var(--toss-blue)' }} />
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className={`text-[14px] font-medium ${!n.is_read ? 'font-semibold' : ''}`} style={{ color: 'var(--toss-text)' }}>{n.title}</p>
+                        <p className={`body-sm font-medium ${!n.is_read ? 'font-semibold' : ''}`} style={{ color: 'var(--toss-text)' }}>{n.title}</p>
                         {n.content && (
-                          <p className="text-[12px] mt-0.5 truncate" style={{ color: 'var(--toss-text-secondary)' }}>{n.content}</p>
+                          <p className="caption mt-0.5 truncate" style={{ color: 'var(--toss-text-secondary)' }}>{n.content}</p>
                         )}
-                        <span className="text-[11px] mt-1 block" style={{ color: 'var(--toss-text-dim)' }}>{formatTime(n.created_at)}</span>
+                        <span className="caption mt-1 block" style={{ color: 'var(--toss-text-dim)' }}>{formatTime(n.created_at)}</span>
                       </div>
                     </div>
                   </Link>

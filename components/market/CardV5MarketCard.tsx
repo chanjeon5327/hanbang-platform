@@ -97,17 +97,17 @@ export default function CardV5MarketCard({
           </h3>
           <div className="flex flex-wrap justify-end gap-1 shrink-0">
             {item.integrity_ok && (item.settlement_count ?? 0) > 0 && (
-              <span className="rounded px-1.5 py-0.5 caption font-medium" style={{ backgroundColor: 'var(--emerald)', color: '#fff' }}>
-                정산 {item.settlement_count}건
+              <span className="rounded-full px-2 py-0.5 caption border transition-opacity duration-200 group-hover:opacity-100 opacity-90" style={{ backgroundColor: 'var(--emerald)', color: '#fff', borderColor: 'var(--emerald)' }}>
+                정산완료 {item.settlement_count}건
               </span>
             )}
             {item.integrity_ok && (item.settlement_count ?? 0) === 0 && (
-              <span className="rounded px-1.5 py-0.5 caption font-medium" style={{ backgroundColor: 'var(--royal-blue)', color: '#fff' }}>
+              <span className="rounded-full px-2 py-0.5 caption border transition-opacity duration-200 group-hover:opacity-100 opacity-90" style={{ backgroundColor: 'var(--royal-blue)', color: '#fff', borderColor: 'var(--royal-blue)' }}>
                 원장검증
               </span>
             )}
             {item.product_type === 'DIVIDEND_TRADABLE' && !item.integrity_ok && (
-              <span className="rounded px-1.5 py-0.5 caption font-medium" style={{ backgroundColor: 'var(--emerald)', color: '#fff' }}>
+              <span className="rounded-full px-2 py-0.5 caption border transition-opacity duration-200 group-hover:opacity-100 opacity-90" style={{ backgroundColor: 'var(--emerald)', color: '#fff', borderColor: 'var(--emerald)' }}>
                 배당진행중
               </span>
             )}

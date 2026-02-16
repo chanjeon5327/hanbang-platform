@@ -77,19 +77,23 @@ export default function ExchangeSection({
     <div className={!isTradable ? 'opacity-60' : ''} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
       {isTradable && (
         <div
-          className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg caption"
-          style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', width: 'fit-content' }}
+          className="flex items-center gap-1.5 py-1 px-2.5 rounded-full caption border"
+          style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', width: 'fit-content', borderColor: 'var(--border)' }}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--emerald)] animate-pulse" style={{ animationDuration: '1.5s' }} />
           실시간 시장 데이터
         </div>
       )}
       {!isTradable && (
-        <div
-          className="py-2 px-4 rounded-xl caption text-center"
-          style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}
-        >
-          거래 준비 중
+        <div className="flex items-center gap-2 flex-wrap">
+          <div
+            className="flex items-center gap-1.5 py-1 px-2.5 rounded-full caption border"
+            style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--emerald)] animate-pulse" style={{ animationDuration: '1.5s' }} />
+            실시간 시장 데이터
+          </div>
+          <span className="caption" style={{ color: 'var(--text-muted)' }}>지연 가능</span>
         </div>
       )}
 

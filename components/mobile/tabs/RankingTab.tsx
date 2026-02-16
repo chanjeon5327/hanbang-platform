@@ -86,7 +86,7 @@ export default function RankingTab() {
           <Link
             key={item.id}
             href={`/market/${item.id}`}
-            className="flex items-center gap-3 bg-white dark:bg-slate-800 rounded-lg p-3 shadow-sm active:scale-95 transition-transform cursor-pointer"
+            className="flex items-center gap-3 bg-white dark:bg-slate-800 rounded-lg p-3 shadow-sm active:opacity-90 transition-transform cursor-pointer"
           >
             <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center font-bold text-sm text-gray-600 dark:text-gray-400 flex-shrink-0">
               {idx + 4}

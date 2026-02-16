@@ -181,7 +181,7 @@ export default function MarketCard({ item, index, variant = 'list' }: Props) {
             <span className="absolute top-2 right-2 rounded px-2 py-0.5 caption font-bold text-white" style={{ backgroundColor: TOSS.negative }}>{item.remainingText}</span>
           )}
           <div className="absolute bottom-2 left-2 right-2">
-            <span className="body-sm font-bold text-white drop-shadow-md line-clamp-1">{item.title}</span>
+            <span className="body-sm font-bold text-white  line-clamp-1">{item.title}</span>
             <span className="caption text-white/90">{item.creator_name ?? item.category ?? '-'}</span>
           </div>
         </div>

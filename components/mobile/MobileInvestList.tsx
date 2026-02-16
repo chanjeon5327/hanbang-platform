@@ -42,13 +42,13 @@ export default function MobileInvestList() {
           <Link
             key={item.id}
             href={`/invest/product/${item.id}`}
-            className="flex flex-col cursor-pointer active:scale-[0.98] transition-transform list-press"
+            className="flex flex-col cursor-pointer active:opacity-90 transition-transform list-press"
           >
             {/* 이미지 영역 */}
             <div className="relative w-full aspect-[4/5] bg-gray-100 rounded-[16px] overflow-hidden mb-3 shadow-sm">
               <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
               {item.badge && (
-                <div className="absolute top-0 left-0 bg-red-500 text-white text-[11px] font-bold px-3 py-1.5 rounded-br-[16px]">
+                <div className="absolute top-0 left-0 bg-red-500 text-white caption font-bold px-3 py-1.5 rounded-br-[16px]">
                   {item.badge}
                 </div>
               )}
@@ -66,10 +66,10 @@ export default function MobileInvestList() {
 
             {/* 텍스트 정보 (크기 확대 적용) */}
             <div className="px-1">
-              <h3 className="text-[#191F28] font-bold text-[19px] leading-snug line-clamp-2 mb-1.5 tracking-tight">
+              <h3 className="text-[#191F28] font-bold h3 leading-snug line-clamp-2 mb-1.5 tracking-tight">
                 {item.title}
               </h3>
-              <p className="text-gray-500 text-[14px] truncate mb-3 font-medium">
+              <p className="text-gray-500 body-sm truncate mb-3 font-medium">
                 {item.summary}
               </p>
               
@@ -79,13 +79,13 @@ export default function MobileInvestList() {
                   <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                   </svg>
-                  <span className="text-blue-600 font-bold text-[13px]">
+                  <span className="text-blue-600 font-bold body-sm">
                     {item.investors.toLocaleString()}명
                   </span>
                 </div>
                 
                 {/* 투자 받는 사람 */}
-                <span className="text-gray-400 font-medium text-[13px] flex items-center gap-1">
+                <span className="text-gray-400 font-medium body-sm flex items-center gap-1">
                   To. <span className="text-gray-600">{item.investee}</span>
                 </span>
               </div>

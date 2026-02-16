@@ -38,7 +38,7 @@ export function Footer() {
         <div className="md:hidden border-t border-gray-800 pt-4">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full flex items-center justify-between py-3 text-sm font-semibold text-gray-300 active:scale-95 transition-transform cursor-pointer"
+            className="w-full flex items-center justify-between py-3 text-sm font-semibold text-gray-300 active:opacity-90 transition-transform cursor-pointer"
           >
             <span>한방 사업자 정보</span>
             {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}

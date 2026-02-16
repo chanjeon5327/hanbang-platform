@@ -25,7 +25,7 @@ function RailCard({ item, index, badge }: { item: RailItem; index: number; badge
       style={{ width: RAIL_CARD_W }}
       aria-label={`${item.title} 수익권 보기`}
     >
-      <div className="relative overflow-hidden rounded-2xl border border-black/5 active:scale-[0.97] transition-all duration-200" style={{ backgroundColor: 'var(--toss-card)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div className="relative overflow-hidden rounded-2xl border border-black/5 active:opacity-95 transition-all duration-200" style={{ backgroundColor: 'var(--toss-card)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
         <div className="aspect-[4/5] relative overflow-hidden">
           <img src={thumbSrc} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:opacity-95" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" aria-hidden />

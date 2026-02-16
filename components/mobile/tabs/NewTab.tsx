@@ -33,7 +33,7 @@ export default function NewTab() {
           <Link
             key={item.id}
             href={`/market/${item.id}`}
-            className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-lg shadow-gray-200/50 active:scale-95 transition-transform cursor-pointer relative"
+            className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm active:opacity-90 transition-transform cursor-pointer relative"
           >
             <div className="relative h-40">
               <Image src={item.image} alt={item.name} fill className="object-cover" />
@@ -43,7 +43,7 @@ export default function NewTab() {
               </div>
               <button
                 onClick={(e) => toggleFavorite(item.id, e)}
-                className="absolute bottom-2 right-2 p-1.5 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md active:scale-95 transition-transform cursor-pointer"
+                className="absolute bottom-2 right-2 p-1.5 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md active:opacity-90 transition-transform cursor-pointer"
               >
                 <Heart
                   size={16}

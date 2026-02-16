@@ -73,7 +73,7 @@ export default function PositionPanel({ assetId, sharePriceUsd, fxRate, isLogged
   if (!isLoggedIn) {
     return (
       <div className="p-4 rounded-xl border" style={{ borderColor: 'var(--upbit-border)', backgroundColor: 'var(--upbit-bg)' }}>
-        <p className="text-[13px] text-center" style={{ color: 'var(--upbit-text-dim)' }}>
+        <p className="body-sm text-center" style={{ color: 'var(--upbit-text-dim)' }}>
           <Link href="/login" className="font-semibold" style={{ color: 'var(--upbit-bid)' }}>
             로그인
           </Link>
@@ -96,56 +96,54 @@ export default function PositionPanel({ assetId, sharePriceUsd, fxRate, isLogged
   if (!position || position.quantity <= 0) {
     return (
       <div className="p-4 rounded-xl border" style={{ borderColor: 'var(--upbit-border)', backgroundColor: 'var(--upbit-bg)' }}>
-        <p className="text-[13px] text-center" style={{ color: 'var(--upbit-text-dim)' }}>
+        <p className="body-sm text-center" style={{ color: 'var(--upbit-text-dim)' }}>
           보유 자산이 없습니다.
         </p>
       </div>
     );
   }
 
-  const pnlColor = position.unrealized_pnl >= 0 ? 'var(--upbit-bid)' : 'var(--upbit-ask)';
+  const pnlPositive = position.unrealized_pnl >= 0;
 
   return (
     <div className="p-4 rounded-xl border space-y-2" style={{ borderColor: 'var(--upbit-border)', backgroundColor: 'var(--upbit-bg)' }}>
-      <div className="flex justify-between text-[13px]">
+      <div className="flex justify-between body-sm">
         <span style={{ color: 'var(--upbit-text-dim)' }}>보유 수량</span>
-        <span className="font-semibold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
+        <span className="text-title font-semibold tabular-nums text-right" style={{ color: 'var(--upbit-text)' }}>
           {formatQty(position.quantity)}주
         </span>
       </div>
-      <div className="flex justify-between text-[13px]">
+      <div className="flex justify-between body-sm">
         <span style={{ color: 'var(--upbit-text-dim)' }}>평균 단가</span>
-        <span className="font-semibold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
+        <span className="font-semibold tabular-nums text-right" style={{ color: 'var(--upbit-text)' }}>
           {formatKrw(position.avg_price)}
         </span>
       </div>
-      <div className="flex justify-between text-[13px]">
+      <div className="flex justify-between body-sm">
         <span style={{ color: 'var(--upbit-text-dim)' }}>평가 금액</span>
-        <span className="font-semibold tabular-nums" style={{ color: 'var(--upbit-text)' }}>
+        <span className="text-display font-semibold tabular-nums text-right" style={{ color: 'var(--upbit-text)' }}>
           {formatKrw(position.current_value)}
         </span>
       </div>
-      <div className="flex justify-between text-[13px] pt-1 border-t" style={{ borderColor: 'var(--upbit-border)' }}>
+      <div className="flex justify-between body-sm pt-1 border-t" style={{ borderColor: 'var(--upbit-border)' }}>
         <span style={{ color: 'var(--upbit-text-dim)' }}>평가 손익</span>
         <span
-          className="font-bold tabular-nums"
-          style={{ color: pnlColor }}
+          className={`font-bold tabular-nums text-right ${pnlPositive ? 'text-emerald-600' : 'text-[var(--accent-loss)]'}`}
         >
           {(position.unrealized_pnl >= 0 ? '+' : '') + formatKrw(position.unrealized_pnl)}
         </span>
       </div>
-      <div className="flex justify-between text-[13px]">
+      <div className="flex justify-between body-sm">
         <span style={{ color: 'var(--upbit-text-dim)' }}>수익률</span>
         <span
-          className="font-bold tabular-nums"
-          style={{ color: pnlColor }}
+          className={`text-subtitle font-semibold tabular-nums text-right ${pnlPositive ? 'text-emerald-600' : 'text-[var(--accent-loss)]'}`}
         >
           {(position.unrealized_rate >= 0 ? '+' : '') + formatRate(position.unrealized_rate)}
         </span>
       </div>
       <Link
         href="/wallet"
-        className="block mt-3 py-2 text-center text-[13px] font-semibold rounded-lg border transition active:scale-[0.98]"
+        className="block mt-3 py-2 text-center body-sm font-semibold rounded-lg border transition active:opacity-90"
         style={{ borderColor: 'var(--upbit-border)', color: 'var(--upbit-bid)' }}
       >
         지갑에서 자세히 보기

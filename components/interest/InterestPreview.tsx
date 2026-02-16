@@ -67,11 +67,11 @@ export default function InterestPreview() {
             </div>
 
             <div className="mt-3 space-y-1">
-              <div className="text-[17px] font-bold text-[var(--text-primary)]">
+              <div className="body-lg font-bold text-[var(--text-primary)]">
                 {openData.title}
               </div>
               {openData.subtitle && (
-                <div className="text-[13px] text-[var(--text-secondary)]">
+                <div className="body-sm text-[var(--text-secondary)]">
                   {openData.subtitle}
                 </div>
               )}
@@ -92,7 +92,7 @@ export default function InterestPreview() {
                   py-3
                   text-sm font-semibold text-white
                   hover:bg-white/20
-                  active:scale-[0.985]
+                  active:opacity-95
                 "
               >
                 상세 페이지로 이동
@@ -100,7 +100,7 @@ export default function InterestPreview() {
 
               <button
                 onClick={close}
-                className="w-full py-2 text-[13px] text-white/60"
+                className="w-full py-2 body-sm text-white/60"
               >
                 닫기
               </button>

@@ -209,17 +209,17 @@ function SummaryFinancialCard({
       <MetricRow items={extraMetrics} columns={3} dense />
       <Divider />
       <div className="flex flex-wrap items-center gap-2 pt-2">
-        <span className="inline-flex items-center gap-1 caption" style={{ color: 'var(--text-secondary)' }}>
-          <Check size={12} style={{ color: 'var(--emerald)' }} />
+        <span className="inline-flex items-center gap-1 caption px-2 py-0.5 rounded-full border" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border)', backgroundColor: 'var(--bg-secondary)' }}>
+          <Check size={10} style={{ color: 'var(--emerald)' }} />
           원장 기록 기반
         </span>
-        <span className="inline-flex items-center gap-1 caption" style={{ color: 'var(--text-secondary)' }}>
-          <span className="w-1 h-1 rounded-full animate-pulse" style={{ backgroundColor: 'var(--royal-blue)' }} />
+        <span className="inline-flex items-center gap-1 caption px-2 py-0.5 rounded-full border" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border)', backgroundColor: 'var(--bg-secondary)' }}>
+          <span className="w-1 h-1 rounded-full bg-[var(--emerald)] animate-pulse" style={{ animationDuration: '1.5s' }} />
           실시간 체결 데이터
         </span>
         <Link
           href="/trust"
-          className="caption font-medium"
+          className="caption font-medium underline"
           style={{ color: 'var(--royal-blue)' }}
         >
           정산 이력 공개
@@ -637,6 +637,9 @@ export default function MarketDetailPage({
           <div className="py-3" style={{ paddingLeft: 'var(--space-lg)', paddingRight: 'var(--space-lg)' }}>
             <p className="caption text-center mb-1 metric-number" style={{ color: 'var(--text-secondary)' }}>
               {participants}명 · 오늘 {todayCount}건
+            </p>
+            <p className="caption text-center mb-1" style={{ color: 'var(--text-muted)' }}>
+              투자 후 매월 배당 · 원장 자동 기록
             </p>
             <p className="caption text-center mb-2" style={{ color: 'var(--text-secondary)' }}>{ctaSubtext}</p>
             <button

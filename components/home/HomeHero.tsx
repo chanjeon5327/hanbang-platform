@@ -35,7 +35,7 @@ export default function HomeHero({ item }: Props) {
     <section>
       <Link
         href={href}
-        className="block relative w-full overflow-hidden rounded-2xl border border-black/5 active:scale-[0.99] transition-transform duration-200"
+        className="block relative w-full overflow-hidden rounded-2xl border border-black/5 active:opacity-95 transition-transform duration-200"
         style={{ height: HERO_H, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
       >
         <div className="absolute inset-0">
@@ -54,9 +54,9 @@ export default function HomeHero({ item }: Props) {
         <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent pointer-events-none" />
         <div className="absolute inset-0 flex items-end pb-5 px-5 pointer-events-none">
           <div className="pointer-events-auto">
-            <h1 className="text-[20px] font-bold leading-tight text-white drop-shadow-md">{hero.title}</h1>
-            {hero.subtitle && <p className="mt-1 text-[14px] text-white/90">{hero.subtitle}</p>}
-            <div className="mt-3 inline-flex items-center gap-1 rounded-lg px-5 py-2.5 text-[14px] font-bold text-white" style={{ backgroundColor: TOSS.blue }}>
+            <h1 className="h3 font-bold leading-tight text-white ">{hero.title}</h1>
+            {hero.subtitle && <p className="mt-1 body-sm text-white/90">{hero.subtitle}</p>}
+            <div className="mt-3 inline-flex items-center gap-1 rounded-lg px-5 py-2.5 body-sm font-bold text-white" style={{ backgroundColor: TOSS.blue }}>
               지금투자 추천
             </div>
           </div>

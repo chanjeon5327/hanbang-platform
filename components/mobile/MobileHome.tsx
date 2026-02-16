@@ -34,17 +34,17 @@ export default function MobileHome() {
             // CASE A: 비로그인 상태 - 로그인/회원가입 버튼
             <button
               onClick={openLoginModal}
-              className="bg-gray-100 rounded-full text-sm px-4 py-2 text-gray-700 font-medium hover:bg-gray-200 active:scale-95 transition-all"
+              className="bg-gray-100 rounded-full text-sm px-4 py-2 text-gray-700 font-medium hover:bg-gray-200 active:opacity-90 transition-all"
             >
               로그인/회원가입
             </button>
           ) : (
             // CASE B: 로그인 상태 - 지갑 아이콘 + 프로필 이미지
             <>
-              <Link href="/wallet" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 active:scale-95 transition-all">
+              <Link href="/wallet" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 active:opacity-90 transition-all">
                 <Wallet className="w-4 h-4 text-gray-700" />
               </Link>
-              <Link href="/mypage" className="relative w-6 h-6 rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-200 hover:border-gray-300 active:scale-95 transition-all">
+              <Link href="/mypage" className="relative w-6 h-6 rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-200 hover:border-gray-300 active:opacity-90 transition-all">
                 <Image
                   src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop"
                   alt="프로필"
@@ -84,10 +84,10 @@ export default function MobileHome() {
              </div>
              <div className="flex gap-3">
                 {/* 버튼 디자인: 그림자 줄이고 깔끔하게 */}
-                <button className="flex-1 bg-[#7c3aed] hover:bg-[#6d28d9] text-white py-3.5 rounded-[16px] font-bold transition-all active:scale-95 shadow-md shadow-purple-200">
+                <button className="flex-1 bg-[#7c3aed] hover:bg-[#6d28d9] text-white py-3.5 rounded-[16px] font-bold transition-all active:opacity-90 shadow-md shadow-purple-200">
                    채우기
                 </button>
-                <button className="flex-1 bg-[#E8F3FF] hover:bg-[#dbeafe] text-[#7c3aed] py-3.5 rounded-[16px] font-bold transition-all active:scale-95">
+                <button className="flex-1 bg-[#E8F3FF] hover:bg-[#dbeafe] text-[#7c3aed] py-3.5 rounded-[16px] font-bold transition-all active:opacity-90">
                    보내기
                 </button>
              </div>
@@ -137,7 +137,7 @@ export default function MobileHome() {
               <Link
                 key={i}
                 href={item?.id ? `/market/${item.id}` : '#'}
-                className="min-w-[160px] w-[160px] flex-shrink-0 bg-white rounded-[20px] overflow-hidden shadow-sm border border-gray-100 snap-center active:scale-95 transition-transform"
+                className="min-w-[160px] w-[160px] flex-shrink-0 bg-white rounded-[20px] overflow-hidden shadow-sm border border-gray-100 snap-center active:opacity-90 transition-transform"
               >
                 <div className="h-[160px] bg-gray-100 relative">
                    <Image 
@@ -181,7 +181,7 @@ export default function MobileHome() {
         </section>
         
         {/* 5. KYC 버튼 (블랙 반전 -> 진한 네이비) */}
-        <button className="w-full bg-[#191F28] text-white hover:bg-black py-4 rounded-[20px] font-bold text-lg shadow-lg active:scale-[0.98] transition-all">
+        <button className="w-full bg-[#191F28] text-white hover:bg-black py-4 rounded-[20px] font-bold text-lg shadow-lg active:opacity-90 transition-all">
           KYC 인증하고 혜택 받기
         </button>
 
@@ -219,7 +219,7 @@ export default function MobileHome() {
                 <h3 className="text-lg font-bold text-[#191F28]">1:1 문의하기</h3>
                 <button
                   onClick={() => setIsChatOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 active:scale-95 transition-all"
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 active:opacity-90 transition-all"
                 >
                   <X className="w-5 h-5 text-gray-600" />
                 </button>
@@ -254,7 +254,7 @@ export default function MobileHome() {
         onClick={() => setIsChatOpen(!isChatOpen)}
         className="fixed bottom-[100px] right-5 z-40 flex flex-col items-center justify-center transition-transform active:opacity-90 hover:opacity-95"
       >
-        <div className="w-[56px] h-[56px] bg-[#7c3aed] rounded-full shadow-lg shadow-purple-500/40 flex flex-col items-center justify-center text-white border-2 border-white">
+        <div className="w-[56px] h-[56px] bg-[#7c3aed] rounded-full shadow-sm flex flex-col items-center justify-center text-white border-2 border-white">
           <MessageCircle size={20} fill="white" className="mb-0.5" />
           <span className="caption font-bold leading-none">1:1</span>
         </div>

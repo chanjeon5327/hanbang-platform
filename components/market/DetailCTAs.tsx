@@ -13,7 +13,7 @@ export default function DetailCTAs() {
     <div className="grid grid-cols-2 gap-3">
       <Link
         href="/wallet/deposit"
-        className="flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-[15px] transition active:scale-[0.98]"
+        className="flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold body transition active:opacity-90"
         style={{ backgroundColor: 'var(--upbit-bid)', color: '#fff', boxShadow: '0 4px 12px rgba(30,136,229,0.35)' }}
       >
         <Download size={20} strokeWidth={2} />
@@ -21,7 +21,7 @@ export default function DetailCTAs() {
       </Link>
       <Link
         href="/market"
-        className="flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-[15px] transition active:scale-[0.98] border"
+        className="flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold body transition active:opacity-90 border"
         style={{ backgroundColor: 'var(--upbit-panel)', borderColor: 'var(--upbit-border)', color: 'var(--upbit-text)' }}
       >
         <TrendingUp size={20} strokeWidth={2} />
