@@ -2,13 +2,15 @@ import { createAdminClient } from "@/utils/supabase/server";
 import { logSystem } from "./systemLog";
 
 /**
- * req에서 IP 추출 (x-forwarded-for, x-real-ip 등)
+ * req에서 IP 추출
+ * 우선순위: x-real-ip > cf-connecting-ip > null
+ * (x-forwarded-for는 조작 가능하므로 사용하지 않음)
  */
 export function getClientIp(headers: Headers): string | null {
-  const forwarded = headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0]?.trim() ?? null;
   const realIp = headers.get("x-real-ip");
   if (realIp) return realIp.trim();
+  const cfIp = headers.get("cf-connecting-ip");
+  if (cfIp) return cfIp.trim();
   return null;
 }
 

@@ -13,6 +13,10 @@
     "migrations:dump-local": "node scripts/dump-local-migrations.mjs",
     "migrations:compare": "node scripts/dump-remote-migrations.mjs && node scripts/dump-local-migrations.mjs && node scripts/compare-migrations.mjs",
     "test:partial-sell": "node scripts/run-partial-sell-test.mjs",
+    "test:e2e:engine": "node scripts/e2e-engine-v1_5.mjs",
+    "test:e2e:exchange": "node scripts/e2e-exchange-dividend.mjs",
+    "release:exchange-v2": "node scripts/release-exchange-v2.mjs",
+    "release:exchange-v2:auto": "powershell -ExecutionPolicy Bypass -File scripts/run-release-exchange-v2.ps1",
     "prepare": "husky"
   },
   "dependencies": {
@@ -35,6 +39,8 @@
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.93.3",
     "@tanstack/react-query": "^5.90.21",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.2",
     "@wagmi/core": "^3.3.3",
     "@walletconnect/ethereum-provider": "^2.23.4",
     "class-variance-authority": "^0.7.1",

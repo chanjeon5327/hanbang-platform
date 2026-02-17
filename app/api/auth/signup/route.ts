@@ -6,10 +6,10 @@ import type { UserRole } from '@/lib/types/user';
 const VALID_ROLES: UserRole[] = ['USER', 'CREATOR'];
 
 export async function POST(req: Request) {
-  const rate = checkLoginRateLimit(req);
+  const rate = await checkLoginRateLimit(req);
   if (!rate.ok) {
     return NextResponse.json(
-      { error: '?? ?? ?????. ?? ? ?? ??????.' },
+      { error: '너무 많은 시도입니다. 잠시 후 다시 시도해주세요.' },
       {
         status: 429,
         headers: rate.retryAfter ? { 'Retry-After': String(rate.retryAfter) } : undefined,
@@ -21,12 +21,12 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    return NextResponse.json({ error: '잘못된 요청입니다.' }, { status: 400 });
   }
 
   const { email, password, role } = body;
   if (!email || !password) {
-    return NextResponse.json({ error: 'email, password ??' }, { status: 400 });
+    return NextResponse.json({ error: '이메일과 비밀번호를 입력해주세요.' }, { status: 400 });
   }
 
   const parsedRole: UserRole = VALID_ROLES.includes(role as UserRole) ? (role as UserRole) : 'USER';
@@ -39,19 +39,20 @@ export async function POST(req: Request) {
   });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    console.error('[SIGNUP ERROR]', error);
+    return NextResponse.json({ error: '회원가입에 실패했습니다.' }, { status: 400 });
   }
 
   if (!data.user) {
-    return NextResponse.json({ error: '?? ?? ? ??? ??????.' }, { status: 500 });
+    return NextResponse.json({ error: '사용자 생성에 실패했습니다.' }, { status: 500 });
   }
 
-  resetLoginRateLimit(req);
+  await   await resetLoginRateLimit(req);
 
   // profiles upsert: role, created_at, creator_status
   // 1) USER: creator_status = null
-  // 2) CREATOR: creator_status = 'PENDING' (???)
-  // 3) ?? ? ???? ??: ?? creator_status? ??? ???? ??
+  // 2) CREATOR: creator_status = 'PENDING' (관리자 승인 대기)
+  // 3) 이미 값이 있으면 덮어쓰지 않음: 기존 creator_status를 보존해서 유지 가능
   const { data: existing } = await (supabase as any)
     .from('profiles')
     .select('creator_status')
@@ -90,7 +91,7 @@ export async function POST(req: Request) {
     console.error('[signup] profiles upsert error:', profileError);
   }
 
-  // investor_profiles ?? (KYC ????)
+  // investor_profiles 생성 (KYC 상태 초기화)
   await (supabase as any)
     .from('investor_profiles')
     .upsert(

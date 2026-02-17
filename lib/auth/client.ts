@@ -18,7 +18,7 @@ export async function login(email: string, password: string): Promise<LoginResul
     return { ok: false, error: json.error ?? '너무 많은 시도입니다. 잠시 후 다시 시도해주세요.' };
   }
   if (res.status === 401) {
-    return { ok: false, error: json.error ?? '이메일 또는 비밀번호가 올바르지 않습니다.' };
+    return { ok: false, error: '이메일 또는 비밀번호가 올바르지 않습니다.' };
   }
   if (!res.ok) {
     return { ok: false, error: json.error ?? '로그인에 실패했습니다.' };

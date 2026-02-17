@@ -18,14 +18,29 @@ export default function LoginPage() {
     e.preventDefault();
     if (loading) return;
 
+    // 간단한 클라이언트 검증
+    const emailTrimmed = email.trim();
+    if (!emailTrimmed || !emailTrimmed.includes('@')) {
+      setError('올바른 이메일 주소를 입력해주세요.');
+      return;
+    }
+    if (!password || password.length < 1) {
+      setError('비밀번호를 입력해주세요.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
-    const result = await login(email, password);
+    const result = await login(emailTrimmed, password);
 
     if (result.ok) {
-      toast('????????.');
-      router.replace('/');
+      toast('로그인에 성공했습니다.');
+      
+      // ?next= 쿼리가 있으면 해당 경로로, 없으면 홈으로
+      const searchParams = new URLSearchParams(window.location.search);
+      const next = searchParams.get('next');
+      router.replace(next && next.startsWith('/') ? next : '/');
       return;
     }
 
@@ -44,10 +59,10 @@ export default function LoginPage() {
         }}
       >
         <h2 className="h2 font-bold mb-2 text-center" style={{ color: 'var(--text)' }}>
-          ???
+          로그인
         </h2>
         <p className="body-sm text-center mb-6" style={{ color: 'var(--text-secondary)' }}>
-          HANBANG? ????? ??? ?????
+          HANBANG 플랫폼에 오신 것을 환영합니다
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -55,7 +70,7 @@ export default function LoginPage() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="???"
+            placeholder="이메일"
             className="w-full px-4 py-3 rounded-[12px] border"
             style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
             required
@@ -65,7 +80,7 @@ export default function LoginPage() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="????"
+            placeholder="비밀번호"
             className="w-full px-4 py-3 rounded-[12px] border"
             style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
             required
@@ -85,20 +100,20 @@ export default function LoginPage() {
               boxShadow: 'var(--shadow-royal)',
             }}
           >
-            {loading ? '??? ?...' : '???'}
+            {loading ? '로그인 중...' : '로그인'}
           </button>
         </form>
 
         <p className="body-sm text-center mt-6" style={{ color: 'var(--text-secondary)' }}>
-          ????? ??????{' '}
+          비밀번호를 잊으셨나요?{' '}
           <Link href="/forgot-password" className="font-semibold" style={{ color: 'var(--royal-blue)' }}>
-            ???? ??
+            비밀번호 찾기
           </Link>
         </p>
         <p className="body-sm text-center mt-2" style={{ color: 'var(--text-secondary)' }}>
-          ??? ??????{' '}
+          계정이 없으신가요?{' '}
           <Link href="/signup" className="font-semibold" style={{ color: 'var(--royal-blue)' }}>
-            ????
+            회원가입
           </Link>
         </p>
       </div>
