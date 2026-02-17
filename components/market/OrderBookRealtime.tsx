@@ -98,12 +98,12 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
         <div className="caption mb-1 font-medium" style={{ color: 'var(--text-secondary)' }}>
           매수 호가
         </div>
-        <div className="flex flex-col" style={{ gap: 2 }}>
+        <div className="flex flex-col" style={{ gap: 3 }}>
           {bidRows.map((b, i) => (
               <div
                 key={`bid-${i}-${b.price_usd}`}
                 className="grid grid-cols-[60%_40%] items-center body-sm py-0.5 px-1"
-                style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}
+                style={{ borderBottom: '1px solid rgba(0,0,0,0.35)' }}
               >
                 <span
                   className="font-semibold metric-number text-right"
@@ -111,7 +111,7 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
                 >
                   {formatUsd(b.price_usd)}
                 </span>
-                <span className="caption metric-number text-right" style={{ color: 'var(--text-muted)' }}>
+                <span className="font-normal metric-number text-right" style={{ color: 'var(--text-muted)' }}>
                   {formatQty(b.quantity)}
                 </span>
               </div>
@@ -127,12 +127,12 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
         <div className="caption mb-1 font-medium" style={{ color: 'var(--text-secondary)' }}>
           매도 호가
         </div>
-        <div className="flex flex-col" style={{ gap: 2 }}>
+        <div className="flex flex-col" style={{ gap: 3 }}>
           {askRows.map((a, i) => (
               <div
                 key={`ask-${i}-${a.price_usd}`}
                 className="grid grid-cols-[60%_40%] items-center body-sm py-0.5 px-1"
-                style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}
+                style={{ borderBottom: '1px solid rgba(0,0,0,0.35)' }}
               >
                 <span
                   className="font-semibold metric-number text-right"
@@ -140,7 +140,7 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
                 >
                   {formatUsd(a.price_usd)}
                 </span>
-                <span className="caption metric-number text-right" style={{ color: 'var(--text-muted)' }}>
+                <span className="font-normal metric-number text-right" style={{ color: 'var(--text-muted)' }}>
                   {formatQty(a.quantity)}
                 </span>
               </div>

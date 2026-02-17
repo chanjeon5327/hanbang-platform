@@ -45,19 +45,14 @@ export default function SponsoredPickHeroV5() {
             <h3 className="body font-bold line-clamp-2 leading-snug" style={{ color: 'var(--text)' }}>
               {pick.title}
             </h3>
-            <div className="metric-lg font-bold tabular-nums mt-2" style={{ color: 'var(--emerald)' }}>
-              {formatRate(pick.yieldRate)}
-            </div>
-            <div className="mt-2">
-              <div className="flex justify-between caption mb-0.5" style={{ color: 'var(--text-secondary)' }}>
-                <span>모집률</span>
-                <span className="font-medium tabular-nums" style={{ color: 'var(--text)' }}>{pick.progress.toFixed(0)}%</span>
+            <div className="flex gap-4 mt-2">
+              <div>
+                <span className="caption block" style={{ color: 'var(--text-secondary)', opacity: 0.6 }}>현재가</span>
+                <span className="metric-lg font-bold tabular-nums metric-number" style={{ color: 'var(--text)' }}>{pick.sharePriceKrw != null ? `₩${pick.sharePriceKrw.toLocaleString()}` : '—'}</span>
               </div>
-              <div className="w-full rounded-full overflow-hidden" style={{ height: 6, backgroundColor: 'var(--border)' }}>
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{ width: `${Math.min(100, pick.progress)}%`, backgroundColor: 'var(--royal-blue)' }}
-                />
+              <div>
+                <span className="caption block" style={{ color: 'var(--text-secondary)', opacity: 0.6 }}>예상수익률</span>
+                <span className="metric-lg font-bold tabular-nums metric-number" style={{ color: 'var(--emerald)' }}>{formatRate(pick.yieldRate)}</span>
               </div>
             </div>
             <div
@@ -66,6 +61,7 @@ export default function SponsoredPickHeroV5() {
             >
               {pick.ctaLabel}
             </div>
+            <p className="caption text-center mt-2" style={{ color: 'var(--text-muted)' }}>배당 기반 수익 구조</p>
           </div>
         </CardV5>
       </Link>

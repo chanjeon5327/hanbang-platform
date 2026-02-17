@@ -446,7 +446,14 @@ export default function TradingPanelV2({
           <MetricRow
             items={[
               { label: '예상 체결가', value: formatKrw(orderTab === '시장가' ? currentPriceKrw : parseFloat(orderPrice || '0') * fxRate) },
-              { label: '수수료', value: '—' },
+              { label: '예상 수수료', value: '—' },
+            ]}
+            columns={2}
+            dense
+            compact
+          />
+          <MetricRow
+            items={[
               { label: '체결가능', value: orderSide === 'bid' ? `${Math.floor(userCash / (orderTab === '시장가' ? currentPriceKrw : parseFloat(orderPrice || '0') * fxRate) || 1)}주` : `${position?.quantity ?? 0}주` },
             ]}
             columns={2}
@@ -507,58 +514,46 @@ export default function TradingPanelV2({
           </div>
           {orderTab === '지정가' && (
             <div className="animate-[fadeIn_0.2s_ease-out]">
-              <label className="caption block mb-1" style={{ color: 'var(--text-secondary)' }}>가격 (USD)</label>
               <input
                 type="text"
                 inputMode="decimal"
                 value={orderPrice}
                 onChange={(e) => setOrderPrice(e.target.value)}
                 disabled={loading}
-                className="w-full px-3 py-2 rounded-xl border body-sm tabular-nums disabled:opacity-60 focus:ring-2 focus:ring-[var(--royal-blue)]/40 focus:outline-none"
+                placeholder="USD"
+                className="w-full px-3 py-2 rounded-xl border body-sm tabular-nums disabled:opacity-60 focus:ring-2 focus:ring-[var(--royal-blue)]/40 focus:outline-none placeholder:opacity-40"
                 style={{
                   backgroundColor: 'var(--bg-secondary)',
-                  borderColor: 'var(--border)',
+                  borderColor: 'rgba(230, 236, 245, 0.7)',
                   color: 'var(--text)',
                 }}
               />
             </div>
           )}
           {orderTab === '시장가' && (
-            <div className="caption metric-number animate-[fadeIn_0.2s_ease-out]" style={{ color: 'var(--text-secondary)' }}>
-              {formatUsd(sharePriceUsd)} ({formatKrw(sharePriceUsd * fxRate)})
+            <div className="body-sm metric-number animate-[fadeIn_0.2s_ease-out]" style={{ color: 'var(--text)' }}>
+              {formatKrw(sharePriceUsd * fxRate)}
             </div>
           )}
           <div>
-            <label className="caption block mb-1" style={{ color: 'var(--text-secondary)' }}>수량</label>
             <input
               type="number"
               min={1}
               value={orderQty}
               onChange={(e) => setOrderQty(Math.max(1, Number(e.target.value) || 0))}
               disabled={loading}
-              className="w-full px-3 py-2 rounded-xl border body-sm tabular-nums disabled:opacity-60 focus:ring-2 focus:ring-[var(--royal-blue)]/40 focus:outline-none"
+              placeholder="수량"
+              className="w-full px-3 py-2 rounded-xl border body-sm tabular-nums disabled:opacity-60 focus:ring-2 focus:ring-[var(--royal-blue)]/40 focus:outline-none placeholder:opacity-40"
               style={{
                 backgroundColor: 'var(--bg-secondary)',
-                borderColor: 'var(--border)',
+                borderColor: 'rgba(230, 236, 245, 0.7)',
                 color: 'var(--text)',
               }}
             />
           </div>
-          <div className="flex justify-between body-sm">
-            <span style={{ color: 'var(--text-secondary)' }}>총액</span>
-            <span className="font-semibold tabular-nums text-right" style={{ color: 'var(--text)' }}>
-              {formatKrw(totalAmountKrw)}
-            </span>
+          <div className="body-sm font-semibold tabular-nums metric-number" style={{ color: 'var(--text)' }}>
+            {formatKrw(totalAmountKrw)}
           </div>
-          {insufficientFunds && (
-            <p className="caption" style={{ color: 'var(--accent-loss)' }}>예수금 부족</p>
-          )}
-          {insufficientAssets && (
-            <p className="caption" style={{ color: 'var(--accent-loss)' }}>보유 부족</p>
-          )}
-          {lockBusyRetrying && (
-            <p className="caption" style={{ color: 'var(--accent-loss)' }}>잠시 후 재시도</p>
-          )}
           <button
             type="button"
             onClick={handlePlaceOrder}

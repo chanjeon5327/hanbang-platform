@@ -32,7 +32,7 @@ export default function MetricRow({ items, columns = 2, dense = false, showDivid
   const gridCols = columns === 3 ? 'grid-cols-3' : 'grid-cols-2';
   const valueCls = valueClassName ?? 'body-sm font-semibold';
   const gapX = compact ? 'gap-x-3' : 'gap-x-4';
-  const labelStyle = compact ? { color: 'var(--text-secondary)', opacity: 0.6 } : { color: 'var(--text-secondary)' };
+  const labelStyle = { color: 'var(--text-secondary)', opacity: 0.6 };
   return (
     <div className={cn('flex flex-col', className)}>
       {showDivider && <Divider className="mb-3" />}
@@ -46,6 +46,7 @@ export default function MetricRow({ items, columns = 2, dense = false, showDivid
               className={cn(valueCls, 'metric-number')}
               style={{
                 color: item.tone ? TONE_STYLE[item.tone] : 'var(--text)',
+                opacity: 1,
               }}
             >
               {item.value}

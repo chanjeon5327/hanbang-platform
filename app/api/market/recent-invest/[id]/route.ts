@@ -33,22 +33,10 @@ export async function GET(
       return NextResponse.json({ items: [] });
     }
 
-    const userIds = [...new Set((orders ?? []).map((o) => o.user_id).filter(Boolean))] as string[];
-    const profileMap = new Map<string, string>();
-    if (userIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, nickname, display_name")
-        .in("id", userIds);
-      (profiles ?? []).forEach((p: { id: string; nickname?: string; display_name?: string }) => {
-        profileMap.set(p.id, (p.nickname ?? p.display_name ?? "투자자") as string);
-      });
-    }
-
     const items = (orders ?? []).map((o) => {
       const amt = Number(o.total_amount_krw ?? o.amount ?? (Number(o.price ?? 0) * Number(o.quantity ?? 1)));
       return {
-        nickname: profileMap.get(o.user_id ?? "") ?? "투자자",
+        nickname: "투자자",
         amount: amt,
         created_at: o.completed_at ?? o.id,
       };

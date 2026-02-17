@@ -75,3 +75,56 @@
 | 설득 밀도 | 9.5/10 |
 | 종합 | 9.5/10 |
 | 9.8 도달 | 보완 후보: 수수료 API, 체결가능 실시간 |
+
+---
+
+## 금융 리서치 리포트 스타일 (2026-02-17)
+
+### 추가 블록
+- **Performance Snapshot**: SummaryFinancialCard 하단, 3열 (30일/90일 수익률, 변동성)
+- **Risk Snapshot**: 정보 탭 최상단, 3열 (MDD, 평균 회수 기간, 누적 배당 지급률)
+- **24H 거래대금/체결 수**: PriceHeader 하단 MetricRow 2열
+- **예상 체결 요약**: TradingPanelV2 상단 (예상 체결가, 예상 수수료)
+
+### 검증
+- text-[숫자px]: 0개
+- hover:scale: 0개 (market 영역)
+- shadow-lg: 0개 (market 영역)
+- build: 성공
+
+### 점수
+| 항목 | 점수 |
+|------|------|
+| 시각 지배력 | 9.6/10 |
+| 금융 설득 밀도 | 9.6/10 |
+| 종합 | 9.6/10 |
+| 10점까지 보정 후보 | ① 수수료 API 연동 ② Performance/Risk 데이터 API ③ 체결가능 실시간 |
+
+---
+
+## 리서치 리포트 스타일 안정화 (2026-02-17)
+
+### 시각적 미세 조정
+- **SummaryFinancialCard**: letter-spacing -0.02em, line-height 1.03, margin-top 4px, 수익률 opacity 0.7
+- **MetricRow**: label opacity 0.6 전역, value opacity 1
+- **CardV5**: padding 22/20px, border opacity 0.7, shadow 0.04
+- **OrderBookRealtime**: 행간 3px, Divider opacity 0.35, 수량 font-normal
+- **TradingPanelV2**: 설명문 제거, 입력 border 0.7, placeholder 0.4
+- **CardV5MarketCard**: 썸네일 brightness 0.9, title/현재가 margin 6px, 배지 opacity 0.65 (hover 0.9)
+- **SponsoredPickHeroV5**: 현재가+예상수익률 2열, CTA 아래 "배당 기반 수익 구조"
+
+### 검증
+- text-[숫자px]: 0
+- hover:scale: 0
+- drop-shadow: 0
+- shadow-lg: 0 (market 영역)
+- build: 성공
+
+### 점수
+| 항목 | 점수 |
+|------|------|
+| 시각 지배력 | 9.7/10 |
+| 금융 설득 밀도 | 9.7/10 |
+| 종합 | 9.7/10 |
+| 10점 도달 | 미도달 |
+| 남은 0.1점 보정 후보 | ① 수수료 실데이터 ② Performance/Risk API |

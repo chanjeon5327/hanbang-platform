@@ -2,6 +2,10 @@
 
 import { useEffect, useState, useCallback } from 'react';
 
+type MarketItemResponse = {
+  item: any;
+};
+
 export type MarketItem = {
   id: string;
   title: string;
@@ -54,12 +58,17 @@ export function useMarketItem(id: string | undefined) {
   const refetch = useCallback(() => {
     if (!id) return;
     setLoading(true);
-    fetch(`/api/market/item/${id}`, { cache: 'no-store' })
+    const url = `/api/market/item/${id}`;
+    console.log("API:", url);
+    fetch(url, { cache: 'no-store' })
       .then((res) => {
         if (!res.ok) throw new Error('Not found');
         return res.json();
       })
-      .then(setItem)
+      .then((j: MarketItemResponse) => {
+        console.log("ITEM FROM API:", j);
+        setItem(j?.item ?? null);
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [id]);
@@ -72,12 +81,17 @@ export function useMarketItem(id: string | undefined) {
     }
     setLoading(true);
     setError(null);
-    fetch(`/api/market/item/${id}`, { cache: 'no-store' })
+    const url = `/api/market/item/${id}`;
+    console.log("API:", url);
+    fetch(url, { cache: 'no-store' })
       .then((res) => {
         if (!res.ok) throw new Error('Not found');
         return res.json();
       })
-      .then(setItem)
+      .then((j: MarketItemResponse) => {
+        console.log("ITEM FROM API:", j);
+        setItem(j?.item ?? null);
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [id]);

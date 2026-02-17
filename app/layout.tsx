@@ -1,5 +1,12 @@
 import type { Metadata } from 'next';
+import localFont from 'next/font/local';
 import Header from '@/components/Header';
+
+const pretendard = localFont({
+  src: '../public/fonts/Pretendard-Regular.woff2',
+  variable: '--font-pretendard',
+  display: 'swap',
+});
 import BuildStamp from '@/components/dev/BuildStamp';
 import AppContainer from '@/components/layout/AppContainer';
 
@@ -18,7 +25,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body>
+      <body className={pretendard.variable}>
         <Providers>
           <Header />
           <main>

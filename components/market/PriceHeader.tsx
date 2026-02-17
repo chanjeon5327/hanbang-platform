@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { formatKrw, formatRate } from '@/lib/utils/format';
+import MetricRow from '@/components/ui/MetricRow';
 
 type Props = {
   sharePriceUsd: number | null;
@@ -9,6 +10,7 @@ type Props = {
   pricingCurrency?: string;
   prevCloseUsd?: number | null;
   volume24h?: number | null;
+  tradeCount24h?: number | null;
 };
 
 function formatUsd(n: number): string {
@@ -26,6 +28,7 @@ export default function PriceHeader({
   fxRate,
   prevCloseUsd,
   volume24h,
+  tradeCount24h,
 }: Props) {
   const { krw, changeRate, changeAmount } = useMemo(() => {
     if (sharePriceUsd == null) return { krw: 0, changeRate: 0, changeAmount: 0 };
@@ -61,11 +64,18 @@ export default function PriceHeader({
           {isUp ? '▲' : isDown ? '▼' : ''} {isUp ? '+' : ''}{formatRate(changeRate)} ({isUp ? '+' : ''}{formatKrw(changeAmount)})
         </span>
       )}
-      {volume24h != null && volume24h > 0 && (
-        <div className="caption mt-1" style={{ color: 'var(--text-secondary)' }}>
-          거래량 {formatKrwShort(volume24h)}
-        </div>
-      )}
+      <div style={{ marginTop: 'var(--space-md)' }}>
+        <MetricRow
+          items={[
+            { label: '24H 거래대금', value: volume24h != null && volume24h > 0 ? formatKrwShort(volume24h) : '—' },
+            { label: '24H 체결 수', value: tradeCount24h != null && tradeCount24h > 0 ? `${tradeCount24h}건` : '—' },
+          ]}
+          columns={2}
+          dense
+          compact
+          valueClassName="body-sm font-semibold metric-number"
+        />
+      </div>
     </div>
   );
 }
