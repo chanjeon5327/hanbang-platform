@@ -1,73 +1,66 @@
-# ============================================================================
-# HANBANG Exchange V2 — Release Gate Auto Launcher (Windows PowerShell)
-# ============================================================================
-# 사용법:
-#   1) 터미널1: pnpm dev
-#   2) 브라우저 DevTools > Network > 아무 요청 > Cookie 헤더 값 복사 (Ctrl+C)
-#   3) 터미널2: pnpm release:exchange-v2:auto
-# ============================================================================
+# scripts/run-release-exchange-v2.ps1
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
 
-Write-Host ""
-Write-Host "=== HANBANG Exchange V2 Release Gate (Auto) ===" -ForegroundColor Cyan
-Write-Host ""
-
-# ── 1) Base URL ──
-if (-not $env:HB_BASE_URL) {
-    $env:HB_BASE_URL = "http://localhost:3000"
+function HasNonLatin1([string]$s) {
+  foreach ($ch in $s.ToCharArray()) {
+    if ([int][char]$ch -gt 255) { return $true }
+  }
+  return $false
 }
-Write-Host "  BASE_URL: $env:HB_BASE_URL"
 
-# ── 2) Cookie: 클립보드에서 자동 읽기 ──
-$clipContent = ""
 try {
-    $clipContent = Get-Clipboard -ErrorAction SilentlyContinue
-} catch {
-    $clipContent = ""
-}
+  if (-not $env:HB_BASE_URL -or $env:HB_BASE_URL.Trim() -eq "") {
+    $env:HB_BASE_URL = "http://localhost:3000"
+  }
 
-if ($clipContent -and $clipContent.Trim().Length -gt 10) {
-    # Cookie: 접두어 제거
-    $cleaned = $clipContent.Trim()
-    if ($cleaned -match "^[Cc]ookie\s*:\s*") {
-        $cleaned = $cleaned -replace "^[Cc]ookie\s*:\s*", ""
-    }
-    $env:HB_COOKIE = $cleaned.Trim()
-    Write-Host "  COOKIE: (clipboard) $($env:HB_COOKIE.Substring(0, [Math]::Min(30, $env:HB_COOKIE.Length)))..." -ForegroundColor Green
-} else {
+  $cookie = (Get-Clipboard).ToString().Trim()
+
+  if (-not $cookie -or $cookie.Length -lt 10) {
     Write-Host ""
-    Write-Host "  [ERROR] 클립보드가 비어있거나 Cookie 값이 너무 짧습니다." -ForegroundColor Red
-    Write-Host ""
-    Write-Host "  사용법:" -ForegroundColor Yellow
-    Write-Host "    1) 브라우저에서 로그인" -ForegroundColor Yellow
-    Write-Host "    2) DevTools(F12) > Network > 아무 요청 클릭" -ForegroundColor Yellow
-    Write-Host "    3) Request Headers > Cookie 값 전체를 Ctrl+C로 복사" -ForegroundColor Yellow
-    Write-Host "    4) 이 커맨드를 다시 실행" -ForegroundColor Yellow
-    Write-Host ""
+    Write-Host "ERROR: Clipboard cookie is empty." -ForegroundColor Red
+    Write-Host "1) Open Chrome DevTools (F12)" -ForegroundColor Yellow
+    Write-Host "2) Network -> click any /api/* request" -ForegroundColor Yellow
+    Write-Host "3) Request Headers -> copy ONLY the Cookie VALUE (not 'Cookie:')" -ForegroundColor Yellow
+    Write-Host "4) Run again: pnpm release:exchange-v2:auto" -ForegroundColor Yellow
     exit 1
-}
+  }
 
-# ── 3) Admin Cookie = User Cookie (관리자 아니면 자동 403 -> SKIP) ──
-$env:HB_ADMIN_COOKIE = $env:HB_COOKIE
+  # If user copied "Cookie: xxx", strip prefix safely
+  if ($cookie.ToLower().StartsWith("cookie:")) {
+    $cookie = $cookie.Substring(7).Trim()
+  }
 
-# ── 4) Asset ID: 비움 (스크립트가 자동탐색) ──
-$env:HB_ASSET_ID = ""
-
-# ── 5) Supabase (이미 env에 있으면 전달, 없으면 생략) ──
-# NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY는 .env에서 자동 로드되거나 이미 설정된 경우만
-
-Write-Host ""
-Write-Host "  Running: node scripts/release-exchange-v2.mjs" -ForegroundColor Cyan
-Write-Host ""
-
-node scripts/release-exchange-v2.mjs
-
-$exitCode = $LASTEXITCODE
-if ($exitCode -eq 0) {
+  # undici requires header values to be latin1(bytestring)
+  if (HasNonLatin1 $cookie) {
     Write-Host ""
-    Write-Host "  === RELEASE GATE: PASS ===" -ForegroundColor Green
-} else {
-    Write-Host ""
-    Write-Host "  === RELEASE GATE: FAIL ===" -ForegroundColor Red
-}
+    Write-Host "ERROR: Cookie contains non-latin1 characters. Re-copy Cookie VALUE only." -ForegroundColor Red
+    Write-Host "Tip: copy from DevTools -> Request Headers -> Cookie (value only)." -ForegroundColor Yellow
+    exit 1
+  }
 
-exit $exitCode
+  $env:HB_COOKIE = $cookie
+
+  if (-not $env:HB_ADMIN_COOKIE -or $env:HB_ADMIN_COOKIE.Trim() -eq "") {
+    $env:HB_ADMIN_COOKIE = $env:HB_COOKIE
+  }
+
+  # Let node script auto-discover asset id if not provided
+  if ($env:HB_ASSET_ID -and (HasNonLatin1 $env:HB_ASSET_ID)) {
+    Remove-Item Env:HB_ASSET_ID -ErrorAction SilentlyContinue
+  }
+
+  Write-Host ""
+  Write-Host "=== Release Gate AUTO ===" -ForegroundColor Cyan
+  Write-Host ("BASE_URL : " + $env:HB_BASE_URL)
+  if ($env:HB_ASSET_ID) { Write-Host ("ASSET_ID : " + $env:HB_ASSET_ID) } else { Write-Host "ASSET_ID : (auto-discover)" }
+
+  node "scripts/release-exchange-v2.mjs"
+  exit $LASTEXITCODE
+}
+catch {
+  Write-Host ""
+  Write-Host "=== RELEASE GATE: FAIL ===" -ForegroundColor Red
+  Write-Host $_.Exception.Message -ForegroundColor Red
+  exit 1
+}
