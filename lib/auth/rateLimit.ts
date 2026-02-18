@@ -43,10 +43,8 @@ if (
 type Entry = { count: number; resetAt: number };
 const memoryStore = new Map<string, Entry>();
 
-if (!upstashRateLimit) {
-  console.warn(
-    '[RATE_LIMIT] Using in-memory fallback. NOT suitable for multi-instance production. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.'
-  );
+if (!upstashRateLimit && process.env.NODE_ENV === 'development') {
+  console.warn('[RATE_LIMIT] In-memory fallback (dev only). Set UPSTASH_REDIS_REST_URL for production.');
 }
 
 /**
