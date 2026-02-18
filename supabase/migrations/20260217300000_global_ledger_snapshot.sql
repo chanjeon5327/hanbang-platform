@@ -70,7 +70,7 @@ DECLARE
   v_i INT;
 BEGIN
   IF p_hashes IS NULL OR array_length(p_hashes, 1) IS NULL THEN
-    RETURN encode(digest('EMPTY_LEDGER', 'sha256'), 'hex');
+    RETURN encode(extensions.digest('EMPTY_LEDGER', 'sha256'), 'hex');
   END IF;
 
   FOR v_i IN 1..array_length(p_hashes, 1) LOOP
@@ -78,7 +78,7 @@ BEGIN
     v_combined := v_combined || COALESCE(p_hashes[v_i], '0');
   END LOOP;
 
-  RETURN encode(digest(v_combined, 'sha256'), 'hex');
+  RETURN encode(extensions.digest(v_combined, 'sha256'), 'hex');
 END;
 $$;
 

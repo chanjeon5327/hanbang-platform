@@ -437,7 +437,6 @@ export default function MarketDetailPage({
         style={{
           paddingLeft: 'var(--space-lg)',
           paddingRight: 'var(--space-lg)',
-          ...(DEBUG_SECTIONS ? { outline: '1px solid rgba(239,68,68,0.6)' } : {}),
         }}
       >
         <MediaHero
@@ -452,25 +451,13 @@ export default function MarketDetailPage({
       </div>
 
       <div
-        className="flex flex-col"
+        className="flex flex-col hb-stagger"
         style={{
           paddingLeft: 'var(--space-lg)',
           paddingRight: 'var(--space-lg)',
           gap: 'var(--space-md)',
-          ...(DEBUG_SECTIONS ? { outline: '1px solid rgba(34,197,94,0.6)' } : {}),
         }}
       >
-        {item && (
-          <div style={{
-            background: 'red',
-            color: 'white',
-            padding: '8px',
-            marginBottom: '12px',
-            fontSize: '12px'
-          }}>
-            DEBUG: {item.id}
-          </div>
-        )}
         <SummaryFinancialCard
           currentPriceKrw={sharePriceKrw}
           expectedYield={expectedYield}
@@ -509,11 +496,10 @@ export default function MarketDetailPage({
       >
         {activeTab === 'info' && (
           <div
-            className="flex flex-col"
+            className="flex flex-col hb-stagger"
             style={{
               padding: 'var(--space-lg)',
               ...sectionGap,
-              ...(DEBUG_SECTIONS ? { outline: '1px solid rgba(59,130,246,0.6)' } : {}),
             }}
           >
             <CardV5 className="card-inner-gap">
@@ -603,7 +589,6 @@ export default function MarketDetailPage({
           <div
             style={{
               padding: 'var(--space-lg)',
-              ...(DEBUG_SECTIONS ? { outline: '1px solid rgba(168,85,247,0.6)' } : {}),
             }}
           >
             {isTradable ? (
@@ -640,11 +625,10 @@ export default function MarketDetailPage({
 
         {activeTab === 'invest' && (
           <div
-            className="flex flex-col"
+            className="flex flex-col hb-stagger"
             style={{
               padding: 'var(--space-lg)',
               ...sectionGap,
-              ...(DEBUG_SECTIONS ? { outline: '1px solid rgba(245,158,11,0.6)' } : {}),
             }}
           >
             <DividendCard

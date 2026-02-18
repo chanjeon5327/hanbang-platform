@@ -60,7 +60,7 @@ CREATE OR REPLACE FUNCTION public.fn_compute_ledger_hash(
 LANGUAGE plpgsql IMMUTABLE AS $$
 BEGIN
   RETURN encode(
-    digest(
+    extensions.digest(
       COALESCE(p_prev_hash, 'GENESIS') || '|' ||
       p_id::text                        || '|' ||
       p_user_id::text                   || '|' ||
@@ -231,8 +231,8 @@ CREATE POLICY ledger_no_delete ON public.ledger_entries
 -- 마이그레이션 시점에 기존 원장 엔트리에 해시를 소급 적용합니다.
 -- UPDATE 차단 트리거를 임시 비활성화한 후 백필을 수행합니다.
 
--- UPDATE 트리거 임시 비활성화
-ALTER TABLE public.ledger_entries DISABLE TRIGGER trg_ledger_block_update;
+-- ALL 트리거 임시 비활성화 (원격 DB에 추가 트리거 존재 가능)
+ALTER TABLE public.ledger_entries DISABLE TRIGGER ALL;
 
 DO $$
 DECLARE
@@ -284,8 +284,8 @@ BEGIN
 END;
 $$;
 
--- UPDATE 트리거 재활성화
-ALTER TABLE public.ledger_entries ENABLE TRIGGER trg_ledger_block_update;
+-- ALL 트리거 재활성화
+ALTER TABLE public.ledger_entries ENABLE TRIGGER ALL;
 
 -- seq에 NOT NULL 제약 + 인덱스 추가
 -- (백필 후 모든 행에 seq 값이 존재해야 함)

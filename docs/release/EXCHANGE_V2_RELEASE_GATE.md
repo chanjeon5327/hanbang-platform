@@ -24,10 +24,20 @@ pnpm release:exchange-v2:auto
 ```
 
 **이게 전부입니다.** Cookie를 클립보드에 복사만 하면 나머지는 자동입니다:
-- Cookie 자동 읽기 (Get-Clipboard)
+- **포트 자동감지**: 3000/3001에 `/api/debug/build` ping → 살아있는 포트를 BASE_URL로 자동 설정
+- **쿠키 Raw 읽기**: `Get-Clipboard -Raw`로 단일 문자열 보장 (System.Object[] 문제 근절)
+- **빌드 지문 확인**: `GET /api/debug/build` → 커밋 SHA, 브랜치, 노드 버전 즉시 확인
+- Cookie 자동 읽기 + Cookie: 접두어 자동 제거
 - Asset ID 자동 탐색 (/api/market/popular 등)
 - 관리자 아니면 배당 파트 자동 SKIP
 - 결과 로그 자동 저장
+
+### dev 서버가 꼬였을 때 (포트 점유/lock 파일)
+
+```powershell
+pnpm dev:reset                # 3000/3001 kill + .next/dev/lock 삭제
+$env:PORT=3000; pnpm dev      # 깨끗하게 재기동
+```
 
 ### 수동 실행 (환경변수 직접 지정)
 
@@ -41,6 +51,7 @@ pnpm release:exchange-v2
 
 이전에 발생했던 `undici` ByteString FATAL 오류는 다음과 같이 **자동 방지**됩니다:
 
+0. **쿠키 형태 검증**: 클립보드에 `sb-*-auth-token=` 패턴이 없으면 즉시 FAIL (pnpm 명령/URL/랜덤 텍스트가 쿠키로 쓰이는 실수 방지)
 1. **한글/비ASCII 검출**: Cookie/환경변수에 charCode > 255 문자가 있으면 자동 거부 → SKIP
 2. **플레이스홀더 검출**: "실제", "token", "DevTools", "your-token" 등의 패턴 자동 감지 → SKIP
 3. **Cookie: 접두어 자동 제거**: `Cookie: sb-xxx=...` → `sb-xxx=...`
@@ -77,3 +88,17 @@ pnpm release:exchange-v2
 - [ ] 동시성 테스트: double spend 발생 여부 = _______
 - [ ] 배당 파이프라인: 상태 = _______
 - [ ] 실행자: _______ / 날짜: _______
+
+## 7. 테스트 계정 리셋 (admin + user 2개만 남기기)
+
+```powershell
+$env:NEXT_PUBLIC_SUPABASE_URL = "https://<project-ref>.supabase.co"
+$env:SUPABASE_SERVICE_ROLE_KEY = "<service-role-key>"
+$env:HB_ADMIN_EMAIL = "admin@hanbang.test"; $env:HB_ADMIN_PASSWORD = "Admin1234!"
+$env:HB_USER_EMAIL  = "user@hanbang.test";  $env:HB_USER_PASSWORD  = "User1234!"
+pnpm ops:reset-test-accounts
+```
+
+- 위 2개 외 모든 auth 유저를 삭제하고, admin/user를 생성(또는 비밀번호 리셋)합니다.
+- admin은 `profiles.role='ADMIN'`으로 세팅되어 관리자 페이지(`/admin`)에 접근 가능합니다.
+- 크롬 프로필 2개(HB-ADMIN / HB-USER) 분리 권장 — 세션 충돌 없이 동시 테스트 가능.

@@ -1,18 +1,32 @@
-import { NextResponse } from "next/server";
-
 /**
- * GET /api/debug/build
- * 배포 정보 확인용 (민감정보 없음)
- * - 브라우저/개발 화면 갈라짐 재발 방지
+ * GET /api/debug/build — 빌드 지문 (커밋/브랜치/노드/배포환경)
+ * Release Gate 포트 감지 및 "지금 보고있는 화면" 확인용
  */
+import { NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
-  const commit = process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? null;
+  const gitSha =
+    process.env.VERCEL_GIT_COMMIT_SHA ??
+    process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ??
+    'unknown';
+
+  const branch =
+    process.env.VERCEL_GIT_COMMIT_REF ??
+    process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF ??
+    'unknown';
+
   return NextResponse.json({
     ok: true,
-    now: Date.now(),
-    env: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "unknown",
-    commit,
-    deploymentUrl: process.env.VERCEL_URL ?? null,
-    region: process.env.VERCEL_REGION ?? null,
+    now: new Date().toISOString(),
+    node: process.version,
+    next: process.env.__NEXT_VERSION ?? 'unknown',
+    git_sha: gitSha,
+    branch,
+    vercel_env: process.env.VERCEL_ENV ?? null,
+    base_url_hint: process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : `http://localhost:${process.env.PORT ?? 3000}`,
   });
 }

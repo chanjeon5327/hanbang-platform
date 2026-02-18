@@ -6,6 +6,7 @@ import { Search } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import CardV5MarketCard from '@/components/market/CardV5MarketCard';
 import TopAppBar from '@/components/ui/TopAppBar';
+import { HBCardSkeleton } from '@/components/ui/HBSkeleton';
 import { useMarketTab, type RailItem } from '@/hooks/useMarketTab';
 import { useMemo, useState, useEffect, Suspense } from 'react';
 
@@ -151,16 +152,16 @@ function MarketPageContent() {
 
       <div className="pt-4 pb-8 px-4" style={{ paddingTop: 'var(--space-lg)' }}>
         {loading && items.length === 0 ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 hb-stagger" style={{ gap: 'var(--space-md)' }}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="aspect-[4/5] rounded-2xl bg-black/5 animate-pulse" />
+              <HBCardSkeleton key={i} />
             ))}
           </div>
         ) : isEmpty ? (
           <EmptyState tab={effectiveTab} isLoggedIn={!!user} />
         ) : (
           <>
-            <div className="grid grid-cols-2" style={{ gap: 'var(--space-md)' }}>
+            <div className="grid grid-cols-2 hb-stagger" style={{ gap: 'var(--space-md)' }}>
               {filteredItems.map((item: RailItem, i: number) => (
                 <CardV5MarketCard
                   key={item.id}

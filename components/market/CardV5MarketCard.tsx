@@ -75,7 +75,7 @@ export default function CardV5MarketCard({
   return (
     <Link
       href={`/market/${item.id}`}
-      className="block overflow-hidden transition-opacity duration-200 md:hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-[var(--royal-blue)] focus:ring-offset-2 active:opacity-90 group"
+      className="block overflow-hidden hb-card-hover focus:outline-none focus:ring-2 focus:ring-[var(--royal-blue)] focus:ring-offset-2 active:opacity-90 group"
       style={{
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border)',
@@ -119,18 +119,18 @@ export default function CardV5MarketCard({
           </div>
         </div>
 
-        <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '2/1', backgroundColor: 'var(--border)' }}>
+        <div className="relative overflow-hidden" style={{ aspectRatio: '2/1', backgroundColor: 'var(--border)', borderRadius: 'var(--thumb-radius)' }}>
           {showPreview && youtubeId ? (
             <iframe
               src={PREVIEW_URL(youtubeId)}
               title=""
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover hb-thumb-zoom"
               style={{ filter: 'brightness(0.9)' }}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
           ) : (
-            <img src={thumbSrc} alt="" className="w-full h-full object-cover" style={{ filter: 'brightness(0.9)' }} loading="lazy" />
+            <img src={thumbSrc} alt="" className="w-full h-full object-cover hb-thumb-zoom" style={{ filter: 'brightness(0.9)' }} loading="lazy" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" aria-hidden />
           {user && (

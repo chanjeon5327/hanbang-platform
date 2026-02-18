@@ -322,10 +322,86 @@
 .text-caption { font-size: var(--font-caption); color: var(--text-muted); }
 
 /* 타이포 시스템 + line-height 통일 */
-.h1 { font-size: var(--h1); font-weight: 800; line-height: 1.25; } /* leading-tight */
-.h2 { font-size: var(--h2); font-weight: 700; line-height: 1.375; } /* leading-snug */
-.h3 { font-size: var(--h3); font-weight: 600; line-height: 1.375; } /* leading-snug */
+.h1 { font-size: var(--h1); font-weight: 800; line-height: 1.25; }
+.h2 { font-size: var(--h2); font-weight: 700; line-height: 1.375; }
+.h3 { font-size: var(--h3); font-weight: 600; line-height: 1.375; }
 .body-lg { font-size: var(--body-lg); line-height: 1.5; }
 .body { font-size: var(--body); line-height: 1.5; }
 .body-sm { font-size: var(--body-sm); line-height: 1.5; }
-.caption { font-size: var(--caption); line-height: 1; } /* leading-none */
+.caption { font-size: var(--caption); line-height: 1; }
+
+/* =========================
+   HANBANG DESIGN V1 TOKENS
+========================= */
+
+:root {
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+
+  /* Card hover lift */
+  --card-hover-y: -4px;
+  --card-hover-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+
+  /* Thumbnail */
+  --thumb-ratio: 56.25%;
+  --thumb-radius: 14px;
+}
+
+/* Card hover lift animation */
+.hb-card-hover {
+  transition: transform var(--duration-normal) var(--ease-out-expo),
+              box-shadow var(--duration-normal) var(--ease-out-expo);
+}
+.hb-card-hover:hover {
+  transform: translateY(var(--card-hover-y));
+  box-shadow: var(--card-hover-shadow);
+}
+
+/* Thumbnail zoom on card hover */
+.hb-thumb-zoom {
+  transition: transform var(--duration-slow) var(--ease-out-expo);
+}
+.hb-card-hover:hover .hb-thumb-zoom {
+  transform: scale(1.04);
+}
+
+/* Page section fade-in stagger */
+.hb-stagger > * {
+  animation: hbFadeUp var(--duration-slow) var(--ease-out-expo) both;
+}
+.hb-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.hb-stagger > *:nth-child(2) { animation-delay: 60ms; }
+.hb-stagger > *:nth-child(3) { animation-delay: 120ms; }
+.hb-stagger > *:nth-child(4) { animation-delay: 180ms; }
+.hb-stagger > *:nth-child(5) { animation-delay: 240ms; }
+.hb-stagger > *:nth-child(6) { animation-delay: 300ms; }
+
+@keyframes hbFadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Empty state illustration */
+.hb-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-xl) var(--space-md);
+  color: var(--text-muted);
+  text-align: center;
+}
+.hb-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}

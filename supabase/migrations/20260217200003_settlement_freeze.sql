@@ -125,7 +125,7 @@ BEGIN
 
   -- 5. 스냅샷 해시 생성: 모든 사용자의 마지막 row_hash를 연결 → SHA-256
   v_snapshot_hash := encode(
-    digest(
+    extensions.digest(
       COALESCE(array_to_string(v_user_hashes, '|'), 'EMPTY_LEDGER'),
       'sha256'
     ),

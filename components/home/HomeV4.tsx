@@ -13,7 +13,7 @@ import type { RailItem } from '@/hooks/useMarketTab';
 import { useMomentumPicks } from '@/hooks/useMomentumPicks';
 import { useDeadlinePicks } from '@/hooks/useDeadlinePicks';
 import { usePopularPicks } from '@/hooks/usePopularPicks';
-import Skeleton from '@/components/ui/Skeleton';
+import { HBCardSkeleton } from '@/components/ui/HBSkeleton';
 
 export type AssetData = {
   totalAssets: number;
@@ -54,8 +54,8 @@ function AssetSummarySection({ data, loading, isLoggedIn }: { data: AssetData | 
     return (
       <Section>
         <CardV5>
-          <Skeleton className="h-12 w-32 mb-4" />
-          <Skeleton className="h-6 w-24" />
+          <div className="skeleton rounded-lg h-12 w-32 mb-4" />
+          <div className="skeleton rounded-lg h-6 w-24" />
         </CardV5>
       </Section>
     );
@@ -102,13 +102,13 @@ function TradeRail() {
   return (
     <Section title="거래" rightHref="/market" rightLabel="전체보기">
       {loading ? (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 hb-stagger" style={{ gap: 'var(--space-md)' }}>
           {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="rounded-[20px] h-[140px] animate-pulse" style={{ backgroundColor: 'var(--border)' }} />
+            <HBCardSkeleton key={i} />
           ))}
         </div>
       ) : items.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 hb-stagger" style={{ gap: 'var(--space-md)' }}>
           {items.slice(0, 6).map((item, i) => (
             <CardV5MarketCard key={item.id} item={item as RailItem} index={i} />
           ))}
@@ -130,7 +130,9 @@ function InvestRail() {
       {loading ? (
         <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="w-[180px] shrink-0 rounded-[20px] h-[260px] animate-pulse" style={{ backgroundColor: 'var(--border)' }} />
+            <div key={i} className="w-[180px] shrink-0">
+              <HBCardSkeleton />
+            </div>
           ))}
         </div>
       ) : items.length > 0 ? (
@@ -177,7 +179,9 @@ function RecommendationRail() {
     return (
       <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
         {[0, 1, 2, 3, 4].map((i) => (
-          <div key={i} className="w-[180px] shrink-0 rounded-[20px] h-[260px] animate-pulse" style={{ backgroundColor: 'var(--border)' }} />
+          <div key={i} className="w-[180px] shrink-0">
+            <HBCardSkeleton />
+          </div>
         ))}
       </div>
     );

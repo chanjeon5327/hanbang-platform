@@ -90,49 +90,39 @@ process.on('unhandledRejection', (reason) => {
 });
 
 /* ================================================================
- * ByteString 방지: 환경변수 검증
+ * 쿠키 / 환경변수 정규화
  * ================================================================ */
 
-const PLACEHOLDER_PATTERNS = [
-  /실제/,
-  /token/i,
-  /devtools/i,
-  /복사/,
-  /서비스롤/,
-  /asset-uuid/i,
-  /your[_-]?(token|key|cookie|uuid|project)/i,
-  /^<.+>$/,
-  /^\.\.\./,
-  /^eyJ\.{3}/,
-  /INSERT|여기에|입력/,
-];
+function normalizeCookieHeader(raw) {
+  if (!raw) return '';
+  let t = String(raw).trim();
+  t = t.replace(/^\s*Cookie\s*:\s*/i, '').trim();
+  t = t.replace(/(\r|\n)+/g, ' ').trim();
 
-function isValidHeaderValue(val) {
-  if (!val || val.trim() === '') return false;
-  for (let i = 0; i < val.length; i++) {
-    if (val.charCodeAt(i) > 255) return false;
+  // Try decodeURIComponent but NEVER wipe on failure
+  try {
+    if (/%[0-9A-Fa-f]{2}/.test(t)) {
+      const dec = decodeURIComponent(t);
+      if (dec && dec.length >= 10) t = dec;
+    }
+  } catch (_) {
+    // keep original t
   }
-  for (const pat of PLACEHOLDER_PATTERNS) {
-    if (pat.test(val)) return false;
-  }
-  return true;
+  return t;
 }
 
-function sanitizeCookie(raw) {
-  if (!raw) return '';
-  let v = raw.trim();
-  if (/^cookie\s*:/i.test(v)) {
-    v = v.replace(/^cookie\s*:\s*/i, '');
-  }
-  v = v.trim();
-  if (!isValidHeaderValue(v)) return '';
-  return v;
+function isLikelySupabaseCookie(cookie) {
+  if (!cookie) return false;
+  return /sb-[a-z0-9]+-auth-token(\.\d+)?=/.test(cookie) || /sb-access-token=/.test(cookie);
 }
 
 function sanitizeEnv(raw) {
   if (!raw) return '';
   const v = raw.trim();
-  if (!isValidHeaderValue(v)) return '';
+  // block non-Latin1 chars (ByteString prevention)
+  for (let i = 0; i < v.length; i++) {
+    if (v.charCodeAt(i) > 255) return '';
+  }
   return v;
 }
 
@@ -144,8 +134,10 @@ function isValidUuid(val) {
 
 /* ── 환경변수 로드 + 정화 ── */
 const BASE = (process.env.HB_BASE_URL || 'http://localhost:3000').trim();
-const COOKIE = sanitizeCookie(process.env.HB_COOKIE);
-const ADMIN_COOKIE = sanitizeCookie(process.env.HB_ADMIN_COOKIE);
+const COOKIE = normalizeCookieHeader(process.env.HB_COOKIE || '');
+let ADMIN_COOKIE = normalizeCookieHeader(process.env.HB_ADMIN_COOKIE || '');
+// D) ADMIN_COOKIE 기본값 = COOKIE (테스트 admin 동일 쿠키)
+if (!ADMIN_COOKIE && COOKIE) ADMIN_COOKIE = COOKIE;
 let ASSET_ID = sanitizeEnv(process.env.HB_ASSET_ID);
 const SB_URL = sanitizeEnv(process.env.NEXT_PUBLIC_SUPABASE_URL);
 const SB_KEY = sanitizeEnv(process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -296,7 +288,7 @@ async function stepIntegrity() {
     } else {
       const d = typeof integ === 'string' ? JSON.parse(integ) : integ;
       record('B1. rpc_verify_ledger_integrity',
-        d && d.ok === true ? 'PASS' : 'FAIL',
+        d && (d.integrity_ok === true || (d.mismatches === 0 && d.chain_breaks === 0)) ? 'PASS' : 'FAIL',
         `mismatches=${d?.mismatches ?? '?'}`);
     }
   } catch (e) {
@@ -590,10 +582,13 @@ async function main() {
   emit(`  SB_URL      : ${SB_URL ? SB_URL.slice(0, 30) + '...' : '(empty)'}`);
   emit(`  SB_KEY      : ${SB_KEY ? SB_KEY.slice(0, 10) + '...' : '(empty)'}`);
 
-  if (!COOKIE) {
-    emit('\n  [INFO] HB_COOKIE empty or invalid. Auth-required steps will be SKIPPED.');
-    emit('  [TIP]  DevTools > Network > any request > Cookie header value > copy');
-    emit('         Then: $env:HB_COOKIE="<paste>"; pnpm release:exchange-v2');
+  if (!COOKIE || !isLikelySupabaseCookie(COOKIE)) {
+    emit('\n  [FAIL] HB_COOKIE missing or invalid (no Supabase auth cookie detected).');
+    emit('  [TIP]  Set HB_EMAIL/HB_PASSWORD for auto-login OR copy Cookie VALUE from DevTools.');
+    record('COOKIE', 'FAIL', 'HB_COOKIE missing/invalid (supabase auth cookie required)');
+    finalVerdict = 'FAIL';
+    saveLog();
+    process.exit(1);
   }
 
   await stepGit();
