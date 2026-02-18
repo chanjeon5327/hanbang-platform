@@ -88,8 +88,9 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/active-invest') ||
     pathname.startsWith('/notice') ||
     pathname.startsWith('/demo') ||
+    pathname.startsWith('/design') ||
     pathname.startsWith('/market') ||
-    pathname.startsWith('/api') // API는 각 라우트에서 401 반환
+    pathname.startsWith('/api')
 
   // 공개 페이지가 아니고 로그인하지 않은 경우에만 리다이렉트
   if (!user && !isPublicPath) {
