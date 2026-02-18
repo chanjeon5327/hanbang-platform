@@ -14,6 +14,7 @@ export type SponsoredPick = {
   progress: number;
   yieldRate: number;
   ctaLabel: string;
+  sharePriceKrw?: number | null;
 };
 
 /** 관리자 설정 가능 구조 대비 - DB 없으면 mock fallback */
@@ -26,6 +27,7 @@ const MOCK_SPONSORED: SponsoredPick = {
   progress: 72,
   yieldRate: 8.4,
   ctaLabel: "지금 참여하기",
+  sharePriceKrw: 13500,
 };
 
 export async function GET() {
@@ -36,7 +38,18 @@ export async function GET() {
     // const { data } = await supabase.from("home_sponsored_slots").select("*").eq("slot_key", "main_top").single();
     // if (data) return NextResponse.json({ ok: true, pick: mapToSponsoredPick(data) });
 
-    return NextResponse.json({ ok: true, pick: MOCK_SPONSORED });
+    const pick = { ...MOCK_SPONSORED };
+    const { data: fx } = await supabase.from("fx_rates").select("rate").eq("currency", "USD").single();
+    const fxRate = Number((fx as { rate?: number })?.rate ?? 1350);
+    const { data: item } = await supabase
+      .from("content_items")
+      .select("share_price_usd")
+      .eq("id", pick.productId)
+      .single();
+    const sharePriceUsd = Number((item as { share_price_usd?: number } | null)?.share_price_usd ?? 0);
+    if (sharePriceUsd > 0) pick.sharePriceKrw = Math.round(sharePriceUsd * fxRate);
+
+    return NextResponse.json({ ok: true, pick });
   } catch {
     return NextResponse.json({ ok: true, pick: MOCK_SPONSORED });
   }

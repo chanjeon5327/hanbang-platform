@@ -13,17 +13,19 @@ export type SponsoredPick = {
   progress: number;
   yieldRate: number;
   ctaLabel: string;
+  sharePriceKrw?: number | null;
 };
 
 const MOCK_FALLBACK: SponsoredPick = {
   id: 'sponsored-1',
   productId: FALLBACK_IDS.SAMPLE_1,
-  title: '?袁ⓓ�揶쏉옙 �빊遺우퓝 筌�?鍮�/?�딆쁽',
-  subtitle: '?�뜆�젟?怨몄뵠���??誘�? ?�꼷�뵡�몴醫롮뱽 ?癒곕립?�끇�늺?',
+  title: '전문가 추천 청약/투자',
+  subtitle: '안정적이고 높은 수익률을 원한다면?',
   thumbnailUrl: getYtThumb(0),
   progress: 72,
   yieldRate: 8.4,
-  ctaLabel: '筌욑옙疫�?筌〓챷肉�?�꼵由�',
+  ctaLabel: '지금 참여하기',
+  sharePriceKrw: 13500,
 };
 
 /**
@@ -61,6 +63,7 @@ export function useSponsoredPick(enabled = true): {
             progress: Number(p.progress) ?? MOCK_FALLBACK.progress,
             yieldRate: Number(p.yieldRate) ?? p.yield_rate ?? MOCK_FALLBACK.yieldRate,
             ctaLabel: p.ctaLabel ?? p.cta_label ?? MOCK_FALLBACK.ctaLabel,
+            sharePriceKrw: p.sharePriceKrw != null ? Number(p.sharePriceKrw) : null,
           });
         } else {
           setPick(MOCK_FALLBACK);

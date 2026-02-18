@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Users, Shield, DollarSign } from 'lucide-react';
+import { Users, Shield, DollarSign, Search } from 'lucide-react';
 
 type Batch = { id: string; settlement_date: string; status: string };
 
@@ -24,7 +24,7 @@ export default function AdminHubPage() {
         ??? ??
       </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Link
           href="/admin/creators"
           className="p-5 rounded-2xl border flex items-center gap-3 hover:opacity-90 transition"
@@ -54,8 +54,19 @@ export default function AdminHubPage() {
         >
           <DollarSign size={24} style={{ color: 'var(--accent-color)' }} />
           <div>
-            <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>?? ??</div>
-            <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>?? ?? ??</div>
+            <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>정산 관리</div>
+            <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>정산 배치 확인</div>
+          </div>
+        </Link>
+        <Link
+          href="/admin/forensic"
+          className="p-5 rounded-2xl border flex items-center gap-3 hover:opacity-90 transition"
+          style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}
+        >
+          <Search size={24} style={{ color: 'var(--accent-color)' }} />
+          <div>
+            <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>포렌식 감사</div>
+            <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>원장 무결성 · 로그인 감사</div>
           </div>
         </Link>
       </div>

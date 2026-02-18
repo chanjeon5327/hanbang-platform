@@ -19,6 +19,8 @@ type Props = {
   totalSupplyShares?: number | null;
   totalRaiseUsd?: number | null;
   currentRaiseUsd?: number | null;
+  volume24hKrw?: number | null;
+  tradeCount24h?: number | null;
   onToast?: (message: string) => void;
 };
 
@@ -32,6 +34,8 @@ export default function ExchangeSection({
   totalSupplyShares,
   totalRaiseUsd,
   currentRaiseUsd,
+  volume24hKrw,
+  tradeCount24h,
   onToast,
 }: Props) {
   const [myOrderPrices, setMyOrderPrices] = useState<number[]>([]);
@@ -111,7 +115,8 @@ export default function ExchangeSection({
           sharePriceUsd={lastTradePrice ?? sharePriceUsd}
           fxRate={fxRate}
           prevCloseUsd={prevTradePrice ?? sharePriceUsd * 0.98}
-          volume24h={null}
+          volume24h={volume24hKrw ?? null}
+          tradeCount24h={tradeCount24h ?? null}
         />
         <PriceChartBlock
           sharePriceUsd={sharePriceUsd}

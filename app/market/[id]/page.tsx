@@ -181,20 +181,20 @@ function SummaryFinancialCard({
     <CardV5 style={{ marginTop: 'var(--space-lg)' }} className="card-inner-gap">
       {/* ZONE A: 현재가 단독 영역 */}
       <div style={{ paddingTop: 28, paddingBottom: 16 }}>
-        <div className="metric-xl metric-number font-extrabold" style={{ color: 'var(--text)', letterSpacing: '-0.5px', lineHeight: 1.05 }}>
+        <div className="metric-xl metric-number font-extrabold" style={{ color: 'var(--text)', letterSpacing: '-0.02em', lineHeight: 1.03, marginTop: 4 }}>
           {formatKrw(currentPriceKrw)}
         </div>
         <p className="caption" style={{ color: 'var(--text-secondary)' }}>현재가</p>
       </div>
       <Divider />
       {/* ZONE B: 예상수익률 + 모집률 */}
-      <div style={{ opacity: 0.75 }}>
+      <div style={{ opacity: 0.7 }}>
         <div className="body font-bold metric-number" style={{ color: 'var(--emerald)', fontSize: '0.85em' }}>
           {formatRate(expectedYield)}
         </div>
         <p className="caption" style={{ color: 'var(--text-secondary)' }}>예상 연수익률</p>
       </div>
-      <MetricRow items={[{ label: '모집률', value: `${progress.toFixed(1)}%` }]} columns={2} dense valueClassName="caption" />
+      <MetricRow items={[{ label: '모집률', value: `${progress.toFixed(1)}%` }]} columns={2} dense compact valueClassName="caption" />
       <div className="w-full rounded-full overflow-hidden" style={{ height: 4, backgroundColor: 'var(--border)' }}>
         <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, progress)}%`, backgroundColor: 'var(--royal-blue)' }} />
       </div>
@@ -279,6 +279,9 @@ export default function MarketDetailPage({
 
   const { user } = useAuth();
   const { item, loading: itemLoading, error: itemError, refetch: refetchItem } = useMarketItem(id);
+  useEffect(() => {
+    if (item) console.log(item);
+  }, [item]);
   const { items: investLogs, refetch: refetchInvestLogs } = useRecentInvestLog(id);
   const { refetch: refetchContributions } = useArtistContribution(false);
   const { refetch: refetchProgress } = useArtistProgress(false);
@@ -434,7 +437,6 @@ export default function MarketDetailPage({
         style={{
           paddingLeft: 'var(--space-lg)',
           paddingRight: 'var(--space-lg)',
-          ...(DEBUG_SECTIONS ? { outline: '1px solid rgba(239,68,68,0.6)' } : {}),
         }}
       >
         <MediaHero
@@ -449,10 +451,11 @@ export default function MarketDetailPage({
       </div>
 
       <div
+        className="flex flex-col hb-stagger"
         style={{
           paddingLeft: 'var(--space-lg)',
           paddingRight: 'var(--space-lg)',
-          ...(DEBUG_SECTIONS ? { outline: '1px solid rgba(34,197,94,0.6)' } : {}),
+          gap: 'var(--space-md)',
         }}
       >
         <SummaryFinancialCard
@@ -467,6 +470,20 @@ export default function MarketDetailPage({
           avgMonthlyDividend={dividendPerShare}
           contentId={id}
         />
+        <CardV5 className="card-inner-gap">
+          <Divider />
+          <p className="caption font-medium" style={{ color: 'var(--text-secondary)' }}>Performance Snapshot</p>
+          <MetricRow
+            items={[
+              { label: '최근 30일 수익률', value: '—' },
+              { label: '최근 90일 수익률', value: '—' },
+              { label: '변동성 지수', value: '—' },
+            ]}
+            columns={3}
+            dense
+          />
+          <Divider />
+        </CardV5>
       </div>
 
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} isTradable={isTradable} />
@@ -479,13 +496,26 @@ export default function MarketDetailPage({
       >
         {activeTab === 'info' && (
           <div
-            className="flex flex-col"
+            className="flex flex-col hb-stagger"
             style={{
               padding: 'var(--space-lg)',
               ...sectionGap,
-              ...(DEBUG_SECTIONS ? { outline: '1px solid rgba(59,130,246,0.6)' } : {}),
             }}
           >
+            <CardV5 className="card-inner-gap">
+              <p className="caption font-medium" style={{ color: 'var(--text-secondary)' }}>Risk Snapshot</p>
+              <MetricRow
+                items={[
+                  { label: '최대 낙폭 (MDD)', value: '—' },
+                  { label: '평균 회수 기간', value: '—' },
+                  { label: '누적 배당 지급률', value: '—' },
+                ]}
+                columns={3}
+                dense
+                compact
+                valueClassName="caption metric-number"
+              />
+            </CardV5>
             <CardV5 className="card-inner-gap">
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 {item?.integrity_ok && <span className="caption px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--emerald)', color: '#fff' }}>원장</span>}
@@ -559,7 +589,6 @@ export default function MarketDetailPage({
           <div
             style={{
               padding: 'var(--space-lg)',
-              ...(DEBUG_SECTIONS ? { outline: '1px solid rgba(168,85,247,0.6)' } : {}),
             }}
           >
             {isTradable ? (
@@ -577,6 +606,8 @@ export default function MarketDetailPage({
                   }
                   totalRaiseUsd={item?.total_raise_usd}
                   currentRaiseUsd={item?.current_raise_usd}
+                  volume24hKrw={item?.last_24h_amount ?? null}
+                  tradeCount24h={item?.last_24h_count ?? null}
                   onToast={(msg) => {
                     setToastMessage(msg);
                     setToastVisible(true);
@@ -594,11 +625,10 @@ export default function MarketDetailPage({
 
         {activeTab === 'invest' && (
           <div
-            className="flex flex-col"
+            className="flex flex-col hb-stagger"
             style={{
               padding: 'var(--space-lg)',
               ...sectionGap,
-              ...(DEBUG_SECTIONS ? { outline: '1px solid rgba(245,158,11,0.6)' } : {}),
             }}
           >
             <DividendCard

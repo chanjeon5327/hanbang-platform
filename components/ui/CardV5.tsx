@@ -5,9 +5,12 @@ import { cn } from '@/lib/utils';
 
 const CARD_V5_STYLE = {
   borderRadius: 'var(--radius-lg)',
-  padding: '20px',
-  border: '1px solid var(--border)',
-  boxShadow: 'var(--shadow-sm)',
+  paddingTop: 22,
+  paddingBottom: 20,
+  paddingLeft: 20,
+  paddingRight: 20,
+  border: '1px solid rgba(230, 236, 245, 0.7)',
+  boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)',
   backgroundColor: 'var(--card)',
 } as const;
 
@@ -24,7 +27,6 @@ const CardV5 = React.forwardRef<HTMLDivElement, CardV5Props>(
       ref={ref}
       className={cn(
         'rounded-[20px] transition-opacity duration-200 md:hover:opacity-[0.98]',
-        !noPadding && 'p-5',
         variant === 'ghost' && 'shadow-none',
         className
       )}

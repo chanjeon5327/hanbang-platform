@@ -75,7 +75,7 @@ export default function CardV5MarketCard({
   return (
     <Link
       href={`/market/${item.id}`}
-      className="block overflow-hidden transition-opacity duration-200 md:hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-[var(--royal-blue)] focus:ring-offset-2 active:opacity-90 group"
+      className="block overflow-hidden hb-card-hover focus:outline-none focus:ring-2 focus:ring-[var(--royal-blue)] focus:ring-offset-2 active:opacity-90 group"
       style={{
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border)',
@@ -92,10 +92,10 @@ export default function CardV5MarketCard({
     >
       <div className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
         <div className="flex items-start justify-between gap-2">
-          <h3 className="body font-bold line-clamp-2 leading-snug flex-1" style={{ color: 'var(--text)' }}>
+          <h3 className="body font-bold line-clamp-2 leading-snug flex-1" style={{ color: 'var(--text)', marginBottom: 6 }}>
             {item.title}
           </h3>
-          <div className="flex flex-wrap justify-end gap-1 shrink-0 opacity-75" style={{ fontSize: '0.7rem' }}>
+          <div className="flex flex-wrap justify-end gap-1 shrink-0 transition-opacity duration-150 group-hover:opacity-90" style={{ fontSize: '0.7rem', opacity: 0.65 }}>
             {item.integrity_ok && (item.settlement_count ?? 0) > 0 && (
               <span className="rounded-full px-1.5 py-0.5 caption border" style={{ backgroundColor: 'var(--emerald)', color: '#fff', borderColor: 'var(--emerald)' }}>
                 정산 {item.settlement_count}건
@@ -119,17 +119,18 @@ export default function CardV5MarketCard({
           </div>
         </div>
 
-        <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '2/1', backgroundColor: 'var(--border)' }}>
+        <div className="relative overflow-hidden" style={{ aspectRatio: '2/1', backgroundColor: 'var(--border)', borderRadius: 'var(--thumb-radius)' }}>
           {showPreview && youtubeId ? (
             <iframe
               src={PREVIEW_URL(youtubeId)}
               title=""
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover hb-thumb-zoom"
+              style={{ filter: 'brightness(0.9)' }}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
           ) : (
-            <img src={thumbSrc} alt="" className="w-full h-full object-cover" loading="lazy" />
+            <img src={thumbSrc} alt="" className="w-full h-full object-cover hb-thumb-zoom" style={{ filter: 'brightness(0.9)' }} loading="lazy" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" aria-hidden />
           {user && (
@@ -149,7 +150,7 @@ export default function CardV5MarketCard({
           )}
         </div>
 
-        <div style={{ marginTop: 24 }}>
+        <div style={{ marginTop: 6 }}>
           <div className="metric-lg metric-number font-extrabold" style={{ color: 'var(--text)', letterSpacing: '-0.03em' }}>
             {totalRaise > 0 ? formatKrw(totalRaise) : '—'}
           </div>

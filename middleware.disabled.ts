@@ -1,3 +1,9 @@
+/**
+ * ⚠️ 이 파일은 비활성화되어 있습니다.
+ * 현재 활성 미들웨어: middleware.ts (루트)
+ * 실제 인증 로직: lib/supabase/middleware.ts의 updateSession()
+ */
+
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
