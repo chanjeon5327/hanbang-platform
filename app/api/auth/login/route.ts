@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { checkLoginRateLimit, resetLoginRateLimit } from '@/lib/auth/rateLimit';
+import { randomUUID } from 'crypto';
 
 /**
  * POST /api/auth/login
@@ -9,6 +10,10 @@ import { checkLoginRateLimit, resetLoginRateLimit } from '@/lib/auth/rateLimit';
  * - 레이트리밋: IP당 5회/분
  * - 감사 로그: 모든 로그인 시도 기록
  * - 계정 잠금: 10분 내 5회 실패 시 423 반환
+ *
+ * AUTH Phase-2 보안:
+ * - [8-1] 세션 고정 공격 방어: 로그인 성공 후 refreshSession()으로 토큰 강제 재발급
+ * - [8-2] 동시 로그인 제한: session_version 갱신 → 미들웨어에서 불일치 시 강제 로그아웃
  */
 export async function POST(req: Request) {
   const rate = await checkLoginRateLimit(req);
@@ -54,17 +59,18 @@ export async function POST(req: Request) {
     .gte('created_at', tenMinutesAgo);
 
   if ((failCount ?? 0) >= 5) {
-    // 감사 로그 기록 (잠금 상태 시도)
     await supabaseAdmin.from('auth_login_audit').insert({
       email: emailTrimmed,
       ip_address: ipAddress,
       user_agent: userAgent,
       success: false,
+      event_type: 'login',
+      failure_reason: 'account_locked',
     });
 
     return NextResponse.json(
       { error: '계정이 일시적으로 잠겼습니다. 10분 후 다시 시도해주세요.' },
-      { status: 423 } // 423 Locked
+      { status: 423 }
     );
   }
 
@@ -82,15 +88,16 @@ export async function POST(req: Request) {
   // ❌ 로그인 실패
   // ─────────────────────────────────────────────────
   if (error) {
-    console.error('[LOGIN ERROR]', error);
+    console.error('[LOGIN ERROR]', error.message);
 
-    // 감사 로그 기록 (실패)
     await supabaseAdmin.from('auth_login_audit').insert({
       user_id: null,
       email: emailTrimmed,
       ip_address: ipAddress,
       user_agent: userAgent,
       success: false,
+      event_type: 'login',
+      failure_reason: 'invalid_credentials',
     });
 
     return NextResponse.json(
@@ -104,24 +111,58 @@ export async function POST(req: Request) {
   // ─────────────────────────────────────────────────
   const userId = data.user?.id;
 
+  // ──────────────────────────────────────────────────────────────────────────
+  // [AUTH Phase-2 / 8-1] 세션 고정 공격(Session Fixation) 방어
+  // 로그인 성공 후 즉시 refreshSession()을 호출해 새 access/refresh 토큰 발급.
+  // 이렇게 하면 로그인 전에 공격자가 주입한 세션 ID가 무효화됨.
+  // Set-Cookie 헤더로 갱신된 쿠키가 클라이언트에 재전송됨.
+  // ──────────────────────────────────────────────────────────────────────────
+  try {
+    const { error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError) {
+      console.warn('[AUTH Phase-2] refreshSession failed (non-fatal):', refreshError.message);
+    }
+  } catch (e) {
+    console.warn('[AUTH Phase-2] refreshSession exception (non-fatal):', (e as Error).message);
+  }
+
   if (userId) {
-    // 1) 감사 로그 기록 (성공)
+    // ──────────────────────────────────────────────────────────────────────
+    // [AUTH Phase-2 / 8-2] 동시 로그인 제한 — session_version 갱신
+    // 새 UUID를 profiles.session_version에 저장.
+    // 미들웨어는 쿠키의 session_version과 DB 값이 불일치하면 강제 로그아웃함.
+    // 이를 통해 "마지막 로그인만 유효" 정책 구현.
+    // ──────────────────────────────────────────────────────────────────────
+    const newSessionVersion = randomUUID();
+
+    await supabaseAdmin
+      .from('profiles')
+      .update({
+        last_login_at: new Date().toISOString(),
+        session_version: newSessionVersion,
+      })
+      .eq('id', userId);
+
+    // 감사 로그 기록 (성공)
     await supabaseAdmin.from('auth_login_audit').insert({
       user_id: userId,
       email: emailTrimmed,
       ip_address: ipAddress,
       user_agent: userAgent,
       success: true,
+      event_type: 'login',
     });
 
-    // 2) profiles 테이블 last_login_at 업데이트
-    await supabaseAdmin
-      .from('profiles')
-      .update({ last_login_at: new Date().toISOString() })
-      .eq('id', userId);
+    // 로그인 성공 시 해당 IP 레이트리밋 리셋
+    await resetLoginRateLimit(req);
+
+    return NextResponse.json({
+      ok: true,
+      user: data.user ? { id: data.user.id, email: data.user.email } : null,
+      // session_version은 클라이언트에 노출하지 않음 (보안)
+    });
   }
 
-  // 로그인 성공 시 해당 IP 레이트리밋 리셋
   await resetLoginRateLimit(req);
 
   return NextResponse.json({

@@ -24,6 +24,8 @@ import Link from 'next/link';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatKrw, formatRate } from '@/lib/utils/format';
 import HBSkeleton from '@/components/ui/HBSkeleton';
+import { HBEmpty } from '@/components/ui/HBSkeleton';
+import { HBCard } from '@/components/ui/HBCard';
 import PnLCard from '@/components/dashboard/PnLCard';
 import RiskCard from '@/components/dashboard/RiskCard';
 import DividendCard from '@/components/dashboard/DividendCard';
@@ -123,10 +125,7 @@ export default function DashboardPage() {
 
         {/* 월별 배당 차트 */}
         {!loading && perf.monthly_dividends.length > 0 && (
-          <div
-            className="rounded-[var(--radius-base)] p-4 border"
-            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', boxShadow: 'var(--shadow-sm)' }}
-          >
+          <HBCard variant="default">
             <div className="body-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>
               월별 배당
             </div>
@@ -141,7 +140,7 @@ export default function DashboardPage() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </div>
+          </HBCard>
         )}
 
         {/* 포지션 리스트 */}
@@ -151,16 +150,16 @@ export default function DashboardPage() {
               보유 종목
             </div>
             {p.positions.length === 0 ? (
-              <div
-                className="rounded-[var(--radius-base)] p-8 text-center body-sm border hb-empty"
-                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-              >
-                보유 종목이 없습니다.
-                <br />
-                <Link href="/market" className="font-semibold mt-2 inline-block" style={{ color: 'var(--royal-blue)' }}>
-                  마켓에서 투자하기
-                </Link>
-              </div>
+              <HBCard>
+                <HBEmpty
+                  message="보유 종목이 없습니다."
+                  action={
+                    <Link href="/market" className="font-semibold text-sm mt-2 inline-block" style={{ color: 'var(--royal-blue)' }}>
+                      마켓에서 투자하기
+                    </Link>
+                  }
+                />
+              </HBCard>
             ) : (
               [...p.positions]
                 .sort((a, b) => (b.unrealized_rate ?? 0) - (a.unrealized_rate ?? 0))
@@ -212,17 +211,14 @@ function SummaryTile({
   valueColor?: string;
 }) {
   return (
-    <div
-      className="rounded-[var(--radius-base)] p-4 border"
-      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', boxShadow: 'var(--shadow-sm)' }}
-    >
+    <HBCard variant="default">
       <div className="caption" style={{ color: 'var(--text-secondary)' }}>{label}</div>
       <div
-        className="h3 font-bold metric-number mt-1"
+        className="h3 font-bold metric-number mt-1 tabular-nums"
         style={{ color: valueColor ?? 'var(--text)' }}
       >
         {value}
       </div>
-    </div>
+    </HBCard>
   );
 }
