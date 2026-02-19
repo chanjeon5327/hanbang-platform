@@ -48,3 +48,10 @@ next-env.d.ts
 
 # migration sync outputs
 /outputs/
+
+# local test outputs
+logs/
+smoke-test-report.md
+playwright-report/
+test-results/
+
