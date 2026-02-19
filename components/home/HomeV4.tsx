@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { formatKrw, formatRate } from '@/lib/utils/format';
 import BottomNavigation from '@/components/home/BottomNavigation';
@@ -35,9 +36,27 @@ type Props = {
   showBottomNav?: boolean;
 };
 
+const HB_FANDOM_KEY = 'hb_fandom';
+const LEVEL_ANIMALS: Record<number, { icon: string; label: string }> = {
+  1: { icon: '🥚', label: '알' },
+  2: { icon: '🐹', label: '햄스터' },
+  3: { icon: '🐢', label: '거북이' },
+  4: { icon: '🦊', label: '여우' },
+  5: { icon: '🦁', label: '사자' },
+};
+
 /* ===== A) HERO: OTT+금융 2컬럼 ===== */
 function HeroSection() {
   const { pick, loading } = useSponsoredPick(true);
+  const [fandom, setFandom] = useState<string>('');
+  const level = 3;
+  const levelCfg = LEVEL_ANIMALS[level] ?? LEVEL_ANIMALS[3];
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setFandom(localStorage.getItem(HB_FANDOM_KEY) ?? '');
+    }
+  }, []);
 
   if (loading || !pick) {
     return (
@@ -70,6 +89,16 @@ function HeroSection() {
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight">
                 {pick.title}
               </h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                  Lv.{level} {levelCfg.icon} {levelCfg.label}
+                </span>
+                {fandom.trim() && (
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                    팬: {fandom.trim()}
+                  </span>
+                )}
+              </div>
               <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 tabular-nums">
                 {pick.sharePriceKrw != null ? formatKrw(pick.sharePriceKrw) : '—'}
               </div>
