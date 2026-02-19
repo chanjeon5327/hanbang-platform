@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import MyPageLayout from '@/components/mypage/MyPageLayout';
 import MyAssetSummary from '@/components/mypage/MyAssetSummary';
 import MyInvestList from '@/components/mypage/MyInvestList';
@@ -29,6 +30,18 @@ export default function MyPage() {
 
   return (
     <MyPageLayout>
+      <div className="px-4 flex justify-end mb-2">
+        <Link
+          href="/onboarding"
+          className="px-3 py-1.5 rounded-xl caption font-semibold"
+          style={{
+            backgroundColor: 'var(--royal-blue)',
+            color: '#fff',
+          }}
+        >
+          나의 취향 등록
+        </Link>
+      </div>
       <section className="px-4">
         <div
           className="rounded-2xl p-4 border"
