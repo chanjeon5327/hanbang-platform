@@ -1,224 +1,261 @@
 /**
  * ============================================================================
- * /dashboard — 투자 대시보드 (Financial Engine V1.5)
+ * /dashboard — 토스증권형 "내 자산/내 주식" 데모 v1
  * ============================================================================
  *
- * Toss 정적 스타일 + Upbit 정보 밀도 믹스.
- * 기존 portfolio/performance API 호환 유지 + PnL/Risk/Dividend 위젯 추가.
+ * 모바일 우선, PC는 max-w 컨테이너로 자연스럽게 확장
+ * - 상단 요약 카드 (총 자산, 오늘 변동, 나의 팬심 pill)
+ * - 미니 차트 placeholder
+ * - 내 주식 리스트
+ * - CTA: 입금하기 / 거래하러 가기
+ * - 비로그인: 민감 값 잠금 + 로그인 유도
  *
- * 모바일 우선 레이아웃:
- * - PnL 카드 (포트폴리오 가치 + 미실현 손익)
- * - Risk 카드 (MDD + Rolling Return + Equity 차트)
- * - Dividend 카드 (이번달/누적 + 월별 바차트)
- * - 기존 4종 요약 그리드 (투자/가치/배당/수익률)
- * - 월별 배당 차트 (기존 호환)
- * - 포지션 리스트 (기존 호환)
- *
- * ============================================================================
+ * API: /api/wallet/summary, /api/dashboard/portfolio (fallback mock)
  */
 
 'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useAuth } from '@/components/auth/AuthProvider';
 import { formatKrw, formatRate } from '@/lib/utils/format';
-import HBSkeleton from '@/components/ui/HBSkeleton';
-import { HBEmpty } from '@/components/ui/HBSkeleton';
-import { HBCard } from '@/components/ui/HBCard';
-import PnLCard from '@/components/dashboard/PnLCard';
-import RiskCard from '@/components/dashboard/RiskCard';
-import DividendCard from '@/components/dashboard/DividendCard';
+import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import HoldingsList from '@/components/dashboard/HoldingsList';
+
+const HB_FANDOM_KEY = 'hb_fandom';
+
+type WalletSummary = {
+  cashBalance: number;
+  totalAssets: number;
+  unrealizedPnl: number;
+  unrealizedRate: number;
+};
 
 type Portfolio = {
-  cash_balance: number;
-  total_invested: number;
-  total_value: number;
-  total_dividend: number;
-  total_return_rate: number;
-  positions: {
-    asset_id: string;
-    title: string;
-    quantity: number;
-    avg_price: number;
-    total_cost: number;
-    current_value: number;
-    total_dividend: number;
-    unrealized_pnl: number;
-    unrealized_rate: number;
-  }[];
-};
+  asset_id: string;
+  title: string;
+  quantity: number;
+  avg_price: number;
+  total_cost: number;
+  current_value: number;
+  unrealized_pnl: number;
+  unrealized_rate: number;
+}[];
 
-type Performance = {
-  monthly_dividends: { month: string; amount: number }[];
-  asset_returns: { asset_id: string; quantity: number; return_rate: number }[];
-};
-
-export default function DashboardPage() {
-  const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
-  const [performance, setPerformance] = useState<Performance | null>(null);
-  const [irrData, setIrrData] = useState<{ irr?: number } | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      fetch('/api/dashboard/portfolio', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)),
-      fetch('/api/dashboard/performance', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)),
-      fetch('/api/dashboard/irr', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)),
-    ])
-      .then(([p, perf, irr]) => {
-        setPortfolio(p);
-        setPerformance(perf);
-        setIrrData(irr);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-
-  const p = portfolio ?? {
-    cash_balance: 0,
-    total_invested: 0,
-    total_value: 0,
-    total_dividend: 0,
-    total_return_rate: 0,
-    positions: [],
-  };
-  const perf = performance ?? { monthly_dividends: [], asset_returns: [] };
-
+function SummaryCardSkeleton() {
   return (
-    <div className="pb-24" style={{ backgroundColor: 'var(--bg)' }}>
-      <div className="pt-6 hb-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
-        <h1 className="h2" style={{ color: 'var(--text)' }}>
-          투자 대시보드
-        </h1>
+    <>
+      <div className="h-8 w-32 rounded animate-pulse mb-2" style={{ backgroundColor: 'var(--border)' }} />
+      <div className="h-4 w-24 rounded animate-pulse mb-3" style={{ backgroundColor: 'var(--border)' }} />
+      <div className="h-5 w-16 rounded animate-pulse" style={{ backgroundColor: 'var(--border)' }} />
+    </>
+  );
+}
 
-        {/* V1.5 위젯 3종 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <PnLCard />
-          <RiskCard />
-          <DividendCard />
-        </div>
-
-        {/* 4종 요약 그리드 */}
-        {loading ? (
-          <div className="grid grid-cols-2 gap-3">
-            {[1, 2, 3, 4].map((i) => (
-              <HBSkeleton key={i} variant="card" className="h-24" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            <SummaryTile label="총 투자금" value={formatKrw(p.total_invested)} />
-            <SummaryTile label="총 평가액" value={formatKrw(p.total_value)} />
-            <SummaryTile
-              label="배당 수익"
-              value={formatKrw(p.total_dividend)}
-              valueColor="var(--emerald)"
-            />
-            <SummaryTile
-              label="총 수익률"
-              value={formatRate(irrData?.irr ?? p.total_return_rate)}
-              valueColor={(irrData?.irr ?? p.total_return_rate) >= 0 ? 'var(--emerald)' : 'var(--accent-loss)'}
-            />
-          </div>
-        )}
-
-        {/* 월별 배당 차트 */}
-        {!loading && perf.monthly_dividends.length > 0 && (
-          <HBCard variant="default">
-            <div className="body-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>
-              월별 배당
-            </div>
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={perf.monthly_dividends}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `${(v / 10000).toFixed(0)}만`} />
-                  <Tooltip formatter={(v: number | undefined) => [formatKrw(v ?? 0), '배당']} />
-                  <Bar dataKey="amount" fill="var(--royal-blue)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </HBCard>
-        )}
-
-        {/* 포지션 리스트 */}
-        {!loading && (
-          <div className="space-y-3">
-            <div className="body-sm font-semibold" style={{ color: 'var(--text)' }}>
-              보유 종목
-            </div>
-            {p.positions.length === 0 ? (
-              <HBCard>
-                <HBEmpty
-                  message="보유 종목이 없습니다."
-                  action={
-                    <Link href="/market" className="font-semibold text-sm mt-2 inline-block" style={{ color: 'var(--royal-blue)' }}>
-                      마켓에서 투자하기
-                    </Link>
-                  }
-                />
-              </HBCard>
-            ) : (
-              [...p.positions]
-                .sort((a, b) => (b.unrealized_rate ?? 0) - (a.unrealized_rate ?? 0))
-                .map((pos) => (
-                  <Link
-                    key={pos.asset_id}
-                    href={`/market/${pos.asset_id}`}
-                    className="block rounded-[var(--radius-base)] p-4 border hb-card-hover"
-                    style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', boxShadow: 'var(--shadow-sm)' }}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="font-semibold body-sm" style={{ color: 'var(--text)' }}>
-                          {pos.title}
-                        </div>
-                        <div className="caption mt-1" style={{ color: 'var(--text-secondary)' }}>
-                          {pos.quantity}주 · 평균 {formatKrw(pos.avg_price)}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold metric-number body-sm" style={{ color: 'var(--text)' }}>
-                          {formatKrw(pos.current_value)}
-                        </div>
-                        <div
-                          className="caption metric-number"
-                          style={{ color: pos.unrealized_rate >= 0 ? 'var(--emerald)' : 'var(--accent-loss)' }}
-                        >
-                          {formatRate(pos.unrealized_rate)}
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                ))
-            )}
-          </div>
-        )}
+function ChartPlaceholder() {
+  return (
+    <div
+      className="rounded-2xl p-4"
+      style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+    >
+      <div className="h-32 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--bg)' }}>
+        <span className="caption" style={{ color: 'var(--text-secondary)' }}>
+          차트 영역 (준비중)
+        </span>
       </div>
     </div>
   );
 }
 
-function SummaryTile({
-  label,
-  value,
-  valueColor,
-}: {
-  label: string;
-  value: string;
-  valueColor?: string;
-}) {
+export default function DashboardPage() {
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
+
+  const [walletSummary, setWalletSummary] = useState<WalletSummary | null>(null);
+  const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
+  const [investSummary, setInvestSummary] = useState<{
+    totalValue: number;
+    unrealizedPnl: number;
+    unrealizedRate: number;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [fandom, setFandom] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(HB_FANDOM_KEY);
+      setFandom(stored ?? '');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setLoading(false);
+      setWalletSummary(null);
+      setPortfolio(null);
+      setInvestSummary(null);
+      return;
+    }
+
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+
+    Promise.all([
+      fetch('/api/wallet/summary', { cache: 'no-store', signal: ctrl.signal }).then((r) =>
+        r.ok ? r.json() : null
+      ),
+      fetch('/api/dashboard/portfolio', { cache: 'no-store', signal: ctrl.signal }).then((r) =>
+        r.ok ? r.json() : null
+      ),
+      fetch('/api/wallet/invest-summary', { cache: 'no-store', signal: ctrl.signal }).then((r) =>
+        r.ok ? r.json() : null
+      ),
+    ])
+      .then(([ws, p, inv]) => {
+        setWalletSummary(ws);
+        setPortfolio(p?.positions ?? null);
+        setInvestSummary(inv);
+      })
+      .catch(() => {
+        setWalletSummary(null);
+        setPortfolio(null);
+        setInvestSummary(null);
+      })
+      .finally(() => {
+        clearTimeout(t);
+        setLoading(false);
+      });
+
+    return () => ctrl.abort();
+  }, [isLoggedIn]);
+
+  const totalAssets =
+    investSummary?.totalValue ??
+    walletSummary?.totalAssets ??
+    0;
+  const todayChange = investSummary?.unrealizedPnl ?? walletSummary?.unrealizedPnl ?? 0;
+  const todayRate = investSummary?.unrealizedRate ?? walletSummary?.unrealizedRate ?? 0;
+  const positions = portfolio ?? [];
+
+  const holdings = positions.map((p) => ({
+    asset_id: p.asset_id,
+    title: p.title,
+    quantity: p.quantity,
+    avg_price: p.avg_price,
+    current_value: p.current_value,
+    unrealized_rate: p.unrealized_rate ?? 0,
+  }));
+
   return (
-    <HBCard variant="default">
-      <div className="caption" style={{ color: 'var(--text-secondary)' }}>{label}</div>
-      <div
-        className="h3 font-bold metric-number mt-1 tabular-nums"
-        style={{ color: valueColor ?? 'var(--text)' }}
-      >
-        {value}
+    <div className="pb-24" style={{ backgroundColor: 'var(--bg)' }}>
+      <div className="mx-auto max-w-[480px] px-4">
+        <DashboardHeader />
+
+        {/* 1) 상단 요약 카드 */}
+        <div
+          className="rounded-2xl p-4 mb-4"
+          style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+        >
+          {loading ? (
+            <SummaryCardSkeleton />
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-2">
+                <span className="caption" style={{ color: 'var(--text-secondary)' }}>
+                  총 자산
+                </span>
+                {fandom.trim() && (
+                  <span
+                    className="px-2 py-0.5 rounded-full caption text-white"
+                    style={{ backgroundColor: 'var(--royal-blue)' }}
+                  >
+                    팬: {fandom.trim()}
+                  </span>
+                )}
+              </div>
+              <div className="font-bold tabular-nums" style={{ fontSize: 28, color: 'var(--text)' }}>
+                {isLoggedIn ? formatKrw(totalAssets) : '●●●●●●'}
+              </div>
+              <div
+                className="caption tabular-nums mt-1"
+                style={{
+                  color:
+                    isLoggedIn
+                      ? todayChange >= 0
+                        ? 'var(--emerald)'
+                        : 'var(--accent-loss)'
+                      : 'var(--text-secondary)',
+                }}
+              >
+                {isLoggedIn
+                  ? todayChange !== 0 || todayRate !== 0
+                    ? `${todayChange >= 0 ? '+' : ''}${formatKrw(todayChange)} (${formatRate(todayRate)})`
+                    : '오늘 변동 없음'
+                  : '—'}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* 2) 미니 차트 placeholder */}
+        <div className="mb-4">
+          <ChartPlaceholder />
+        </div>
+
+        {/* 3) 내 주식 리스트 */}
+        <div className="mb-4">
+          <h2 className="font-semibold mb-3" style={{ fontSize: 14, color: 'var(--text)' }}>
+            내 주식
+          </h2>
+          <HoldingsList items={holdings} isLocked={!isLoggedIn} />
+        </div>
+
+        {/* 4) CTA 2개 */}
+        <div className="flex gap-3 mb-4">
+          <Link
+            href="/wallet/deposit"
+            className="flex-1 rounded-2xl p-4 font-semibold text-center transition active:opacity-90"
+            style={{
+              backgroundColor: 'var(--royal-blue)',
+              color: '#fff',
+              fontSize: 14,
+            }}
+          >
+            입금하기
+          </Link>
+          <Link
+            href="/market"
+            className="flex-1 rounded-2xl p-4 font-semibold text-center transition active:opacity-90"
+            style={{
+              backgroundColor: 'var(--card)',
+              color: 'var(--text)',
+              border: '1px solid var(--border)',
+              fontSize: 14,
+            }}
+          >
+            거래하러 가기
+          </Link>
+        </div>
+
+        {/* 5) 비로그인: 로그인 유도 */}
+        {!isLoggedIn && (
+          <div
+            className="rounded-2xl p-4 text-center"
+            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+          >
+            <p className="body-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
+              자산 정보를 확인하려면 로그인하세요
+            </p>
+            <Link
+              href="/login"
+              className="inline-block rounded-xl px-6 py-3 font-semibold text-white"
+              style={{ backgroundColor: 'var(--royal-blue)', fontSize: 14 }}
+            >
+              로그인
+            </Link>
+          </div>
+        )}
       </div>
-    </HBCard>
+    </div>
   );
 }
