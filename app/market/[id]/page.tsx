@@ -29,6 +29,10 @@ import PriceHeader from '@/components/market/PriceHeader';
 import TradeHistoryRealtime from '@/components/market/TradeHistoryRealtime';
 import PositionPanel from '@/components/market/PositionPanel';
 import TradingPanelV2 from '@/components/market/TradingPanelV2';
+import MobileTradeTabBar, { type MobileTradeTab } from '@/components/market/MobileTradeTabBar';
+import MobileBuySellBar from '@/components/market/MobileBuySellBar';
+import MarketChatSection from '@/components/market/MarketChatSection';
+import ArtistProgressCard from '@/components/profile/ArtistProgressCard';
 import Skeleton from '@/components/ui/Skeleton';
 import { CardV5 } from '@/components/ui/CardV5';
 import MetricRow from '@/components/ui/MetricRow';
@@ -386,6 +390,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const { id } = React.use(params);
   const [activeTab, setActiveTab] = useState<TabKey>('info');
   const [tradeSubTab, setTradeSubTab] = useState<TradeSubTab>('orderbook');
+  const [mobileTradeTab, setMobileTradeTab] = useState<MobileTradeTab>('chart');
   const [showConfirm, setShowConfirm] = useState(false);
   const [investLoading, setInvestLoading] = useState(false);
   const [investAmount, setInvestAmount] = useState(DEFAULT_AMOUNT);
@@ -398,10 +403,11 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const orderPanelRef = React.useRef<HTMLDivElement>(null);
 
   const { user } = useAuth();
+  const hasSession = !!user;
   const { item, loading: itemLoading, error: itemError, refetch: refetchItem } = useMarketItem(id);
   const { items: investLogs, refetch: refetchInvestLogs } = useRecentInvestLog(id);
-  const { refetch: refetchContributions } = useArtistContribution(false);
-  const { refetch: refetchProgress } = useArtistProgress(false);
+  const { items: artistContributions, refetch: refetchContributions } = useArtistContribution(hasSession);
+  const { items: artistProgress, refetch: refetchProgress } = useArtistProgress(hasSession);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -454,7 +460,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
     };
   }, [fetchMyOrderbookOrders]);
 
-  const hasSession = !!user;
   const ytId = item?.youtube_video_id ?? YT_FALLBACK;
   const title = item?.title ?? '여행가 제이';
   const category = item?.category ?? '여행';
@@ -805,94 +810,142 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
                   </div>
                 </div>
 
-                {/* 모바일: 차트 → 탭(호가/체결) → 하단 고정 주문바 */}
-                <div className="lg:hidden px-4 py-4">
-                  <div className="rounded-xl p-4 mb-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-                    {itemLoading ? (
-                      <ChartSkeleton />
-                    ) : (
-                      <>
-                        <PriceHeader
-                          sharePriceUsd={lastTradePrice ?? sharePriceNum}
-                          fxRate={fxRate}
-                          prevCloseUsd={prevTradePrice ?? sharePriceNum * 0.98}
-                          volume24h={item?.last_24h_amount ?? null}
-                          tradeCount24h={item?.last_24h_count ?? null}
-                        />
-                        <div className="min-h-[240px]">
-                          <PriceChartBlock
+                {/* 모바일: 토스증권 스타일 5탭 + 하단 고정 바 */}
+                <div className="lg:hidden">
+                  <MobileTradeTabBar activeTab={mobileTradeTab} onTabChange={setMobileTradeTab} />
+                  <div className="px-4 py-4 pb-28">
+                    {mobileTradeTab === 'chart' && (
+                      <div className="rounded-2xl p-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+                        {itemLoading ? (
+                          <ChartSkeleton />
+                        ) : (
+                          <>
+                            <PriceHeader
+                              sharePriceUsd={lastTradePrice ?? sharePriceNum}
+                              fxRate={fxRate}
+                              prevCloseUsd={prevTradePrice ?? sharePriceNum * 0.98}
+                              volume24h={item?.last_24h_amount ?? null}
+                              tradeCount24h={item?.last_24h_count ?? null}
+                            />
+                            <div className="min-h-[240px]">
+                              <PriceChartBlock
+                                sharePriceUsd={sharePriceNum}
+                                totalRaiseUsd={totalRaiseUsd ?? null}
+                                currentRaiseUsd={currentRaiseUsd ?? null}
+                                fxRate={fxRate}
+                              />
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    {mobileTradeTab === 'orderbook' && (
+                      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+                        <TradeSubTabNav active={tradeSubTab} onChange={setTradeSubTab} />
+                        <div className="p-4 min-h-[200px]">
+                          {tradeSubTab === 'orderbook' ? (
+                            <OrderBookRealtime
+                              contentId={id}
+                              currentPriceUsd={sharePriceNum}
+                              myOrderPrices={myOrderPrices}
+                              disabled={!isTradable}
+                            />
+                          ) : (
+                            <TradeHistoryRealtime contentId={id} onTrade={handleTrade} disabled={!isTradable} />
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {mobileTradeTab === 'position' && (
+                      <div className="flex flex-col gap-4">
+                        <div className="rounded-2xl p-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+                          <PositionPanel
+                            assetId={id}
                             sharePriceUsd={sharePriceNum}
-                            totalRaiseUsd={totalRaiseUsd ?? null}
-                            currentRaiseUsd={currentRaiseUsd ?? null}
+                            fxRate={fxRate}
+                            isLoggedIn={hasSession}
+                          />
+                        </div>
+                        <div ref={orderPanelRef} className="rounded-2xl p-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+                          <h3 className="font-bold mb-3" style={{ fontSize: 14, color: 'var(--text)' }}>내 주문</h3>
+                          <TradingPanelV2
+                            contentId={id}
+                            sharePriceUsd={sharePriceNum}
+                            fxRate={fxRate}
+                            isLoggedIn={hasSession}
+                            totalSupplyShares={
+                              sharePriceNum > 0 && item?.total_raise_usd != null
+                                ? item.total_raise_usd / sharePriceNum
+                                : null
+                            }
+                            onToast={(msg) => {
+                              setToastMessage(msg);
+                              setToastVisible(true);
+                            }}
+                            variant="order-only"
+                            disabled={!isTradable}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {mobileTradeTab === 'info' && (
+                      <div className="flex flex-col gap-4">
+                        <div className="rounded-2xl p-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+                          <DividendInfo
+                            payoutDay={item?.payout_day ?? 3}
+                            dividendMonthlyRate={item?.dividend_monthly_rate}
+                            dividendMonthlyUsdPerShare={item?.dividend_monthly_usd_per_share}
+                            sharePriceUsd={sharePriceUsd}
                             fxRate={fxRate}
                           />
                         </div>
-                      </>
+                        {hasSession ? (
+                          artistProgress.length > 0 || artistContributions.length > 0 ? (
+                            <div className="rounded-2xl p-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+                              <h3 className="font-bold mb-3" style={{ fontSize: 14, color: 'var(--text)' }}>내 아티스트 현황</h3>
+                              <div className="flex flex-col gap-3">
+                                {artistProgress.slice(0, 3).map((p) => (
+                                  <ArtistProgressCard
+                                    key={p.artist_keyword}
+                                    artist={p.artist_keyword}
+                                    totalAmount={p.total_amount}
+                                    targetAmount={p.target_amount}
+                                    progress={p.progress_percent}
+                                    compact
+                                  />
+                                ))}
+                                {artistProgress.length === 0 && artistContributions.length > 0 && (
+                                  <p className="body-sm" style={{ color: 'var(--text-secondary)' }}>
+                                    기여금 {formatKrw(artistContributions.find((c) => c.artist_keyword === item?.artist_keyword)?.total_amount ?? 0)}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="rounded-2xl p-4 text-center" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+                              <p className="body-sm" style={{ color: 'var(--text-secondary)' }}>준비중</p>
+                            </div>
+                          )
+                        ) : (
+                          <div className="rounded-2xl p-4 text-center" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+                            <p className="body-sm" style={{ color: 'var(--text-secondary)' }}>로그인 후 아티스트 현황을 확인하세요</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {mobileTradeTab === 'community' && (
+                      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+                        <MarketChatSection marketId={id} />
+                      </div>
                     )}
                   </div>
-
-                  <div className="rounded-xl overflow-hidden mb-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-                    <TradeSubTabNav active={tradeSubTab} onChange={setTradeSubTab} />
-                    <div className="p-4 min-h-[200px]">
-                      {tradeSubTab === 'orderbook' ? (
-                        <OrderBookRealtime
-                          contentId={id}
-                          currentPriceUsd={sharePriceNum}
-                          myOrderPrices={myOrderPrices}
-                          disabled={!isTradable}
-                        />
-                      ) : (
-                        <TradeHistoryRealtime contentId={id} onTrade={handleTrade} disabled={!isTradable} />
-                      )}
-                    </div>
-                  </div>
-
-                  <div ref={orderPanelRef} className="rounded-xl p-4 mb-24" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-                    <h3 className="font-bold mb-3 text-slate-900" style={{ fontSize: 14 }}>주문</h3>
-                    <TradingPanelV2
-                      contentId={id}
-                      sharePriceUsd={sharePriceNum}
-                      fxRate={fxRate}
-                      isLoggedIn={hasSession}
-                      totalSupplyShares={
-                        sharePriceNum > 0 && item?.total_raise_usd != null
-                          ? item.total_raise_usd / sharePriceNum
-                          : null
-                      }
-                      onToast={(msg) => {
-                        setToastMessage(msg);
-                        setToastVisible(true);
-                      }}
-                      variant="order-only"
-                      disabled={!isTradable}
-                    />
-                  </div>
-                </div>
-
-                {/* 모바일: 하단 고정 매수/매도 바 */}
-                <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-white p-4" style={{ borderColor: 'var(--border)' }}>
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={handleBuyClick}
-                      className="flex-1 h-14 rounded-xl font-bold text-white transition hover:opacity-90"
-                      style={{ backgroundColor: 'var(--royal-blue)', fontSize: 14 }}
-                    >
-                      매수
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => orderPanelRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                      className="flex-1 h-14 rounded-xl font-bold border-2 transition hover:opacity-90"
-                      style={{
-                        borderColor: 'var(--royal-blue)',
-                        color: 'var(--royal-blue)',
-                        fontSize: 14,
-                      }}
-                    >
-                      매도
-                    </button>
-                  </div>
+                  <MobileBuySellBar
+                    onSellClick={() => {
+                      setMobileTradeTab('position');
+                      setTimeout(() => orderPanelRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+                    }}
+                    onBuyClick={handleBuyClick}
+                  />
                 </div>
               </>
             ) : (
