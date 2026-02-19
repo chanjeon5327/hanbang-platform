@@ -1,3 +1,5 @@
+HANBANG 개발 메모: Cursor Agent 연결 확인 완료
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
