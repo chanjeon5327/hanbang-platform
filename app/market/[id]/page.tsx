@@ -226,9 +226,9 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
         <div className={styles.tickerList}>
           {TICKER_MOCK.map((t, i) => (
             <div key={i} className={styles.tickerRow}>
-              <span style={{ color: t.side === 'buy' ? '#2563EB' : '#DC2626' }}>{formatKrw(t.price)}</span>
+              <span className={styles.tickerPrice} style={{ color: t.side === 'buy' ? '#2563EB' : '#DC2626' }}>{formatKrw(t.price)}</span>
               <span style={{ color: '#6B7280' }}>{t.qty}주</span>
-              <span style={{ fontSize: 12, color: '#9CA3AF' }}>{t.time}</span>
+              <span style={{ fontSize: 13, color: '#9CA3AF' }}>{t.time}</span>
             </div>
           ))}
         </div>

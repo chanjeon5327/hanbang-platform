@@ -29,7 +29,7 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
   const isLight = theme === 'light';
   const bgColor = isLight ? '#F9FAFB' : '#1F2937';
   const textMuted = isLight ? '#6B7280' : '#9CA3AF';
-  const currentBg = isLight ? 'rgba(37,99,235,0.08)' : 'rgba(37,99,235,0.2)';
+  const currentBg = 'rgba(59,130,246,0.08)';
   const currentText = isLight ? '#111827' : 'white';
   const [currentPrice, setCurrentPrice] = useState(basePriceKrw);
   const [asks, setAsks] = useState<Row[]>([]);
@@ -136,13 +136,12 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
           display: 'flex',
           justifyContent: 'space-between',
           padding: 6,
-          fontSize: 14,
           position: 'relative',
           zIndex: 1,
         }}
       >
-        <span style={{ color: side === 'ask' ? '#EF4444' : '#22C55E' }}>{formatKrw(r.price)}</span>
-        <span style={{ color: textMuted }}>{r.qty}</span>
+        <span style={{ color: side === 'ask' ? '#EF4444' : '#22C55E', fontWeight: 600 }}>{formatKrw(r.price)}</span>
+        <span style={{ fontSize: 14, color: '#6B7280' }}>{r.qty}</span>
       </div>
     </div>
   );

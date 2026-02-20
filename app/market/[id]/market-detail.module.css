@@ -299,6 +299,7 @@
 
 .tradePanel {
   background: var(--card);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
   border: 1px solid var(--border);
   border-radius: 18px;
   padding: 20px;
@@ -306,6 +307,7 @@
   flex-direction: column;
   min-height: 320px;
   overflow: hidden;
+  transition: 0.2s ease;
 }
 
 @media (max-width: 767px) {
@@ -350,8 +352,9 @@
 
 .orderInput {
   width: 100%;
-  padding: 12px 14px;
-  font-size: 16px;
+  height: 44px;
+  padding: 0 12px;
+  font-size: 15px;
   border: 1px solid #E5E7EB;
   border-radius: 10px;
   background: #fff;
@@ -417,9 +420,9 @@
 .orderBtnBuy,
 .orderBtnSell {
   flex: 1;
-  padding: 14px 20px;
+  height: 48px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   border: none;
   border-radius: 12px;
   cursor: pointer;
@@ -429,11 +432,13 @@
 .orderBtnBuy {
   background: #2563EB;
   color: #fff;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.2);
 }
 
 .orderBtnSell {
   background: #DC2626;
   color: #fff;
+  box-shadow: 0 4px 12px rgba(220,38,38,0.2);
 }
 
 .orderBtnBuy:hover,
@@ -454,8 +459,12 @@
   align-items: center;
   padding: 10px 0;
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.6;
   border-bottom: 1px solid #F3F4F6;
+}
+
+.tickerRow .tickerPrice {
+  font-weight: 700;
 }
 
 .tickerRow:last-child {
