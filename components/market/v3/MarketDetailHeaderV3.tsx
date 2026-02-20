@@ -6,6 +6,7 @@ import { useDataTheme } from '@/context/DataThemeContext';
 import { ChevronLeft, Star, Bell, Share2 } from 'lucide-react';
 import { formatKrw, formatRate } from '@/lib/utils/format';
 import { v3 } from '@/lib/design/tokens';
+import { FALLBACK_PREVIEW_IMAGE } from '@/lib/thumbnails';
 
 const FAVORITES_KEY = 'hanbang_favorites';
 
@@ -104,7 +105,7 @@ export default function MarketDetailHeaderV3({
   const ytId = youtubeId ?? 'HosW0gulISQ';
   const thumbSrc =
     thumbnailUrl ??
-    `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
+    (youtubeId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : FALLBACK_PREVIEW_IMAGE);
 
   if (isApple) {
     const rateStr = changeRate != null && changeRate !== 0 ? `${isUp ? '+' : ''}${formatRate(changeRate)}` : '';
@@ -123,7 +124,7 @@ export default function MarketDetailHeaderV3({
       >
         <div style={{ marginBottom: 16 }}>
           <img
-            src={loading ? '/placeholder.png' : thumbSrc}
+            src={loading ? FALLBACK_PREVIEW_IMAGE : thumbSrc}
             alt=""
             style={{
               width: 72,

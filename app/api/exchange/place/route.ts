@@ -5,6 +5,7 @@
  */
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { requireKycApproved } from "@/lib/kyc/requireKycApproved";
 import type { ExchangePlaceRequest, ExchangePlaceResult } from "@/lib/types/financial";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +16,11 @@ export async function POST(req: Request) {
     const { data: { user }, error: authErr } = await supabase.auth.getUser();
     if (authErr || !user) {
       return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
+    }
+
+    const kycCheck = await requireKycApproved(supabase, user.id);
+    if (!kycCheck.approved) {
+      return kycCheck.response;
     }
 
     let body: ExchangePlaceRequest;

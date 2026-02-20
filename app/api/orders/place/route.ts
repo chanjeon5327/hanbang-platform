@@ -24,6 +24,7 @@
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { requireKycApproved } from "@/lib/kyc/requireKycApproved";
 
 import type { SafeOrderRequest, SafeOrderResult } from "@/lib/types/financial";
 
@@ -58,6 +59,11 @@ export async function POST(req: Request) {
     }
 
     const user = authData.user;
+
+    const kycCheck = await requireKycApproved(supabase, user.id);
+    if (!kycCheck.approved) {
+      return kycCheck.response;
+    }
 
     /* ──────────────────────────────────────────
      * 2단계: 요청 본문 파싱 및 검증

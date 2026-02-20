@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import localFont from 'next/font/local';
+import { Inter } from 'next/font/google';
 import Header from '@/components/Header';
 
-const pretendard = localFont({
-  src: '../public/fonts/Pretendard-Regular.woff2',
-  variable: '--font-pretendard',
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
   display: 'swap',
 });
 import BuildStamp from '@/components/dev/BuildStamp';
@@ -24,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
-      <body className={pretendard.variable}>
+    <html lang="ko" data-theme="apple" suppressHydrationWarning>
+      <body className={inter.variable}>
         <Providers>
           <Header />
           <main>

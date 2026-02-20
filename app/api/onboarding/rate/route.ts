@@ -4,7 +4,8 @@ import { createClient } from '@/utils/supabase/server';
 export const dynamic = 'force-dynamic';
 
 /**
- * POST /api/onboarding/rate - user_channel_ratings 저장
+ * POST /api/onboarding/rate - user_interest_ratings upsert
+ * body: { channelId | channel_id | item_id, score (1-5) }
  */
 export async function POST(req: NextRequest) {
   try {
@@ -15,22 +16,22 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { channel_id, score } = body;
+    const itemId = body.channelId ?? body.channel_id ?? body.item_id;
+    const score = typeof body.score === 'number' ? body.score : Number(body.score);
 
-    if (!channel_id || typeof score !== 'number' || score < 0 || score > 5) {
-      return NextResponse.json({ error: 'channel_id, score(0-5) 필요' }, { status: 400 });
+    if (!itemId || typeof score !== 'number' || score < 1 || score > 5) {
+      return NextResponse.json({ error: 'channelId/channel_id/item_id, score(1-5) 필요' }, { status: 400 });
     }
 
     const { error } = await (supabase as any)
-      .from('user_channel_ratings')
+      .from('user_interest_ratings')
       .upsert(
         {
           user_id: user.id,
-          channel_id,
+          item_id: itemId,
           score: Math.round(score),
-          updated_at: new Date().toISOString(),
         },
-        { onConflict: 'user_id,channel_id' }
+        { onConflict: 'user_id,item_id' }
       );
 
     if (error) {

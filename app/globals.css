@@ -1,16 +1,18 @@
 @import "tailwindcss";
 
+
 /* ===== HANBANG 디자인 시스템 ===== */
 /* 토스증권형 × 투자 × 배당 중심 × 로얄블루 */
 
 @layer base {
+  /* ===== 라이트 모드 (토스 앱 부드러운 대비) ===== */
   :root {
     /* 메인 컬러 */
     --royal-blue: #1E40AF;
     --royal-blue-light: #2563EB;
     --royal-blue-dark: #1D4ED8;
-    --midnight-navy: #0F172A;
-    --midnight-navy-light: #1E293B;
+    --midnight-navy: #0D1117;
+    --midnight-navy-light: #161B22;
 
     /* 액센트 */
     --emerald: #059669;
@@ -18,26 +20,27 @@
     --accent-loss: #DC2626;
     --accent-loss-light: #EF4444;
 
-    /* 배경/카드 */
-    --bg: #F3F6FB;
+    /* 배경/카드 (토스 부드러운 톤) */
+    --bg: #F8FAFC;
     --bg-secondary: #F1F5F9;
+    --bg-tertiary: #E8ECF4;
     --card: #FFFFFF;
     --card-elevated: #FFFFFF;
 
-    /* 텍스트 */
-    --text: #0F172A;
-    --text-secondary: #475569;
-    --text-muted: #94A3B8;
+    /* 텍스트 (부드러운 대비) */
+    --text: #191F28;
+    --text-secondary: #6B7684;
+    --text-muted: #9CA3AF;
 
     /* 테두리 */
-    --border: #E6ECF5;
+    --border: #E8ECF4;
     --border-strong: #CBD5E1;
 
     /* 그림자 */
-    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.08);
-    --shadow-royal: 0 4px 14px rgba(30, 58, 138, 0.25);
+    --shadow-sm: 0 1px 2px rgba(25, 31, 40, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(25, 31, 40, 0.06), 0 2px 4px -2px rgba(25, 31, 40, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(25, 31, 40, 0.08), 0 4px 6px -4px rgba(25, 31, 40, 0.06);
+    --shadow-royal: 0 4px 14px rgba(30, 58, 138, 0.2);
 
     /* 레거시 호환 */
     --primary: var(--royal-blue);
@@ -57,28 +60,90 @@
     --upbit-positive: var(--emerald);
     --accent-positive: var(--emerald);
     --accent-negative: var(--accent-loss);
+    --text-primary: var(--text);
   }
 
+  /* data-theme: apple (밝고 부드러운 그레이 톤) */
+  [data-theme="apple"] {
+    --bg: #F8FAFC;
+    --bg-secondary: #F1F5F9;
+    --bg-tertiary: #E8ECF4;
+    --card: #FFFFFF;
+    --border: #E8ECF4;
+    --border-strong: #CBD5E1;
+    --text: #191F28;
+    --text-secondary: #6B7684;
+    --text-muted: #9CA3AF;
+    --royal-blue: #007AFF;
+    --royal-blue-light: #5AC8FA;
+    --royal-blue-dark: #0051D5;
+  }
+
+  /* data-theme: toss (로얄블루 강조, 카드형) */
+  [data-theme="toss"] {
+    --bg: #F8FAFC;
+    --bg-secondary: #F1F5F9;
+    --bg-tertiary: #E8ECF4;
+    --card: #FFFFFF;
+    --border: #E8ECF4;
+    --border-strong: #CBD5E1;
+    --text: #191F28;
+    --text-secondary: #6B7684;
+    --text-muted: #9CA3AF;
+    --royal-blue: #1E40AF;
+    --royal-blue-light: #2563EB;
+    --royal-blue-dark: #1D4ED8;
+  }
+
+  /* ===== 다크 모드 (딥 네이비/차콜, 회색 종이 X) ===== */
   html.dark {
-    --bg: #0F172A;
-    --bg-secondary: #1E293B;
-    --card: #1E293B;
-    --card-elevated: #334155;
-    --text: #F8FAFC;
-    --text-secondary: #94A3B8;
-    --text-muted: #64748B;
-    --border: #334155;
-    --border-strong: #475569;
+    --bg: #0D1117;
+    --bg-secondary: #161B22;
+    --bg-tertiary: #21262D;
+    --card: #161B22;
+    --card-elevated: #21262D;
+    --text: #E6EDF3;
+    --text-secondary: #8B949E;
+    --text-muted: #6E7681;
+    --border: #21262D;
+    --border-strong: #30363D;
+    --royal-blue: #3B82F6;
+    --royal-blue-light: #60A5FA;
+    --royal-blue-dark: #2563EB;
+    --emerald: #10B981;
+    --emerald-light: #34D399;
+    --accent-loss: #EF4444;
+    --accent-loss-light: #F87171;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -2px rgba(0, 0, 0, 0.25);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+    --shadow-royal: 0 4px 14px rgba(59, 130, 246, 0.25);
     --toss-bg: var(--bg);
     --toss-card: var(--card);
     --upbit-bg: var(--bg);
     --upbit-panel: var(--card);
+    --text-primary: var(--text);
   }
 
   html, body {
-    font-family: var(--font-pretendard), 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-family: 'Pretendard Variable', 'Pretendard', system-ui, -apple-system, sans-serif;
+    font-size: 15.5px;
+    font-weight: 450;
+    line-height: 1.65;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
     background: var(--bg);
     color: var(--text);
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
   }
 }
 
@@ -167,6 +232,11 @@
     pointer-events: none;
   }
 
+  /* 숫자 가독성 */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
   /* 숫자 전용 */
   .metric {
     @apply font-bold tabular-nums tracking-tight;
@@ -207,13 +277,13 @@
   /* glass-card */
   .glass-card {
     @apply rounded-[16px] p-5;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    border: 1px solid rgba(232, 236, 244, 0.6);
   }
   html.dark .glass-card {
-    background: rgba(30, 41, 59, 0.8);
-    border-color: rgba(51, 65, 85, 0.8);
+    background: rgba(22, 27, 34, 0.85);
+    border-color: rgba(33, 38, 45, 0.8);
   }
 
   /* royal-gradient-bg */
@@ -280,6 +350,13 @@
     100% { background-position: -200% 0; }
   }
 }
+
+/* =========================
+   V3 (Market Detail) 호환
+   - 4px 그리드 베이스
+   - 16px 본문, 1.6 line-height
+   - Pretendard 통일
+========================= */
 
 /* =========================
    DESIGN SYSTEM v2 TOKENS

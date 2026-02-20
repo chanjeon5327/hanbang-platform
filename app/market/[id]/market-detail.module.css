@@ -1,24 +1,20 @@
 /* ===== 토스증권 스타일 마켓 상세 ===== */
 
 .container {
-  max-width: 1400px;
-  margin: 0 auto;
-  min-height: 100vh;
-  background: #F5F7FA;
-  color: #111827;
-  letter-spacing: -0.2px;
-}
-
-.sectionList {
-  max-width: 720px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 0 24px;
 }
 
+.section {
+  width: 100%;
+  margin-bottom: 48px;
+}
+
+.sectionList,
 .sectionListWide {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 0 24px;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* ----- HERO + PREVIEW ----- */
@@ -110,12 +106,12 @@
   min-width: 0;
 }
 
-.previewMedia {
+.previewMedia,
+.previewImage {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 16/9;
   object-fit: cover;
-  border-radius: 12px;
-  background: #E5E7EB;
+  border-radius: 16px;
 }
 
 .previewVideoWrap {
@@ -184,9 +180,9 @@
   gap: 0;
   background: #fff;
   border-bottom: 1px solid #E5E7EB;
-  padding: 0 24px;
+  padding: 0 20px;
   overflow-x: auto;
-  margin: 0 -24px;
+  margin: 0 -20px;
 }
 
 .stickyTabs button {
@@ -213,8 +209,14 @@
 }
 
 /* ----- 섹션 공통 (챕터별 시각 분리) ----- */
-.section {
-  padding: 24px 24px;
+.sectionChart,
+.sectionTrade,
+.sectionTicker,
+.sectionInvest,
+.sectionProject,
+.sectionNews,
+.sectionChat {
+  padding: 24px 0;
   border-bottom: 1px solid #E5E7EB;
 }
 
@@ -278,18 +280,23 @@
 /* ----- TRADE (호가 + 주문) ----- */
 .tradeGrid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-  align-items: start;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: stretch;
 }
 
-.tradeGrid > * {
-  min-height: 320px;
+.tradePanel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
-@media (min-width: 768px) {
+@media (max-width: 767px) {
   .tradeGrid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 }
 

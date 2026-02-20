@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Heart } from 'lucide-react';
-import { getYtThumb } from '@/lib/thumbnails';
+import { FALLBACK_PREVIEW_IMAGE } from '@/lib/thumbnails';
 import { useInterestToggle } from '@/hooks/useInterestToggle';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { formatKrw } from '@/lib/utils/format';
@@ -43,7 +43,7 @@ export default function CardV5MarketCard({
   const { isInterested, toggle, loading } = useInterestToggle(item.id, initialInterested);
   const thumbSrc =
     item.thumbnail_url ??
-    (item.youtube_id ? `https://i.ytimg.com/vi/${item.youtube_id}/hqdefault.jpg` : getYtThumb(index));
+    (item.youtube_id ? `https://i.ytimg.com/vi/${item.youtube_id}/hqdefault.jpg` : FALLBACK_PREVIEW_IMAGE);
   const dday = getDday(item.event_date);
   const youtubeId = item.youtube_id ?? null;
   const showPreview = activePreviewId === item.id && youtubeId;

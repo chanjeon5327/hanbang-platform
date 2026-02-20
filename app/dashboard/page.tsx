@@ -21,6 +21,7 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import { formatKrw, formatRate } from '@/lib/utils/format';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import HoldingsList from '@/components/dashboard/HoldingsList';
+import KycGateBanner from '@/components/kyc/KycGateBanner';
 
 const HB_FANDOM_KEY = 'hb_fandom';
 
@@ -150,6 +151,7 @@ export default function DashboardPage() {
     <div className="pb-24" style={{ backgroundColor: 'var(--bg)' }}>
       <div className="mx-auto max-w-[480px] px-4">
         <DashboardHeader />
+        <KycGateBanner compact />
 
         {/* 1) 상단 요약 카드 */}
         <div

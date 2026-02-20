@@ -1,79 +1,60 @@
 /**
  * HANBANG 디자인 토큰
- * 토스증권형 × 투자 × 배당 중심 × 로얄블루
+ * themeTokens.ts와 연동하여 라이트/다크 테마 일관 적용
  */
 
 export const colors = {
-  // 메인
-  royalBlue: '#1E3A8A',
-  royalBlueLight: '#2563EB',
-  royalBlueDark: '#1E40AF',
-  midnightNavy: '#0F172A',
-  midnightNavyLight: '#1E293B',
-
-  // 액센트
-  emerald: '#059669', // 수익
-  emeraldLight: '#10B981',
-  red: '#DC2626', // 손실
-  redLight: '#EF4444',
-
-  // 중성
-  white: '#FFFFFF',
-  gray50: '#F8FAFC',
-  gray100: '#F1F5F9',
-  gray200: '#E2E8F0',
-  gray300: '#CBD5E1',
-  gray400: '#94A3B8',
-  gray500: '#64748B',
-  gray600: '#475569',
-  gray700: '#334155',
-  gray800: '#1E293B',
-  gray900: '#0F172A',
-} as const;
-
-export const spacing = {
-  0: 0,
-  1: 4,
-  2: 8,
-  3: 12,
-  4: 16,
-  5: 20,
-  6: 24,
-  8: 32,
-  10: 40,
-  12: 48,
-  16: 64,
-  20: 80,
-  24: 96,
+  /** 메인 브랜드 */
+  primary: '#1E40AF',
+  /** 상승/매수 */
+  up: '#DC2626',
+  /** 하락/매도 */
+  down: '#2563EB',
+  /** 배경/카드 (CSS var(--card) 사용 권장) */
+  surface: '#FFFFFF',
+  /** 텍스트 (CSS var(--text) 사용 권장) */
+  text: '#191F28',
 } as const;
 
 export const radius = {
   sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
-  '2xl': 24,
-  full: 9999,
+  md: 16,
+  lg: 20,
 } as const;
 
-export const shadow = {
-  sm: '0 1px 2px rgba(15, 23, 42, 0.05)',
-  md: '0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06)',
-  lg: '0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.08)',
-  xl: '0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.08)',
-  royal: '0 4px 14px rgba(30, 58, 138, 0.25)',
-  emerald: '0 4px 14px rgba(5, 150, 105, 0.2)',
-  red: '0 4px 14px rgba(220, 38, 38, 0.2)',
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  '2xl': 48,
 } as const;
 
 export const typography = {
-  xs: { size: 12, weight: 500 },
-  sm: { size: 14, weight: 500 },
-  base: { size: 16, weight: 500 },
-  lg: { size: 18, weight: 600 },
-  xl: { size: 20, weight: 600 },
-  '2xl': { size: 24, weight: 700 },
-  '3xl': { size: 30, weight: 700 },
-  '4xl': { size: 36, weight: 800 },
-  number: { weight: 700 }, // tabular-nums
+  /** 큰 가격 표시 */
+  price: { size: 28, weight: 700, lineHeight: 1.2 },
+  /** 본문 */
+  body: { size: 16, weight: 500, lineHeight: 1.6 },
+  /** 라벨/캡션 */
+  label: { size: 12, weight: 500, lineHeight: 1.4 },
+  /** 버튼 */
+  button: { size: 14, weight: 700, lineHeight: 1.4 },
+} as const;
+
+/** V3 전용 스케일 (청약+배당+거래 혼합형) */
+export const v3 = {
+  /** 그리드: 4px 베이스 */
+  grid: 4,
+  /** 패딩: 20, 24, 32 */
+  padding: { sm: 20, md: 24, lg: 32 } as const,
+  /** 타이포: 14/16/18/24/32/40 */
+  title: { size: 32, weight: 700 },
+  subtitle: { size: 18, weight: 600 },
+  body: { size: 16, weight: 500 },
+  caption: { size: 14, weight: 500 },
+  label: { size: 12, weight: 500 },
+  price: { size: 40, weight: 700 },
+  /** 카드 radius */
+  cardRadius: 16,
 } as const;

@@ -12,9 +12,7 @@ import { ArrowUp, BarChart3, BookOpen, MessageCircle, Newspaper, PieChart, Trend
 import styles from './market-detail.module.css';
 
 const TABS = [
-  { id: 'chart', label: '차트' },
-  { id: 'orderbook', label: '호가' },
-  { id: 'trades', label: '체결' },
+  { id: 'chart', label: '거래' },
   { id: 'invest', label: '투자정보' },
   { id: 'project', label: '프로젝트' },
   { id: 'news', label: '뉴스' },
@@ -22,9 +20,9 @@ const TABS = [
 ] as const;
 
 const NEWS_MOCK = [
-  { id: '1', title: 'K-POP 투자 열기, 2차 시장 거래량 급증', date: '2025-02-18', summary: '아티스트 주식 2차 시장 거래량이 전월 대비 40% 증가하며 투자자 관심이 높아지고 있다.', imageUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=192&h=144&fit=crop' },
-  { id: '2', title: '아티스트 주식 청약 3일 만에 80% 달성', date: '2025-02-15', summary: '신규 청약 상품이 출시 3일 만에 모집 목표의 80%를 달성하며 투자 열기를 보여준다.', imageUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=192&h=144&fit=crop' },
-  { id: '3', title: '배당 수익률 12% 돌파, 투자자 관심 집중', date: '2025-02-12', summary: '연간 예상 배당 수익률이 12%를 넘어서며 장기 투자자들의 관심이 늘고 있다.', imageUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=192&h=144&fit=crop' },
+  { id: '1', title: 'K-POP 투자 열기, 2차 시장 거래량 급증', date: '2025-02-18', summary: '아티스트 주식 2차 시장 거래량이 전월 대비 40% 증가하며 투자자 관심이 높아지고 있다.', imageUrl: '/sample-bright.jpg' },
+  { id: '2', title: '아티스트 주식 청약 3일 만에 80% 달성', date: '2025-02-15', summary: '신규 청약 상품이 출시 3일 만에 모집 목표의 80%를 달성하며 투자 열기를 보여준다.', imageUrl: '/sample-bright.jpg' },
+  { id: '3', title: '배당 수익률 12% 돌파, 투자자 관심 집중', date: '2025-02-12', summary: '연간 예상 배당 수익률이 12%를 넘어서며 장기 투자자들의 관심이 늘고 있다.', imageUrl: '/sample-bright.jpg' },
 ];
 
 const TICKER_MOCK = [
@@ -45,7 +43,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const [orderType, setOrderType] = useState<'limit' | 'market'>('limit');
   const [t1t2, setT1t2] = useState<'T1' | 'T2'>('T1');
   const [videoPlaying, setVideoPlaying] = useState(false);
-  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
     const onScroll = () => setShowScrollTop(typeof window !== 'undefined' && window.scrollY > 300);
@@ -60,15 +58,19 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
         entries.forEach((e) => {
           if (e.isIntersecting) {
             const sid = (e.target as HTMLElement).dataset.section;
-            if (sid) setActiveTab(sid as (typeof TABS)[number]['id']);
+            if (sid) {
+              const tabId = sid === 'orderbook' || sid === 'trades' ? 'chart' : sid;
+              setActiveTab(tabId as (typeof TABS)[number]['id']);
+            }
           }
         });
       },
       { rootMargin: '-80px 0px -60% 0px', threshold: 0 }
     );
-    TABS.forEach((t) => {
-      const el = sectionRefs.current[t.id];
-      if (el) { el.dataset.section = t.id; observer.observe(el); }
+    const sectionsToObserve = ['chart', 'orderbook', 'trades', 'invest', 'project', 'news', 'chat'];
+    sectionsToObserve.forEach((sid) => {
+      const el = sectionRefs.current[sid];
+      if (el) { el.dataset.section = sid; observer.observe(el); }
     });
     return () => observer.disconnect();
   }, []);
@@ -113,10 +115,10 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   }
 
   return (
-    <div className={styles.container} style={{ padding: 0 }}>
+    <div className={styles.container}>
       {/* HERO + T1/T2 */}
-      <section className={styles.heroWrap}>
-        <div className={styles.sectionList} style={{ maxWidth: 720, margin: '0 auto', padding: 0 }}>
+      <section className={`${styles.section} ${styles.heroWrap}`}>
+        <div className={styles.sectionList}>
           <div className={styles.heroHeader}>
             <h1 className={styles.heroTitle}>{title}</h1>
             <div className={styles.t1t2Toggle}>
@@ -132,9 +134,9 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
 
       {/* PREVIEW */}
       {item && (
-        <div className={`${styles.sectionListWide} ${styles.previewSection}`}>
+        <section className={`${styles.section} ${styles.previewSection}`}>
           <div className={styles.previewLeft}>
-            {item.thumbnail_url && <img src={item.thumbnail_url} alt="" className={styles.previewMedia} />}
+            <img src={item.thumbnail_url || '/sample-bright.jpg'} alt="" className={styles.previewMedia} />
           </div>
           <div className={styles.previewRight}>
             {item.youtube_video_id && (
@@ -161,7 +163,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
               </div>
             )}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Sticky Tabs */}
@@ -174,23 +176,23 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
       </div>
 
       {/* CHART */}
-      <div ref={(el) => { sectionRefs.current['chart'] = el; }} className={`${styles.sectionListWide} ${styles.section} ${styles.sectionChart}`}>
+      <section ref={(el) => { sectionRefs.current['chart'] = el; }} className={`${styles.section} ${styles.sectionChart}`}>
         <h3 className={styles.sectionTitle}>
           <span className={styles.sectionTitleIcon} style={{ background: 'rgba(37,99,235,0.15)', color: '#2563EB' }}><TrendingUp size={14} /></span>
           가격 차트
         </h3>
         <RealPriceChart priceKrw={sharePriceKrw} loading={loading} height={420} theme="light" />
-      </div>
+      </section>
 
       {/* TRADE */}
-      <div ref={(el) => { sectionRefs.current['orderbook'] = el; }} className={`${styles.sectionListWide} ${styles.section} ${styles.sectionTrade}`}>
+      <section ref={(el) => { sectionRefs.current['orderbook'] = el; }} className={`${styles.section} ${styles.sectionTrade}`}>
         <h3 className={styles.sectionTitle}>
           <span className={styles.sectionTitleIcon} style={{ background: 'rgba(5,150,105,0.15)', color: '#059669' }}><BarChart3 size={14} /></span>
           호가 · 주문
         </h3>
         <div className={styles.tradeGrid}>
-          <div><MockOrderBook basePriceKrw={sharePriceKrw} loading={loading} theme="light" /></div>
-          <div className={styles.orderPanel}>
+          <div className={styles.tradePanel}><MockOrderBook basePriceKrw={sharePriceKrw} loading={loading} theme="light" /></div>
+          <div className={`${styles.tradePanel} ${styles.orderPanel}`}>
             <div className={styles.orderTypeTabs}>
               {(['limit', 'market'] as const).map((t) => (
                 <button key={t} type="button" className={orderType === t ? styles.active : ''} onClick={() => setOrderType(t)}>{t === 'limit' ? '지정가' : '시장가'}</button>
@@ -212,10 +214,10 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* TICKER */}
-      <div ref={(el) => { sectionRefs.current['trades'] = el; }} className={`${styles.sectionList} ${styles.section} ${styles.sectionTicker}`}>
+      <section ref={(el) => { sectionRefs.current['trades'] = el; }} className={`${styles.section} ${styles.sectionTicker}`}>
         <h3 className={styles.sectionTitle}>
           <span className={styles.sectionTitleIcon} style={{ background: 'rgba(124,58,237,0.15)', color: '#7C3AED' }}><PieChart size={14} /></span>
           실시간 체결
@@ -229,10 +231,10 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* INVEST */}
-      <div ref={(el) => { sectionRefs.current['invest'] = el; }} className={`${styles.sectionList} ${styles.section} ${styles.sectionInvest}`}>
+      <section ref={(el) => { sectionRefs.current['invest'] = el; }} className={`${styles.section} ${styles.sectionInvest}`}>
         <h3 className={styles.sectionTitle}>
           <span className={styles.sectionTitleIcon} style={{ background: 'rgba(217,119,6,0.15)', color: '#D97706' }}><BookOpen size={14} /></span>
           투자정보
@@ -250,10 +252,10 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           <div className={styles.investRow}><span>현재 모집</span><span>₩312,500,000 (62.5%)</span></div>
           <div className={styles.investRow}><span>청약 마감</span><span>2025-04-30</span></div>
         </div>
-      </div>
+      </section>
 
       {/* PROJECT */}
-      <div ref={(el) => { sectionRefs.current['project'] = el; }} className={`${styles.sectionList} ${styles.section} ${styles.sectionProject}`}>
+      <section ref={(el) => { sectionRefs.current['project'] = el; }} className={`${styles.section} ${styles.sectionProject}`}>
         <h3 className={styles.sectionTitle}>
           <span className={styles.sectionTitleIcon} style={{ background: 'rgba(3,105,161,0.15)', color: '#0369A1' }}><Users size={14} /></span>
           프로젝트 정보
@@ -262,10 +264,10 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           <p style={{ marginBottom: 12 }}>스토리, 재무 현황, 팀 소개 등 프로젝트 상세 설명이 제공됩니다.</p>
           <p style={{ marginBottom: 0 }}>투자 시 유의사항 및 리스크 요인을 확인해 주세요.</p>
         </div>
-      </div>
+      </section>
 
       {/* NEWS */}
-      <div ref={(el) => { sectionRefs.current['news'] = el; }} className={`${styles.sectionList} ${styles.section} ${styles.sectionNews}`}>
+      <section ref={(el) => { sectionRefs.current['news'] = el; }} className={`${styles.section} ${styles.sectionNews}`}>
         <h3 className={styles.sectionTitle}>
           <span className={styles.sectionTitleIcon} style={{ background: 'rgba(190,24,93,0.15)', color: '#BE185D' }}><Newspaper size={14} /></span>
           관련 뉴스
@@ -282,16 +284,16 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
             </a>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* CHAT */}
-      <div ref={(el) => { sectionRefs.current['chat'] = el; }} className={`${styles.sectionList} ${styles.section} ${styles.sectionChat}`}>
+      <section ref={(el) => { sectionRefs.current['chat'] = el; }} className={`${styles.section} ${styles.sectionChat}`}>
         <h3 className={styles.sectionTitle}>
           <span className={styles.sectionTitleIcon} style={{ background: 'rgba(75,85,99,0.15)', color: '#4B5563' }}><MessageCircle size={14} /></span>
           실시간 채팅
         </h3>
         <LiveChatMock />
-      </div>
+      </section>
 
       {showScrollTop && (
         <button type="button" className={styles.scrollTopBtn} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="맨 위로">

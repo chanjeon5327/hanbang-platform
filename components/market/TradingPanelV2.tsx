@@ -475,15 +475,17 @@ export default function TradingPanelV2({
             dense
             compact
           />
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={() => setOrderTab('지정가')}
               disabled={loading || disabled}
-              className="flex-1 py-2 body-sm font-semibold rounded-xl transition-all duration-200 ease-out disabled:opacity-50"
+              className="flex-1 min-h-[48px] py-3 body font-bold rounded-2xl transition-all duration-200 ease-out disabled:opacity-50 touch-manipulation"
               style={{
                 backgroundColor: orderTab === '지정가' ? 'var(--royal-blue)' : 'var(--bg-secondary)',
-                color: orderTab === '지정가' ? '#fff' : 'var(--text)',
+                color: orderTab === '지정가' ? '#fff' : 'var(--text-secondary)',
+                border: orderTab === '지정가' ? '2px solid var(--royal-blue)' : '2px solid transparent',
+                boxShadow: orderTab === '지정가' ? '0 2px 4px rgba(37,99,235,0.25)' : 'none',
               }}
             >
               지정가
@@ -492,10 +494,12 @@ export default function TradingPanelV2({
               type="button"
               onClick={() => setOrderTab('시장가')}
               disabled={loading || disabled}
-              className="flex-1 py-2 body-sm font-semibold rounded-xl transition-all duration-200 ease-out disabled:opacity-50"
+              className="flex-1 min-h-[48px] py-3 body font-bold rounded-2xl transition-all duration-200 ease-out disabled:opacity-50 touch-manipulation"
               style={{
                 backgroundColor: orderTab === '시장가' ? 'var(--royal-blue)' : 'var(--bg-secondary)',
-                color: orderTab === '시장가' ? '#fff' : 'var(--text)',
+                color: orderTab === '시장가' ? '#fff' : 'var(--text-secondary)',
+                border: orderTab === '시장가' ? '2px solid var(--royal-blue)' : '2px solid transparent',
+                boxShadow: orderTab === '시장가' ? '0 2px 4px rgba(37,99,235,0.25)' : 'none',
               }}
             >
               시장가

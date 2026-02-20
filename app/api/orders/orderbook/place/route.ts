@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { requireKycApproved } from "@/lib/kyc/requireKycApproved";
 import { retryOnLockBusy, isLockBusyInResult } from "@/lib/lock/retryOnLockBusy";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,11 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+    }
+
+    const kycCheck = await requireKycApproved(supabase, user.id);
+    if (!kycCheck.approved) {
+      return kycCheck.response;
     }
 
     const body = await req.json().catch(() => ({}));
