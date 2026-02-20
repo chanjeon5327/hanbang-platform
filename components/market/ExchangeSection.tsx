@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import OrderBookRealtime from '@/components/market/OrderBookRealtime';
 import PriceChartBlock from '@/components/market/PriceChartBlock';
-import PriceHeader from '@/components/market/PriceHeader';
+import ChartPriceDisplay from '@/components/market/ChartPriceDisplay';
 import TradeHistoryRealtime from '@/components/market/TradeHistoryRealtime';
 import PositionPanel from '@/components/market/PositionPanel';
 import TradingPanelV2 from '@/components/market/TradingPanelV2';
@@ -111,7 +111,7 @@ export default function ExchangeSection({
           borderRadius: 'var(--radius-lg)',
         }}
       >
-        <PriceHeader
+        <ChartPriceDisplay
           sharePriceUsd={lastTradePrice ?? sharePriceUsd}
           fxRate={fxRate}
           prevCloseUsd={prevTradePrice ?? sharePriceUsd * 0.98}

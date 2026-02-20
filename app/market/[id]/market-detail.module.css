@@ -1,0 +1,578 @@
+/* ===== 토스증권 스타일 마켓 상세 ===== */
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #F5F7FA;
+  color: #111827;
+  letter-spacing: -0.2px;
+}
+
+.sectionList {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.sectionListWide {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ----- HERO + PREVIEW ----- */
+.heroWrap {
+  background: #fff;
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.heroHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.heroTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  letter-spacing: -0.3px;
+}
+
+.t1t2Toggle {
+  display: flex;
+  gap: 0;
+  background: #F3F4F6;
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.t1t2Toggle button {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.t1t2Toggle button.active,
+.orderTypeTabs button.active {
+  background: #fff;
+  color: #111827;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.active {
+  background: #fff;
+  color: #111827;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.heroPrice {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+.heroChange {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.heroMeta {
+  font-size: 13px;
+  color: #9CA3AF;
+  margin-top: 6px;
+}
+
+/* ----- PREVIEW ----- */
+.previewSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px;
+  background: #FAFBFC;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.previewLeft,
+.previewRight {
+  flex: 1;
+  min-width: 0;
+}
+
+.previewMedia {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #E5E7EB;
+}
+
+.previewVideoWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+
+.previewVideoWrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.previewPlayOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.previewPlayOverlay:hover {
+  background: rgba(0,0,0,0.4);
+}
+
+.previewPlayOverlay.hidden,
+.hidden {
+  pointer-events: none;
+  opacity: 0;
+}
+
+.previewPlayBtn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #111827;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+@media (min-width: 768px) {
+  .previewSection {
+    flex-direction: row;
+  }
+  .heroPrice {
+    font-size: 42px;
+  }
+}
+
+/* ----- Sticky Tabs ----- */
+.stickyTabs {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  gap: 0;
+  background: #fff;
+  border-bottom: 1px solid #E5E7EB;
+  padding: 0 24px;
+  overflow-x: auto;
+  margin: 0 -24px;
+}
+
+.stickyTabs button {
+  flex-shrink: 0;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: #6B7280;
+  transition: color 0.2s;
+}
+
+.stickyTabs button:hover {
+  color: #374151;
+}
+
+.tabActive {
+  color: #111827 !important;
+  border-bottom-color: #2563EB !important;
+}
+
+/* ----- 섹션 공통 (챕터별 시각 분리) ----- */
+.section {
+  padding: 24px 24px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.sectionChart {
+  background: #fff;
+  border-left: 3px solid #2563EB;
+}
+
+.sectionTrade {
+  background: #FAFBFC;
+  border-left: 3px solid #059669;
+}
+
+.sectionTicker {
+  background: #fff;
+  border-left: 3px solid #7C3AED;
+}
+
+.sectionInvest {
+  background: #FAFBFC;
+  border-left: 3px solid #D97706;
+}
+
+.sectionProject {
+  background: #fff;
+  border-left: 3px solid #0369A1;
+}
+
+.sectionNews {
+  background: #FAFBFC;
+  border-left: 3px solid #BE185D;
+}
+
+.sectionChat {
+  background: #fff;
+  border-left: 3px solid #4B5563;
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 16px;
+  letter-spacing: -0.2px;
+}
+
+.sectionTitleIcon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* ----- TRADE (호가 + 주문) ----- */
+.tradeGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.tradeGrid > * {
+  min-height: 320px;
+}
+
+@media (min-width: 768px) {
+  .tradeGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ----- 주문 패널 토스 스타일 ----- */
+.orderPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.orderTypeTabs {
+  display: flex;
+  gap: 4px;
+  background: #F3F4F6;
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.orderTypeTabs button {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.orderTypeTabs button.active {
+  background: #fff;
+  color: #111827;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.orderInput {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.orderInput:focus {
+  outline: none;
+  border-color: #2563EB;
+}
+
+.orderPctRow {
+  display: flex;
+  gap: 6px;
+}
+
+.orderPctRow button {
+  flex: 1;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.orderPctRow button:hover {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+}
+
+.orderSummary {
+  padding: 12px 0;
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.orderSummaryRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #6B7280;
+}
+
+.orderSummaryRow.total {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  margin-top: 4px;
+}
+
+.orderBtnRow {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.orderBtnBuy,
+.orderBtnSell {
+  flex: 1;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.orderBtnBuy {
+  background: #2563EB;
+  color: #fff;
+}
+
+.orderBtnSell {
+  background: #DC2626;
+  color: #fff;
+}
+
+.orderBtnBuy:hover,
+.orderBtnSell:hover {
+  opacity: 0.9;
+}
+
+/* ----- TICKER ----- */
+.tickerList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.tickerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.tickerRow:last-child {
+  border-bottom: none;
+}
+
+/* ----- INVEST (배당/시뮬레이터/청약) ----- */
+.investBlock {
+  padding: 16px 0;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.investBlock:last-child {
+  border-bottom: none;
+}
+
+.investBlockTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 12px;
+}
+
+.investRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #374151;
+}
+
+.investRow span:first-child {
+  color: #6B7280;
+}
+
+/* ----- PROJECT ----- */
+.projectContent {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #374151;
+}
+
+/* ----- NEWS ----- */
+.newsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.newsItem {
+  display: flex;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #E5E7EB;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.newsItem:hover {
+  background: rgba(0,0,0,0.02);
+}
+
+.newsItem:last-child {
+  border-bottom: none;
+}
+
+.newsThumb {
+  width: 96px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #E5E7EB;
+}
+
+.newsBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.newsTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.newsMeta {
+  font-size: 12px;
+  color: #9CA3AF;
+  margin-bottom: 4px;
+}
+
+.newsSummary {
+  font-size: 13px;
+  color: #6B7280;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ----- CHAT ----- */
+.chatArea {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chatMessages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ----- scrollTop ----- */
+.scrollTopBtn {
+  position: fixed;
+  right: 20px;
+  bottom: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #2563EB;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.4);
+  z-index: 60;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.scrollTopBtn:hover {
+  transform: scale(1.05);
+}

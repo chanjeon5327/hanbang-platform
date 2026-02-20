@@ -217,6 +217,11 @@ export default function TradingPanelV2({
           showToast('잠시 후 다시 시도해 주세요.');
           return;
         }
+        if (res.status === 403 && (json?.code === 'KYC_REQUIRED' || json?.error === 'KYC_REQUIRED')) {
+          showToast('KYC 인증이 필요합니다. KYC 페이지로 이동합니다.');
+          router.push('/kyc');
+          return;
+        }
         if (json?.success) {
           const matchedCount = json?.matched_count ?? 0;
           if (matchedCount > 0) {
@@ -249,6 +254,11 @@ export default function TradingPanelV2({
           }),
         });
         const json = await res.json();
+        if (res.status === 403 && (json?.code === 'KYC_REQUIRED' || json?.error === 'KYC_REQUIRED')) {
+          showToast('KYC 인증이 필요합니다. KYC 페이지로 이동합니다.');
+          router.push('/kyc');
+          return;
+        }
         if (res.status === 409 && json?.code === 'LOCK_BUSY') {
           setLockBusyRetrying(true);
           showToast('잠시 후 다시 시도해 주세요.');
@@ -280,6 +290,11 @@ export default function TradingPanelV2({
           }),
         });
         const json = await res.json();
+        if (res.status === 403 && (json?.code === 'KYC_REQUIRED' || json?.error === 'KYC_REQUIRED')) {
+          showToast('KYC 인증이 필요합니다. KYC 페이지로 이동합니다.');
+          router.push('/kyc');
+          return;
+        }
         if (res.status === 409 && json?.code === 'LOCK_BUSY') {
           setLockBusyRetrying(true);
           showToast('잠시 후 다시 시도해 주세요.');
