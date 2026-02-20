@@ -28,14 +28,14 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .heroTitle {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
+  letter-spacing: -0.4px;
   color: #111827;
-  letter-spacing: -0.3px;
 }
 
 .t1t2Toggle {
@@ -72,22 +72,35 @@
 }
 
 .heroPrice {
-  font-size: 36px;
-  font-weight: 700;
+  font-size: 42px;
+  font-weight: 800;
   letter-spacing: -0.5px;
   color: #111827;
-  margin-bottom: 6px;
+  margin-top: 4px;
+  margin-bottom: 8px;
 }
 
 .heroChange {
-  font-size: 15px;
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
   font-weight: 600;
+  font-size: 15px;
+}
+
+.heroChangeUp {
+  background: rgba(16,185,129,0.12);
+  color: #059669;
+}
+
+.heroChangeDown {
+  background: rgba(239,68,68,0.12);
+  color: #DC2626;
 }
 
 .heroMeta {
   font-size: 13px;
   color: #9CA3AF;
-  margin-top: 6px;
 }
 
 /* ----- PREVIEW ----- */
@@ -111,7 +124,9 @@
   width: 100%;
   aspect-ratio: 16/9;
   object-fit: cover;
-  border-radius: 16px;
+  border-radius: 18px;
+  margin-top: 24px;
+  margin-bottom: 40px;
 }
 
 .previewVideoWrap {
@@ -165,9 +180,6 @@
 @media (min-width: 768px) {
   .previewSection {
     flex-direction: row;
-  }
-  .heroPrice {
-    font-size: 42px;
   }
 }
 

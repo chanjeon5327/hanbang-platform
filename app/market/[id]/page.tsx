@@ -128,7 +128,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
             </div>
           </div>
           <div className={styles.heroPrice}>{priceDisplay}</div>
-          {changeText && <div className={styles.heroChange} style={{ color: isUp ? '#22C55E' : '#EF4444' }}>{changeText}</div>}
+          {changeText && <div className={`${styles.heroChange} ${isUp ? styles.heroChangeUp : styles.heroChangeDown}`}>{changeText}</div>}
           <div className={styles.heroMeta}>{usdDisplay}</div>
         </div>
       </section>
