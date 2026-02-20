@@ -35,8 +35,9 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
   const [asks, setAsks] = useState<Row[]>([]);
   const [bids, setBids] = useState<Row[]>([]);
   const [direction, setDirection] = useState<'up' | 'down' | null>(null);
-  const [flashClass, setFlashClass] = useState<string | null>(null);
+  const [priceFlashClass, setPriceFlashClass] = useState<string | null>(null);
   const [flashedPrices, setFlashedPrices] = useState<Set<number>>(new Set());
+  const prevPriceRef = useRef<number | null>(null);
   const [displayLines, setDisplayLines] = useState(PC_LINES);
   const prevRowsRef = useRef<{ asks: Row[]; bids: Row[] }>({ asks: [], bids: [] });
   const priceRef = useRef(currentPrice);
@@ -56,8 +57,12 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
     const nextPrice = Math.round(priceRef.current + delta);
     const d = delta > 0 ? 'up' : delta < 0 ? 'down' : null;
     setDirection(d);
-    setFlashClass(d === 'up' ? 'flashGreen' : d === 'down' ? 'flashRed' : null);
-    setTimeout(() => setFlashClass(null), 300);
+    const prevPrice = prevPriceRef.current;
+    if (prevPrice !== null && nextPrice !== prevPrice) {
+      setPriceFlashClass(d === 'up' ? 'priceUpFlash' : d === 'down' ? 'priceDownFlash' : null);
+      setTimeout(() => setPriceFlashClass(null), 250);
+    }
+    prevPriceRef.current = nextPrice;
 
     const newAsks = generateRows(nextPrice, MOBILE_LINES, 'up');
     const newBids = generateRows(nextPrice, MOBILE_LINES, 'down');
@@ -88,6 +93,7 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
     setAsks(initAsks);
     setBids(initBids);
     prevRowsRef.current = { asks: initAsks, bids: initBids };
+    prevPriceRef.current = basePriceKrw;
   }, [basePriceKrw]);
 
   useEffect(() => {
@@ -117,7 +123,7 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
   }) => (
     <div
       key={`${side}-${i}`}
-      className={isFlashed ? (side === 'ask' ? 'flashRed' : 'flashGreen') : ''}
+      className={isFlashed ? 'orderRowFlash' : ''}
       style={{ position: 'relative', overflow: 'hidden' }}
     >
       <div
@@ -185,7 +191,7 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
       </div>
 
       <div
-        className={flashClass ?? ''}
+        className={priceFlashClass ?? ''}
         style={{
           flexShrink: 0,
           display: 'flex',
