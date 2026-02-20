@@ -73,11 +73,11 @@ type Props = {
 
 export default function RealPriceChart({ priceKrw, loading, height = 420, theme = 'dark' }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
-  const [timeframe, setTimeframe] = useState<Timeframe>('1d');
+  const [timeframe, setTimeframe] = useState<Timeframe>('tick');
   const [indicators, setIndicators] = useState<Record<Indicator, boolean>>({
-    MA5: false,
-    MA20: false,
-    BB: false,
+    MA5: true,
+    MA20: true,
+    BB: true,
   });
 
   const data = useMemo(
@@ -128,7 +128,7 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
     });
 
     if (indicators.BB && bb.upper.length > 0) {
-      const bandFill = 'rgba(139,92,246,0.18)';
+      const bandFill = 'rgba(239,68,68,0.12)';
       const upperArea = chart.addSeries(AreaSeries, {
         lineColor: 'transparent',
         topColor: bandFill,
@@ -148,13 +148,13 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
       });
       lowerArea.setData(bb.lower);
       const upperSeries = chart.addSeries(LineSeries, {
-        color: '#8B5CF6',
+        color: '#EA580C',
         lineWidth: 1,
         title: 'BB상단',
       });
       upperSeries.setData(bb.upper);
       const lowerSeries = chart.addSeries(LineSeries, {
-        color: '#8B5CF6',
+        color: '#EA580C',
         lineWidth: 1,
         title: 'BB하단',
       });

@@ -9,6 +9,7 @@ import LiveChatMock from '@/components/market/LiveChatMock';
 import DividendInfo from '@/components/market/DividendInfo';
 import DividendSimulatorV2 from '@/components/market/DividendSimulatorV2';
 import { ArrowUp, BarChart3, BookOpen, MessageCircle, Newspaper, PieChart, TrendingUp, Users } from 'lucide-react';
+import { FALLBACK_PREVIEW_IMAGE } from '@/lib/thumbnails';
 import styles from './market-detail.module.css';
 
 const TABS = [
@@ -20,9 +21,9 @@ const TABS = [
 ] as const;
 
 const NEWS_MOCK = [
-  { id: '1', title: 'K-POP 투자 열기, 2차 시장 거래량 급증', date: '2025-02-18', summary: '아티스트 주식 2차 시장 거래량이 전월 대비 40% 증가하며 투자자 관심이 높아지고 있다.', imageUrl: '/sample-bright.jpg' },
-  { id: '2', title: '아티스트 주식 청약 3일 만에 80% 달성', date: '2025-02-15', summary: '신규 청약 상품이 출시 3일 만에 모집 목표의 80%를 달성하며 투자 열기를 보여준다.', imageUrl: '/sample-bright.jpg' },
-  { id: '3', title: '배당 수익률 12% 돌파, 투자자 관심 집중', date: '2025-02-12', summary: '연간 예상 배당 수익률이 12%를 넘어서며 장기 투자자들의 관심이 늘고 있다.', imageUrl: '/sample-bright.jpg' },
+  { id: '1', title: 'K-POP 투자 열기, 2차 시장 거래량 급증', date: '2025-02-18', summary: '아티스트 주식 2차 시장 거래량이 전월 대비 40% 증가하며 투자자 관심이 높아지고 있다.', imageUrl: FALLBACK_PREVIEW_IMAGE },
+  { id: '2', title: '아티스트 주식 청약 3일 만에 80% 달성', date: '2025-02-15', summary: '신규 청약 상품이 출시 3일 만에 모집 목표의 80%를 달성하며 투자 열기를 보여준다.', imageUrl: FALLBACK_PREVIEW_IMAGE },
+  { id: '3', title: '배당 수익률 12% 돌파, 투자자 관심 집중', date: '2025-02-12', summary: '연간 예상 배당 수익률이 12%를 넘어서며 장기 투자자들의 관심이 늘고 있다.', imageUrl: FALLBACK_PREVIEW_IMAGE },
 ];
 
 const TICKER_MOCK = [
@@ -136,7 +137,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
       {item && (
         <section className={`${styles.section} ${styles.previewSection}`}>
           <div className={styles.previewLeft}>
-            <img src={item.thumbnail_url || '/sample-bright.jpg'} alt="" className={styles.previewMedia} />
+            <img src={item.thumbnail_url || FALLBACK_PREVIEW_IMAGE} alt="" className={styles.previewMedia} />
           </div>
           <div className={styles.previewRight}>
             {item.youtube_video_id && (

@@ -116,7 +116,7 @@ export default function LiveChatMock() {
                   borderRadius: m.isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
                   background: m.isMe ? '#2563EB' : '#fff',
                   color: m.isMe ? '#fff' : '#111827',
-                  fontSize: 14,
+                  fontSize: 15,
                   lineHeight: 1.55,
                   letterSpacing: '0.02em',
                   fontWeight: 450,
@@ -156,7 +156,7 @@ export default function LiveChatMock() {
           style={{
             flex: 1,
             padding: '12px 16px',
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: 450,
             letterSpacing: '0.02em',
             lineHeight: 1.55,
@@ -173,7 +173,7 @@ export default function LiveChatMock() {
           onClick={handleSend}
           style={{
             padding: '12px 20px',
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: 600,
             letterSpacing: '0.02em',
             background: '#2563EB',

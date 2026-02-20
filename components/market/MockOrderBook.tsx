@@ -6,6 +6,9 @@ import './MockOrderBook.css';
 
 type Row = { price: number; qty: number };
 
+const PC_LINES = 5;
+const MOBILE_LINES = 8;
+
 type Props = {
   basePriceKrw: number;
   loading?: boolean;
@@ -34,9 +37,18 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
   const [direction, setDirection] = useState<'up' | 'down' | null>(null);
   const [flashClass, setFlashClass] = useState<string | null>(null);
   const [flashedPrices, setFlashedPrices] = useState<Set<number>>(new Set());
+  const [displayLines, setDisplayLines] = useState(PC_LINES);
   const prevRowsRef = useRef<{ asks: Row[]; bids: Row[] }>({ asks: [], bids: [] });
   const priceRef = useRef(currentPrice);
   priceRef.current = currentPrice;
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => setDisplayLines(mq.matches ? MOBILE_LINES : PC_LINES);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   const tick = useCallback(() => {
     if (basePriceKrw <= 0) return;
@@ -47,8 +59,8 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
     setFlashClass(d === 'up' ? 'flashGreen' : d === 'down' ? 'flashRed' : null);
     setTimeout(() => setFlashClass(null), 300);
 
-    const newAsks = generateRows(nextPrice, 5, 'up');
-    const newBids = generateRows(nextPrice, 5, 'down');
+    const newAsks = generateRows(nextPrice, MOBILE_LINES, 'up');
+    const newBids = generateRows(nextPrice, MOBILE_LINES, 'down');
     const prev = prevRowsRef.current;
     const changed = new Set<number>();
     newAsks.forEach((r) => {
@@ -70,8 +82,8 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
 
   useEffect(() => {
     if (basePriceKrw <= 0) return;
-    const initAsks = generateRows(basePriceKrw, 5, 'up');
-    const initBids = generateRows(basePriceKrw, 5, 'down');
+    const initAsks = generateRows(basePriceKrw, MOBILE_LINES, 'up');
+    const initBids = generateRows(basePriceKrw, MOBILE_LINES, 'down');
     setCurrentPrice(basePriceKrw);
     setAsks(initAsks);
     setBids(initBids);
@@ -152,21 +164,23 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
     );
   }
 
+  const askSlice = asks.sort((a, b) => a.price - b.price).reverse().slice(0, displayLines);
+  const bidSlice = bids.sort((a, b) => b.price - a.price).slice(0, displayLines);
+
   return (
     <div
       style={{
-        maxHeight: 260,
-        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 0,
+        flex: 1,
         background: bgColor,
         borderRadius: 12,
         padding: 8,
       }}
     >
-      <div style={{ marginBottom: 4 }}>
-        {asks
-          .sort((a, b) => a.price - b.price)
-          .reverse()
-          .map((r, i) => (
+      <div style={{ marginBottom: 4, flex: 1, minHeight: 0 }}>
+        {askSlice.map((r, i) => (
             <RowWithBar key={`a-${i}`} r={r} side="ask" i={i} isFlashed={flashedPrices.has(r.price)} />
           ))}
       </div>
@@ -174,6 +188,7 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
       <div
         className={flashClass ?? ''}
         style={{
+          flexShrink: 0,
           display: 'flex',
           justifyContent: 'space-between',
           padding: 6,
@@ -192,10 +207,8 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
         <span>현재가</span>
       </div>
 
-      <div>
-        {bids
-          .sort((a, b) => b.price - a.price)
-          .map((r, i) => (
+      <div style={{ flex: 1, minHeight: 0 }}>
+        {bidSlice.map((r, i) => (
             <RowWithBar key={`b-${i}`} r={r} side="bid" i={i} isFlashed={flashedPrices.has(r.price)} />
           ))}
       </div>
