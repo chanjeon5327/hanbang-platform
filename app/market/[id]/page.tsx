@@ -228,7 +228,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
             <div key={i} className={styles.tickerRow}>
               <span className={styles.tickerPrice} style={{ color: t.side === 'buy' ? '#2563EB' : '#DC2626' }}>{formatKrw(t.price)}</span>
               <span style={{ color: '#6B7280' }}>{t.qty}주</span>
-              <span style={{ fontSize: 13, color: '#9CA3AF' }}>{t.time}</span>
+              <span className={styles.tickerTime}>{t.time}</span>
             </div>
           ))}
         </div>
@@ -240,6 +240,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           <span className={styles.sectionTitleIcon} style={{ background: 'rgba(217,119,6,0.15)', color: '#D97706' }}><BookOpen size={14} /></span>
           투자정보
         </h3>
+        <div className={styles.investCard}>
         <div className={styles.investBlock}>
           <DividendInfo payoutDay={item?.payout_day ?? 3} dividendMonthlyRate={item?.dividend_monthly_rate} dividendMonthlyUsdPerShare={item?.dividend_monthly_usd_per_share} sharePriceUsd={sharePriceUsd} fxRate={fxRate} />
         </div>
@@ -253,6 +254,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           <div className={styles.investRow}><span>현재 모집</span><span>₩312,500,000 (62.5%)</span></div>
           <div className={styles.investRow}><span>청약 마감</span><span>2025-04-30</span></div>
         </div>
+        </div>
       </section>
 
       {/* PROJECT */}
@@ -261,9 +263,11 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           <span className={styles.sectionTitleIcon} style={{ background: 'rgba(3,105,161,0.15)', color: '#0369A1' }}><Users size={14} /></span>
           프로젝트 정보
         </h3>
+        <div className={styles.projectCard}>
         <div className={styles.projectContent}>
           <p style={{ marginBottom: 12 }}>스토리, 재무 현황, 팀 소개 등 프로젝트 상세 설명이 제공됩니다.</p>
           <p style={{ marginBottom: 0 }}>투자 시 유의사항 및 리스크 요인을 확인해 주세요.</p>
+        </div>
         </div>
       </section>
 

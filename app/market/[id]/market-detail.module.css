@@ -1,7 +1,7 @@
 /* ===== 토스증권 스타일 마켓 상세 ===== */
 
 .container {
-  max-width: 1180px;
+  max-width: 1120px;
   margin: 0 auto;
   padding: 0 24px;
 }
@@ -457,14 +457,24 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
+  padding: 8px 0;
   font-size: 15px;
   line-height: 1.6;
   border-bottom: 1px solid #F3F4F6;
+  transition: background 0.2s;
+}
+
+.tickerRow:hover {
+  background: rgba(0,0,0,0.03);
 }
 
 .tickerRow .tickerPrice {
   font-weight: 700;
+}
+
+.tickerRow .tickerTime {
+  font-size: 13px;
+  color: #9CA3AF;
 }
 
 .tickerRow:last-child {
@@ -472,6 +482,13 @@
 }
 
 /* ----- INVEST (배당/시뮬레이터/청약) ----- */
+.investCard {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+}
+
 .investBlock {
   padding: 16px 0;
   border-bottom: 1px solid #E5E7EB;
@@ -502,6 +519,13 @@
 }
 
 /* ----- PROJECT ----- */
+.projectCard {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+}
+
 .projectContent {
   font-size: 16px;
   line-height: 1.6;
@@ -533,10 +557,10 @@
 }
 
 .newsThumb {
-  width: 96px;
-  height: 72px;
+  width: 88px;
+  height: 64px;
   flex-shrink: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   object-fit: cover;
   background: #E5E7EB;
 }
