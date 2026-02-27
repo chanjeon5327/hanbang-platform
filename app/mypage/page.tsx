@@ -5,7 +5,7 @@ import Link from 'next/link';
 import MyPageLayout from '@/components/mypage/MyPageLayout';
 import MyAssetSummary from '@/components/mypage/MyAssetSummary';
 import MyInvestList from '@/components/mypage/MyInvestList';
-import MyHistory from '@/components/mypage/MyHistory';
+import RecordsList from '@/components/mypage/RecordsList';
 
 const HB_FANDOM_KEY = 'hb_fandom';
 
@@ -81,7 +81,7 @@ export default function MyPage() {
       </section>
       <MyAssetSummary />
       <MyInvestList />
-      <MyHistory />
+      <RecordsList />
     </MyPageLayout>
   );
 }
