@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+    return NextResponse.json({ error: "UNAUTHORIZED", orders: [] }, { status: 401 });
   }
 
   const itemId = req.nextUrl.searchParams.get("item_id");
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   const { data: orders, error } = await q;
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message, orders: [] }, { status: 500 });
   }
 
   const items = (orders ?? []).map((o: { id: string; content_id?: string; product_id?: string; type?: string; order_type?: string; price?: number; quantity?: number; filled_quantity?: number; status?: string | null; created_at?: string }) => ({

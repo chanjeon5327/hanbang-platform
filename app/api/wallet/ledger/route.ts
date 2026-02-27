@@ -16,13 +16,13 @@ export async function GET() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
+    return NextResponse.json({ error: '로그인이 필요합니다.', entries: [] }, { status: 401 });
   }
 
   try {
     await requireActiveUser(user.id);
   } catch {
-    return NextResponse.json({ error: '이 계정은 이용이 제한되었습니다.' }, { status: 403 });
+    return NextResponse.json({ error: '이 계정은 이용이 제한되었습니다.', entries: [] }, { status: 403 });
   }
 
   const { data, error } = await supabase
@@ -33,7 +33,7 @@ export async function GET() {
     .limit(50);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message, entries: [] }, { status: 500 });
   }
 
   return NextResponse.json({ entries: data ?? [] });
