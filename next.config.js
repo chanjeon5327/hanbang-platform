@@ -31,7 +31,7 @@ const nextConfig = {
     },
   ],
 
-  // 외부 이미지 허용
+  // 외부 이미지 허용 (Next/Image용, 로컬 /placeholders/는 public에서 자동 제공)
   images: {
     remotePatterns: [
       // 기존 상품 이미지(Unsplash)
@@ -42,6 +42,10 @@ const nextConfig = {
       { protocol: "https", hostname: "api.dicebear.com", pathname: "/**" },
       { protocol: "https", hostname: "img.youtube.com", pathname: "/**" },
       { protocol: "https", hostname: "i.ytimg.com", pathname: "/**" },
+
+      // Supabase Storage (뉴스/상품 썸네일)
+      { protocol: "https", hostname: "**.supabase.co", pathname: "/storage/v1/object/public/**" },
+      { protocol: "https", hostname: "**.supabase.in", pathname: "/storage/v1/object/public/**" },
     ],
   },
 

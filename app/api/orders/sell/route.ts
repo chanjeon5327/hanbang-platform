@@ -27,9 +27,13 @@ export async function POST(req: Request) {
 
     const user = authData.user;
 
-    const kycCheck = await requireKycApproved(supabase, user.id);
-    if (!kycCheck.approved) {
-      return kycCheck.response;
+    const isDemoTrading = process.env.DEMO_TRADING === "true";
+
+    if (!isDemoTrading) {
+      const kycCheck = await requireKycApproved(supabase, user.id);
+      if (!kycCheck.approved) {
+        return kycCheck.response;
+      }
     }
 
     let body: { product_id?: string; content_id?: string; quantity?: unknown; idempotency_key?: string };

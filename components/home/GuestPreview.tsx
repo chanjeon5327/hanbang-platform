@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { getYtThumb } from '@/lib/thumbnails';
+import { getYtThumb, PRODUCT_PLACEHOLDER } from '@/lib/thumbnails';
 import { usePopularPicks, type RailItem } from '@/hooks/usePopularPicks';
 
 const TOSS = { card: '#ffffff', blue: '#3182f6', text: '#191f28', secondary: '#6b7684' } as const;
@@ -16,7 +16,16 @@ function PreviewCard({ item, index }: { item: RailItem; index: number }) {
       aria-label={`${item.title} 수익권 보기`}
     >
       <div className="aspect-[4/5] relative overflow-hidden">
-        <img src={thumbSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
+        <img
+        src={thumbSrc}
+        alt=""
+        className="h-full w-full object-cover"
+        loading="lazy"
+        onError={(e) => {
+          const el = e.currentTarget;
+          if (!el.src.includes('placeholders/')) el.src = PRODUCT_PLACEHOLDER;
+        }}
+      />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" aria-hidden />
         <div className="absolute bottom-2 left-2 right-2">
           <span className="inline-block rounded-lg px-2 py-0.5 caption font-semibold text-white" style={{ backgroundColor: TOSS.blue }}>수익권</span>

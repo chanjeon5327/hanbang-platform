@@ -9,6 +9,7 @@ const inter = Inter({
 });
 import BuildStamp from '@/components/dev/BuildStamp';
 import AppContainer from '@/components/layout/AppContainer';
+import LegacyWrapper from '@/components/layout/LegacyWrapper';
 
 import Providers from './providers';
 import './globals.css';
@@ -27,12 +28,16 @@ export default function RootLayout({
     <html lang="ko" data-theme="apple" suppressHydrationWarning>
       <body className={inter.variable}>
         <Providers>
-          <Header />
-          <main>
-            <AppContainer>
-              {children}
-            </AppContainer>
-          </main>
+          <LegacyWrapper>
+            <div className="min-h-screen flex flex-col">
+              <Header />
+              <div className="flex-1 overflow-y-auto" style={{ paddingTop: 64 }}>
+                <AppContainer>
+                  {children}
+                </AppContainer>
+              </div>
+            </div>
+          </LegacyWrapper>
         </Providers>
         <BuildStamp />
       </body>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { formatKrw } from '@/lib/utils/format';
 import './MockOrderBook.css';
+import detailStyles from '@/app/market/[id]/market-detail.module.css';
 
 type Row = { price: number; qty: number };
 
@@ -13,6 +14,7 @@ type Props = {
   basePriceKrw: number;
   loading?: boolean;
   theme?: 'light' | 'dark';
+  onPriceChange?: (price: number) => void;
 };
 
 function generateRows(base: number, count: number, direction: 'up' | 'down'): Row[] {
@@ -25,23 +27,37 @@ function generateRows(base: number, count: number, direction: 'up' | 'down'): Ro
   }));
 }
 
-export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }: Props) {
+export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark', onPriceChange }: Props) {
   const isLight = theme === 'light';
   const bgColor = isLight ? '#F9FAFB' : '#1F2937';
   const textMuted = isLight ? '#6B7280' : '#9CA3AF';
   const currentBg = 'rgba(59,130,246,0.08)';
   const currentText = isLight ? '#111827' : 'white';
   const [currentPrice, setCurrentPrice] = useState(basePriceKrw);
+  const [displayPrice, setDisplayPrice] = useState(currentPrice);
   const [asks, setAsks] = useState<Row[]>([]);
   const [bids, setBids] = useState<Row[]>([]);
   const [direction, setDirection] = useState<'up' | 'down' | null>(null);
   const [priceFlashClass, setPriceFlashClass] = useState<string | null>(null);
-  const [flashedPrices, setFlashedPrices] = useState<Set<number>>(new Set());
+  const [impactKey, setImpactKey] = useState(0);
+  const [flashedPrices, setFlashedPrices] = useState<Map<number, number>>(new Map());
+  const flashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevPriceRef = useRef<number | null>(null);
   const [displayLines, setDisplayLines] = useState(PC_LINES);
   const prevRowsRef = useRef<{ asks: Row[]; bids: Row[] }>({ asks: [], bids: [] });
   const priceRef = useRef(currentPrice);
   priceRef.current = currentPrice;
+
+  const targetPriceRef = useRef(currentPrice);
+  const displayRef = useRef(currentPrice);
+  const directionRef = useRef<'up' | 'down' | null>(null);
+  const lastRoundedRef = useRef(currentPrice);
+
+  useEffect(() => {
+    return () => {
+      if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
@@ -76,25 +92,92 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
       const p = prev.bids.find((b) => b.price === r.price);
       if (p && p.qty !== r.qty) changed.add(r.price);
     });
-    setFlashedPrices(changed);
-    setTimeout(() => setFlashedPrices(new Set()), 300);
+    const ts = Date.now();
+    setFlashedPrices((prev) => {
+      const next = new Map(prev);
+      changed.forEach((price) => next.set(price, ts));
+      return next;
+    });
+    if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current);
+    flashTimeoutRef.current = setTimeout(() => {
+      setFlashedPrices(new Map());
+      flashTimeoutRef.current = null;
+    }, 120);
     prevRowsRef.current = { asks: newAsks, bids: newBids };
 
     setCurrentPrice(nextPrice);
     setAsks(newAsks);
     setBids(newBids);
-  }, [basePriceKrw]);
+    onPriceChange?.(nextPrice);
+  }, [basePriceKrw, onPriceChange]);
 
   useEffect(() => {
     if (basePriceKrw <= 0) return;
     const initAsks = generateRows(basePriceKrw, MOBILE_LINES, 'up');
     const initBids = generateRows(basePriceKrw, MOBILE_LINES, 'down');
     setCurrentPrice(basePriceKrw);
+    setDisplayPrice(basePriceKrw);
+    targetPriceRef.current = basePriceKrw;
+    displayRef.current = basePriceKrw;
+    lastRoundedRef.current = basePriceKrw;
     setAsks(initAsks);
     setBids(initBids);
     prevRowsRef.current = { asks: initAsks, bids: initBids };
     prevPriceRef.current = basePriceKrw;
   }, [basePriceKrw]);
+
+  useEffect(() => {
+    targetPriceRef.current = currentPrice;
+    directionRef.current = direction;
+    if (Math.abs(currentPrice - displayRef.current) < 3) {
+      displayRef.current = currentPrice;
+      lastRoundedRef.current = currentPrice;
+      setDisplayPrice(currentPrice);
+    }
+  }, [currentPrice, direction]);
+
+  const isFirstPriceRef = useRef(true);
+  useEffect(() => {
+    if (isFirstPriceRef.current) {
+      isFirstPriceRef.current = false;
+      return;
+    }
+    setImpactKey((k) => k + 1);
+  }, [currentPrice]);
+
+  useEffect(() => {
+    const ALPHA_UP = 0.22;
+    const ALPHA_DOWN = 0.08;
+    let frameId: number;
+
+    function loop() {
+      const target = targetPriceRef.current;
+      let display = displayRef.current;
+
+      if (Math.abs(target - display) < 3) {
+        display = target;
+      } else {
+        const delta = target - display;
+        const alpha = delta > 0 ? ALPHA_UP : ALPHA_DOWN;
+        display += delta * alpha;
+      }
+
+      displayRef.current = display;
+      const rounded = Math.round(display);
+      if (rounded !== lastRoundedRef.current) {
+        lastRoundedRef.current = rounded;
+        setDisplayPrice(rounded);
+      }
+
+      frameId = requestAnimationFrame(loop);
+    }
+
+    frameId = requestAnimationFrame(loop);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+    };
+  }, []);
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -114,16 +197,16 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
     r,
     side,
     i,
-    isFlashed,
+    pulseKey,
   }: {
     r: Row;
     side: 'ask' | 'bid';
     i: number;
-    isFlashed?: boolean;
+    pulseKey?: number;
   }) => (
     <div
-      key={`${side}-${i}`}
-      className={isFlashed ? 'orderRowFlash' : ''}
+      key={`${side}-${i}-${pulseKey ?? 'base'}`}
+      className={pulseKey ? detailStyles.orderSizeChange : ''}
       style={{ position: 'relative', overflow: 'hidden' }}
     >
       <div
@@ -186,7 +269,7 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
     >
       <div style={{ marginBottom: 4, flex: 1, minHeight: 0 }}>
         {askSlice.map((r, i) => (
-            <RowWithBar key={`a-${i}`} r={r} side="ask" i={i} isFlashed={flashedPrices.has(r.price)} />
+            <RowWithBar key={`a-${i}`} r={r} side="ask" i={i} pulseKey={flashedPrices.get(r.price)} />
           ))}
       </div>
 
@@ -204,8 +287,8 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
           color: currentText,
         }}
       >
-        <span>
-          {formatKrw(currentPrice)}
+        <span key={impactKey} className={impactKey > 0 ? detailStyles.priceImpact : ''}>
+          {formatKrw(displayPrice)}
           {direction === 'up' && <span style={{ color: '#22C55E', marginLeft: 4 }}>▲</span>}
           {direction === 'down' && <span style={{ color: '#EF4444', marginLeft: 4 }}>▼</span>}
         </span>
@@ -214,7 +297,7 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark' }:
 
       <div style={{ flex: 1, minHeight: 0 }}>
         {bidSlice.map((r, i) => (
-            <RowWithBar key={`b-${i}`} r={r} side="bid" i={i} isFlashed={flashedPrices.has(r.price)} />
+            <RowWithBar key={`b-${i}`} r={r} side="bid" i={i} pulseKey={flashedPrices.get(r.price)} />
           ))}
       </div>
     </div>

@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { createChart, ColorType, LineSeries, AreaSeries, CrosshairMode } from 'lightweight-charts';
+import { createChart, ColorType, LineSeries, CrosshairMode } from 'lightweight-charts';
+import styles from '@/app/market/[id]/market-detail.module.css';
 
 type LineDataPoint = { time: string; value: number };
 
-const TIMEFRAMES = ['tick', '1m', '1h', '1d', '1M'] as const;
+const TIMEFRAMES = ['tick', '1d', '1w', '1M', '1Y'] as const;
 type Timeframe = (typeof TIMEFRAMES)[number];
 
 const INDICATORS = ['MA5', 'MA20', 'BB'] as const;
@@ -16,12 +17,16 @@ function generatePriceData(
   seed: number,
   timeframe: Timeframe
 ): LineDataPoint[] {
-  const counts: Record<Timeframe, number> = { tick: 100, '1m': 60, '1h': 48, '1d': 30, '1M': 12 };
+  const counts: Record<Timeframe, number> = { tick: 100, '1d': 2, '1w': 7, '1M': 30, '1Y': 365 };
   const days = counts[timeframe];
   const now = new Date();
+  const basePrice = currentPriceKrw;
   const data: LineDataPoint[] = [];
-  let price = currentPriceKrw * 0.92;
-  const volatility = currentPriceKrw * 0.02;
+  let price = basePrice * 0.99;
+  const volatility = basePrice * 0.02 * 0.3;
+  const drift = basePrice * 0.0002;
+  const driftSign = (seed % 2) * 2 - 1;
+  const driftPerStep = (driftSign * drift) / (days + 1);
   let r = seed;
 
   for (let i = days; i >= 0; i--) {
@@ -30,12 +35,25 @@ function generatePriceData(
     const dateStr = d.toISOString().slice(0, 10);
     r = (r * 9301 + 49297) % 233280;
     const rand = r / 233280;
-    price = price + (rand - 0.48) * volatility;
-    price = Math.max(price, currentPriceKrw * 0.85);
-    price = Math.min(price, currentPriceKrw * 1.15);
-    if (i === 0) price = currentPriceKrw;
+    price = price + (rand - 0.48) * volatility + driftPerStep;
+    price = Math.max(price, basePrice * 0.97);
+    price = Math.min(price, basePrice * 1.03);
+    if (i === 0) price = basePrice;
     data.push({ time: dateStr, value: Math.round(price) });
   }
+
+  const values = data.map((p) => p.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  if ((max - min) / basePrice > 0.03) {
+    const mid = (min + max) / 2;
+    const scale = (basePrice * 0.03) / (max - min);
+    for (let i = 0; i < data.length; i++) {
+      data[i].value = Math.round(mid + (data[i].value - mid) * scale);
+    }
+    data[data.length - 1].value = Math.round(basePrice);
+  }
+
   return data;
 }
 
@@ -74,23 +92,96 @@ type Props = {
 export default function RealPriceChart({ priceKrw, loading, height = 420, theme = 'dark' }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [timeframe, setTimeframe] = useState<Timeframe>('tick');
+  const [chartPulseActive, setChartPulseActive] = useState(false);
+  const prevPriceRef = useRef(priceKrw);
+  const lastPulseTimeRef = useRef(0);
+
+  const chartTargetRef = useRef(priceKrw);
+  const chartDisplayRef = useRef(priceKrw);
+  const lastRoundedRef = useRef(priceKrw);
+  const [chartDisplayPrice, setChartDisplayPrice] = useState(priceKrw);
+
+  useEffect(() => {
+    if (priceKrw > 0) chartTargetRef.current = priceKrw;
+  }, [priceKrw]);
+
+  useEffect(() => {
+    if (!loading && priceKrw > 0) {
+      chartTargetRef.current = priceKrw;
+      chartDisplayRef.current = priceKrw;
+      lastRoundedRef.current = priceKrw;
+      setChartDisplayPrice(priceKrw);
+    }
+  }, [loading, priceKrw]);
+
+  useEffect(() => {
+    const ALPHA = 0.06;
+    let frameId: number;
+
+    function loop() {
+      const target = chartTargetRef.current;
+      let display = chartDisplayRef.current;
+
+      const delta = target - display;
+      display += delta * ALPHA;
+
+      chartDisplayRef.current = display;
+      const rounded = Math.round(display);
+      if (rounded !== lastRoundedRef.current) {
+        lastRoundedRef.current = rounded;
+        setChartDisplayPrice(rounded);
+        const arr = dataRef.current;
+        const lastTime = lastBarTimeRef.current;
+        if (arr.length > 0 && lastTime !== null) {
+          arr[arr.length - 1].value = rounded;
+          mainSeriesRef.current?.update({ time: lastTime, value: rounded });
+        }
+      }
+
+      frameId = requestAnimationFrame(loop);
+    }
+
+    frameId = requestAnimationFrame(loop);
+
+    return () => cancelAnimationFrame(frameId);
+  }, []);
+
+  useEffect(() => {
+    if (prevPriceRef.current !== priceKrw && priceKrw > 0) {
+      prevPriceRef.current = priceKrw;
+      const now = Date.now();
+      if (now - lastPulseTimeRef.current >= 300) {
+        lastPulseTimeRef.current = now;
+        setChartPulseActive(true);
+        const t = setTimeout(() => setChartPulseActive(false), 200);
+        return () => clearTimeout(t);
+      }
+    }
+    prevPriceRef.current = priceKrw;
+  }, [priceKrw]);
+
   const [indicators, setIndicators] = useState<Record<Indicator, boolean>>({
     MA5: true,
-    MA20: true,
-    BB: true,
+    MA20: false,
+    BB: false,
   });
 
-  const data = useMemo(
-    () =>
-      priceKrw > 0
-        ? generatePriceData(priceKrw, Math.floor(priceKrw) % 233280 + timeframe.length, timeframe)
-        : [],
-    [priceKrw, timeframe]
-  );
+  const dataRef = useRef<LineDataPoint[]>([]);
+  const lastBarTimeRef = useRef<string | null>(null);
+  const mainSeriesRef = useRef<{ update: (data: LineDataPoint) => void } | null>(null);
 
-  const sma5 = useMemo(() => calculateSMA(data, 5), [data]);
-  const sma20 = useMemo(() => calculateSMA(data, 20), [data]);
-  const bb = useMemo(() => calculateBB(data, 20), [data]);
+  useEffect(() => {
+    if (!loading && priceKrw > 0) {
+      const initialPrice = chartDisplayRef.current > 0 ? chartDisplayRef.current : priceKrw;
+      const initial = generatePriceData(
+        initialPrice,
+        Math.floor(initialPrice) % 233280 + timeframe.length,
+        timeframe
+      );
+      dataRef.current = initial;
+      lastBarTimeRef.current = initial.length > 0 ? initial[initial.length - 1].time : null;
+    }
+  }, [loading, timeframe]);
 
   const isLight = theme === 'light';
   const bgColor = isLight ? '#F9FAFB' : '#1F2937';
@@ -98,7 +189,12 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
   const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
 
   useEffect(() => {
-    if (!ref.current || loading || data.length === 0) return;
+    if (!ref.current || loading || dataRef.current.length === 0) return;
+    const data = dataRef.current;
+    const sma5 = calculateSMA(data, 5);
+    const sma20 = calculateSMA(data, 20);
+    const bb = calculateBB(data, 20);
+
     const chart = createChart(ref.current, {
       layout: {
         background: { type: ColorType.Solid, color: bgColor },
@@ -122,44 +218,10 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
       },
       rightPriceScale: {
         borderVisible: false,
-        scaleMargins: { top: 0.1, bottom: 0.2 },
       },
       timeScale: { borderVisible: false },
     });
 
-    if (indicators.BB && bb.upper.length > 0) {
-      const bandFill = 'rgba(239,68,68,0.12)';
-      const upperArea = chart.addSeries(AreaSeries, {
-        lineColor: 'transparent',
-        topColor: bandFill,
-        bottomColor: 'transparent',
-        lineWidth: 1,
-        lineVisible: false,
-        title: 'BB영역',
-      });
-      upperArea.setData(bb.upper);
-      const lowerArea = chart.addSeries(AreaSeries, {
-        lineColor: 'transparent',
-        topColor: bgColor,
-        bottomColor: 'transparent',
-        lineWidth: 1,
-        lineVisible: false,
-        title: 'BB마스크',
-      });
-      lowerArea.setData(bb.lower);
-      const upperSeries = chart.addSeries(LineSeries, {
-        color: '#EA580C',
-        lineWidth: 1,
-        title: 'BB상단',
-      });
-      upperSeries.setData(bb.upper);
-      const lowerSeries = chart.addSeries(LineSeries, {
-        color: '#EA580C',
-        lineWidth: 1,
-        title: 'BB하단',
-      });
-      lowerSeries.setData(bb.lower);
-    }
     if (indicators.MA20 && sma20.length > 0) {
       const s = chart.addSeries(LineSeries, {
         color: '#10B981',
@@ -176,16 +238,52 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
       });
       s.setData(sma5);
     }
+    if (indicators.BB && bb.upper.length > 0) {
+      const su = chart.addSeries(LineSeries, {
+        color: 'rgba(139, 92, 246, 0.8)',
+        lineWidth: 1,
+        title: 'BB 상단',
+      });
+      su.setData(bb.upper);
+      const sl = chart.addSeries(LineSeries, {
+        color: 'rgba(139, 92, 246, 0.8)',
+        lineWidth: 1,
+        title: 'BB 하단',
+      });
+      sl.setData(bb.lower);
+    }
 
     const mainSeries = chart.addSeries(LineSeries, {
       color: '#2563EB',
       lineWidth: 2,
     });
     mainSeries.setData(data);
+
+    const priceScale = chart.priceScale('right');
+    priceScale.applyOptions({
+      autoScale: false,
+    });
+
+    const allValues: number[] = data.map((d) => d.value);
+    if (indicators.MA5 && sma5.length > 0) sma5.forEach((d) => allValues.push(d.value));
+    if (indicators.MA20 && sma20.length > 0) sma20.forEach((d) => allValues.push(d.value));
+    if (indicators.BB && bb.upper.length > 0) {
+      bb.upper.forEach((d) => allValues.push(d.value));
+      bb.lower.forEach((d) => allValues.push(d.value));
+    }
+
+    const minPrice = Math.min(...allValues);
+    const maxPrice = Math.max(...allValues);
+    priceScale.setVisibleRange({ from: minPrice, to: maxPrice });
+
+    mainSeriesRef.current = mainSeries;
     chart.timeScale().fitContent();
 
-    return () => chart.remove();
-  }, [data, sma5, sma20, bb, indicators, loading, height, bgColor, textColor, gridColor]);
+    return () => {
+      mainSeriesRef.current = null;
+      chart.remove();
+    };
+  }, [loading, timeframe, indicators, height, bgColor, textColor, gridColor]);
 
   const toggleIndicator = (id: Indicator) => {
     setIndicators((p) => ({ ...p, [id]: !p[id] }));
@@ -251,7 +349,10 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
           </button>
         ))}
       </div>
-      <div ref={ref} style={{ height, borderRadius: 12 }} />
+      <div style={{ position: 'relative' }}>
+        <div ref={ref} style={{ height, borderRadius: 12 }} />
+        {chartPulseActive && <div className={styles.chartPulse} aria-hidden />}
+      </div>
     </div>
   );
 }

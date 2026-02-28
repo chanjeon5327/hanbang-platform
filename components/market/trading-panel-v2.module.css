@@ -1,0 +1,90 @@
+.qtyControl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qtyControl button {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #eee;
+  border: none;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #374151;
+}
+
+.qtyControl button:hover {
+  background: #e5e7eb;
+}
+
+.qtyControl button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.qtyControl input {
+  flex: 1;
+}
+
+.pctButtons {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pctBtn {
+  flex: 1;
+  height: 36px;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  background: #e5e7eb;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pctBtn:hover:not(:disabled) {
+  background: #d1d5db;
+}
+
+.pctBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.totalBox {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.totalLabel {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.totalValue {
+  font-size: 22px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.5px;
+}
+
+.feeText {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 6px;
+}

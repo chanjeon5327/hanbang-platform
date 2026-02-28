@@ -6,6 +6,12 @@
 /** thumbnail_url 없을 때 fallback (밝고 긍정적인 이미지) */
 export const FALLBACK_PREVIEW_IMAGE = '/sample-bright.jpg';
 
+/** 뉴스 썸네일 onError fallback */
+export const NEWS_PLACEHOLDER = '/placeholders/news-placeholder.png';
+
+/** 상품/프리뷰 썸네일 onError fallback */
+export const PRODUCT_PLACEHOLDER = '/placeholders/product-placeholder.png';
+
 export const YT_THUMBS = [
   "9bZkp7q19f0", // BTS
   "3tmd-ClpJxA", // Blackpink

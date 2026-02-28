@@ -14,6 +14,7 @@
     "migrations:dump-local": "node scripts/dump-local-migrations.mjs",
     "migrations:compare": "node scripts/dump-remote-migrations.mjs && node scripts/dump-local-migrations.mjs && node scripts/compare-migrations.mjs",
     "test:partial-sell": "node scripts/run-partial-sell-test.mjs",
+    "test:trade:demo": "node scripts/e2e-trade-demo.mjs",
     "test:e2e:engine": "node scripts/e2e-engine-v1_5.mjs",
     "test:e2e:exchange": "node scripts/e2e-exchange-dividend.mjs",
     "release:exchange-v2": "node scripts/release-exchange-v2.mjs",

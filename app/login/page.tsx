@@ -1,176 +1,196 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
-import { login } from '@/lib/auth/client';
-import { useToast } from '@/context/ToastContext';
-import { HBCard } from '@/components/ui/HBCard';
+import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import styles from './login.module.css';
+import { createClient } from '@/utils/supabase/client';
 
-/* AUTH Phase-2: 로그인 이유 메시지 */
-const REASON_MSG: Record<string, string> = {
-  concurrent:   '다른 기기에서 로그인하여 현재 세션이 종료되었습니다.',
-  force_logout: '관리자에 의해 로그아웃 처리되었습니다.',
-};
+type Tab = 'investor' | 'creator';
 
-function LoginForm() {
-  const { toast } = useToast();
+export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const reason = searchParams.get('reason');
+  const supabase = useMemo(() => createClient(), []);
 
-  const [email, setEmail] = useState('');
+  const [tab, setTab] = useState<Tab>('investor');
+  const [email, setEmail] = useState('test@hanbang.com');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(reason ? REASON_MSG[reason] ?? null : null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (loading) return;
-
-    const emailTrimmed = email.trim();
-    if (!emailTrimmed || !emailTrimmed.includes('@')) {
-      setError('올바른 이메일 주소를 입력해주세요.');
-      return;
-    }
-    if (!password || password.length < 1) {
-      setError('비밀번호를 입력해주세요.');
-      return;
-    }
-
-    setLoading(true);
+  async function signInOAuth(provider: 'kakao' | 'google') {
+    setBusy(true);
     setError(null);
-
-    const result = await login(emailTrimmed, password);
-
-    if (result.ok) {
-      toast('로그인에 성공했습니다.');
-      const next = searchParams.get('next');
-      router.replace(next && next.startsWith('/') ? next : '/');
-      return;
+    try {
+      const redirectTo = `${window.location.origin}/auth/callback`;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: provider as any,
+        options: { redirectTo },
+      });
+      if (error) throw error;
+      // redirect는 supabase가 처리
+    } catch (e: any) {
+      setError(e?.message || 'OAuth 로그인에 실패했습니다.');
+      setBusy(false);
     }
+  }
 
-    setError(result.error);
-    setLoading(false);
+  async function connectWallet() {
+    setBusy(true);
+    setError(null);
+    try {
+      const eth = (window as any).ethereum;
+      if (!eth) {
+        setError('MetaMask 확장프로그램이 필요합니다.');
+        setBusy(false);
+        return;
+      }
+      await eth.request({ method: 'eth_requestAccounts' });
+      // 지갑 로그인/연동은 이후 단계(지금은 UI 먼저 완성)
+      router.push('/');
+    } catch (e: any) {
+      setError(e?.message || '지갑 연결에 실패했습니다.');
+      setBusy(false);
+    }
+  }
+
+  async function signInEmail(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      router.push('/');
+    } catch (e: any) {
+      setError(e?.message || '이메일 로그인에 실패했습니다.');
+      setBusy(false);
+    }
+  }
+
+  async function signUpEmail() {
+    setBusy(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      });
+      if (error) throw error;
+      setError('가입 메일을 확인해 주세요.');
+      setBusy(false);
+    } catch (e: any) {
+      setError(e?.message || '회원가입에 실패했습니다.');
+      setBusy(false);
+    }
   }
 
   return (
-    <HBCard variant="elevated">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-3">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="이메일"
-            autoComplete="email"
-            className="w-full px-4 py-3 rounded-[12px] border outline-none transition-all"
-            style={{
-              backgroundColor: 'var(--bg)',
-              borderColor: 'var(--border)',
-              color: 'var(--text-primary)',
-            }}
-            required
-          />
+    <div className={styles.page}>
+      <div className={styles.wrap}>
+        <div className={styles.title}>투자를 시작하세요</div>
 
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="비밀번호"
-            autoComplete="current-password"
-            className="w-full px-4 py-3 rounded-[12px] border outline-none transition-all"
-            style={{
-              backgroundColor: 'var(--bg)',
-              borderColor: 'var(--border)',
-              color: 'var(--text-primary)',
-            }}
-            required
-          />
-        </div>
-
-        {/* 에러/이유 메시지 */}
-        {error && (
-          <div
-            className="px-3 py-2 rounded-xl text-sm"
-            style={{
-              background: 'rgba(220,38,38,0.08)',
-              color: 'var(--accent-loss)',
-              border: '1px solid rgba(220,38,38,0.2)',
-            }}
-          >
-            {error}
+        <div className={styles.card}>
+          <div className={styles.tabRow}>
+            <button
+              type="button"
+              className={`${styles.tab} ${tab === 'investor' ? styles.tabActive : ''}`}
+              onClick={() => setTab('investor')}
+              disabled={busy}
+            >
+              일반 투자자
+            </button>
+            <button
+              type="button"
+              className={`${styles.tab} ${tab === 'creator' ? styles.tabActive : ''}`}
+              onClick={() => setTab('creator')}
+              disabled={busy}
+            >
+              크리에이터 (전문가)
+            </button>
           </div>
-        )}
 
-        {/* 로그인 버튼 */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3.5 rounded-[16px] font-bold flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-50 tap-scale"
-          style={{
-            backgroundColor: 'var(--royal-blue)',
-            color: '#fff',
-            boxShadow: 'var(--shadow-royal)',
-          }}
-        >
-          {loading ? (
-            <>
-              <Loader2 size={16} className="animate-spin" />
-              로그인 중...
-            </>
-          ) : (
-            '로그인'
-          )}
-        </button>
-      </form>
-
-      <div className="mt-5 pt-4 border-t space-y-2 text-center" style={{ borderColor: 'var(--border)' }}>
-        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-          비밀번호를 잊으셨나요?{' '}
-          <Link href="/forgot-password" className="font-semibold" style={{ color: 'var(--royal-blue)' }}>
-            비밀번호 찾기
-          </Link>
-        </p>
-        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-          계정이 없으신가요?{' '}
-          <Link href="/signup" className="font-semibold" style={{ color: 'var(--royal-blue)' }}>
-            회원가입
-          </Link>
-        </p>
-      </div>
-    </HBCard>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <div
-      className="flex justify-center items-center min-h-screen px-4"
-      style={{ backgroundColor: 'var(--bg)' }}
-    >
-      <div className="w-full max-w-md hb-stagger">
-        {/* 브랜드 헤더 */}
-        <div className="text-center mb-8">
-          <div
-            className="inline-block px-3 py-1 rounded-full text-xs font-bold mb-3"
-            style={{ background: 'rgba(59,130,246,0.1)', color: 'var(--royal-blue)' }}
+          <button
+            type="button"
+            className={styles.kakaoBtn}
+            onClick={() => signInOAuth('kakao')}
+            disabled={busy}
           >
-            HANBANG
-          </div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-            로그인
-          </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-            플랫폼에 오신 것을 환영합니다
-          </p>
-        </div>
+            카카오로 시작하기
+          </button>
 
-        {/* Suspense: useSearchParams 사용 컴포넌트 감싸기 (Next.js 요구사항) */}
-        <Suspense fallback={<HBCard variant="elevated"><div className="h-48 animate-pulse" style={{ background: 'var(--bg-secondary)' }} /></HBCard>}>
-          <LoginForm />
-        </Suspense>
+          <button
+            type="button"
+            className={styles.googleBtn}
+            onClick={() => signInOAuth('google')}
+            disabled={busy}
+          >
+            구글로 시작하기
+          </button>
+
+          <button
+            type="button"
+            className={styles.walletBtn}
+            onClick={connectWallet}
+            disabled={busy}
+          >
+            지갑 연결 (Metamask)
+          </button>
+
+          <div className={styles.dividerRow}>
+            <div className={styles.dividerLine} />
+            <div className={styles.dividerText}>또는 이메일로 시작하기</div>
+            <div className={styles.dividerLine} />
+          </div>
+
+          <form onSubmit={signInEmail} className={styles.form}>
+            <input
+              className={styles.input}
+              placeholder="이메일"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={busy}
+              autoComplete="email"
+            />
+            <input
+              className={styles.input}
+              placeholder="비밀번호 (6자리 이상)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={busy}
+              type="password"
+              autoComplete="current-password"
+            />
+
+            <button className={styles.emailLoginBtn} type="submit" disabled={busy}>
+              이메일로 로그인
+            </button>
+          </form>
+
+          {error ? <div className={styles.error}>{error}</div> : null}
+
+          <div className={styles.links}>
+            <button
+              type="button"
+              className={styles.linkBtn}
+              onClick={() => router.push('/login')}
+              disabled={busy}
+            >
+              비밀번호 찾기
+            </button>
+            <span className={styles.dot}>·</span>
+            <button type="button" className={styles.linkBtn} onClick={signUpEmail} disabled={busy}>
+              회원가입
+            </button>
+          </div>
+
+          <div className={styles.note}>
+            선택된 유형: <b>{tab === 'investor' ? '일반 투자자' : '크리에이터(전문가)'}</b>
+          </div>
+        </div>
       </div>
     </div>
   );

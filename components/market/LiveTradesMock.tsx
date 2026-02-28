@@ -57,7 +57,7 @@ export default function LiveTradesMock({ basePriceKrw }: Props) {
           >
             {formatKrw(t.price)}
           </span>
-          <span style={{ color: '#6B7280' }}>{t.qty}주</span>
+          <span className={styles.tickerQty}>{t.qty}주</span>
           <span className={styles.tickerTime}>{t.time}</span>
         </div>
       ))}

@@ -1,165 +1,365 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
-function num(x: unknown, d = 0) {
-  const n = Number(x);
-  return Number.isFinite(n) ? n : d;
+type ColumnMeta = {
+  column_name: string;
+  is_nullable: 'YES' | 'NO' | string;
+  column_default: string | null;
+  data_type: string | null;
+  udt_name: string | null;
+  is_identity?: 'YES' | 'NO' | string | null;
+};
+
+type FkTarget = { table: string; column: string } | null;
+
+const BANNED_ORDER_COLS = new Set(['amount_krw', 'fee_krw', 'total_krw', 'notional_krw']); // ← 절대 넣지 않음
+
+function nowIso() {
+  return new Date().toISOString();
+}
+function n(v: unknown) {
+  const x = Number(v);
+  return Number.isFinite(x) ? x : 0;
+}
+function pickError(e: unknown) {
+  const err = e as { message?: string; code?: string; details?: string; hint?: string };
+  return {
+    message: err?.message ?? String(e ?? ''),
+    code: err?.code ?? null,
+    details: err?.details ?? null,
+    hint: err?.hint ?? null,
+  };
+}
+function toErrString(prefix: string, e: unknown) {
+  const pe = pickError(e);
+  return [
+    prefix,
+    pe.message ? `msg=${pe.message}` : '',
+    pe.code ? `code=${pe.code}` : '',
+    pe.details ? `details=${pe.details}` : '',
+    pe.hint ? `hint=${pe.hint}` : '',
+  ]
+    .filter(Boolean)
+    .join(' | ');
 }
 
-async function detectOrdersFkColumn(supabase: any): Promise<string[]> {
-  const candidates = ['content_item_id', 'item_id', 'content_id', 'product_id', 'asset_id'];
-
-  const probe = await supabase.from('orders').select('*').limit(1);
-  const row = probe?.data?.[0];
-  if (row && typeof row === 'object') {
-    const keys = new Set(Object.keys(row));
-    const hit = candidates.filter((c) => keys.has(c));
-    if (hit.length > 0) return hit;
+function setIf(colSet: Set<string>, payload: Record<string, unknown>, candidates: string[], value: unknown) {
+  for (const c of candidates) {
+    if (colSet.has(c) && !BANNED_ORDER_COLS.has(c)) {
+      payload[c] = value;
+      return c;
+    }
   }
-
-  return candidates;
+  return null;
 }
 
-async function insertOrderWithFkFallback(supabase: any, base: Record<string, unknown>, fkKeys: string[], contentId: string) {
-  let lastErr: unknown = null;
-  for (const k of fkKeys) {
-    const payload = { ...base, [k]: contentId };
-    const { data, error } = await supabase.from('orders').insert(payload).select('*').single();
-    if (!error) return { row: data, usedKey: k };
-    lastErr = error;
+async function getColumns(supabase: any): Promise<ColumnMeta[] | null> {
+  try {
+    if (typeof (supabase as any).schema === 'function') {
+      const { data, error } = await (supabase as any)
+        .schema('information_schema')
+        .from('columns')
+        .select('column_name,is_nullable,column_default,data_type,udt_name,is_identity')
+        .eq('table_schema', 'public')
+        .eq('table_name', 'orders');
+      if (error) return null;
+      return Array.isArray(data) ? (data as ColumnMeta[]) : null;
+    }
+  } catch {
+    // ignore
   }
-  throw new Error((lastErr as { message?: string })?.message || 'ORDER_CREATE_FAILED');
+  try {
+    const { data, error } = await supabase
+      .from('information_schema.columns')
+      .select('column_name,is_nullable,column_default,data_type,udt_name,is_identity')
+      .eq('table_schema', 'public')
+      .eq('table_name', 'orders');
+    if (error) return null;
+    return Array.isArray(data) ? (data as ColumnMeta[]) : null;
+  } catch {
+    return null;
+  }
 }
 
-async function tryInsertLedgerDebit(supabase: any, userId: string, amountKrw: number, memo: string) {
-  const probe = await supabase.from('ledger_entries').select('*').limit(1);
-  const sample = probe?.data?.[0] ?? null;
-  const keys = sample && typeof sample === 'object' ? new Set(Object.keys(sample)) : new Set<string>();
+async function safeSelectById(supabase: any, table: string, id: string, select: string) {
+  try {
+    const { data, error } = await supabase.from(table).select(select).eq('id', id).limit(1);
+    if (error) return null;
+    return Array.isArray(data) && data[0] ? data[0] : null;
+  } catch {
+    return null;
+  }
+}
+async function safeSelectFirst(supabase: any, table: string, select: string) {
+  try {
+    const { data, error } = await supabase.from(table).select(select).limit(1);
+    if (error) return null;
+    return Array.isArray(data) && data[0] ? data[0] : null;
+  } catch {
+    return null;
+  }
+}
 
-  const amountKey = keys.has('amount_krw') ? 'amount_krw' : keys.has('amount') ? 'amount' : null;
-  const typeKey = keys.has('entry_type') ? 'entry_type' : keys.has('type') ? 'type' : null;
-  const memoKey = keys.has('memo') ? 'memo' : keys.has('note') ? 'note' : null;
-  const userKey = keys.has('user_id') ? 'user_id' : null;
+/**
+ * orders.product_id FK가 어디로 걸리는지 찾아서(대부분 products.id) 반환
+ * 실패하면 null
+ */
+async function getProductIdFkTarget(supabase: any): Promise<FkTarget> {
+  try {
+    let kcu: unknown[] = [];
+    if (typeof (supabase as any).schema === 'function') {
+      const r = await (supabase as any)
+        .schema('information_schema')
+        .from('key_column_usage')
+        .select('constraint_name,constraint_schema')
+        .eq('table_schema', 'public')
+        .eq('table_name', 'orders')
+        .eq('column_name', 'product_id')
+        .limit(5);
+      if (r.error || !Array.isArray(r.data)) return null;
+      kcu = r.data;
+    } else {
+      const r = await supabase
+        .from('information_schema.key_column_usage')
+        .select('constraint_name,constraint_schema')
+        .eq('table_schema', 'public')
+        .eq('table_name', 'orders')
+        .eq('column_name', 'product_id')
+        .limit(5);
+      if (r.error || !Array.isArray(r.data)) return null;
+      kcu = r.data;
+    }
 
-  if (!amountKey || !typeKey) return { ok: false, reason: 'ledger schema unknown' };
+    for (const row of kcu as Record<string, unknown>[]) {
+      const constraintName = row?.constraint_name;
+      const constraintSchema = (row?.constraint_schema ?? 'public') as string;
+      if (!constraintName) continue;
 
-  const row: Record<string, unknown> = {};
-  row[typeKey] = 'CASH_DEBIT';
-  row[amountKey] = -Math.round(amountKrw);
-  if (memoKey) row[memoKey] = memo;
-  if (userKey) row[userKey] = userId;
+      let ccu: unknown[] = [];
+      if (typeof (supabase as any).schema === 'function') {
+        const r2 = await (supabase as any)
+          .schema('information_schema')
+          .from('constraint_column_usage')
+          .select('table_name,column_name')
+          .eq('constraint_schema', constraintSchema)
+          .eq('constraint_name', constraintName)
+          .limit(1);
+        if (r2.error) continue;
+        ccu = Array.isArray(r2.data) ? r2.data : [];
+      } else {
+        const r2 = await supabase
+          .from('information_schema.constraint_column_usage')
+          .select('table_name,column_name')
+          .eq('constraint_schema', constraintSchema)
+          .eq('constraint_name', constraintName)
+          .limit(1);
+        if (r2.error) continue;
+        ccu = Array.isArray(r2.data) ? r2.data : [];
+      }
 
-  const { error } = await supabase.from('ledger_entries').insert(row);
-  if (error) return { ok: false, reason: error.message };
-  return { ok: true };
+      const c = ccu[0] as Record<string, unknown> | undefined;
+      if (c?.table_name && c?.column_name) {
+        return { table: String(c.table_name), column: String(c.column_name) };
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function guessDefaultForColumn(col: string, meta: ColumnMeta | undefined, ctx: Record<string, unknown>) {
+  const name = col.toLowerCase();
+  const dt = (meta?.data_type ?? '').toLowerCase();
+  const udt = (meta?.udt_name ?? '').toLowerCase();
+
+  if (BANNED_ORDER_COLS.has(col)) return undefined;
+
+  if (name.includes('created_at') || name.includes('updated_at') || dt.includes('timestamp')) return nowIso();
+  if (dt === 'boolean') return false;
+
+  if (name.includes('status')) return ctx.status ?? 'PENDING';
+  if (name.includes('side') || name.includes('direction')) return ctx.side ?? 'BUY';
+  if (name === 'order_type') return ctx.orderType ?? 'BUY';
+  if (name === 'type' || name.includes('order_kind')) return ctx.kind ?? 'LIMIT';
+
+  if (name.includes('price')) return ctx.price ?? 0;
+  if (name.includes('qty') || name.includes('quantity') || name.includes('shares') || name.includes('units')) return ctx.qty ?? 1;
+  if (name.includes('amount') || name.includes('total') || name.includes('notional')) return ctx.amount ?? 0;
+
+  if (dt === 'text' || dt === 'character varying' || dt === 'character') return 'DEMO';
+  if (dt.includes('int') || dt.includes('numeric') || dt.includes('double') || dt.includes('real') || udt.includes('int') || udt.includes('numeric')) return 0;
+
+  return undefined;
 }
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
-  try {
-    const supabase = await createClient();
-    const demo = process.env.DEMO_TRADING === 'true';
+  const supabase = await createClient();
+  const DEMO_TRADING = process.env.DEMO_TRADING === 'true';
 
-    const { data: auth } = await supabase.auth.getUser();
-    const user = auth?.user;
-    if (!user) return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
+  const { data: userData, error: userErr } = await supabase.auth.getUser();
+  const user = userData?.user ?? null;
+  if (userErr || !user) return NextResponse.json({ ok: false, error: 'UNAUTHENTICATED' }, { status: 401 });
 
-    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
-    const contentId = String(body?.content_id || body?.contentId || body?.item_id || body?.id || '').trim();
-    if (!contentId) return NextResponse.json({ ok: false, error: 'MISSING_content_id' }, { status: 400 });
+  const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
 
-    const qty = Math.max(1, Math.floor(num(body?.amount ?? body?.quantity ?? body?.qty, 1)));
-    let priceKrw = Math.round(num(body?.price_krw ?? body?.priceKrw ?? body?.price, 0));
+  const contentId: string =
+    String(
+      body?.content_id ??
+        body?.contentId ??
+        body?.content_item_id ??
+        body?.contentItemId ??
+        body?.id ??
+        ''
+    ).trim();
 
-    if (!priceKrw) {
-      const itemRes = await supabase.from('content_items').select('*').eq('id', contentId).maybeSingle();
-      const item = itemRes?.data as Record<string, unknown> | null;
+  if (!contentId) return NextResponse.json({ ok: false, error: 'MISSING_CONTENT_ID' }, { status: 400 });
 
-      const fromItem = num(
-        item?.price_krw ??
-          item?.share_price_krw ??
-          item?.sharePriceKrw ??
-          item?.current_price_krw ??
-          item?.currentPriceKrw ??
-          0,
-        0
-      );
-      priceKrw = fromItem > 0 ? Math.round(fromItem) : Math.round(num(item?.share_price_usd ?? item?.sharePriceUsd ?? 0, 0) * 1350) || 10000;
+  const bodyProductId: string =
+    String(body?.product_id ?? body?.productId ?? body?.product ?? '').trim();
+
+  const rawAmount = n(body?.amount ?? body?.total ?? body?.total_amount ?? 0);
+  const rawPrice = n(body?.price ?? body?.price_krw ?? body?.priceKrw ?? 0);
+  const rawQty = n(body?.qty ?? body?.quantity ?? body?.shares ?? 0);
+
+  const contentItemRow =
+    (await safeSelectById(supabase, 'content_items', contentId, '*')) ??
+    (await safeSelectById(supabase, 'content_item', contentId, '*')) ??
+    null;
+
+  const productRow =
+    (await safeSelectById(supabase, 'products', contentId, '*')) ??
+    (await safeSelectById(supabase, 'product', contentId, '*')) ??
+    null;
+
+  const price =
+    rawPrice ||
+    n(contentItemRow?.price) ||
+    n(contentItemRow?.price_krw) ||
+    n(contentItemRow?.share_price_krw) ||
+    n(contentItemRow?.last_price_krw) ||
+    n(productRow?.price) ||
+    n(productRow?.price_krw) ||
+    n(productRow?.share_price_krw) ||
+    n(productRow?.last_price_krw) ||
+    12300;
+
+  const qty = rawQty || (rawAmount > 0 ? Math.max(1, Math.floor(rawAmount / Math.max(1, price))) : 1);
+  const amount = rawAmount || qty * price;
+
+  const cols = await getColumns(supabase);
+  const colSet = new Set<string>((cols ?? []).map((c) => c.column_name));
+
+  const payload: Record<string, unknown> = {};
+  const side = 'BUY';
+  const status = DEMO_TRADING ? 'FILLED' : 'PENDING';
+
+  setIf(colSet, payload, ['user_id', 'buyer_id', 'account_id', 'owner_id'], user.id);
+
+  setIf(colSet, payload, ['content_id', 'content_item_id', 'item_id', 'asset_id'], contentId);
+
+  if (colSet.has('product_id')) {
+    const fkTarget = await getProductIdFkTarget(supabase);
+    const targetTable = fkTarget?.table ?? 'products';
+
+    let resolvedProductId: string | null = null;
+
+    if (bodyProductId) resolvedProductId = bodyProductId;
+
+    if (!resolvedProductId) {
+      resolvedProductId =
+        (contentItemRow?.product_id as string) ??
+        (contentItemRow?.productId as string) ??
+        null;
     }
 
-    if (!priceKrw) return NextResponse.json({ ok: false, error: 'PRICE_NOT_FOUND' }, { status: 400 });
-
-    const feeRate = 0.0003;
-    const gross = priceKrw * qty;
-    const fee = Math.round(gross * feeRate);
-    const total = gross + fee;
-
-    const fkKeys = await detectOrdersFkColumn(supabase);
-
-    const baseOrder: Record<string, unknown> = {
-      user_id: user.id,
-      side: 'BUY',
-      status: demo ? 'FILLED' : 'PENDING',
-      quantity: qty,
-      price_krw: priceKrw,
-      total_krw: total,
-      fee_krw: fee,
-    };
-
-    let created: Record<string, unknown> | null = null;
-    let usedKey = 'unknown';
-
-    try {
-      const r = await insertOrderWithFkFallback(supabase, baseOrder, fkKeys, contentId);
-      created = r.row as Record<string, unknown>;
-      usedKey = r.usedKey;
-    } catch (e1: unknown) {
-      const safeOrder: Record<string, unknown> = { user_id: user.id };
-
-      const probe = await supabase.from('orders').select('*').limit(1);
-      const sample = probe?.data?.[0];
-      const keys = sample && typeof sample === 'object' ? new Set(Object.keys(sample)) : new Set<string>();
-
-      if (keys.has('side')) safeOrder.side = 'BUY';
-      else if (keys.has('order_side')) safeOrder.order_side = 'BUY';
-      else if (keys.has('type')) safeOrder.type = 'BUY';
-
-      if (keys.has('status')) safeOrder.status = demo ? 'FILLED' : 'PENDING';
-      else if (keys.has('state')) safeOrder.state = demo ? 'FILLED' : 'PENDING';
-
-      if (keys.has('quantity')) safeOrder.quantity = qty;
-      else if (keys.has('qty')) safeOrder.qty = qty;
-      else if (keys.has('amount')) safeOrder.amount = qty;
-
-      if (keys.has('price_krw')) safeOrder.price_krw = priceKrw;
-      else if (keys.has('price')) safeOrder.price = priceKrw;
-
-      if (keys.has('total_krw')) safeOrder.total_krw = total;
-      else if (keys.has('total')) safeOrder.total = total;
-
-      if (keys.has('fee_krw')) safeOrder.fee_krw = fee;
-
-      const r = await insertOrderWithFkFallback(supabase, safeOrder, fkKeys, contentId);
-      created = r.row as Record<string, unknown>;
-      usedKey = r.usedKey;
+    if (!resolvedProductId) {
+      const check = await safeSelectById(supabase, targetTable, contentId, 'id');
+      if (check?.id) resolvedProductId = String(check.id);
     }
 
-    let ledgerUpdated = false;
-    if (demo) {
-      const led = await tryInsertLedgerDebit(supabase, user.id, total, `DEMO BUY: content=${contentId} qty=${qty} price=${priceKrw} fee=${fee} (fk=${usedKey})`);
-      ledgerUpdated = !!led.ok;
+    if (!resolvedProductId) {
+      const first = await safeSelectFirst(supabase, targetTable, 'id');
+      if (first?.id) resolvedProductId = String(first.id);
     }
 
-    return NextResponse.json({
-      ok: true,
-      order_id: created?.id ?? null,
-      used_fk: usedKey,
-      demo_trading: demo,
-      fill: demo ? { qty, price_krw: priceKrw, fee_krw: fee, total_krw: total } : null,
-      ledger_updated: ledgerUpdated,
-    });
-  } catch (e: unknown) {
-    return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : 'ORDER_CREATE_FAILED' }, { status: 400 });
+    payload.product_id = resolvedProductId;
   }
+
+  setIf(colSet, payload, ['side', 'order_side', 'direction'], side);
+  if (colSet.has('order_type')) payload.order_type = 'BUY';
+
+  const hasSideCol = colSet.has('side') || colSet.has('order_side') || colSet.has('direction') || colSet.has('order_type');
+  if (colSet.has('type')) payload.type = hasSideCol ? 'LIMIT' : 'BUY';
+  setIf(colSet, payload, ['order_kind', 'kind'], 'LIMIT');
+  setIf(colSet, payload, ['status', 'order_status'], status);
+
+  setIf(colSet, payload, ['price', 'limit_price', 'order_price', 'unit_price', 'price_krw'], price);
+  setIf(colSet, payload, ['quantity', 'qty', 'shares', 'units'], qty);
+
+  setIf(colSet, payload, ['amount', 'total_amount', 'total', 'notional'], amount);
+
+  if (colSet.has('created_at')) payload.created_at = nowIso();
+  if (colSet.has('updated_at')) payload.updated_at = nowIso();
+
+  if (cols && cols.length > 0) {
+    const required = cols
+      .filter((c) => (c.is_nullable ?? '') === 'NO' && !c.column_default && (c.is_identity ?? 'NO') !== 'YES')
+      .map((c) => c.column_name);
+
+    const ctx: Record<string, unknown> = { side, status, orderType: 'BUY', kind: 'LIMIT', price, qty, amount };
+
+    for (const c of required) {
+      if (payload[c] === undefined && !BANNED_ORDER_COLS.has(c)) {
+        const meta = cols.find((x) => x.column_name === c);
+        const dv = guessDefaultForColumn(c, meta, ctx);
+        if (dv !== undefined) payload[c] = dv;
+      }
+    }
+  }
+
+  for (const k of Object.keys(payload)) {
+    if (BANNED_ORDER_COLS.has(k)) delete payload[k];
+  }
+
+  if (colSet.has('product_id') && !payload.product_id) {
+    const fkTarget = await getProductIdFkTarget(supabase);
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'ORDER_CREATE_FAILED | msg=product_id unresolved (orders.product_id is NOT NULL)',
+        debug: {
+          contentId,
+          bodyProductId: bodyProductId || null,
+          contentItemProductId: contentItemRow?.product_id ?? contentItemRow?.productId ?? null,
+          triedTargetTable: fkTarget?.table ?? 'products',
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  const { data: inserted, error: insErr } = await supabase.from('orders').insert(payload).select('*').limit(1);
+
+  if (insErr) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: toErrString('ORDER_CREATE_FAILED', insErr),
+        detail: pickError(insErr),
+        debug: { demo: DEMO_TRADING, contentId, price, qty, amount, payload_keys: Object.keys(payload) },
+      },
+      { status: 400 }
+    );
+  }
+
+  const order = Array.isArray(inserted) ? inserted[0] : inserted;
+  return NextResponse.json({
+    ok: true,
+    demo: DEMO_TRADING,
+    order_id: (order as Record<string, unknown>)?.id ?? null,
+    order,
+  });
 }

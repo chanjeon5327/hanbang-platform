@@ -87,8 +87,9 @@ export async function updateSession(request: NextRequest) {
         }
       }
     } catch (err) {
-      // profiles 조회 실패 시 무시 (서비스 중단 방지)
-      console.error('[MIDDLEWARE] Failed to check session policies:', err)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[MIDDLEWARE] session policies check:', (err as Error)?.message);
+      }
     }
   }
 

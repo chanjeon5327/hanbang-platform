@@ -125,15 +125,66 @@
     --text-primary: var(--text);
   }
 
+  /* ===== 레거시 테마 (영상 기준 다크 + 퍼플) ===== */
+  .hb-legacy {
+    --legacy-bg: #0B0D12;
+    --legacy-bg-secondary: #161B22;
+    --legacy-card: rgba(255, 255, 255, 0.06);
+    --legacy-card-border: rgba(255, 255, 255, 0.08);
+    --legacy-point: #7C3AED;
+    --legacy-point-hover: #6D28D9;
+    --legacy-text: #E6EDF3;
+    --legacy-text-secondary: #8B949E;
+    --legacy-text-muted: #6E7681;
+    --legacy-border: rgba(255, 255, 255, 0.1);
+    --legacy-pill-bg: rgba(124, 58, 237, 0.2);
+    --legacy-pill-text: #A78BFA;
+  }
+
+  .hb-legacy .btn-legacy-primary {
+    background: var(--legacy-point);
+    color: #fff;
+    font-weight: 600;
+    border-radius: 12px;
+    padding: 12px 24px;
+    transition: opacity 0.2s;
+  }
+  .hb-legacy .btn-legacy-primary:hover {
+    opacity: 0.9;
+    background: var(--legacy-point-hover);
+  }
+
+  .hb-legacy .btn-legacy-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--legacy-text);
+    font-weight: 600;
+    border: 1px solid var(--legacy-border);
+    border-radius: 12px;
+    padding: 12px 24px;
+    transition: background 0.2s;
+  }
+  .hb-legacy .btn-legacy-secondary:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  html {
+    font-size: 130%;
+  }
+
   html, body {
     font-family: 'Pretendard Variable', 'Pretendard', system-ui, -apple-system, sans-serif;
-    font-size: 15.5px;
     font-weight: 450;
     line-height: 1.65;
     letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
     background: var(--bg);
     color: var(--text);
+    overflow: visible;
+  }
+
+  body.hb-home,
+  body.hb-home main {
+    background: #FFFFFF !important;
   }
 
   h2 {
@@ -239,14 +290,14 @@
 
   /* 숫자 전용 */
   .metric {
-    @apply font-bold tabular-nums tracking-tight;
+    @apply font-bold tabular-nums;
     font-variant-numeric: tabular-nums;
   }
   .metric-lg {
-    @apply text-2xl md:text-3xl font-extrabold tabular-nums;
+    @apply text-xl md:text-2xl font-bold tabular-nums;
   }
   .metric-xl {
-    @apply text-3xl md:text-4xl font-extrabold tabular-nums;
+    @apply text-2xl md:text-3xl font-bold tabular-nums;
   }
 
   /* 수익/손실 */
@@ -344,6 +395,11 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
+  @keyframes headerDropdownIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   /* shimmer */
   @keyframes shimmer {
     0% { background-position: 200% 0; }
@@ -399,8 +455,8 @@
 .text-caption { font-size: var(--font-caption); color: var(--text-muted); }
 
 /* 타이포 시스템 + line-height 통일 */
-.h1 { font-size: var(--h1); font-weight: 800; line-height: 1.25; }
-.h2 { font-size: var(--h2); font-weight: 700; line-height: 1.375; }
+.h1 { font-size: var(--h1); font-weight: 700; line-height: 1.3; }
+.h2 { font-size: var(--h2); font-weight: 600; line-height: 1.375; }
 .h3 { font-size: var(--h3); font-weight: 600; line-height: 1.375; }
 .body-lg { font-size: var(--body-lg); line-height: 1.5; }
 .body { font-size: var(--body); line-height: 1.5; }

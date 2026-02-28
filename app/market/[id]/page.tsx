@@ -1,42 +1,31 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useMarketItem } from '@/hooks/useMarketItem';
+import { useToast } from '@/context/ToastContext';
+import { useAuth } from '@/components/auth/AuthProvider';
 import { formatKrw, formatRate } from '@/lib/utils/format';
 import RealPriceChart from '@/components/market/RealPriceChart';
-import MockOrderBook from '@/components/market/MockOrderBook';
 import LiveTradesMock from '@/components/market/LiveTradesMock';
-import LiveChatMock from '@/components/market/LiveChatMock';
-import DividendInfo from '@/components/market/DividendInfo';
-import DividendSimulatorV2 from '@/components/market/DividendSimulatorV2';
-import { ArrowUp, BarChart3, BookOpen, MessageCircle, Newspaper, PieChart, TrendingUp, Users } from 'lucide-react';
-import { FALLBACK_PREVIEW_IMAGE } from '@/lib/thumbnails';
+import TradingPanelV2 from '@/components/market/TradingPanelV2';
+import DepthRibbon from '@/components/market/DepthRibbon';
+import { ArrowUp } from 'lucide-react';
+import { FALLBACK_PREVIEW_IMAGE, PRODUCT_PLACEHOLDER } from '@/lib/thumbnails';
+import BottomNavigation from '@/components/home/BottomNavigation';
 import styles from './market-detail.module.css';
 
-const TABS = [
-  { id: 'chart', label: '거래' },
-  { id: 'invest', label: '투자정보' },
-  { id: 'project', label: '프로젝트' },
-  { id: 'news', label: '뉴스' },
-  { id: 'chat', label: '채팅' },
-] as const;
-
-const NEWS_MOCK = [
-  { id: '1', title: 'K-POP 투자 열기, 2차 시장 거래량 급증', date: '2025-02-18', summary: '아티스트 주식 2차 시장 거래량이 전월 대비 40% 증가하며 투자자 관심이 높아지고 있다.', imageUrl: FALLBACK_PREVIEW_IMAGE },
-  { id: '2', title: '아티스트 주식 청약 3일 만에 80% 달성', date: '2025-02-15', summary: '신규 청약 상품이 출시 3일 만에 모집 목표의 80%를 달성하며 투자 열기를 보여준다.', imageUrl: FALLBACK_PREVIEW_IMAGE },
-  { id: '3', title: '배당 수익률 12% 돌파, 투자자 관심 집중', date: '2025-02-12', summary: '연간 예상 배당 수익률이 12%를 넘어서며 장기 투자자들의 관심이 늘고 있다.', imageUrl: FALLBACK_PREVIEW_IMAGE },
-];
-
 export default function MarketDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const { user } = useAuth();
   const { id } = React.use(params);
   const { item, loading, error, refetch } = useMarketItem(id);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [activeTab, setActiveTab] = useState<(typeof TABS)[number]['id']>('chart');
-  const [orderPrice, setOrderPrice] = useState('');
-  const [orderQty, setOrderQty] = useState('');
-  const [orderType, setOrderType] = useState<'limit' | 'market'>('limit');
+  const [tab, setTab] = useState<'info' | 'order' | 'quote'>('info');
   const [t1t2, setT1t2] = useState<'T1' | 'T2'>('T1');
   const [videoPlaying, setVideoPlaying] = useState(false);
+  const [lastTradePrice, setLastTradePrice] = useState(0);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
@@ -46,34 +35,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            const sid = (e.target as HTMLElement).dataset.section;
-            if (sid) {
-              const tabId = sid === 'orderbook' || sid === 'trades' ? 'chart' : sid;
-              setActiveTab(tabId as (typeof TABS)[number]['id']);
-            }
-          }
-        });
-      },
-      { rootMargin: '-80px 0px -60% 0px', threshold: 0 }
-    );
-    const sectionsToObserve = ['chart', 'orderbook', 'trades', 'invest', 'project', 'news', 'chat'];
-    sectionsToObserve.forEach((sid) => {
-      const el = sectionRefs.current[sid];
-      if (el) { el.dataset.section = sid; observer.observe(el); }
-    });
-    return () => observer.disconnect();
-  }, []);
-
-  const scrollToSection = (tabId: string) => {
-    const el = sectionRefs.current[tabId];
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  };
-
   const title = item?.title ?? '—';
   const fxRate = item?.fx_rate ?? 1350;
   const sharePriceUsd = item?.share_price_usd ?? 10;
@@ -82,214 +43,254 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const changeRate = ((sharePriceUsd - prevCloseUsd) / prevCloseUsd) * 100;
   const changeAmountKrw = (sharePriceUsd - prevCloseUsd) * fxRate;
   const isUp = changeRate > 0;
+  useEffect(() => {
+    if (!loading && sharePriceKrw > 0) setLastTradePrice(Math.round(sharePriceKrw));
+  }, [loading, sharePriceKrw]);
+
   const changeText = changeRate !== 0 || changeAmountKrw !== 0
     ? `${isUp ? '+' : ''}${formatRate(changeRate)} (${isUp ? '+' : ''}${Math.round(changeAmountKrw).toLocaleString('ko-KR')})`
     : null;
   const priceDisplay = loading ? '—' : formatKrw(sharePriceKrw);
   const usdDisplay = loading ? '—' : `$${sharePriceUsd.toFixed(2)} USD`;
-
-  const priceNum = parseFloat(orderPrice) || 0;
-  const qtyNum = parseFloat(orderQty) || 0;
-  const orderTotal = priceNum * qtyNum;
-  const feeRate = 0.0003;
-  const orderFee = Math.round(orderTotal * feeRate);
-
-  const setQtyPercent = (pct: number) => {
-    const maxQty = 100;
-    setOrderQty(String(Math.floor(maxQty * (pct / 100))));
-  };
+  const tradesCount = (item as Record<string, unknown>)?.last_24h_count ?? (item as Record<string, unknown>)?.last_1h_count ?? 112;
 
   if (error && !item) {
     return (
-      <div className="flex flex-col items-center justify-center p-6 min-h-screen" style={{ backgroundColor: 'var(--card)' }}>
-        <p className="mb-4 font-medium" style={{ color: 'var(--text-secondary)', fontSize: 14 }}>정보를 불러올 수 없습니다.</p>
-        <button onClick={() => refetch()} className="px-4 py-2 rounded-lg font-semibold text-white" style={{ backgroundColor: 'var(--royal-blue)', fontSize: 14 }}>다시 시도</button>
+      <div className={styles.page}>
+        <div className={styles.container}>
+          <p className={styles.errorText}>정보를 불러올 수 없습니다.</p>
+          <button onClick={() => refetch()} className={styles.retryBtn}>다시 시도</button>
+        </div>
+        <BottomNavigation />
       </div>
     );
   }
 
   return (
-    <div className={styles.container}>
-      {/* HERO + T1/T2 */}
-      <section className={`${styles.section} ${styles.heroWrap}`}>
-        <div className={styles.sectionList}>
-          <div className={styles.heroHeader}>
-            <h1 className={styles.heroTitle}>{title}</h1>
-            <div className={styles.t1t2Toggle}>
-              <button type="button" className={t1t2 === 'T1' ? styles.active : ''} onClick={() => setT1t2('T1')}>T1</button>
-              <button type="button" className={t1t2 === 'T2' ? styles.active : ''} onClick={() => setT1t2('T2')}>T2</button>
-            </div>
-          </div>
-          <div className={styles.heroPrice}>{priceDisplay}</div>
-          {changeText && <div className={`${styles.heroChange} ${isUp ? styles.heroChangeUp : styles.heroChangeDown}`}>{changeText}</div>}
-          <div className={styles.heroMeta}>{usdDisplay}</div>
-        </div>
-      </section>
-
-      {/* PREVIEW */}
-      {item && (
-        <section className={`${styles.section} ${styles.previewSection}`}>
-          <div className={styles.previewLeft}>
-            <img src={item.thumbnail_url || FALLBACK_PREVIEW_IMAGE} alt="" className={styles.previewMedia} />
-          </div>
-          <div className={styles.previewRight}>
-            {item.youtube_video_id && (
-              <div className={styles.previewVideoWrap}>
-                <iframe
-                  src={`https://www.youtube.com/embed/${item.youtube_video_id}?autoplay=0&mute=1`}
-                  title="미리보기"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-                <div
-                  className={`${styles.previewPlayOverlay} ${videoPlaying ? styles.hidden : ''}`}
-                  onClick={() => {
-                    setVideoPlaying(true);
-                    const iframe = document.querySelector(`iframe[title="미리보기"]`) as HTMLIFrameElement;
-                    if (iframe?.src) iframe.src = iframe.src.replace('autoplay=0', 'autoplay=1');
-                  }}
-                  aria-hidden={videoPlaying}
-                >
-                  <div className={styles.previewPlayBtn}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+    <div className={styles.page}>
+      <div className={styles.container}>
+        {/* 1) 상단 배너 썸네일 */}
+        {item && (
+          <section className={styles.bannerSection}>
+            <div className={styles.bannerWrap}>
+              {item.youtube_video_id ? (
+                <div className={styles.bannerVideoWrap}>
+                  <iframe
+                    src={`https://www.youtube.com/embed/${item.youtube_video_id}?autoplay=0&mute=1`}
+                    title="미리보기"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                  <div
+                    className={`${styles.previewPlayOverlay} ${videoPlaying ? styles.hidden : ''}`}
+                    onClick={() => {
+                      setVideoPlaying(true);
+                      const iframe = document.querySelector(`iframe[title="미리보기"]`) as HTMLIFrameElement;
+                      if (iframe?.src) iframe.src = iframe.src.replace('autoplay=0', 'autoplay=1');
+                    }}
+                    aria-hidden={videoPlaying}
+                  >
+                    <div className={styles.previewPlayBtn}>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <img
+                  src={item.thumbnail_url || FALLBACK_PREVIEW_IMAGE}
+                  alt=""
+                  className={styles.bannerImg}
+                  onError={(e) => {
+                    const el = e.currentTarget;
+                    if (!el.src.includes('placeholders/')) el.src = PRODUCT_PLACEHOLDER;
+                  }}
+                />
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* 2) 종목 헤더 (영상형 촘촘) */}
+        <section className={styles.headerSection}>
+          <div className={styles.heroTitleRow}>
+            <h1 className={styles.headerTitle}>{title}</h1>
+            <div className={styles.t1t2Toggle}>
+              <button type="button" className={t1t2 === 'T1' ? styles.t1t2Active : ''} onClick={() => setT1t2('T1')}>T1</button>
+              <button type="button" className={t1t2 === 'T2' ? styles.t1t2Active : ''} onClick={() => setT1t2('T2')}>T2</button>
+            </div>
+          </div>
+          <div className={styles.heroPriceRow}>
+            <span className={styles.priceValue}>{priceDisplay}</span>
+            {changeText && <span className={`${styles.changeBadge} ${isUp ? styles.changeUp : styles.changeDown}`}>{changeText}</span>}
+            <span className={styles.heroPills}>
+              <span className={styles.pillLive}>LIVE</span>
+              <span className={styles.pillTrades}>trades {typeof tradesCount === 'number' ? tradesCount : 112}</span>
+            </span>
+          </div>
+          <div className={styles.heroMetaWrap}>
+            <span className={styles.usdText}>{usdDisplay}</span>
           </div>
         </section>
-      )}
 
-      {/* Sticky Tabs */}
-      <div className={styles.stickyTabs}>
-        {TABS.map((t) => (
-          <button key={t.id} type="button" onClick={() => { setActiveTab(t.id); scrollToSection(t.id); }} className={activeTab === t.id ? styles.tabActive : styles.tabInactive}>
-            {t.label}
+        {/* 3) 탭 바 */}
+        <div className={styles.tabBar}>
+          <button type="button" className={tab === 'info' ? styles.tabActive : styles.tabInactive} onClick={() => setTab('info')}>
+            정보
           </button>
-        ))}
-      </div>
+          <button type="button" className={tab === 'order' ? styles.tabActive : styles.tabInactive} onClick={() => setTab('order')}>
+            주문
+          </button>
+          <button type="button" className={tab === 'quote' ? styles.tabActive : styles.tabInactive} onClick={() => setTab('quote')}>
+            시세
+          </button>
+        </div>
 
-      {/* CHART */}
-      <section ref={(el) => { sectionRefs.current['chart'] = el; }} className={`${styles.section} ${styles.sectionChart}`}>
-        <h3 className={styles.sectionTitle}>
-          <span className={styles.sectionTitleIcon} style={{ background: 'rgba(37,99,235,0.15)', color: '#2563EB' }}><TrendingUp size={14} /></span>
-          가격 차트
-        </h3>
-        <RealPriceChart priceKrw={sharePriceKrw} loading={loading} height={420} theme="light" />
-      </section>
-
-      {/* TRADE */}
-      <section ref={(el) => { sectionRefs.current['orderbook'] = el; }} className={`${styles.section} ${styles.sectionTrade}`}>
-        <h3 className={styles.sectionTitle}>
-          <span className={styles.sectionTitleIcon} style={{ background: 'rgba(5,150,105,0.15)', color: '#059669' }}><BarChart3 size={14} /></span>
-          호가 · 주문
-        </h3>
-        <div className={styles.tradeGrid}>
-          <div className={styles.tradePanel}><MockOrderBook basePriceKrw={sharePriceKrw} loading={loading} theme="light" /></div>
-          <div className={`${styles.tradePanel} ${styles.orderPanel}`}>
-            <div className={styles.orderTypeTabs}>
-              {(['limit', 'market'] as const).map((t) => (
-                <button key={t} type="button" className={orderType === t ? styles.active : ''} onClick={() => setOrderType(t)}>{t === 'limit' ? '지정가' : '시장가'}</button>
-              ))}
-            </div>
-            <input className={styles.orderInput} placeholder="가격" value={orderPrice} onChange={(e) => setOrderPrice(e.target.value)} />
-            <input className={styles.orderInput} placeholder="수량" value={orderQty} onChange={(e) => setOrderQty(e.target.value)} />
-            <div className={styles.orderPctRow}>
-              {[25, 50, 75, 100].map((p) => <button key={p} type="button" onClick={() => setQtyPercent(p)}>{p}%</button>)}
-            </div>
-            <div className={styles.orderSummary}>
-              <div className={styles.orderSummaryRow}><span>예상 체결금액</span><span>{orderTotal > 0 ? formatKrw(orderTotal) : '—'}</span></div>
-              <div className={styles.orderSummaryRow}><span>수수료 (0.03%)</span><span>{orderFee > 0 ? formatKrw(orderFee) : '—'}</span></div>
-              <div className={`${styles.orderSummaryRow} ${styles.total}`}><span>총액</span><span>{orderTotal > 0 ? formatKrw(orderTotal + orderFee) : '—'}</span></div>
-            </div>
-            <div className={styles.orderBtnRow}>
-              <button type="button" className={styles.orderBtnBuy}>매수</button>
-              <button type="button" className={styles.orderBtnSell}>매도</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* TICKER */}
-      <section ref={(el) => { sectionRefs.current['trades'] = el; }} className={`${styles.section} ${styles.sectionTicker}`}>
-        <h3 className={styles.sectionTitle}>
-          <span className={styles.sectionTitleIcon} style={{ background: 'rgba(124,58,237,0.15)', color: '#7C3AED' }}><PieChart size={14} /></span>
-          실시간 체결
-        </h3>
-        <LiveTradesMock basePriceKrw={sharePriceKrw} />
-      </section>
-
-      {/* INVEST */}
-      <section ref={(el) => { sectionRefs.current['invest'] = el; }} className={`${styles.section} ${styles.sectionInvest}`}>
-        <h3 className={styles.sectionTitle}>
-          <span className={styles.sectionTitleIcon} style={{ background: 'rgba(217,119,6,0.15)', color: '#D97706' }}><BookOpen size={14} /></span>
-          투자정보
-        </h3>
-        <div className={styles.investCard}>
-        <div className={styles.investBlock}>
-          <DividendInfo payoutDay={item?.payout_day ?? 3} dividendMonthlyRate={item?.dividend_monthly_rate} dividendMonthlyUsdPerShare={item?.dividend_monthly_usd_per_share} sharePriceUsd={sharePriceUsd} fxRate={fxRate} />
-        </div>
-        <div className={styles.investBlock}>
-          <div className={styles.investBlockTitle}>배당 시뮬레이터</div>
-          <DividendSimulatorV2 sharePriceKrw={sharePriceKrw} dividendPerShare={item?.dividendPerShare ?? 360} expectedAnnualYield={item?.expectedAnnualYield ?? item?.yield_rate ?? 8.4} monthlyRevenue={item?.monthlyRevenue ?? 120_000_000} dividendRatio={item?.dividendRatio ?? 0.3} totalShares={item?.total_shares ?? 100_000} loading={loading} error={error ? '정보를 불러올 수 없습니다' : null} />
-        </div>
-        <div className={styles.investBlock}>
-          <div className={styles.investBlockTitle}>청약 정보</div>
-          <div className={styles.investRow}><span>모집 목표</span><span>₩500,000,000</span></div>
-          <div className={styles.investRow}><span>현재 모집</span><span>₩312,500,000 (62.5%)</span></div>
-          <div className={styles.investRow}><span>청약 마감</span><span>2025-04-30</span></div>
-        </div>
-        </div>
-      </section>
-
-      {/* PROJECT */}
-      <section ref={(el) => { sectionRefs.current['project'] = el; }} className={`${styles.section} ${styles.sectionProject}`}>
-        <h3 className={styles.sectionTitle}>
-          <span className={styles.sectionTitleIcon} style={{ background: 'rgba(3,105,161,0.15)', color: '#0369A1' }}><Users size={14} /></span>
-          프로젝트 정보
-        </h3>
-        <div className={styles.projectCard}>
-        <div className={styles.projectContent}>
-          <p style={{ marginBottom: 12 }}>스토리, 재무 현황, 팀 소개 등 프로젝트 상세 설명이 제공됩니다.</p>
-          <p style={{ marginBottom: 0 }}>투자 시 유의사항 및 리스크 요인을 확인해 주세요.</p>
-        </div>
-        </div>
-      </section>
-
-      {/* NEWS */}
-      <section ref={(el) => { sectionRefs.current['news'] = el; }} className={`${styles.section} ${styles.sectionNews}`}>
-        <h3 className={styles.sectionTitle}>
-          <span className={styles.sectionTitleIcon} style={{ background: 'rgba(190,24,93,0.15)', color: '#BE185D' }}><Newspaper size={14} /></span>
-          관련 뉴스
-        </h3>
-        <div className={styles.newsList}>
-          {NEWS_MOCK.map((n) => (
-            <a key={n.id} href="#" className={styles.newsItem} onClick={(e) => e.preventDefault()}>
-              <img src={n.imageUrl} alt="" className={styles.newsThumb} />
-              <div className={styles.newsBody}>
-                <div className={styles.newsTitle}>{n.title}</div>
-                <div className={styles.newsMeta}>{n.date}</div>
-                <div className={styles.newsSummary}>{n.summary}</div>
+        {/* 4) 탭 콘텐츠 */}
+        {tab === 'info' && (
+          <section className={styles.tabContent}>
+            {/* A) 투자 개요 */}
+            <div className={styles.infoCard}>
+              <div className={styles.infoTitle}>투자 개요</div>
+              <div className={styles.kvRow}>
+                <span className={styles.kvLabel}>총 투자 모집액</span>
+                <span className={styles.kvValue}>
+                  {loading ? '—' : formatKrw(
+                    (() => {
+                      const it = item as Record<string, unknown> | null;
+                      const v = it?.total_raise_krw ?? it?.raise_krw ?? it?.total_krw ??
+                        (typeof it?.total_raise === 'number' ? it.total_raise : null) ??
+                        (typeof it?.total_raise_usd === 'number' ? (it.total_raise_usd as number) * fxRate : null) ??
+                        1_000_000_000;
+                      return Number(v);
+                    })()
+                  )}
+                </span>
               </div>
-            </a>
-          ))}
-        </div>
-      </section>
+              <div className={styles.kvRow}>
+                <span className={styles.kvLabel}>주당 가격</span>
+                <span className={styles.kvValue}>{loading ? '—' : formatKrw(sharePriceKrw)}</span>
+              </div>
+              <div className={styles.kvRow}>
+                <span className={styles.kvLabel}>카테고리</span>
+                <span className={styles.kvValue}>
+                  {(item as any)?.category_name ?? (item as any)?.category ?? (item as any)?.tags?.[0] ?? '웹툰'}
+                </span>
+              </div>
+              <div className={styles.kvRow}>
+                <span className={styles.kvLabel}>예상 수익률</span>
+                <span className={styles.kvValue}>
+                  {loading ? '—' : `${((item as any)?.expected_yield_rate ?? (item as any)?.yield_rate ?? (item as any)?.expectedAnnualYield ?? 15.5)}%`}
+                </span>
+              </div>
+            </div>
 
-      {/* CHAT */}
-      <section ref={(el) => { sectionRefs.current['chat'] = el; }} className={`${styles.section} ${styles.sectionChat}`}>
-        <h3 className={styles.sectionTitle}>
-          <span className={styles.sectionTitleIcon} style={{ background: 'rgba(75,85,99,0.15)', color: '#4B5563' }}><MessageCircle size={14} /></span>
-          실시간 채팅
-        </h3>
-        <LiveChatMock />
-      </section>
+            {/* B) 수익 배분율 */}
+            <div className={styles.infoCard}>
+              <div className={styles.infoTitle}>수익 배분율</div>
+              <div className={styles.bars}>
+                <div className={styles.barRow}>
+                  <span className={styles.barLabel}>창작자</span>
+                  <div className={styles.barTrack}>
+                    <div className={styles.barFill} style={{ width: '50%', background: '#6D28D9' }} />
+                  </div>
+                  <span className={styles.barPct}>50%</span>
+                </div>
+                <div className={styles.barRow}>
+                  <span className={styles.barLabel}>투자자</span>
+                  <div className={styles.barTrack}>
+                    <div className={styles.barFill} style={{ width: '47%', background: '#2563EB' }} />
+                  </div>
+                  <span className={styles.barPct}>47%</span>
+                </div>
+                <div className={styles.barRow}>
+                  <span className={styles.barLabel}>수수료</span>
+                  <div className={styles.barTrack}>
+                    <div className={styles.barFill} style={{ width: '3%', background: '#6B7280' }} />
+                  </div>
+                  <span className={styles.barPct}>3%</span>
+                </div>
+              </div>
+            </div>
 
-      {showScrollTop && (
-        <button type="button" className={styles.scrollTopBtn} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="맨 위로">
-          <ArrowUp size={22} strokeWidth={2.5} />
-        </button>
-      )}
+            {/* C) 투자 계획 */}
+            <div className={styles.infoCard}>
+              <div className={styles.infoTitle}>투자 계획</div>
+              <div className={styles.planBody}>
+                {(item as any)?.plan ?? (item as any)?.description ?? (item as any)?.summary ?? '글로벌 3억 뷰 달성 예정! 대작 웹툰의 주인이 되세요.'}
+              </div>
+              <a
+                href="/dummy-investment-plan.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.planPdfBtn}
+              >
+                PDF 다운로드
+              </a>
+            </div>
+
+            {/* D) 작가의 기획 PDF */}
+            {typeof (item as Record<string, unknown>)?.creator_plan_pdf === 'string' && (
+              <section className={styles.creatorPlan}>
+                <h3>작가의 기획</h3>
+                <a
+                  href={(item as Record<string, unknown>).creator_plan_pdf as string}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.downloadBtn}
+                >
+                  PDF 다운로드
+                </a>
+              </section>
+            )}
+          </section>
+        )}
+
+        {tab === 'order' && id && (
+          <section ref={(el) => { sectionRefs.current['orderbook'] = el; }} className={styles.tabContent}>
+            <div className={styles.tradingTop}>
+              <TradingPanelV2 currentPriceKrw={lastTradePrice || sharePriceKrw} />
+            </div>
+            <div className={styles.orderBookWrap}>
+              <DepthRibbon midPriceKrw={lastTradePrice || sharePriceKrw} />
+            </div>
+            <div className={styles.bottomNav}>
+              <button type="button" className={styles.listBtn} onClick={() => router.push('/market')}>
+                목록
+              </button>
+              <button type="button" className={styles.walletBtn} onClick={() => router.push('/wallet')}>
+                지갑
+              </button>
+            </div>
+          </section>
+        )}
+
+        {tab === 'quote' && (
+          <section className={styles.tabContent}>
+            <div className={styles.chartSection}>
+              <div className={styles.card}>
+                <h3 className={styles.sectionTitle}>가격 차트</h3>
+                <RealPriceChart priceKrw={lastTradePrice || sharePriceKrw} loading={loading} height={280} theme="light" />
+              </div>
+            </div>
+            <div className={styles.tradeSection}>
+              <div className={styles.card}>
+                <h3 className={styles.sectionTitle}>실시간 체결</h3>
+                <LiveTradesMock basePriceKrw={sharePriceKrw} />
+              </div>
+            </div>
+            <div className={styles.tradeSection}>
+              <DepthRibbon midPriceKrw={lastTradePrice || sharePriceKrw} dense />
+            </div>
+          </section>
+        )}
+
+        {showScrollTop && (
+          <button type="button" className={styles.scrollTopBtn} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="맨 위로">
+            <ArrowUp size={22} strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
+      <BottomNavigation />
     </div>
   );
 }

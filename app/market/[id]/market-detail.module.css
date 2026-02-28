@@ -1,144 +1,62 @@
-/* ===== 토스증권 스타일 마켓 상세 ===== */
+/* ===== Gate-3: Toss + Upbit 하이브리드 (정돈/밀도) ===== */
+
+.page {
+  min-height: 100vh;
+  background: #f8f9fb;
+  padding-bottom: 92px;
+}
 
 .container {
-  max-width: 1120px;
+  max-width: 404px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 14px 16px;
 }
 
-.section {
-  width: 100%;
-  margin-bottom: 48px;
-}
-
-.sectionList,
-.sectionListWide {
-  width: 100%;
-  max-width: 100%;
-}
-
-/* ----- HERO + PREVIEW ----- */
-.heroWrap {
-  background: #fff;
-  padding: 24px 24px 20px;
-  border-bottom: 1px solid #E5E7EB;
-}
-
-.heroHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-
-.heroTitle {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
-  color: #111827;
-}
-
-.t1t2Toggle {
-  display: flex;
-  gap: 0;
-  background: #F3F4F6;
-  border-radius: 8px;
-  padding: 2px;
-}
-
-.t1t2Toggle button {
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 500;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
+/* ----- 에러 ----- */
+.errorText {
+  font-size: 14px;
   color: #6B7280;
+  margin-bottom: 12px;
+}
+
+.retryBtn {
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: #6D28D9;
+  border: 0;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
-.t1t2Toggle button.active,
-.orderTypeTabs button.active {
-  background: #fff;
-  color: #111827;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-}
-
-.active {
-  background: #fff;
-  color: #111827;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-}
-
-.heroPrice {
-  font-size: 42px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  color: #111827;
-  margin-top: 4px;
+/* ----- 배너 썸네일 ----- */
+.bannerSection {
   margin-bottom: 8px;
 }
 
-.heroChange {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 15px;
+.bannerWrap {
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f3f4f6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.heroChangeUp {
-  background: rgba(16,185,129,0.12);
-  color: #059669;
-}
-
-.heroChangeDown {
-  background: rgba(239,68,68,0.12);
-  color: #DC2626;
-}
-
-.heroMeta {
-  font-size: 13px;
-  color: #9CA3AF;
-}
-
-/* ----- PREVIEW ----- */
-.previewSection {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 20px 24px;
-  background: #FAFBFC;
-  border-bottom: 1px solid #E5E7EB;
-}
-
-.previewLeft,
-.previewRight {
-  flex: 1;
-  min-width: 0;
-}
-
-.previewMedia,
-.previewImage {
+.bannerImg {
   width: 100%;
-  aspect-ratio: 16/9;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
-  border-radius: 18px;
-  margin-top: 24px;
-  margin-bottom: 40px;
+  display: block;
 }
 
-.previewVideoWrap {
+.bannerVideoWrap {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #1a1a1a;
+  background: #F3F4F6;
 }
 
-.previewVideoWrap iframe {
+.bannerVideoWrap iframe {
   width: 100%;
   height: 100%;
   border: none;
@@ -166,157 +84,455 @@
 }
 
 .previewPlayBtn {
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: rgba(255,255,255,0.9);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #111827;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-@media (min-width: 768px) {
-  .previewSection {
-    flex-direction: row;
-  }
+/* ----- 헤더 (종목 헤더 영상형 촘촘) ----- */
+.headerSection {
+  margin-bottom: 14px;
 }
 
-/* ----- Sticky Tabs ----- */
-.stickyTabs {
-  position: sticky;
-  top: 0;
-  z-index: 50;
+.heroTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.headerTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+  flex: 1;
+  min-width: 0;
+}
+
+.t1t2Toggle {
   display: flex;
   gap: 0;
-  background: #fff;
-  border-bottom: 1px solid #E5E7EB;
-  padding: 0 24px;
-  overflow-x: auto;
-  margin: 0 -24px;
-}
-
-.stickyTabs button {
+  background: #F3F4F6;
+  border-radius: 999px;
+  padding: 2px;
   flex-shrink: 0;
-  padding: 14px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  background: none;
-  border: none;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  color: #6B7280;
-  transition: color 0.2s;
 }
 
-.stickyTabs button:hover {
+.t1t2Toggle button {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.t1t2Active {
+  background: #6D28D9 !important;
+  color: #fff !important;
+}
+
+.heroPriceRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.priceValue {
+  font-size: 22px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.4px;
+}
+
+.changeBadge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.changeUp {
+  background: rgba(16,185,129,0.12);
+  color: #059669;
+}
+
+.changeDown {
+  background: rgba(239,68,68,0.12);
+  color: #DC2626;
+}
+
+.heroPills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.pillLive {
+  background: rgba(16,185,129,0.12);
+  color: #059669;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pillTrades {
+  background: rgba(17,24,39,0.06);
   color: #374151;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.heroMetaWrap {
+  margin-top: 10px;
+}
+
+.usdText {
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+/* ----- 탭 바 (세그먼트 컨트롤) ----- */
+.tabBar {
+  display: flex;
+  gap: 2px;
+  height: 40px;
+  padding: 3px;
+  background: #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+.tabBar button {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tabInactive {
+  background: transparent;
+  color: #6b7280;
 }
 
 .tabActive {
-  color: #111827 !important;
-  border-bottom-color: #2563EB !important;
-}
-
-/* ----- 섹션 공통 (챕터별 시각 분리) ----- */
-.sectionChart,
-.sectionTrade,
-.sectionTicker,
-.sectionInvest,
-.sectionProject,
-.sectionNews,
-.sectionChat {
-  padding: 24px 0;
-  border-bottom: 1px solid #E5E7EB;
-}
-
-.sectionChart {
   background: #fff;
-  border-left: 3px solid #2563EB;
+  color: #111827;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-.sectionTrade {
-  background: #FAFBFC;
-  border-left: 3px solid #059669;
+/* ----- 탭 콘텐츠 ----- */
+.tabContent {
+  margin-bottom: 20px;
 }
 
-.sectionTicker {
+.card {
   background: #fff;
-  border-left: 3px solid #7C3AED;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.sectionInvest {
-  background: #FAFBFC;
-  border-left: 3px solid #D97706;
-}
-
-.sectionProject {
-  background: #fff;
-  border-left: 3px solid #0369A1;
-}
-
-.sectionNews {
-  background: #FAFBFC;
-  border-left: 3px solid #BE185D;
-}
-
-.sectionChat {
-  background: #fff;
-  border-left: 3px solid #4B5563;
+.card:last-child {
   margin-bottom: 0;
 }
 
 .sectionTitle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 800;
   color: #111827;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
   letter-spacing: -0.2px;
 }
 
-.sectionTitleIcon {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  font-size: 14px;
+/* ----- 정보 탭 (영상형 3블록) ----- */
+.infoCard {
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-/* ----- TRADE (호가 + 주문) ----- */
+.infoCard:first-child {
+  margin-top: 0;
+}
+
+.infoTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 12px;
+  letter-spacing: -0.2px;
+}
+
+.kvRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.kvLabel {
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.kvValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.barLabel {
+  font-size: 13px;
+  color: #374151;
+  min-width: 56px;
+}
+
+.barTrack {
+  flex: 1;
+  height: 8px;
+  background: #F3F4F6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.2s;
+}
+
+.barPct {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  min-width: 36px;
+  text-align: right;
+}
+
+.planBody {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #374151;
+}
+
+.planPdfBtn {
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin-top: 12px;
+  border-radius: 12px;
+  background: #111827;
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+  line-height: 44px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+.planPdfBtn:hover {
+  opacity: 0.9;
+}
+
+/* ----- 투자 정보 블록 (legacy, 주문/시세 탭에서 사용) ----- */
+.investBlock {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+}
+
+.investBlock:last-child {
+  border-bottom: none;
+}
+
+.investBlockTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+.investRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #374151;
+}
+
+.investRow span:first-child {
+  color: #6B7280;
+}
+
+.projectContent {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #374151;
+}
+
+/* ----- 주문 (TradingPanel 상단 + 호가 + 목록/지갑) ----- */
+.tradingTop {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin-bottom: 12px;
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.orderBookWrap {
+  margin-top: 6px;
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.bottomNav {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.listBtn,
+.walletBtn {
+  flex: 1;
+  height: 46px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  background: #f1f3f5;
+  color: #111827;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.listBtn:hover,
+.walletBtn:hover {
+  background: #e9ecef;
+}
+
+/* ----- 시세 탭 (차트 + 실시간 체결) ----- */
+.chartSection {
+  margin-bottom: 10px;
+}
+
+.tradeSection {
+  margin-top: 6px;
+}
+
+.tradeRow {
+  font-size: 13px;
+  padding: 6px 0;
+}
+
+.tradePrice {
+  font-weight: 600;
+}
+
+.tradeQty {
+  opacity: 0.7;
+}
+
+.tradeTime {
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+/* ----- 작가의 기획 PDF ----- */
+.creatorPlan {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.creatorPlan h3 {
+  font-size: 15px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.2px;
+}
+
+.downloadBtn {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: #6d28d9;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.downloadBtn:hover {
+  opacity: 0.9;
+}
+
+/* ----- legacy tradeGrid (호가 + 주문 패널) ----- */
 .tradeGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .tradePanel {
-  background: var(--card);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  min-height: 320px;
+  background: #FFFFFF;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  border-radius: 20px;
+  padding: 16px;
   overflow: hidden;
-  transition: 0.2s ease;
 }
 
-@media (max-width: 767px) {
-  .tradeGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ----- 주문 패널 토스 스타일 ----- */
 .orderPanel {
   display: flex;
   flex-direction: column;
@@ -334,8 +550,8 @@
 .orderTypeTabs button {
   flex: 1;
   padding: 8px 12px;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   border: none;
   border-radius: 8px;
   background: transparent;
@@ -344,10 +560,9 @@
   transition: all 0.2s;
 }
 
-.orderTypeTabs button.active {
-  background: #fff;
-  color: #111827;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+.orderTypeActive {
+  background: #6D28D9 !important;
+  color: #fff !important;
 }
 
 .orderInput {
@@ -355,14 +570,14 @@
   height: 44px;
   padding: 0 12px;
   font-size: 15px;
-  border: 1px solid #E5E7EB;
-  border-radius: 10px;
-  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 12px;
+  background: #F9FAFB;
 }
 
 .orderInput:focus {
   outline: none;
-  border-color: #2563EB;
+  border-color: #6D28D9;
 }
 
 .orderPctRow {
@@ -373,24 +588,23 @@
 .orderPctRow button {
   flex: 1;
   padding: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  border: 1px solid #E5E7EB;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 8px;
-  background: #fff;
+  background: #F9FAFB;
   color: #374151;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .orderPctRow button:hover {
-  background: #F9FAFB;
-  border-color: #D1D5DB;
+  background: #F3F4F6;
 }
 
 .orderSummary {
   padding: 12px 0;
-  border-top: 1px solid #E5E7EB;
+  border-top: 1px solid rgba(17, 24, 39, 0.06);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -399,15 +613,15 @@
 .orderSummaryRow {
   display: flex;
   justify-content: space-between;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.5;
   color: #6B7280;
 }
 
-.orderSummaryRow.total {
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
+.orderTotal {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #111827 !important;
   margin-top: 4px;
 }
 
@@ -421,7 +635,7 @@
 .orderBtnSell {
   flex: 1;
   height: 48px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   border: none;
   border-radius: 12px;
@@ -430,15 +644,13 @@
 }
 
 .orderBtnBuy {
-  background: #2563EB;
+  background: #DC2626;
   color: #fff;
-  box-shadow: 0 4px 12px rgba(37,99,235,0.2);
 }
 
 .orderBtnSell {
-  background: #DC2626;
+  background: #2563EB;
   color: #fff;
-  box-shadow: 0 4px 12px rgba(220,38,38,0.2);
 }
 
 .orderBtnBuy:hover,
@@ -446,7 +658,30 @@
   opacity: 0.9;
 }
 
-/* ----- TICKER ----- */
+.orderAuxRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.orderAuxBtn {
+  flex: 1;
+  height: 44px;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  background: #F3F4F6;
+  color: #111827;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.orderAuxBtn:hover {
+  opacity: 0.9;
+}
+
+/* ----- 실시간 체결 (밀도 개선) ----- */
 .tickerList {
   display: flex;
   flex-direction: column;
@@ -457,28 +692,30 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  font-size: 15px;
-  line-height: 1.6;
-  border-bottom: 1px solid #F3F4F6;
-  transition: background 0.2s;
-}
-
-.tickerRow:hover {
-  background: rgba(0,0,0,0.03);
-}
-
-.tickerRow .tickerPrice {
-  font-weight: 700;
-}
-
-.tickerRow .tickerTime {
-  font-size: 13px;
-  color: #9CA3AF;
+  padding: 5px 0;
+  font-size: 12px;
+  line-height: 1.25;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.04);
 }
 
 .tickerRow:last-child {
   border-bottom: none;
+}
+
+.tickerPrice {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.tickerQty {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.tickerTime {
+  font-size: 11px;
+  color: #9ca3af;
+  opacity: 0.7;
 }
 
 .tradeEnter {
@@ -496,155 +733,45 @@
   }
 }
 
-/* ----- INVEST (배당/시뮬레이터/청약) ----- */
-.investCard {
-  background: #fff;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-}
-
-.investBlock {
-  padding: 16px 0;
-  border-bottom: 1px solid #E5E7EB;
-}
-
-.investBlock:last-child {
-  border-bottom: none;
-}
-
-.investBlockTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 12px;
-}
-
-.investRow {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  font-size: 15px;
-  line-height: 1.55;
-  color: #374151;
-}
-
-.investRow span:first-child {
-  color: #6B7280;
-}
-
-/* ----- PROJECT ----- */
-.projectCard {
-  background: #fff;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-}
-
-.projectContent {
-  font-size: 16px;
-  line-height: 1.6;
-  color: #374151;
-}
-
-/* ----- NEWS ----- */
-.newsList {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.newsItem {
-  display: flex;
-  gap: 16px;
-  padding: 16px 0;
-  border-bottom: 1px solid #E5E7EB;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.newsItem:hover {
-  background: rgba(0,0,0,0.02);
-}
-
-.newsItem:last-child {
-  border-bottom: none;
-}
-
-.newsThumb {
-  width: 88px;
-  height: 64px;
-  flex-shrink: 0;
-  border-radius: 10px;
-  object-fit: cover;
-  background: #E5E7EB;
-}
-
-.newsBody {
-  flex: 1;
-  min-width: 0;
-}
-
-.newsTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 4px;
-  line-height: 1.45;
-}
-
-.newsMeta {
-  font-size: 13px;
-  color: #9CA3AF;
-  margin-bottom: 4px;
-}
-
-.newsSummary {
-  font-size: 15px;
-  color: #6B7280;
-  line-height: 1.55;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* ----- CHAT ----- */
-.chatArea {
-  min-height: 280px;
-  display: flex;
-  flex-direction: column;
-}
-
-.chatMessages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 /* ----- scrollTop ----- */
 .scrollTopBtn {
   position: fixed;
-  right: 20px;
-  bottom: 24px;
-  width: 48px;
-  height: 48px;
+  right: 16px;
+  bottom: 96px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: #2563EB;
+  background: #6D28D9;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(37,99,235,0.4);
   z-index: 60;
   border: none;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: opacity 0.2s;
 }
 
 .scrollTopBtn:hover {
-  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* ----- MockOrderBook 애니메이션 ----- */
+@keyframes priceImpact {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+.priceImpact {
+  animation: priceImpact 0.15s ease-out;
+}
+
+@keyframes sizePulse {
+  0%, 100% { background: transparent; }
+  50% { background: rgba(109, 40, 217, 0.12); }
+}
+
+.orderSizeChange {
+  animation: sizePulse 0.12s ease;
 }

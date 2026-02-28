@@ -6,7 +6,7 @@ import { useDataTheme } from '@/context/DataThemeContext';
 import { ChevronLeft, Star, Bell, Share2 } from 'lucide-react';
 import { formatKrw, formatRate } from '@/lib/utils/format';
 import { v3 } from '@/lib/design/tokens';
-import { FALLBACK_PREVIEW_IMAGE } from '@/lib/thumbnails';
+import { FALLBACK_PREVIEW_IMAGE, PRODUCT_PLACEHOLDER } from '@/lib/thumbnails';
 
 const FAVORITES_KEY = 'hanbang_favorites';
 
@@ -117,7 +117,7 @@ export default function MarketDetailHeaderV3({
     return (
       <section
         style={{
-          padding: '48px 24px 32px',
+          padding: '34px 17px 22px',
           textAlign: 'center',
           background: '#ffffff',
         }}
@@ -127,11 +127,15 @@ export default function MarketDetailHeaderV3({
             src={loading ? FALLBACK_PREVIEW_IMAGE : thumbSrc}
             alt=""
             style={{
-              width: 72,
-              height: 72,
+              width: 86,
+              height: 86,
               borderRadius: 20,
               display: 'block',
               margin: '0 auto',
+            }}
+            onError={(e) => {
+              const el = e.currentTarget;
+              if (!el.src.includes('placeholders/')) el.src = PRODUCT_PLACEHOLDER;
             }}
           />
         </div>
@@ -175,7 +179,7 @@ export default function MarketDetailHeaderV3({
     <header
       className="market-detail-header-v3"
       style={{
-        padding: `${v3.padding.lg}px ${v3.padding.md}px`,
+        padding: `${Math.round(v3.padding.lg * 0.7)}px ${Math.round(v3.padding.md * 0.7)}px`,
         borderBottom: '1px solid var(--border)',
         backgroundColor: 'var(--bg)',
       }}
@@ -192,7 +196,7 @@ export default function MarketDetailHeaderV3({
         </Link>
         <div
           className="shrink-0 rounded-xl overflow-hidden bg-[var(--border)]"
-          style={{ width: 56, height: 56 }}
+          style={{ width: 67, height: 67 }}
         >
           {loading ? (
             <div className="w-full h-full animate-pulse bg-[var(--bg-secondary)]" />
@@ -201,8 +205,12 @@ export default function MarketDetailHeaderV3({
               src={thumbSrc}
               alt=""
               className="object-cover w-full h-full"
-              width={56}
-              height={56}
+              width={67}
+              height={67}
+              onError={(e) => {
+                const el = e.currentTarget;
+                if (!el.src.includes('placeholders/')) el.src = PRODUCT_PLACEHOLDER;
+              }}
             />
           )}
         </div>

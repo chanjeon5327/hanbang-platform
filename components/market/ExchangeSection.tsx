@@ -152,14 +152,9 @@ export default function ExchangeSection({
             }}
           >
             <TradingPanelV2
-              contentId={contentId}
-              sharePriceUsd={sharePriceUsd}
-              fxRate={fxRate}
-              isLoggedIn={isLoggedIn}
-              totalSupplyShares={totalSupplyShares}
-              onToast={onToast}
-              variant="order-only"
-              disabled={!isTradable}
+              currentPriceKrw={
+                lastTradePrice != null ? Math.round(lastTradePrice * fxRate) : Math.round(sharePriceUsd * fxRate)
+              }
             />
           </div>
           <PositionPanel
