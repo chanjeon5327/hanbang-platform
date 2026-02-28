@@ -18,8 +18,6 @@ export async function GET(req: Request) {
     const user = auth?.user;
     if (!user) return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
 
-    const itemId = searchParams.get('item_id');
-
     const { data, error } = await (supabase as any)
       .from('orders')
       .select('*')
@@ -29,15 +27,7 @@ export async function GET(req: Request) {
 
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 400 });
 
-    let rows = data ?? [];
-    if (itemId) {
-      rows = rows.filter((o: Record<string, unknown>) => {
-        const cid = o?.content_id ?? o?.content_item_id ?? o?.item_id ?? o?.product_id ?? o?.asset_id;
-        return String(cid ?? '') === itemId;
-      });
-    }
-
-    const orders = rows.map((o: Record<string, unknown>) => {
+    const orders = (data ?? []).map((o: Record<string, unknown>) => {
       const contentId =
         o?.content_id ?? o?.content_item_id ?? o?.item_id ?? o?.product_id ?? o?.asset_id ?? null;
 

@@ -31,7 +31,7 @@ async function insertOrderWithFkFallback(supabase: any, base: Record<string, unk
   throw new Error((lastErr as { message?: string })?.message || 'ORDER_CREATE_FAILED');
 }
 
-async function tryInsertLedgerDebit(supabase: any, userId: string, orderId: string | null, amountKrw: number, memo: string) {
+async function tryInsertLedgerDebit(supabase: any, userId: string, amountKrw: number, memo: string) {
   const probe = await supabase.from('ledger_entries').select('*').limit(1);
   const sample = probe?.data?.[0] ?? null;
   const keys = sample && typeof sample === 'object' ? new Set(Object.keys(sample)) : new Set<string>();
@@ -40,8 +40,6 @@ async function tryInsertLedgerDebit(supabase: any, userId: string, orderId: stri
   const typeKey = keys.has('entry_type') ? 'entry_type' : keys.has('type') ? 'type' : null;
   const memoKey = keys.has('memo') ? 'memo' : keys.has('note') ? 'note' : null;
   const userKey = keys.has('user_id') ? 'user_id' : null;
-  const orderKey = keys.has('order_id') ? 'order_id' : null;
-  const currencyKey = keys.has('currency') ? 'currency' : null;
 
   if (!amountKey || !typeKey) return { ok: false, reason: 'ledger schema unknown' };
 
@@ -50,8 +48,6 @@ async function tryInsertLedgerDebit(supabase: any, userId: string, orderId: stri
   row[amountKey] = -Math.round(amountKrw);
   if (memoKey) row[memoKey] = memo;
   if (userKey) row[userKey] = userId;
-  if (orderKey && orderId) row[orderKey] = orderId;
-  if (currencyKey) row[currencyKey] = 'KRW';
 
   const { error } = await supabase.from('ledger_entries').insert(row);
   if (error) return { ok: false, reason: error.message };
@@ -69,7 +65,7 @@ export async function POST(req: Request) {
     const user = auth?.user;
     if (!user) return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
 
-    const body = await req.json().catch(() => ({})) as Record<string, unknown>;
+    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
     const contentId = String(body?.content_id || body?.contentId || body?.item_id || body?.id || '').trim();
     if (!contentId) return NextResponse.json({ ok: false, error: 'MISSING_content_id' }, { status: 400 });
 
@@ -80,7 +76,7 @@ export async function POST(req: Request) {
       const itemRes = await supabase.from('content_items').select('*').eq('id', contentId).maybeSingle();
       const item = itemRes?.data as Record<string, unknown> | null;
 
-      const priceFromItem = num(
+      const fromItem = num(
         item?.price_krw ??
           item?.share_price_krw ??
           item?.sharePriceKrw ??
@@ -89,12 +85,7 @@ export async function POST(req: Request) {
           0,
         0
       );
-      if (priceFromItem > 0) {
-        priceKrw = Math.round(priceFromItem);
-      } else {
-        const shareUsd = num(item?.share_price_usd ?? item?.sharePriceUsd ?? 0, 0);
-        priceKrw = Math.round(shareUsd * 1350) || 10000;
-      }
+      priceKrw = fromItem > 0 ? Math.round(fromItem) : Math.round(num(item?.share_price_usd ?? item?.sharePriceUsd ?? 0, 0) * 1350) || 10000;
     }
 
     if (!priceKrw) return NextResponse.json({ ok: false, error: 'PRICE_NOT_FOUND' }, { status: 400 });
@@ -108,12 +99,12 @@ export async function POST(req: Request) {
 
     const baseOrder: Record<string, unknown> = {
       user_id: user.id,
-      type: 'BUY',
-      status: demo ? 'COMPLETED' : 'PENDING',
+      side: 'BUY',
+      status: demo ? 'FILLED' : 'PENDING',
       quantity: qty,
-      price: priceKrw,
-      total_amount_krw: total,
-      filled_quantity: demo ? qty : 0,
+      price_krw: priceKrw,
+      total_krw: total,
+      fee_krw: fee,
     };
 
     let created: Record<string, unknown> | null = null;
@@ -124,9 +115,7 @@ export async function POST(req: Request) {
       created = r.row as Record<string, unknown>;
       usedKey = r.usedKey;
     } catch (e1: unknown) {
-      const safeOrder: Record<string, unknown> = {
-        user_id: user.id,
-      };
+      const safeOrder: Record<string, unknown> = { user_id: user.id };
 
       const probe = await supabase.from('orders').select('*').limit(1);
       const sample = probe?.data?.[0];
@@ -136,8 +125,8 @@ export async function POST(req: Request) {
       else if (keys.has('order_side')) safeOrder.order_side = 'BUY';
       else if (keys.has('type')) safeOrder.type = 'BUY';
 
-      if (keys.has('status')) safeOrder.status = demo ? 'COMPLETED' : 'PENDING';
-      else if (keys.has('state')) safeOrder.state = demo ? 'COMPLETED' : 'PENDING';
+      if (keys.has('status')) safeOrder.status = demo ? 'FILLED' : 'PENDING';
+      else if (keys.has('state')) safeOrder.state = demo ? 'FILLED' : 'PENDING';
 
       if (keys.has('quantity')) safeOrder.quantity = qty;
       else if (keys.has('qty')) safeOrder.qty = qty;
@@ -157,14 +146,8 @@ export async function POST(req: Request) {
     }
 
     let ledgerUpdated = false;
-    if (demo && created?.id) {
-      const led = await tryInsertLedgerDebit(
-        supabase,
-        user.id,
-        String(created.id),
-        total,
-        `DEMO BUY: content=${contentId} qty=${qty} price=${priceKrw} fee=${fee} (fk=${usedKey})`
-      );
+    if (demo) {
+      const led = await tryInsertLedgerDebit(supabase, user.id, total, `DEMO BUY: content=${contentId} qty=${qty} price=${priceKrw} fee=${fee} (fk=${usedKey})`);
       ledgerUpdated = !!led.ok;
     }
 
