@@ -1,489 +1,370 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-type SessionUser = { id: string; email?: string } | null;
-type OrderItem = {
-  id: string;
-  content_id?: string;
-  product_id?: string;
-  type?: string;
-  order_type?: string;
-  price?: number;
-  quantity?: number;
-  filled_quantity?: number;
-  status?: string | null;
-  created_at?: string;
-};
-type LedgerEntry = {
-  id: string;
-  order_id?: string;
-  entry_type?: string;
-  currency?: string;
-  amount?: number;
-  asset_id?: string;
-  quantity?: number;
-  memo?: string | null;
-  created_at?: string;
-};
-
-type SectionState<T> = {
+type BoxState<T> = {
   loading: boolean;
   ok: boolean;
-  data: T;
+  data: T | null;
   error: string | null;
 };
 
-type LogEntry = {
-  ts: string;
-  success: boolean;
-  content_id?: string;
-  price?: number;
-  qty?: number;
-  order_id?: string;
-  ledger_updated?: boolean;
-  msg: string;
-};
+function nowStamp() {
+  const d = new Date();
+  return d.toISOString().replace('T', ' ').slice(0, 19);
+}
 
-const MAX_LOG = 20;
-const DEMO_BUY_TIMEOUT_MS = 10_000;
+function safeArray(x: unknown): unknown[] {
+  return Array.isArray(x) ? x : [];
+}
 
-function formatDate(s: string) {
+function pickList(j: unknown): unknown[] {
+  const obj = j as Record<string, unknown>;
+  const keys = ['items', 'data', 'rows', 'orders', 'entries'];
+  for (const k of keys) {
+    const v = obj?.[k];
+    if (Array.isArray(v)) return v;
+  }
+  if (obj?.rails && Array.isArray(obj.rails)) {
+    for (const r of obj.rails as Record<string, unknown>[]) {
+      const arr = r?.items;
+      if (Array.isArray(arr) && arr.length > 0) return arr;
+    }
+  }
+  if (Array.isArray(j)) return j;
+  return [];
+}
+
+function pickId(item: Record<string, unknown>): string {
+  const id =
+    item?.content_id ??
+    item?.contentId ??
+    item?.id ??
+    item?.productId ??
+    item?.product_id ??
+    item?.item_id ??
+    item?.itemId ??
+    '';
+  return String(id || '');
+}
+
+async function fetchJson(url: string, opts?: RequestInit, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const d = new Date(s);
-    return d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-  } catch {
-    return s;
+    const res = await fetch(url, { ...(opts || {}), signal: controller.signal, cache: 'no-store' });
+    const text = await res.text();
+    let json: unknown = null;
+    try {
+      json = text ? JSON.parse(text) : null;
+    } catch {
+      json = { raw: text };
+    }
+    if (!res.ok) {
+      const msg = (json as Record<string, unknown>)?.error || (json as Record<string, unknown>)?.message || `HTTP ${res.status}`;
+      throw new Error(String(msg));
+    }
+    return json;
+  } finally {
+    clearTimeout(t);
   }
 }
 
-function formatKrw(n: number) {
-  return new Intl.NumberFormat('ko-KR').format(n);
-}
+export default function SmokePage() {
+  const [session, setSession] = useState<BoxState<Record<string, unknown>>>({ loading: true, ok: false, data: null, error: null });
+  const [status, setStatus] = useState<BoxState<Record<string, unknown>>>({ loading: true, ok: false, data: null, error: null });
+  const [orders, setOrders] = useState<BoxState<unknown[]>>({ loading: true, ok: false, data: null, error: null });
+  const [ledger, setLedger] = useState<BoxState<unknown[]>>({ loading: true, ok: false, data: null, error: null });
 
-function fetchWithTimeout(url: string, opts: RequestInit = {}, timeoutMs: number): Promise<Response> {
-  const ctrl = new AbortController();
-  const tid = setTimeout(() => ctrl.abort(), timeoutMs);
-  return fetch(url, { ...opts, signal: ctrl.signal }).finally(() => clearTimeout(tid));
-}
-
-export default function OpsSmokePage() {
-  const [sessionState, setSessionState] = useState<SectionState<SessionUser>>({
-    loading: true,
-    ok: false,
-    data: null,
-    error: null,
-  });
-  const [statusState, setStatusState] = useState<SectionState<boolean | null>>({
-    loading: true,
-    ok: false,
-    data: null,
-    error: null,
-  });
-  const [ordersState, setOrdersState] = useState<SectionState<OrderItem[]>>({
-    loading: true,
-    ok: false,
-    data: [],
-    error: null,
-  });
-  const [ledgerState, setLedgerState] = useState<SectionState<LedgerEntry[]>>({
-    loading: true,
-    ok: false,
-    data: [],
-    error: null,
-  });
-  const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [lastDemoResult, setLastDemoResult] = useState<{ success: boolean; order_id?: string } | null>(null);
   const [buyLoading, setBuyLoading] = useState(false);
+  const [logs, setLogs] = useState<string[]>([]);
+  const [lastBuyOk, setLastBuyOk] = useState<boolean | null>(null);
+  const [lastBuyOrderId, setLastBuyOrderId] = useState<string | null>(null);
 
-  const addLog = useCallback((entry: LogEntry) => {
-    setLogs((prev) => [entry, ...prev].slice(0, MAX_LOG));
+  const mountedRef = useRef(true);
+
+  const demoOn = !!status.data?.demo_trading;
+
+  const pushLog = useCallback((msg: string) => {
+    setLogs((prev) => {
+      const next = [`[${nowStamp()}] ${msg}`, ...prev];
+      return next.slice(0, 20);
+    });
   }, []);
 
-  const refreshSession = useCallback(async () => {
-    setSessionState((s) => ({ ...s, loading: true, error: null }));
-    try {
-      const res = await fetch('/api/auth/session', { cache: 'no-store' });
-      const json = await res.json().catch(() => ({}));
-      const user = json?.user ?? null;
-      setSessionState({ loading: false, ok: res.ok, data: user, error: res.ok ? null : (json?.error ?? 'FAIL') });
-    } catch (e) {
-      setSessionState({
-        loading: false,
-        ok: false,
-        data: null,
-        error: e instanceof Error ? e.message : '네트워크 오류',
-      });
-    }
-  }, []);
+  const loadAll = useCallback(async () => {
+    setSession((p) => ({ ...p, loading: true, error: null }));
+    setStatus((p) => ({ ...p, loading: true, error: null }));
+    setOrders((p) => ({ ...p, loading: true, error: null }));
+    setLedger((p) => ({ ...p, loading: true, error: null }));
 
-  const refreshOrders = useCallback(async () => {
-    setOrdersState((s) => ({ ...s, loading: true, error: null }));
-    try {
-      const res = await fetch('/api/orders/my?limit=5', { cache: 'no-store' });
-      const json = await res.json().catch(() => ({}));
-      const orders = res.ok ? (json?.orders ?? []).slice(0, 5) : [];
-      setOrdersState({
-        loading: false,
-        ok: res.ok,
-        data: orders,
-        error: res.ok ? null : (json?.error ?? 'FAIL'),
-      });
-    } catch (e) {
-      setOrdersState({
-        loading: false,
-        ok: false,
-        data: [],
-        error: e instanceof Error ? e.message : '네트워크 오류',
-      });
-    }
-  }, []);
-
-  const refreshLedger = useCallback(async () => {
-    setLedgerState((s) => ({ ...s, loading: true, error: null }));
-    try {
-      const res = await fetch('/api/wallet/ledger', { cache: 'no-store' });
-      const json = await res.json().catch(() => ({}));
-      const entries = res.ok ? (json?.entries ?? []).slice(0, 10) : [];
-      setLedgerState({
-        loading: false,
-        ok: res.ok,
-        data: entries,
-        error: res.ok ? null : (json?.error ?? 'FAIL'),
-      });
-    } catch (e) {
-      setLedgerState({
-        loading: false,
-        ok: false,
-        data: [],
-        error: e instanceof Error ? e.message : '네트워크 오류',
-      });
-    }
-  }, []);
-
-  const refreshAll = useCallback(async () => {
-    const opts = { cache: 'no-store' as RequestCache };
     const results = await Promise.allSettled([
-      fetch('/api/auth/session', opts).then((r) => r.json().catch(() => ({}))),
-      fetch('/api/ops/status', opts).then((r) => r.json().catch(() => ({}))),
-      fetch('/api/orders/my?limit=5', opts).then((r) => r.json().catch(() => ({}))),
-      fetch('/api/wallet/ledger', opts).then((r) => r.json().catch(() => ({}))),
+      fetchJson('/api/auth/session'),
+      fetchJson('/api/ops/status'),
+      fetchJson('/api/orders/my?limit=5'),
+      fetchJson('/api/wallet/ledger'),
     ]);
 
-    const [sessionJson, statusJson, ordersRes, ledgerRes] = results.map((r) =>
-      r.status === 'fulfilled' ? r.value : null
-    );
+    if (!mountedRef.current) return;
 
-    setSessionState({
-      loading: false,
-      ok: !!sessionJson?.user,
-      data: sessionJson?.user ?? null,
-      error: sessionJson?.user ? null : (sessionJson?.error ?? 'FAIL'),
-    });
+    if (results[0].status === 'fulfilled') {
+      setSession({ loading: false, ok: true, data: results[0].value as Record<string, unknown>, error: null });
+    } else {
+      setSession({ loading: false, ok: false, data: null, error: (results[0] as PromiseRejectedResult).reason?.message || 'session fail' });
+    }
 
-    setStatusState({
-      loading: false,
-      ok: statusJson != null,
-      data: statusJson?.demoTrading ?? null,
-      error: statusJson != null ? null : 'FAIL',
-    });
+    if (results[1].status === 'fulfilled') {
+      setStatus({ loading: false, ok: true, data: results[1].value as Record<string, unknown>, error: null });
+    } else {
+      setStatus({ loading: false, ok: false, data: null, error: (results[1] as PromiseRejectedResult).reason?.message || 'status fail' });
+    }
 
-    const ordersData = ordersRes?.orders ?? [];
-    setOrdersState({
-      loading: false,
-      ok: Array.isArray(ordersRes?.orders),
-      data: ordersData.slice(0, 5),
-      error: Array.isArray(ordersRes?.orders) ? null : (ordersRes?.error ?? 'FAIL'),
-    });
+    if (results[2].status === 'fulfilled') {
+      const j = results[2].value as Record<string, unknown>;
+      const list = pickList(j);
+      setOrders({ loading: false, ok: true, data: list.slice(0, 5), error: null });
+    } else {
+      setOrders({ loading: false, ok: false, data: [], error: (results[2] as PromiseRejectedResult).reason?.message || 'orders fail' });
+    }
 
-    const ledgerData = ledgerRes?.entries ?? [];
-    setLedgerState({
-      loading: false,
-      ok: Array.isArray(ledgerRes?.entries),
-      data: ledgerData.slice(0, 10),
-      error: Array.isArray(ledgerRes?.entries) ? null : (ledgerRes?.error ?? 'FAIL'),
-    });
+    if (results[3].status === 'fulfilled') {
+      const j = results[3].value as Record<string, unknown>;
+      const list = pickList(j);
+      setLedger({ loading: false, ok: true, data: list.slice(0, 10), error: null });
+    } else {
+      setLedger({ loading: false, ok: false, data: [], error: (results[3] as PromiseRejectedResult).reason?.message || 'ledger fail' });
+    }
   }, []);
 
-  const refreshAfterBuy = useCallback(() => {
-    refreshSession();
-    refreshOrders();
-    refreshLedger();
-  }, [refreshSession, refreshOrders, refreshLedger]);
-
   useEffect(() => {
-    refreshAll();
-  }, [refreshAll]);
+    mountedRef.current = true;
+    loadAll();
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [loadAll]);
 
-  const handleDemoBuy = useCallback(async () => {
+  async function resolveContentId(): Promise<string> {
+    try {
+      const j = await fetchJson('/api/home/popular');
+      const list = pickList(j);
+      const id = (list as Record<string, unknown>[]).map(pickId).find((x) => x && x !== 'undefined' && x !== 'null');
+      if (id) return id;
+    } catch {
+      // ignore
+    }
+
+    try {
+      const j = await fetchJson('/api/home/rails');
+      const list = pickList(j);
+      const id = (list as Record<string, unknown>[]).map(pickId).find((x) => x && x !== 'undefined' && x !== 'null');
+      if (id) return id;
+    } catch {
+      // ignore
+    }
+
+    try {
+      const j = await fetchJson('/api/market/all?limit=10');
+      const list = pickList(j);
+      const id = (list as Record<string, unknown>[]).map(pickId).find((x) => x && x !== 'undefined' && x !== 'null');
+      if (id) return id;
+    } catch {
+      // ignore
+    }
+
+    return '';
+  }
+
+  async function doDemoBuyOnce() {
     if (buyLoading) return;
-    const user = sessionState.data;
-    if (!user) {
-      addLog({
-        ts: new Date().toISOString(),
-        success: false,
-        msg: '로그인 후 사용 가능',
-      });
+
+    if (!demoOn) {
+      pushLog('DEMO_TRADING이 OFF라 데모 매수를 실행할 수 없습니다. (환경변수 DEMO_TRADING=true 필요)');
+      setLastBuyOk(false);
+      setLastBuyOrderId(null);
       return;
     }
 
     setBuyLoading(true);
-    const startTs = new Date().toISOString();
+    setLastBuyOk(null);
+    setLastBuyOrderId(null);
 
     try {
-      const marketRes = await fetch('/api/market/all?limit=1', { cache: 'no-store' });
-      const marketJson = await marketRes.json().catch(() => ({}));
-      const items = marketJson?.items ?? [];
-      const contentId = items[0]?.id;
+      pushLog('데모 매수 시작… content_id 탐색 중');
 
+      const contentId = await resolveContentId();
       if (!contentId) {
-        addLog({ ts: startTs, success: false, msg: '활성 콘텐츠 없음' });
-        setLastDemoResult({ success: false });
+        pushLog('활성 콘텐츠 없음: /api/home/popular, /api/home/rails, /api/market/all 에서 content_id를 찾지 못했습니다.');
+        setLastBuyOk(false);
         return;
       }
 
-      const res = await fetchWithTimeout(
+      pushLog(`content_id 선택: ${contentId} → /api/orders/place 호출`);
+
+      const body = {
+        content_id: contentId,
+        amount: 10000,
+      };
+
+      const res = await fetchJson(
         '/api/orders/place',
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content_id: contentId, amount: 10000 }),
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body),
         },
-        DEMO_BUY_TIMEOUT_MS
-      );
-      const json = await res.json().catch(() => ({}));
+        10000
+      ) as Record<string, unknown>;
 
-      if (!res.ok) {
-        const msg = json?.debug ?? json?.error ?? '매수 실패';
-        addLog({
-          ts: startTs,
-          success: false,
-          content_id: contentId,
-          msg,
-        });
-        setLastDemoResult({ success: false });
-        return;
-      }
+      const orderId = String(res?.order_id || res?.orderId || (res?.order as Record<string, unknown>)?.id || '');
+      setLastBuyOk(true);
+      setLastBuyOrderId(orderId || null);
 
-      const price = json?.fill?.price;
-      const qty = json?.fill?.qty;
-      const orderId = json?.order_id;
-      const ledgerUpdated = json?.ledger_updated ?? true;
+      pushLog(`데모 매수 성공 ✅ order_id=${orderId || '(unknown)'} ledger_updated=${String(res?.ledger_updated ?? res?.ledgerUpdated ?? '')}`);
 
-      addLog({
-        ts: startTs,
-        success: true,
-        content_id: contentId,
-        price,
-        qty,
-        order_id: orderId,
-        ledger_updated: ledgerUpdated,
-        msg: `성공 order_id=${orderId ?? '—'} price=${price ?? '—'} qty=${qty ?? '—'} ledger=${ledgerUpdated}`,
-      });
-      setLastDemoResult({ success: true, order_id: orderId });
-      refreshAfterBuy();
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : '매수 실패';
-      if (e instanceof Error && e.name === 'AbortError') {
-        addLog({ ts: startTs, success: false, msg: '10초 타임아웃' });
-      } else {
-        addLog({ ts: startTs, success: false, msg });
-      }
-      setLastDemoResult({ success: false });
+      await loadAll();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'demo buy failed';
+      pushLog(`데모 매수 실패 ❌ ${msg}`);
+      setLastBuyOk(false);
+      setLastBuyOrderId(null);
     } finally {
       setBuyLoading(false);
     }
-  }, [buyLoading, sessionState.data, addLog, refreshAfterBuy]);
+  }
 
-  const user = sessionState.data;
-  const demoTrading = statusState.data;
-  const orders = ordersState.data;
-  const entries = ledgerState.data;
+  const summaryLines = useMemo(() => {
+    const loginOk = !!(session.ok && (session.data?.user || session.data?.email));
+    const demoText = demoOn ? 'DEMO_TRADING ON' : 'DEMO_TRADING OFF';
+    const ordersN = orders.data?.length ?? 0;
+    const ledgerN = ledger.data?.length ?? 0;
+
+    return [
+      { ok: loginOk, text: loginOk ? '로그인 OK' : '로그인 FAIL' },
+      { ok: true, text: demoText },
+      { ok: orders.ok, text: `최근 주문 ${ordersN}건 ${orders.ok ? 'OK' : 'FAIL'}` },
+      { ok: ledger.ok, text: `최근 원장 ${ledgerN}건 ${ledger.ok ? 'OK' : 'FAIL'}` },
+      { ok: lastBuyOk === true, text: lastBuyOk === true ? `마지막 데모 매수 성공 ${lastBuyOrderId ? `(order_id=${lastBuyOrderId})` : ''}` : '마지막 데모 매수 실패' },
+    ];
+  }, [demoOn, session.ok, session.data, orders.ok, orders.data, ledger.ok, ledger.data, lastBuyOk, lastBuyOrderId]);
 
   return (
-    <div className="min-h-screen bg-[var(--toss-bg)] p-4">
-      <h1 className="text-xl font-bold text-[var(--toss-text)] mb-4">출고 증빙 모드</h1>
+    <div className="mx-auto w-full max-w-[720px] px-4 pb-24 pt-8">
+      <div className="text-[22px] font-extrabold text-gray-900">출고 증빙 모드</div>
+      <div className="mt-2 text-[12px] font-bold text-gray-500">
+        * 데모 매수는 <span className="font-extrabold">DEMO_TRADING=true</span> 일 때만 동작합니다.
+      </div>
 
-      {/* 출고 요약 */}
-      <section className="mb-6">
-        <h2 className="text-sm font-semibold text-[var(--toss-text-secondary)] mb-2">출고 요약</h2>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-[var(--toss-border)] space-y-2">
-          <div className="flex items-center gap-2">
-            {sessionState.loading ? (
-              <span className="text-[var(--toss-text-secondary)]">…</span>
-            ) : sessionState.ok ? (
-              <span className="text-emerald-600">✅ 로그인 OK</span>
-            ) : (
-              <span className="text-red-600">❌ 로그인 FAIL</span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {statusState.loading ? (
-              <span className="text-[var(--toss-text-secondary)]">…</span>
-            ) : statusState.ok ? (
-              <span className={demoTrading ? 'text-emerald-600' : 'text-amber-600'}>
-                ✅ DEMO_TRADING {demoTrading ? 'ON' : 'OFF'}
-              </span>
-            ) : (
-              <span className="text-red-600">❌ DEMO_TRADING FAIL</span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {ordersState.loading ? (
-              <span className="text-[var(--toss-text-secondary)]">…</span>
-            ) : ordersState.ok ? (
-              <span className="text-emerald-600">✅ 최근 주문 {orders.length}건 OK</span>
-            ) : (
-              <span className="text-red-600">❌ 최근 주문 FAIL {ordersState.error ? `(${ordersState.error})` : ''}</span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {ledgerState.loading ? (
-              <span className="text-[var(--toss-text-secondary)]">…</span>
-            ) : ledgerState.ok ? (
-              <span className="text-emerald-600">✅ 최근 원장 {entries.length}건 OK</span>
-            ) : (
-              <span className="text-red-600">❌ 최근 원장 FAIL {ledgerState.error ? `(${ledgerState.error})` : ''}</span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {lastDemoResult == null ? (
-              <span className="text-[var(--toss-text-secondary)]">— 마지막 데모 매수: —</span>
-            ) : lastDemoResult.success ? (
-              <span className="text-emerald-600">
-                ✅ 마지막 데모 매수 성공 order_id={lastDemoResult.order_id ?? '—'}
-              </span>
-            ) : (
-              <span className="text-red-600">❌ 마지막 데모 매수 실패</span>
-            )}
+      <div className="mt-5 rounded-2xl border border-black/10 bg-white p-5">
+        <div className="mb-3 text-[14px] font-extrabold text-gray-900">출고 요약</div>
+        <div className="space-y-2 text-[13px] font-bold">
+          {summaryLines.map((l, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className={l.ok ? 'text-emerald-600' : 'text-red-600'}>{l.ok ? '✅' : '❌'}</span>
+              <span className={l.ok ? 'text-gray-900' : 'text-red-600'}>{l.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-4">
+        <div className="rounded-2xl border border-black/10 bg-white p-5">
+          <div className="text-[13px] font-extrabold text-gray-900">로그인 여부</div>
+          <div className="mt-2 text-[13px] font-bold text-emerald-700">
+            {session.loading ? '로딩…' : session.ok ? `로그인됨 — ${(session.data?.user as Record<string, unknown>)?.email || session.data?.email || (session.data?.user as Record<string, unknown>)?.id || ''}` : `실패 — ${session.error}`}
           </div>
         </div>
-      </section>
 
-      <section className="mb-6">
-        <h2 className="text-sm font-semibold text-[var(--toss-text-secondary)] mb-2">로그인 여부</h2>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-[var(--toss-border)]">
-          {sessionState.loading ? (
-            <p className="text-[var(--toss-text-secondary)]">로딩 중…</p>
-          ) : sessionState.error ? (
-            <p className="text-red-600 font-medium">부분 실패: {sessionState.error}</p>
-          ) : user ? (
-            <p className="text-emerald-600 font-medium">로그인됨 — {user.email ?? user.id}</p>
-          ) : (
-            <p className="text-red-600 font-medium">비로그인</p>
-          )}
+        <div className="rounded-2xl border border-black/10 bg-white p-5">
+          <div className="text-[13px] font-extrabold text-gray-900">DEMO_TRADING</div>
+          <div className="mt-2 text-[13px] font-bold text-orange-600">
+            {status.loading ? '로딩…' : status.ok ? (demoOn ? 'ON' : 'OFF') : `실패 — ${status.error}`}
+          </div>
+          {!demoOn ? (
+            <div className="mt-2 text-[12px] font-bold text-gray-500">
+              데모 매수가 필요하면 <span className="font-extrabold">환경변수 DEMO_TRADING=true</span>로 켜고(배포면 재배포) 다시 시도하세요.
+            </div>
+          ) : null}
         </div>
-      </section>
 
-      <section className="mb-6">
-        <h2 className="text-sm font-semibold text-[var(--toss-text-secondary)] mb-2">DEMO_TRADING</h2>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-[var(--toss-border)]">
-          {statusState.loading ? (
-            <p className="text-[var(--toss-text-secondary)]">로딩 중…</p>
-          ) : statusState.error ? (
-            <p className="text-red-600 font-medium">부분 실패: {statusState.error}</p>
-          ) : demoTrading === null ? (
-            <p className="text-[var(--toss-text-secondary)]">—</p>
-          ) : demoTrading ? (
-            <p className="text-emerald-600 font-medium">ON</p>
-          ) : (
-            <p className="text-amber-600 font-medium">OFF</p>
-          )}
-        </div>
-      </section>
-
-      <section className="mb-6">
-        <h2 className="text-sm font-semibold text-[var(--toss-text-secondary)] mb-2">최근 주문 5개</h2>
-        <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-[var(--toss-border)]">
-          {ordersState.loading ? (
-            <p className="p-4 text-[var(--toss-text-secondary)]">로딩 중…</p>
-          ) : ordersState.error ? (
-            <p className="p-4 text-red-600">부분 실패: {ordersState.error}</p>
-          ) : orders.length === 0 ? (
-            <p className="p-4 text-[var(--toss-text-secondary)]">주문 없음</p>
-          ) : (
-            <div className="divide-y divide-[var(--toss-border)]">
-              {orders.map((o) => (
-                <div key={o.id} className="px-4 py-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className={`font-medium ${o.type === 'SELL' ? 'text-blue-600' : 'text-emerald-600'}`}>
-                        {o.type === 'SELL' ? '매도' : '매수'}
-                      </span>
-                      <span className="ml-2 text-[var(--toss-text)]">
-                        {(o.content_id ?? o.product_id ?? '').slice(0, 8)}…
-                      </span>
-                    </div>
-                    <span className="text-sm text-[var(--toss-text-secondary)]">{formatDate(o.created_at ?? '')}</span>
+        <div className="rounded-2xl border border-black/10 bg-white p-5">
+          <div className="text-[13px] font-extrabold text-gray-900">최근 주문 5개</div>
+          <div className="mt-3 space-y-2">
+            {orders.loading ? (
+              <div className="text-[13px] font-bold text-gray-500">로딩…</div>
+            ) : !orders.ok ? (
+              <div className="text-[13px] font-bold text-red-600">{orders.error}</div>
+            ) : (orders.data?.length ?? 0) === 0 ? (
+              <div className="text-[13px] font-bold text-gray-500">주문 없음</div>
+            ) : (
+              ((orders.data ?? []) as Record<string, unknown>[]).map((o, idx) => (
+                <div key={String(o?.id ?? idx)} className="rounded-xl border border-black/10 bg-white px-4 py-3 text-[12px] font-bold text-gray-700">
+                  <div className="flex items-center justify-between">
+                    <span>{String(o?.side || o?.order_side || o?.type || '—')}</span>
+                    <span className="text-gray-400">{String(o?.status || o?.state || '—')}</span>
                   </div>
-                  <div className="mt-1 text-sm text-[var(--toss-text-secondary)]">
-                    ₩{formatKrw(Number(o.price ?? 0))} × {o.quantity ?? 0} — {o.status ?? '—'}
+                  <div className="mt-1 text-gray-500">
+                    content_id: {String(o?.content_id || o?.contentId || o?.item_id || o?.itemId || '—')}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
-      </section>
 
-      <section className="mb-6">
-        <h2 className="text-sm font-semibold text-[var(--toss-text-secondary)] mb-2">최근 원장 10개</h2>
-        <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-[var(--toss-border)]">
-          {ledgerState.loading ? (
-            <p className="p-4 text-[var(--toss-text-secondary)]">로딩 중…</p>
-          ) : ledgerState.error ? (
-            <p className="p-4 text-red-600">부분 실패: {ledgerState.error}</p>
-          ) : entries.length === 0 ? (
-            <p className="p-4 text-[var(--toss-text-secondary)]">원장 없음</p>
-          ) : (
-            <div className="divide-y divide-[var(--toss-border)]">
-              {entries.map((e) => (
-                <div key={e.id} className="px-4 py-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="font-medium text-[var(--toss-text)]">{e.entry_type ?? '—'}</span>
-                      <span className="ml-2 text-[var(--toss-text-secondary)]">{e.memo ?? '—'}</span>
-                    </div>
-                    <span className={`font-medium ${(e.amount ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                      {(e.amount ?? 0) >= 0 ? '+' : ''}₩{formatKrw(e.amount ?? 0)}
+        <div className="rounded-2xl border border-black/10 bg-white p-5">
+          <div className="text-[13px] font-extrabold text-gray-900">최근 원장 10개</div>
+          <div className="mt-3 space-y-2">
+            {ledger.loading ? (
+              <div className="text-[13px] font-bold text-gray-500">로딩…</div>
+            ) : !ledger.ok ? (
+              <div className="text-[13px] font-bold text-red-600">{ledger.error}</div>
+            ) : (ledger.data?.length ?? 0) === 0 ? (
+              <div className="text-[13px] font-bold text-gray-500">원장 없음</div>
+            ) : (
+              ((ledger.data ?? []) as Record<string, unknown>[]).map((e, idx) => (
+                <div key={String(e?.id ?? idx)} className="rounded-xl border border-black/10 bg-white px-4 py-3 text-[12px] font-bold text-gray-700">
+                  <div className="flex items-center justify-between">
+                    <span>{String(e?.entry_type || e?.type || e?.kind || '—')}</span>
+                    <span className="text-emerald-700">
+                      {String(e?.amount_krw ?? e?.amount ?? e?.delta ?? '—')}
                     </span>
                   </div>
-                  <div className="mt-1 text-sm text-[var(--toss-text-secondary)]">{formatDate(e.created_at ?? '')}</div>
+                  <div className="mt-1 text-gray-400">{String(e?.memo || e?.ref || '')}</div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
-      </section>
 
-      <section className="mb-6">
-        <h2 className="text-sm font-semibold text-[var(--toss-text-secondary)] mb-2">데모 매수 1회</h2>
-        <button
-          onClick={handleDemoBuy}
-          disabled={buyLoading || !user}
-          className="w-full py-3 px-4 bg-emerald-600 text-white font-medium rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {buyLoading ? '처리 중… (10초 타임아웃)' : '데모 매수 1회'}
-        </button>
-        {!user && <p className="mt-2 text-sm text-amber-600">로그인 후 사용 가능</p>}
-      </section>
+        <div className="rounded-2xl border border-black/10 bg-white p-5">
+          <div className="text-[13px] font-extrabold text-gray-900">데모 매수 1회</div>
+          <button
+            onClick={doDemoBuyOnce}
+            disabled={buyLoading || !demoOn}
+            className={[
+              'mt-3 w-full rounded-2xl px-4 py-4 text-[14px] font-extrabold text-white',
+              buyLoading || !demoOn ? 'bg-gray-300' : 'bg-emerald-600',
+            ].join(' ')}
+          >
+            {buyLoading ? '실행 중…' : demoOn ? '데모 매수 1회' : 'DEMO_TRADING OFF (실행 불가)'}
+          </button>
 
-      <section>
-        <h2 className="text-sm font-semibold text-[var(--toss-text-secondary)] mb-2">실행 로그 (최대 20줄)</h2>
-        <div className="bg-slate-900 text-slate-100 rounded-xl p-4 font-mono text-xs overflow-auto max-h-64">
-          {logs.length === 0 ? (
-            <p className="text-slate-400">—</p>
-          ) : (
-            <div className="space-y-1">
-              {logs.map((log, i) => (
-                <div key={`${log.ts}-${i}`} className={log.success ? 'text-emerald-400' : 'text-red-400'}>
-                  [{log.ts}] {log.msg}
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="mt-4 text-[12px] font-extrabold text-gray-700">실행 로그 (최대 20줄)</div>
+          <div className="mt-2 rounded-2xl bg-gray-900 p-4 text-[12px] font-bold text-gray-100">
+            {logs.length === 0 ? '로그 없음' : logs.map((l, i) => <div key={i}>{l}</div>)}
+          </div>
         </div>
-      </section>
+
+        <div className="flex justify-end">
+          <button
+            onClick={loadAll}
+            className="rounded-xl border border-black/10 bg-white px-4 py-2 text-[12px] font-extrabold text-gray-700"
+          >
+            전체 새로고침
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
