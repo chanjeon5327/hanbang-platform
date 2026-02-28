@@ -1,496 +1,488 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Sparkles, TrendingUp, Flame } from 'lucide-react';
 import styles from './home-legacy.module.css';
-import BottomNavigation from '@/components/home/BottomNavigation';
-import { useDashboardSummary } from '@/components/home/useDashboardSummary';
-import { createClient } from '@/utils/supabase/client';
+import { useDashboardSummary } from './useDashboardSummary';
 
-type PopularItem = {
-  id: string;
+/**
+ * 홈 요구사항
+ * 1) 최상단에 "오늘의 큐레이션 1개" (가장 잘나가는 상품 1개) 큰 카드
+ * 2) K-CIX: 빨강/파랑 띠(밴드) + 라인, 빠르게 움직임
+ * 3) KYC 카드: 젊은 톤(밝은/귀여운), 등급에 아이콘 슬롯(임시)
+ */
+
+type RailItem = {
+  id?: string;
+  productId?: string;
+  content_id?: string;
   title?: string;
-  subtitle?: string;
-  thumbnail_url?: string;
+  name?: string;
+  category?: string;
+  category_name?: string;
   price_krw?: number;
-  yield_rate?: number;
+  change_pct?: number;
+  thumbnail_url?: string;
+  image_url?: string;
+  yt_video_id?: string;
 };
+
+function safeNum(v: unknown, fallback = 0) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
 
 function formatKrw(n: number) {
   try {
-    return new Intl.NumberFormat('ko-KR').format(n);
+    return new Intl.NumberFormat('ko-KR').format(Math.round(n)) + '원';
   } catch {
-    return String(n);
+    return `${Math.round(n)}원`;
   }
 }
 
-function safeThumb(url?: string) {
-  return url || '/placeholders/product-placeholder.png';
+function pickId(x: RailItem) {
+  return (x.productId || x.id || x.content_id || '') as string;
 }
 
-const FALLBACK_RAIL_ITEMS: PopularItem[] = Array.from({ length: 6 }, (_, i) => ({
-  id: `fallback-${i}`,
-  title: '추천 종목',
-  subtitle: '상장 종목',
-  thumbnail_url: '/placeholders/product-placeholder.png',
-  price_krw: 12300,
-  yield_rate: 4.2,
-}));
-
-function seededRand(seed: number) {
-  let s = seed >>> 0;
-  return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+function pickTitle(x: RailItem) {
+  return (x.title || x.name || '추천 종목') as string;
 }
 
-function hashStr(str: string) {
-  let h = 2166136261;
-  for (const c of str) {
-    h ^= c.charCodeAt(0);
-    h = Math.imul(h, 16777619);
+function pickThumb(x: RailItem) {
+  return (x.thumbnail_url || x.image_url || '') as string;
+}
+
+function clamp(n: number, a: number, b: number) {
+  return Math.max(a, Math.min(b, n));
+}
+
+async function fetchJson<T>(url: string): Promise<T> {
+  const r = await fetch(url, { cache: 'no-store' });
+  const j = await r.json();
+  return j as T;
+}
+
+/** 홈 추천 레일(기존 API shape 방어) */
+async function fetchPopular6(): Promise<RailItem[]> {
+  try {
+    const j = await fetchJson<Record<string, unknown>>('/api/home/popular');
+    const arr =
+      (Array.isArray(j?.items) && j.items) ||
+      (Array.isArray(j?.data) && j.data) ||
+      (Array.isArray(j?.rows) && j.rows) ||
+      (Array.isArray(j?.popular) && j.popular) ||
+      [];
+    return arr.slice(0, 6) as RailItem[];
+  } catch {
+    return [];
   }
-  return h >>> 0;
 }
 
-function buildIndexSeries(
-  items: PopularItem[],
-  pointsCount = 42
-): { values: number[]; changePct: number } {
-  const prices = items
-    .map((it) => Number(it?.price_krw))
-    .filter((v) => Number.isFinite(v) && v > 0);
-  const baseAvg = prices.length
-    ? prices.reduce((a, b) => a + b, 0) / prices.length
-    : 12300;
-
-  const seriesList = items
-    .filter(
-      (it) =>
-        Number.isFinite(Number(it?.price_krw)) && Number(it?.price_krw) > 0
-    )
-    .slice(0, 10)
-    .map((it) => {
-      const base = Number(it.price_krw);
-      const rand = seededRand(hashStr(String(it.id ?? it.title ?? base)));
-      const driftSign = rand() > 0.5 ? 1 : -1;
-      const amp = 0.006 + rand() * 0.004;
-      const waveAmp = 0.004 + rand() * 0.003;
-      const driftAmp = 0.004 * driftSign;
-      const vals: number[] = [];
-      for (let i = 0; i < pointsCount; i++) {
-        const t = i / (pointsCount - 1);
-        const wave = Math.sin(t * Math.PI * 2 * (1.2 + rand())) * waveAmp;
-        const noise = (rand() - 0.5) * amp;
-        const drift = (t - 0.5) * driftAmp;
-        const v = base * (1 + wave + noise + drift);
-        vals.push(v);
-      }
-      return vals;
-    });
-
-  if (seriesList.length === 0) {
-    const rand = seededRand(777);
-    const vals: number[] = [];
-    for (let i = 0; i < pointsCount; i++) {
-      const t = i / (pointsCount - 1);
-      const wave = Math.sin(t * Math.PI * 2 * 1.1) * 0.004;
-      const noise = (rand() - 0.5) * 0.004;
-      const drift = (t - 0.5) * 0.003;
-      vals.push(baseAvg * (1 + wave + noise + drift));
-    }
-    seriesList.push(vals);
-  }
-
-  const values = Array.from({ length: pointsCount }, (_, i) => {
-    const s =
-      seriesList.reduce((a, arr) => a + arr[i], 0) / seriesList.length;
-    return s;
-  });
-
-  const first = values[0] ?? baseAvg;
-  const last = values[values.length - 1] ?? first;
-  const changePct = first ? ((last - first) / first) * 100 : 0;
-
-  return { values, changePct };
-}
+/** 임시 fallback */
+const FALLBACK_RAIL_ITEMS: RailItem[] = [
+  { id: 'fallback-1', title: '영화 블록버스터', category: 'movie', price_krw: 12300, change_pct: 4.2, thumbnail_url: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=60' },
+  { id: 'fallback-2', title: '유튜브 크리에이터 일상', category: 'youtube', price_krw: 12300, change_pct: 4.2, thumbnail_url: 'https://images.unsplash.com/photo-1520975916090-3105956dac38?auto=format&fit=crop&w=1200&q=60' },
+  { id: 'fallback-3', title: '웹소설 달빛 아래 그대', category: 'webnovel', price_krw: 12300, change_pct: 4.2, thumbnail_url: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=60' },
+  { id: 'fallback-4', title: '게임 스트리머 라이브', category: 'game', price_krw: 12300, change_pct: 4.2, thumbnail_url: 'https://images.unsplash.com/photo-1504270997636-07ddfbd48945?auto=format&fit=crop&w=1200&q=60' },
+  { id: 'fallback-5', title: '인기 웹툰 모험기', category: 'webtoon', price_krw: 12300, change_pct: 4.2, thumbnail_url: 'https://images.unsplash.com/photo-1526481280695-3c687fd643ed?auto=format&fit=crop&w=1200&q=60' },
+  { id: 'fallback-6', title: '드라마 스페셜', category: 'drama', price_krw: 12300, change_pct: 4.2, thumbnail_url: 'https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&w=1200&q=60' },
+];
 
 function Sparkline({ values }: { values: number[] }) {
-  const W = 320,
-    H = 86,
-    P = 10;
+  const w = 320;
+  const h = 86;
+  const pad = 6;
+
+  const n = values?.length ?? 0;
+  if (n < 2) return null;
+
   const min = Math.min(...values);
   const max = Math.max(...values);
-  const span = Math.max(1e-6, max - min);
-  const pts = values.map((v, i) => {
-    const x = P + (i * (W - 2 * P)) / (values.length - 1 || 1);
-    const y = P + (1 - (v - min) / span) * (H - 2 * P);
-    return [x, y] as const;
-  });
+  const range = max - min || 1;
+
+  const bandHeight = 22;
+  const usableH = h - pad * 2 - bandHeight;
+
+  const xStep = (w - pad * 2) / (n - 1);
+  const yFor = (v: number) => {
+    const t = (v - min) / range;
+    return pad + (1 - t) * usableH;
+  };
+
+  const pts = values.map((v, i) => [pad + i * xStep, yFor(v)] as const);
   const d = pts
-    .map((p, i) =>
-      i === 0
-        ? `M ${p[0].toFixed(2)} ${p[1].toFixed(2)}`
-        : `L ${p[0].toFixed(2)} ${p[1].toFixed(2)}`
-    )
+    .map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(2)},${p[1].toFixed(2)}`)
     .join(' ');
+
+  const deltas = values.slice(1).map((v, i) => v - values[i]);
+  const maxAbs = Math.max(...deltas.map((x) => Math.abs(x))) || 1;
+
+  const bandTop = h - pad - bandHeight;
+  const bandBot = h - pad;
+  const bandH = bandBot - bandTop;
+
+  const bars = deltas.map((dv, i) => {
+    const intensity = Math.min(1, Math.abs(dv) / maxAbs);
+    const bh = 6 + intensity * (bandH - 6);
+    const y = bandBot - bh;
+    return {
+      x: pad + i * xStep,
+      y,
+      w: xStep,
+      h: bh,
+      up: dv >= 0,
+    };
+  });
+
   return (
-    <svg
-      className={styles.trendSvg}
-      viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="none"
-    >
-      <path className={styles.trendPath} d={d} />
+    <svg className={styles.trendSvg} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="kixBlueGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#2563EB" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="#2563EB" stopOpacity="0.06" />
+        </linearGradient>
+        <linearGradient id="kixRedGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#DC2626" stopOpacity="0.32" />
+          <stop offset="100%" stopColor="#DC2626" stopOpacity="0.06" />
+        </linearGradient>
+        <filter id="kixGlow" x="-20%" y="-30%" width="140%" height="180%">
+          <feDropShadow dx="0" dy="1" stdDeviation="1.1" floodColor="#7C3AED" floodOpacity="0.22" />
+        </filter>
+      </defs>
+
+      <g>
+        {bars.map((b, idx) => (
+          <rect
+            key={idx}
+            x={b.x}
+            y={b.y}
+            width={Math.max(1, b.w - 1.2)}
+            height={b.h}
+            rx="2"
+            ry="2"
+            fill={b.up ? 'url(#kixBlueGrad)' : 'url(#kixRedGrad)'}
+          />
+        ))}
+      </g>
+
+      <path d={d} className={styles.trendPath} filter="url(#kixGlow)" />
     </svg>
   );
 }
 
+function RankBadge({ label }: { label: string }) {
+  const emoji = label.includes('호랑') ? '🐯' : '⭐';
+  return (
+    <span className={styles.rankBadge}>
+      <span className={styles.rankEmoji} aria-hidden>
+        {emoji}
+      </span>
+      <span className={styles.rankLabel}>{label}</span>
+    </span>
+  );
+}
+
 export default function HomeV4() {
-  const router = useRouter();
-  const supabase = useMemo(() => createClient(), []);
   const dash = useDashboardSummary();
 
-  const [loading, setLoading] = useState(true);
-  const [hasSession, setHasSession] = useState(false);
-
-  const [popular, setPopular] = useState<PopularItem[]>([]);
+  const [popular, setPopular] = useState<RailItem[]>([]);
   const [popularLoading, setPopularLoading] = useState(true);
 
-  const baseItems =
-    popular.length > 0 ? popular : FALLBACK_RAIL_ITEMS;
-  const baseAvg = useMemo(() => {
-    const prices = baseItems
-      .map((it) => Number(it?.price_krw))
-      .filter((v) => Number.isFinite(v) && v > 0);
-    return prices.length > 0
-      ? prices.reduce((a, b) => a + b, 0) / prices.length
-      : 12300;
+  const baseItems = popular.length ? popular : FALLBACK_RAIL_ITEMS;
+  const heroItem = baseItems[0];
+
+  const rail3 = baseItems.slice(0, 3);
+
+  const baseAvgPrice = useMemo(() => {
+    const xs = baseItems.map((x) => safeNum(x.price_krw, 0)).filter((v) => v > 0);
+    if (!xs.length) return 12300;
+    return xs.reduce((a, b) => a + b, 0) / xs.length;
   }, [baseItems]);
-  const initialTrend = useMemo(
-    () => buildIndexSeries(baseItems, 42),
-    [baseItems]
-  );
 
-  const [trendValues, setTrendValues] = useState<number[]>(
-    initialTrend.values
-  );
-  const [trendChangePct, setTrendChangePct] = useState<number>(
-    initialTrend.changePct
-  );
+  const [kcixValues, setKcixValues] = useState<number[]>(() => {
+    const n = 44;
+    const arr: number[] = [];
+    let v = 0;
+    for (let i = 0; i < n; i++) {
+      v = clamp(v + (Math.random() - 0.5) * 0.22, -1.0, 1.0);
+      arr.push(v);
+    }
+    return arr;
+  });
+  const [kcixChangePct, setKcixChangePct] = useState<number>(0.2);
 
-  const trendRef = useRef<{ values: number[]; last: number } | null>(null);
-  const baseAvgRef = useRef<number>(baseAvg);
-
-  useEffect(() => {
-    baseAvgRef.current = baseAvg;
-  }, [baseAvg]);
+  const kcixRef = useRef<{ last: number }>({ last: 0 });
+  const baseAvgRef = useRef<number>(baseAvgPrice);
 
   useEffect(() => {
-    setTrendValues(initialTrend.values);
-    setTrendChangePct(initialTrend.changePct);
-    trendRef.current = {
-      values: [...initialTrend.values],
-      last: initialTrend.values[initialTrend.values.length - 1] ?? 12300,
-    };
-  }, [initialTrend.values, initialTrend.changePct]);
+    baseAvgRef.current = baseAvgPrice;
+  }, [baseAvgPrice]);
 
-  // K-CIX 실시간 업데이트: 1200ms마다 마지막 포인트만 EMA로 갱신
   useEffect(() => {
     let mounted = true;
-    function seededRandLocal(seed: number) {
-      let s = seed >>> 0;
-      return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
-    }
-    const rand = seededRandLocal(Date.now() & 0xffffffff);
-    const id = setInterval(() => {
-      const st = trendRef.current;
-      if (!mounted || !st || st.values.length === 0) return;
 
-      const base = baseAvgRef.current ?? 12300;
-      const noiseBase = 0.0016; // ±0.08%
-      const noise = (rand() - 0.5) * noiseBase;
-      const target = base * (1 + noise);
+    const interval = setInterval(() => {
+      if (!mounted) return;
 
-      const alpha = 0.18;
-      const nextLast = st.last + (target - st.last) * alpha;
-      st.last = nextLast;
+      setKcixValues((prev) => {
+        const last = prev[prev.length - 1] ?? 0;
+        const pull = -last * 0.26;
+        const shock = (Math.random() - 0.5) * 0.35;
+        const next = clamp(last + pull + shock, -1.2, 1.2);
 
-      const next = st.values.slice();
-      next[next.length - 1] = nextLast;
-      st.values = next;
+        kcixRef.current.last = next;
 
-      const first = next[0] ?? base;
-      const last = nextLast ?? first;
-      const pct = first ? ((last - first) / first) * 100 : 0;
+        const nextArr = prev.slice(1);
+        nextArr.push(next);
 
-      setTrendValues(next);
-      setTrendChangePct(pct);
-    }, 1200);
+        setKcixChangePct(Number(next.toFixed(1)));
+
+        return nextArr;
+      });
+    }, 180);
 
     return () => {
       mounted = false;
-      clearInterval(id);
+      clearInterval(interval);
     };
   }, []);
 
-  // 1) 세션 확인 — 실패해도 UI 유지 (에러 카드 금지)
   useEffect(() => {
-    let mounted = true;
+    let alive = true;
     (async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        if (!mounted) return;
-        setHasSession(!!data.session);
-      } catch {
-        if (mounted) setHasSession(false);
-      } finally {
-        if (mounted) setLoading(false);
-      }
+      setPopularLoading(true);
+      const items = await fetchPopular6();
+      if (!alive) return;
+      setPopular(items);
+      setPopularLoading(false);
     })();
     return () => {
-      mounted = false;
+      alive = false;
     };
-  }, [supabase]);
+  }, []);
 
-  // 2) (있으면) 레일 데이터 가져오기 — 실패해도 UI는 유지 (자산은 useDashboardSummary)
-  useEffect(() => {
-    if (!hasSession) return;
+  const heroId = pickId(heroItem);
+  const heroHref = heroId ? `/market/${heroId}` : '/market';
 
-    let cancelled = false;
+  const heroPrice = safeNum(heroItem.price_krw, 12300);
+  const heroChange = safeNum(heroItem.change_pct, 4.2);
 
-    (async () => {
-      try {
-        setPopularLoading(true);
-        const r = await fetch('/api/home/popular', { cache: 'no-store' });
-        if (r.ok) {
-          const j = await r.json();
-          const items: PopularItem[] = j?.items ?? j?.data ?? j ?? [];
-          if (!cancelled) setPopular(Array.isArray(items) && items.length > 0 ? items.slice(0, 10) : FALLBACK_RAIL_ITEMS);
-        } else {
-          if (!cancelled) setPopular(FALLBACK_RAIL_ITEMS);
-        }
-      } catch {
-        if (!cancelled) setPopular(FALLBACK_RAIL_ITEMS);
-      } finally {
-        if (!cancelled) setPopularLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [hasSession]);
-
-  if (loading) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <div className={styles.guestCard}>
-            <div className={styles.guestTitle}>로딩 중…</div>
-            <div className={styles.guestDesc}>세션을 확인하고 있습니다.</div>
-          </div>
-        </div>
-        <BottomNavigation />
-      </div>
-    );
-  }
-
-  // 비로그인: 최소 유도(마케팅 홈은 나중에 별도)
-  if (!hasSession) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <div className={styles.guestCard}>
-            <div className={styles.guestTitle}>HANBANG</div>
-            <div className={styles.guestDesc}>
-              로그인 후 내 자산 대시보드와 종목 거래 화면을 이용할 수 있습니다.
-            </div>
-            <div className={styles.guestActions}>
-              <button className={styles.primaryBtn} onClick={() => router.push('/login')}>
-                로그인
-              </button>
-              <button className={styles.secondaryBtn} onClick={() => router.push('/market')}>
-                둘러보기
-              </button>
-            </div>
-          </div>
-        </div>
-        <BottomNavigation />
-      </div>
-    );
-  }
+  const isUp = kcixChangePct >= 0;
 
   return (
-    <div className={styles.page}>
+    <main className={styles.page}>
       <div className={styles.container}>
-        {/* 1) 내 자산 카드 */}
+        <section className={styles.featuredSection}>
+          <Link href={heroHref} className={styles.featuredCard}>
+            <div className={styles.featuredTop}>
+              <div className={styles.featuredTag}>
+                <Flame size={14} />
+                <span>오늘의 큐레이션</span>
+              </div>
+              <div className={styles.featuredMeta}>
+                <span className={styles.featuredMetaPill}>
+                  <TrendingUp size={14} />
+                  <span>{heroChange > 0 ? `+${heroChange.toFixed(1)}` : heroChange.toFixed(1)}%</span>
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.featuredMedia}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={pickThumb(heroItem) || 'https://images.unsplash.com/photo-1526481280695-3c687fd643ed?auto=format&fit=crop&w=1200&q=60'}
+                alt={pickTitle(heroItem)}
+                className={styles.featuredImg}
+                loading="lazy"
+              />
+            </div>
+
+            <div className={styles.featuredInfo}>
+              <div className={styles.featuredTitleRow}>
+                <h2 className={styles.featuredTitle}>{pickTitle(heroItem)}</h2>
+                <span className={styles.featuredCta}>
+                  <Sparkles size={14} />
+                  <span>지금 보기</span>
+                </span>
+              </div>
+
+              <div className={styles.featuredPriceRow}>
+                <span className={styles.featuredPrice}>{formatKrw(heroPrice)}</span>
+                <span className={styles.featuredSub}>실시간 인기 상승 중</span>
+              </div>
+            </div>
+          </Link>
+        </section>
+
         <section className={styles.assetCard}>
-          <div className={styles.assetHeaderRow}>
-            <div className={styles.assetLabel}>내 자산 (KRW)</div>
-            <div className={styles.assetMiniPill}>LIVE{dash.loading ? ' …' : ''}</div>
+          <div className={styles.assetHeader}>
+            <div className={styles.assetTitle}>내 자산 (KRW)</div>
+            <div className={styles.livePill}>
+              LIVE{dash.loading ? <span className={styles.liveDots}>…</span> : null}
+            </div>
           </div>
 
-          <div className={styles.assetValueRow}>
-            <div className={styles.assetValue}>{formatKrw(dash.totalKrw || 0)}원</div>
-          </div>
+          <div className={styles.assetAmount}>{formatKrw(dash.totalKrw)}</div>
 
           <div className={styles.assetButtons}>
-            <button className={styles.fillBtn} onClick={() => router.push('/wallet')}>
+            <button className={styles.btnPrimary} type="button">
               채우기
             </button>
-            <button className={styles.sendBtn} onClick={() => router.push('/wallet')}>
+            <button className={styles.btnSecondary} type="button">
               보내기
             </button>
           </div>
         </section>
 
-        {/* 2) 자산 요약 2x2 */}
         <section className={styles.summaryGrid}>
           <div className={styles.summaryCard}>
             <div className={styles.summaryLabel}>모든 자산</div>
-            <div className={styles.summaryValue}>{formatKrw(dash.totalKrw || 0)}원</div>
+            <div className={styles.summaryValue}>{formatKrw(dash.totalKrw)}</div>
           </div>
           <div className={styles.summaryCard}>
             <div className={styles.summaryLabel}>현금</div>
-            <div className={styles.summaryValue}>{formatKrw(dash.cashKrw || 0)}원</div>
+            <div className={styles.summaryValue}>{formatKrw(dash.cashKrw)}</div>
           </div>
           <div className={styles.summaryCard}>
             <div className={styles.summaryLabel}>보유 자산</div>
-            <div className={styles.summaryValue}>{dash.holdingCount > 0 ? `${dash.holdingCount}개` : '0개'}</div>
+            <div className={styles.summaryValue}>{dash.holdingCount}개</div>
           </div>
           <div className={styles.summaryCard}>
             <div className={styles.summaryLabel}>수익률</div>
-            <div className={styles.summaryValueAccent}>
-              {dash.depositsKrw === 0 ? '0.00%' : `${dash.yieldPct >= 0 ? '+' : ''}${dash.yieldPct.toFixed(2)}%`}
-            </div>
+            <div className={styles.summaryValueAccent}>{dash.yieldPct >= 0 ? '+' : ''}{dash.yieldPct.toFixed(2)}%</div>
           </div>
         </section>
 
-        {/* 3) 투자 등급 */}
-        <section className={styles.levelCard}>
-          <div className={styles.levelTopRow}>
-            <div className={styles.levelTitle}>나의 투자 등급</div>
-            <div className={styles.levelBadge}>호랑이 등급</div>
+        <section className={styles.rankCard}>
+          <div className={styles.rankLeft}>
+            <div className={styles.rankTitle}>나의 투자 등급</div>
+            <div className={styles.rankSub}>수수료 50% 우대 · 우선 청약 혜택</div>
           </div>
-          <div className={styles.levelDesc}>수수료 50% 우대 · 우선 청약 혜택</div>
+          <RankBadge label={(dash as { rankLabel?: string }).rankLabel || '호랑이 등급'} />
         </section>
 
-        {/* 4) 추천 레일 */}
         <section className={styles.railSection}>
           <div className={styles.sectionHeader}>
             <div className={styles.sectionTitle}>회원님을 위한 추천</div>
-            <button className={styles.sectionLink} onClick={() => router.push('/market?tab=popular')}>
+            <Link href="/market" className={styles.sectionMore}>
               전체보기
-            </button>
+            </Link>
           </div>
 
           <div className={styles.rail}>
-            {(popularLoading ? Array.from({ length: 6 }) : (popular.length > 0 ? popular : FALLBACK_RAIL_ITEMS).slice(0, 10)).map((it: any, idx: number) => {
-              const id = it?.id ?? `fallback-${idx}`;
-              const title = it?.title ?? '추천 종목';
-              const subtitle = it?.subtitle ?? '상장 종목';
-              const thumb = safeThumb(it?.thumbnail_url);
-              const price = typeof it?.price_krw === 'number' ? it.price_krw : 12300;
-              const yr = typeof it?.yield_rate === 'number' ? it.yield_rate : 4.2;
-              const hasDeadline = !!(it?.deadline ?? it?.due_date);
-              const chipLabel = hasDeadline
-                ? '마감임박'
-                : yr >= 10
-                  ? '급등'
-                  : yr >= 5 && yr < 10
-                    ? '핫'
-                    : '안정형';
+            {rail3.map((it, idx) => {
+              const id = pickId(it) || `fallback-${idx}`;
+              const href = pickId(it) ? `/market/${id}` : '/market';
+              const price = safeNum(it.price_krw, 12300);
+              const change = safeNum(it.change_pct, 4.2);
 
               return (
-                <button
-                  key={id}
-                  className={styles.railCard}
-                  onClick={() => router.push(it?.id && !String(it.id).startsWith('fallback-') ? `/market/${it.id}` : '/market')}
-                >
-                  <div className={styles.railThumbWrap}>
-                    <span className={styles.railChip}>{chipLabel}</span>
-                    <img className={styles.railThumb} src={thumb} alt={title} />
+                <Link key={id} href={href} className={styles.railCard}>
+                  <div className={styles.railThumb}>
+                    <span className={styles.railBadge}>안정형</span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={pickThumb(it) || 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=60'}
+                      alt={pickTitle(it)}
+                      className={styles.railImg}
+                      loading="lazy"
+                    />
                   </div>
-                  <div className={styles.railMeta}>
-                    <div className={styles.railTitle}>{title}</div>
-                    <div className={styles.railSub}>{subtitle}</div>
+                  <div className={styles.railBody}>
+                    <div className={styles.railTitle}>{pickTitle(it)}</div>
+                    <div className={styles.railSub}>상장 종목</div>
                     <div className={styles.railBottom}>
-                      <div className={styles.railPrice}>₩{formatKrw(price)}</div>
-                      <div className={styles.railYield}>+{yr.toFixed(1)}%</div>
+                      <span className={styles.railPrice}>{formatKrw(price).replace('원', '')}</span>
+                      <span className={styles.railChange}>{change >= 0 ? `+${change.toFixed(1)}` : change.toFixed(1)}%</span>
                     </div>
                   </div>
-                </button>
+                </Link>
               );
             })}
           </div>
+
+          {popularLoading ? <div className={styles.railLoading}>추천 로딩중…</div> : null}
         </section>
 
-        {/* 5) 시장 동향(K-CIX 지수) */}
         <section className={styles.trendCard}>
-          <div className={styles.sectionHeader}>
+          <div className={styles.trendTop}>
             <div>
-              <div className={styles.sectionTitle}>시장 동향</div>
+              <div className={styles.trendTitle}>시장 동향</div>
               <div className={styles.trendSub}>K-콘텐츠 종합 지수 (K-CIX)</div>
             </div>
+
             <div className={styles.trendTopRight}>
-              {(() => {
-                const abs = Math.abs(trendChangePct);
-                const isNeutral = abs < 0.05;
-                const isUp = trendChangePct >= 0.05;
-                const isDown = trendChangePct <= -0.05;
-                const pillText = isNeutral
-                  ? '0.0%'
-                  : isUp
-                    ? `▲ ${trendChangePct.toFixed(1)}%`
-                    : `▼ ${abs.toFixed(1)}%`;
-                const pillClass = isNeutral
-                  ? styles.trendPillNeutral
-                  : isUp
-                    ? styles.trendPillUp
-                    : styles.trendPillDown;
-                return (
-                  <span className={pillClass}>{pillText}</span>
-                );
-              })()}
-              <button className={styles.sectionLink} onClick={() => router.push('/market')}>
+              <span className={isUp ? styles.trendPillUp : styles.trendPillDown}>
+                {isUp ? '▲' : '▼'} {Math.abs(kcixChangePct).toFixed(1)}%
+              </span>
+              <Link href="/market" className={styles.sectionMore}>
                 더보기
-              </button>
+              </Link>
             </div>
           </div>
+
           <div className={styles.trendChartWrap}>
-            <Sparkline values={trendValues} />
+            <Sparkline values={kcixValues} />
           </div>
         </section>
 
-        {/* 6) KYC 유도 */}
         <section className={styles.kycCard}>
-          <div className={styles.kycTitle}>KYC 인증을 완료하고 거래를 시작하세요</div>
-          <div className={styles.kycDesc}>인증 완료 시 출금/거래 한도가 상향됩니다.</div>
-          <button className={styles.kycBtn} onClick={() => router.push('/kyc')}>
+          <div className={styles.kycLeft}>
+            <div className={styles.kycTitle}>KYC 인증을 완료하고 거래를 시작하세요</div>
+            <div className={styles.kycSub}>인증 완료 시 출금/거래 한도가 상향됩니다. (1분 컷)</div>
+            <div className={styles.kycCuteRow}>
+              <div className={styles.kycCuteKyc} aria-label="KYC">
+                <span>K</span><span>Y</span><span>C</span>
+              </div>
+
+              <div className={styles.kycCuteGirl} aria-hidden="true">
+                <svg viewBox="0 0 48 48" width="34" height="34">
+                  <circle cx="24" cy="24" r="24" fill="#FFFFFF" />
+                  <circle cx="24" cy="25" r="14" fill="#FFE9D6" />
+                  <path
+                    d="M10 24c1-10 10-14 14-14s13 4 14 14v7c-4-5-9-7-14-7s-10 2-14 7v-7z"
+                    fill="#111827"
+                    opacity="0.85"
+                  />
+                  <circle cx="19" cy="26" r="1.8" fill="#111827" />
+                  <circle cx="29" cy="26" r="1.8" fill="#111827" />
+                  <path d="M20 31c2.2 2 5.8 2 8 0" stroke="#111827" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+                  <circle cx="16.5" cy="30" r="2.3" fill="#FCA5A5" opacity="0.55" />
+                  <circle cx="31.5" cy="30" r="2.3" fill="#FCA5A5" opacity="0.55" />
+                </svg>
+              </div>
+
+              <div className={styles.kycCuteCaption}>
+                귀엽게 끝내는 인증 ✨ <b>혜택</b>이 열려요
+              </div>
+            </div>
+          </div>
+
+          <button className={styles.kycBtn} type="button">
             KYC 인증하기
           </button>
         </section>
 
-        {/* 7) 공지사항 */}
         <section className={styles.noticeCard}>
           <div className={styles.sectionHeader}>
             <div className={styles.sectionTitle}>공지사항</div>
-            <button className={styles.sectionLink} onClick={() => router.push('/notifications')}>
+            <Link href="/notifications" className={styles.sectionMore}>
               전체
-            </button>
+            </Link>
           </div>
+
           <ul className={styles.noticeList}>
-            <li className={styles.noticeItem}>[안내] 서비스 베타 운영 정책</li>
-            <li className={styles.noticeItem}>[점검] 결제/정산 시스템 점검 일정</li>
-            <li className={styles.noticeItem}>[공지] 신규 종목 상장 안내</li>
+            <li>[안내] 서비스 베타 운영 정책</li>
+            <li>[점검] 결제/정산 시스템 점검 일정</li>
+            <li>[공지] 신규 종목 상장 안내</li>
           </ul>
         </section>
 
-        {/* 8) 1:1 문의 플로팅 */}
-        <button className={styles.fab} onClick={() => router.push('/support')}>
+        <button className={styles.helpFab} type="button">
           1:1 문의
         </button>
       </div>
-
-      <BottomNavigation />
-    </div>
+    </main>
   );
 }
