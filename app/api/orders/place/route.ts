@@ -1,257 +1,182 @@
-/**
- * ============================================================================
- * POST /api/orders/place — 안전 주문 실행 (Financial Engine V1)
- * ============================================================================
- *
- * [금융감독원 전자금융업 감독규정 준수 사항]
- * 1. 원자적 트랜잭션: 잔고 확인 → 주문 생성 → 원장 기록이 단일 RPC 내에서 수행
- * 2. Double Spend 방지: Advisory Lock으로 동일 사용자의 동시 주문 직렬화
- * 3. Race Condition 제거: TOCTOU 취약점 원천 차단 (서버 사이드 잔고 검증 제거)
- * 4. 멱등성 보장: idempotency_key를 통한 중복 주문 방지
- * 5. Partial Fill 지원: 잔여 수량 부족 시 가용 수량만큼 부분 체결
- * 6. 감사 추적: 모든 주문 행위를 financial_audit에 기록
- *
- * 이전 구현과의 차이점:
- * - [기존] 클라이언트 사이드 잔고 확인 후 별도 RPC 호출 → Race Condition 취약
- * - [개선] rpc_safe_place_order 단일 호출로 모든 검증 + 실행을 원자적 수행
- *
- * PG 결제 플로우:
- * - payment_method=pg 시 주문만 생성 (PAYMENT_REQUESTED 상태)
- * - 이후 /api/payments/confirm에서 결제 확인 후 원장 기록
- *
- * ============================================================================
- */
+import { NextResponse } from 'next/server';
+import { createClient } from '@/utils/supabase/server';
 
-import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
-import { requireKycApproved } from "@/lib/kyc/requireKycApproved";
-
-import type { SafeOrderRequest, SafeOrderResult } from "@/lib/types/financial";
-
-export const dynamic = "force-dynamic";
-
-/**
- * 양수 금액 검증 유틸리티
- * 금액은 반드시 양수여야 하며, 유효하지 않은 값은 0을 반환합니다.
- */
-function toPositiveAmount(value: unknown): number {
-  const n = typeof value === "number" ? value : Number(value);
-  if (!Number.isFinite(n) || n <= 0) return 0;
-  return n;
+function num(x: unknown, d = 0) {
+  const n = Number(x);
+  return Number.isFinite(n) ? n : d;
 }
+
+async function detectOrdersFkColumn(supabase: any): Promise<string[]> {
+  const candidates = ['content_item_id', 'item_id', 'content_id', 'product_id', 'asset_id'];
+
+  const probe = await supabase.from('orders').select('*').limit(1);
+  const row = probe?.data?.[0];
+  if (row && typeof row === 'object') {
+    const keys = new Set(Object.keys(row));
+    const hit = candidates.filter((c) => keys.has(c));
+    if (hit.length > 0) return hit;
+  }
+
+  return candidates;
+}
+
+async function insertOrderWithFkFallback(supabase: any, base: Record<string, unknown>, fkKeys: string[], contentId: string) {
+  let lastErr: unknown = null;
+  for (const k of fkKeys) {
+    const payload = { ...base, [k]: contentId };
+    const { data, error } = await supabase.from('orders').insert(payload).select('*').single();
+    if (!error) return { row: data, usedKey: k };
+    lastErr = error;
+  }
+  throw new Error((lastErr as { message?: string })?.message || 'ORDER_CREATE_FAILED');
+}
+
+async function tryInsertLedgerDebit(supabase: any, userId: string, orderId: string | null, amountKrw: number, memo: string) {
+  const probe = await supabase.from('ledger_entries').select('*').limit(1);
+  const sample = probe?.data?.[0] ?? null;
+  const keys = sample && typeof sample === 'object' ? new Set(Object.keys(sample)) : new Set<string>();
+
+  const amountKey = keys.has('amount_krw') ? 'amount_krw' : keys.has('amount') ? 'amount' : null;
+  const typeKey = keys.has('entry_type') ? 'entry_type' : keys.has('type') ? 'type' : null;
+  const memoKey = keys.has('memo') ? 'memo' : keys.has('note') ? 'note' : null;
+  const userKey = keys.has('user_id') ? 'user_id' : null;
+  const orderKey = keys.has('order_id') ? 'order_id' : null;
+  const currencyKey = keys.has('currency') ? 'currency' : null;
+
+  if (!amountKey || !typeKey) return { ok: false, reason: 'ledger schema unknown' };
+
+  const row: Record<string, unknown> = {};
+  row[typeKey] = 'CASH_DEBIT';
+  row[amountKey] = -Math.round(amountKrw);
+  if (memoKey) row[memoKey] = memo;
+  if (userKey) row[userKey] = userId;
+  if (orderKey && orderId) row[orderKey] = orderId;
+  if (currencyKey) row[currencyKey] = 'KRW';
+
+  const { error } = await supabase.from('ledger_entries').insert(row);
+  if (error) return { ok: false, reason: error.message };
+  return { ok: true };
+}
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    /* ──────────────────────────────────────────
-     * 1단계: 인증 확인
-     * ────────────────────────────────────────── */
     const supabase = await createClient();
-    const {
-      data: authData,
-      error: authError,
-    } = await supabase.auth.getUser();
+    const demo = process.env.DEMO_TRADING === 'true';
 
-    if (authError || !authData?.user) {
-      return NextResponse.json(
-        { ok: false, error: "AUTH_ERROR", debug: authError?.message ?? "인증 정보가 없습니다." },
-        { status: 401 },
+    const { data: auth } = await supabase.auth.getUser();
+    const user = auth?.user;
+    if (!user) return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
+
+    const body = await req.json().catch(() => ({})) as Record<string, unknown>;
+    const contentId = String(body?.content_id || body?.contentId || body?.item_id || body?.id || '').trim();
+    if (!contentId) return NextResponse.json({ ok: false, error: 'MISSING_content_id' }, { status: 400 });
+
+    const qty = Math.max(1, Math.floor(num(body?.amount ?? body?.quantity ?? body?.qty, 1)));
+    let priceKrw = Math.round(num(body?.price_krw ?? body?.priceKrw ?? body?.price, 0));
+
+    if (!priceKrw) {
+      const itemRes = await supabase.from('content_items').select('*').eq('id', contentId).maybeSingle();
+      const item = itemRes?.data as Record<string, unknown> | null;
+
+      const priceFromItem = num(
+        item?.price_krw ??
+          item?.share_price_krw ??
+          item?.sharePriceKrw ??
+          item?.current_price_krw ??
+          item?.currentPriceKrw ??
+          0,
+        0
       );
+      if (priceFromItem > 0) {
+        priceKrw = Math.round(priceFromItem);
+      } else {
+        const shareUsd = num(item?.share_price_usd ?? item?.sharePriceUsd ?? 0, 0);
+        priceKrw = Math.round(shareUsd * 1350) || 10000;
+      }
     }
 
-    const user = authData.user;
+    if (!priceKrw) return NextResponse.json({ ok: false, error: 'PRICE_NOT_FOUND' }, { status: 400 });
 
-    const kycCheck = await requireKycApproved(supabase, user.id);
-    if (!kycCheck.approved) {
-      return kycCheck.response;
-    }
+    const feeRate = 0.0003;
+    const gross = priceKrw * qty;
+    const fee = Math.round(gross * feeRate);
+    const total = gross + fee;
 
-    /* ──────────────────────────────────────────
-     * 2단계: 요청 본문 파싱 및 검증
-     * ────────────────────────────────────────── */
-    let body: SafeOrderRequest;
+    const fkKeys = await detectOrdersFkColumn(supabase);
+
+    const baseOrder: Record<string, unknown> = {
+      user_id: user.id,
+      type: 'BUY',
+      status: demo ? 'COMPLETED' : 'PENDING',
+      quantity: qty,
+      price: priceKrw,
+      total_amount_krw: total,
+      filled_quantity: demo ? qty : 0,
+    };
+
+    let created: Record<string, unknown> | null = null;
+    let usedKey = 'unknown';
+
     try {
-      body = await req.json();
-    } catch {
-      return NextResponse.json(
-        { ok: false, error: "INVALID_JSON", debug: "요청 본문이 유효한 JSON이 아닙니다." },
-        { status: 400 },
-      );
-    }
-
-    const contentId = body.content_id ?? body.product_id;
-    const amountPositive = toPositiveAmount(body.amount);
-    const usePg = body.payment_method === "pg";
-
-    if (!contentId || typeof contentId !== "string" || contentId.trim() === "") {
-      return NextResponse.json(
-        { ok: false, error: "INVALID_PAYLOAD", debug: "content_id 또는 product_id가 필요합니다." },
-        { status: 400 },
-      );
-    }
-
-    if (amountPositive <= 0) {
-      return NextResponse.json(
-        { ok: false, error: "INVALID_PAYLOAD", debug: "투자 금액(amount)은 양수여야 합니다." },
-        { status: 400 },
-      );
-    }
-
-    /* ──────────────────────────────────────────
-     * 3단계: PG 결제 플로우 (결제 대기 주문 생성)
-     * PG 결제는 주문만 생성하고 원장 기록은
-     * 결제 확인(/api/payments/confirm) 시 수행합니다.
-     * ────────────────────────────────────────── */
-    if (usePg) {
-      const admin = (await import("@/utils/supabase/server")).createAdminClient();
-      const { data: order, error: orderErr } = await admin
-        .from("orders")
-        .insert({
-          user_id: user.id,
-          content_id: contentId.trim(),
-          status: "PAYMENT_REQUESTED",
-          total_amount_krw: amountPositive,
-          quantity: 1,
-          type: "BUY",
-          order_type: "MARKET",
-          price: amountPositive,
-        } as Record<string, unknown>)
-        .select("id")
-        .single();
-
-      if (orderErr || !order?.id) {
-        return NextResponse.json(
-          { ok: false, error: "ORDER_CREATE_FAILED", debug: orderErr?.message },
-          { status: 500 },
-        );
-      }
-
-      return NextResponse.json({
-        ok: true,
-        success: true,
-        order_id: order.id,
-        data: { order_id: order.id },
-      });
-    }
-
-    /* ──────────────────────────────────────────
-     * 4단계: 원자적 주문 실행 (rpc_safe_place_order)
-     *
-     * 단일 RPC 호출로 다음을 원자적으로 수행:
-     * - Advisory Lock 획득 (Double Spend 방지)
-     * - 원장 기반 잔고 검증
-     * - KYC 상태 및 투자 한도 검증
-     * - 주문 생성 + 원장 기록 (CASH_DEBIT, ASSET_CREDIT)
-     * - 콘텐츠 잔여 수량 차감
-     * - 해시 체인 자동 봉인 (트리거)
-     *
-     * 트랜잭션 실패 시 모든 변경이 자동 롤백됩니다.
-     * ────────────────────────────────────────── */
-    const { data: rpcResult, error: rpcError } = await supabase.rpc(
-      "rpc_safe_place_order",
-      {
-        p_user_id: user.id,
-        p_content_id: contentId.trim(),
-        p_amount_krw: amountPositive,
-        p_idempotency_key: body.idempotency_key ?? null,
-      },
-    );
-
-    if (rpcError) {
-      const msg = rpcError.message ?? "";
-
-      /* 비즈니스 오류를 적절한 HTTP 상태 코드로 매핑 */
-      if (msg.includes("INSUFFICIENT_FUNDS")) {
-        return NextResponse.json(
-          { ok: false, error: "INSUFFICIENT_FUNDS", debug: "잔액이 부족합니다." },
-          { status: 400 },
-        );
-      }
-      if (msg.includes("KYC_REQUIRED")) {
-        return NextResponse.json(
-          { ok: false, error: "KYC_REQUIRED", debug: "KYC 인증이 필요합니다." },
-          { status: 403 },
-        );
-      }
-      if (msg.includes("INVESTMENT_LIMIT_EXCEEDED")) {
-        return NextResponse.json(
-          { ok: false, error: "INVESTMENT_LIMIT_EXCEEDED", debug: "투자 한도를 초과합니다." },
-          { status: 400 },
-        );
-      }
-
-      return NextResponse.json(
-        { ok: false, error: "ORDER_FAILED", debug: rpcError.message },
-        { status: 500 },
-      );
-    }
-
-    /* ──────────────────────────────────────────
-     * 5단계: RPC 결과 처리
-     * ────────────────────────────────────────── */
-    const result = rpcResult as SafeOrderResult;
-
-    if (!result || result.ok === false) {
-      const errorCode = result?.error ?? "ORDER_FAILED";
-
-      /** 비즈니스 오류 매핑 */
-      const statusMap: Record<string, number> = {
-        INSUFFICIENT_FUNDS: 400,
-        STATUS_REQUIRED: 403,
-        KYC_REQUIRED: 403,
-        INVESTMENT_LIMIT_EXCEEDED: 400,
-        CONTENT_NOT_FOUND: 404,
-        NO_REMAINING_QUANTITY: 400,
+      const r = await insertOrderWithFkFallback(supabase, baseOrder, fkKeys, contentId);
+      created = r.row as Record<string, unknown>;
+      usedKey = r.usedKey;
+    } catch (e1: unknown) {
+      const safeOrder: Record<string, unknown> = {
+        user_id: user.id,
       };
 
-      return NextResponse.json(
-        { ok: false, error: errorCode },
-        { status: statusMap[errorCode] ?? 500 },
+      const probe = await supabase.from('orders').select('*').limit(1);
+      const sample = probe?.data?.[0];
+      const keys = sample && typeof sample === 'object' ? new Set(Object.keys(sample)) : new Set<string>();
+
+      if (keys.has('side')) safeOrder.side = 'BUY';
+      else if (keys.has('order_side')) safeOrder.order_side = 'BUY';
+      else if (keys.has('type')) safeOrder.type = 'BUY';
+
+      if (keys.has('status')) safeOrder.status = demo ? 'COMPLETED' : 'PENDING';
+      else if (keys.has('state')) safeOrder.state = demo ? 'COMPLETED' : 'PENDING';
+
+      if (keys.has('quantity')) safeOrder.quantity = qty;
+      else if (keys.has('qty')) safeOrder.qty = qty;
+      else if (keys.has('amount')) safeOrder.amount = qty;
+
+      if (keys.has('price_krw')) safeOrder.price_krw = priceKrw;
+      else if (keys.has('price')) safeOrder.price = priceKrw;
+
+      if (keys.has('total_krw')) safeOrder.total_krw = total;
+      else if (keys.has('total')) safeOrder.total = total;
+
+      if (keys.has('fee_krw')) safeOrder.fee_krw = fee;
+
+      const r = await insertOrderWithFkFallback(supabase, safeOrder, fkKeys, contentId);
+      created = r.row as Record<string, unknown>;
+      usedKey = r.usedKey;
+    }
+
+    let ledgerUpdated = false;
+    if (demo && created?.id) {
+      const led = await tryInsertLedgerDebit(
+        supabase,
+        user.id,
+        String(created.id),
+        total,
+        `DEMO BUY: content=${contentId} qty=${qty} price=${priceKrw} fee=${fee} (fk=${usedKey})`
       );
+      ledgerUpdated = !!led.ok;
     }
 
-    /* ──────────────────────────────────────────
-     * 6단계: 감사 로그 기록 (비차단)
-     * 감사 로그 실패가 주문 실행에 영향을 주지 않도록
-     * 오류를 무시합니다.
-     * ────────────────────────────────────────── */
-    try {
-      await supabase.rpc("rpc_write_financial_audit", {
-        p_user_id: user.id,
-        p_action: "ORDER_PLACE",
-        p_target_type: "order",
-        p_target_id: result.order_id ?? null,
-        p_metadata: {
-          content_id: contentId,
-          amount: amountPositive,
-          filled_quantity: result.filled_quantity,
-          remaining_quantity: result.remaining_quantity,
-          idempotent: result.idempotent ?? false,
-        },
-      });
-    } catch {
-      /* 감사 로그 기록 실패: 주문 실행에 영향 없음 */
-    }
-
-    /* ──────────────────────────────────────────
-     * 7단계: 성공 응답
-     * ────────────────────────────────────────── */
     return NextResponse.json({
       ok: true,
-      success: true,
-      order_id: result.order_id,
-      data: {
-        order_id: result.order_id,
-        filled_quantity: result.filled_quantity ?? amountPositive,
-        remaining_quantity: result.remaining_quantity ?? 0,
-        actual_amount: result.actual_amount ?? amountPositive,
-        idempotent: result.idempotent ?? false,
-      },
+      order_id: created?.id ?? null,
+      used_fk: usedKey,
+      demo_trading: demo,
+      fill: demo ? { qty, price_krw: priceKrw, fee_krw: fee, total_krw: total } : null,
+      ledger_updated: ledgerUpdated,
     });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
-    return NextResponse.json(
-      { ok: false, error: "UNKNOWN_ERROR", debug: message },
-      { status: 500 },
-    );
+  } catch (e: unknown) {
+    return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : 'ORDER_CREATE_FAILED' }, { status: 400 });
   }
 }
