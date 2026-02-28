@@ -53,6 +53,11 @@ function safeNum(v: unknown, fallback = 0): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function safeNumOpt(v: unknown): number | undefined {
+  const n = typeof v === 'number' ? v : parseFloat(String(v ?? ''));
+  return Number.isFinite(n) ? n : undefined;
+}
+
 function ytThumb(id?: string) {
   if (!id) return '';
   return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
@@ -71,12 +76,32 @@ function normalizeItem(raw: Record<string, unknown>): MarketItem | null {
   const youtubeId = safeStr(raw.youtube_video_id || raw.youtubeId || raw.youtube_id, '');
   const thumb = safeStr(raw.thumbnail_url || raw.thumb || raw.image_url, '') || ytThumb(youtubeId);
 
-  const tags = Array.isArray(raw.tags) ? raw.tags.slice(0, 2).map((x: unknown) => safeStr(x)).filter(Boolean) : [];
+  const tags = Array.isArray(raw.tags) ? raw.tags.slice(0, 4).map((x: unknown) => safeStr(x)).filter(Boolean) : [];
   const statusText = safeStr(raw.status_text || raw.statusText || raw.listing_status || raw.state, '상장 종목');
 
   const deadlineAt = safeStr(raw.deadline_at || raw.ends_at || raw.deadlineAt, '');
+  const mdPick = raw.md_pick === true || raw.mdPick === true;
+  const progressPct = safeNumOpt(raw.progress_pct ?? raw.progressPct);
+  const trades24h = safeNumOpt(raw.trades_24h ?? raw.trades24h ?? raw.trades24H);
+  const likeCount = safeNumOpt(raw.like_count ?? raw.likeCount ?? raw.likes);
+  const audienceTag = safeStr(raw.audience_tag ?? raw.audienceTag ?? raw.age_tag, '');
 
-  return { id, title, category, priceKrw, changePct, thumb, tags, statusText, deadlineAt };
+  return {
+    id,
+    title,
+    category,
+    priceKrw,
+    changePct,
+    thumb,
+    tags,
+    statusText,
+    deadlineAt,
+    mdPick: mdPick || undefined,
+    progressPct,
+    trades24h,
+    likeCount,
+    audienceTag: audienceTag || undefined,
+  };
 }
 
 function sortItems(items: MarketItem[], sort: SortKey) {
@@ -282,8 +307,13 @@ export default function MarketListV4() {
               )}
 
               <div className={styles.grid}>
-                {effective.map((it) => (
-                  <MarketCardV6 key={`${it.id}-${it.title}`} item={it} />
+                {effective.map((it, idx) => (
+                  <MarketCardV6
+                    key={`${it.id}-${it.title}`}
+                    item={it}
+                    rank={idx + 1}
+                    activeTab={tab}
+                  />
                 ))}
               </div>
 
