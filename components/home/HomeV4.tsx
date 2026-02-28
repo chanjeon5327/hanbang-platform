@@ -1,428 +1,496 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { formatKrw, formatRate } from '@/lib/utils/format';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import styles from './home-legacy.module.css';
 import BottomNavigation from '@/components/home/BottomNavigation';
-import CompanyFooter from '@/components/layout/CompanyFooter';
-import SupportBubble from '@/components/support/SupportBubble';
-import CardV5MarketCard from '@/components/market/CardV5MarketCard';
-import { CardV5 } from '@/components/ui/CardV5';
-import Section from '@/components/ui/Section';
-import type { RailItem } from '@/hooks/useMarketTab';
-import { useSponsoredPick } from '@/hooks/useSponsoredPick';
-import { useMomentumPicks } from '@/hooks/useMomentumPicks';
-import { useDeadlinePicks } from '@/hooks/useDeadlinePicks';
-import { usePopularPicks } from '@/hooks/usePopularPicks';
-import { useInvestSummary } from '@/hooks/useInvestSummary';
-import { HBCardSkeleton } from '@/components/ui/HBSkeleton';
-import Skeleton from '@/components/ui/Skeleton';
-import { Gift, MessageCircle, Award } from 'lucide-react';
+import { useDashboardSummary } from '@/components/home/useDashboardSummary';
+import { createClient } from '@/utils/supabase/client';
 
-export type AssetData = {
-  totalAssets: number;
-  userCash: number;
-  holdingsValue: number;
-  returnAmount: number;
-  returnRate: number;
-  dailyChange?: number;
+type PopularItem = {
+  id: string;
+  title?: string;
+  subtitle?: string;
+  thumbnail_url?: string;
+  price_krw?: number;
+  yield_rate?: number;
 };
 
-type Props = {
-  assetData: AssetData | null;
-  assetLoading?: boolean;
-  isLoggedIn: boolean;
-  demoMode?: boolean;
-  showBottomNav?: boolean;
-};
+function formatKrw(n: number) {
+  try {
+    return new Intl.NumberFormat('ko-KR').format(n);
+  } catch {
+    return String(n);
+  }
+}
 
-const HB_FANDOM_KEY = 'hb_fandom';
-const LEVEL_ANIMALS: Record<number, { icon: string; label: string }> = {
-  1: { icon: '🥚', label: '알' },
-  2: { icon: '🐹', label: '햄스터' },
-  3: { icon: '🐢', label: '거북이' },
-  4: { icon: '🦊', label: '여우' },
-  5: { icon: '🦁', label: '사자' },
-};
+function safeThumb(url?: string) {
+  return url || '/placeholders/product-placeholder.png';
+}
 
-/* ===== A) HERO: OTT+금융 2컬럼 ===== */
-function HeroSection() {
-  const { pick, loading } = useSponsoredPick(true);
-  const [fandom, setFandom] = useState<string>('');
-  const level = 3;
-  const levelCfg = LEVEL_ANIMALS[level] ?? LEVEL_ANIMALS[3];
+const FALLBACK_RAIL_ITEMS: PopularItem[] = Array.from({ length: 6 }, (_, i) => ({
+  id: `fallback-${i}`,
+  title: '추천 종목',
+  subtitle: '상장 종목',
+  thumbnail_url: '/placeholders/product-placeholder.png',
+  price_krw: 12300,
+  yield_rate: 4.2,
+}));
+
+function seededRand(seed: number) {
+  let s = seed >>> 0;
+  return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+}
+
+function hashStr(str: string) {
+  let h = 2166136261;
+  for (const c of str) {
+    h ^= c.charCodeAt(0);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function buildIndexSeries(
+  items: PopularItem[],
+  pointsCount = 42
+): { values: number[]; changePct: number } {
+  const prices = items
+    .map((it) => Number(it?.price_krw))
+    .filter((v) => Number.isFinite(v) && v > 0);
+  const baseAvg = prices.length
+    ? prices.reduce((a, b) => a + b, 0) / prices.length
+    : 12300;
+
+  const seriesList = items
+    .filter(
+      (it) =>
+        Number.isFinite(Number(it?.price_krw)) && Number(it?.price_krw) > 0
+    )
+    .slice(0, 10)
+    .map((it) => {
+      const base = Number(it.price_krw);
+      const rand = seededRand(hashStr(String(it.id ?? it.title ?? base)));
+      const driftSign = rand() > 0.5 ? 1 : -1;
+      const amp = 0.006 + rand() * 0.004;
+      const waveAmp = 0.004 + rand() * 0.003;
+      const driftAmp = 0.004 * driftSign;
+      const vals: number[] = [];
+      for (let i = 0; i < pointsCount; i++) {
+        const t = i / (pointsCount - 1);
+        const wave = Math.sin(t * Math.PI * 2 * (1.2 + rand())) * waveAmp;
+        const noise = (rand() - 0.5) * amp;
+        const drift = (t - 0.5) * driftAmp;
+        const v = base * (1 + wave + noise + drift);
+        vals.push(v);
+      }
+      return vals;
+    });
+
+  if (seriesList.length === 0) {
+    const rand = seededRand(777);
+    const vals: number[] = [];
+    for (let i = 0; i < pointsCount; i++) {
+      const t = i / (pointsCount - 1);
+      const wave = Math.sin(t * Math.PI * 2 * 1.1) * 0.004;
+      const noise = (rand() - 0.5) * 0.004;
+      const drift = (t - 0.5) * 0.003;
+      vals.push(baseAvg * (1 + wave + noise + drift));
+    }
+    seriesList.push(vals);
+  }
+
+  const values = Array.from({ length: pointsCount }, (_, i) => {
+    const s =
+      seriesList.reduce((a, arr) => a + arr[i], 0) / seriesList.length;
+    return s;
+  });
+
+  const first = values[0] ?? baseAvg;
+  const last = values[values.length - 1] ?? first;
+  const changePct = first ? ((last - first) / first) * 100 : 0;
+
+  return { values, changePct };
+}
+
+function Sparkline({ values }: { values: number[] }) {
+  const W = 320,
+    H = 86,
+    P = 10;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = Math.max(1e-6, max - min);
+  const pts = values.map((v, i) => {
+    const x = P + (i * (W - 2 * P)) / (values.length - 1 || 1);
+    const y = P + (1 - (v - min) / span) * (H - 2 * P);
+    return [x, y] as const;
+  });
+  const d = pts
+    .map((p, i) =>
+      i === 0
+        ? `M ${p[0].toFixed(2)} ${p[1].toFixed(2)}`
+        : `L ${p[0].toFixed(2)} ${p[1].toFixed(2)}`
+    )
+    .join(' ');
+  return (
+    <svg
+      className={styles.trendSvg}
+      viewBox={`0 0 ${W} ${H}`}
+      preserveAspectRatio="none"
+    >
+      <path className={styles.trendPath} d={d} />
+    </svg>
+  );
+}
+
+export default function HomeV4() {
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
+  const dash = useDashboardSummary();
+
+  const [loading, setLoading] = useState(true);
+  const [hasSession, setHasSession] = useState(false);
+
+  const [popular, setPopular] = useState<PopularItem[]>([]);
+  const [popularLoading, setPopularLoading] = useState(true);
+
+  const baseItems =
+    popular.length > 0 ? popular : FALLBACK_RAIL_ITEMS;
+  const baseAvg = useMemo(() => {
+    const prices = baseItems
+      .map((it) => Number(it?.price_krw))
+      .filter((v) => Number.isFinite(v) && v > 0);
+    return prices.length > 0
+      ? prices.reduce((a, b) => a + b, 0) / prices.length
+      : 12300;
+  }, [baseItems]);
+  const initialTrend = useMemo(
+    () => buildIndexSeries(baseItems, 42),
+    [baseItems]
+  );
+
+  const [trendValues, setTrendValues] = useState<number[]>(
+    initialTrend.values
+  );
+  const [trendChangePct, setTrendChangePct] = useState<number>(
+    initialTrend.changePct
+  );
+
+  const trendRef = useRef<{ values: number[]; last: number } | null>(null);
+  const baseAvgRef = useRef<number>(baseAvg);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setFandom(localStorage.getItem(HB_FANDOM_KEY) ?? '');
+    baseAvgRef.current = baseAvg;
+  }, [baseAvg]);
+
+  useEffect(() => {
+    setTrendValues(initialTrend.values);
+    setTrendChangePct(initialTrend.changePct);
+    trendRef.current = {
+      values: [...initialTrend.values],
+      last: initialTrend.values[initialTrend.values.length - 1] ?? 12300,
+    };
+  }, [initialTrend.values, initialTrend.changePct]);
+
+  // K-CIX 실시간 업데이트: 1200ms마다 마지막 포인트만 EMA로 갱신
+  useEffect(() => {
+    let mounted = true;
+    function seededRandLocal(seed: number) {
+      let s = seed >>> 0;
+      return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
     }
+    const rand = seededRandLocal(Date.now() & 0xffffffff);
+    const id = setInterval(() => {
+      const st = trendRef.current;
+      if (!mounted || !st || st.values.length === 0) return;
+
+      const base = baseAvgRef.current ?? 12300;
+      const noiseBase = 0.0016; // ±0.08%
+      const noise = (rand() - 0.5) * noiseBase;
+      const target = base * (1 + noise);
+
+      const alpha = 0.18;
+      const nextLast = st.last + (target - st.last) * alpha;
+      st.last = nextLast;
+
+      const next = st.values.slice();
+      next[next.length - 1] = nextLast;
+      st.values = next;
+
+      const first = next[0] ?? base;
+      const last = nextLast ?? first;
+      const pct = first ? ((last - first) / first) * 100 : 0;
+
+      setTrendValues(next);
+      setTrendChangePct(pct);
+    }, 1200);
+
+    return () => {
+      mounted = false;
+      clearInterval(id);
+    };
   }, []);
 
-  if (loading || !pick) {
-    return (
-      <section className="px-4 pt-6 pb-10 md:pt-10 md:pb-12">
-        <div className="mx-auto max-w-[1320px]">
-          <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white p-6 md:p-10 md:flex md:gap-10">
-            <div className="flex-1 space-y-4">
-              <Skeleton className="h-10 w-3/4" />
-              <Skeleton className="h-14 w-32" />
-              <Skeleton className="h-8 w-40" />
-            </div>
-            <div className="mt-6 md:mt-0 md:w-[45%]">
-              <Skeleton className="aspect-video w-full rounded-2xl" />
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  // 1) 세션 확인 — 실패해도 UI 유지 (에러 카드 금지)
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!mounted) return;
+        setHasSession(!!data.session);
+      } catch {
+        if (mounted) setHasSession(false);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [supabase]);
 
-  const monthlyYield = pick.yieldRate != null ? (pick.yieldRate / 12).toFixed(2) : '—';
+  // 2) (있으면) 레일 데이터 가져오기 — 실패해도 UI는 유지 (자산은 useDashboardSummary)
+  useEffect(() => {
+    if (!hasSession) return;
 
-  return (
-    <section className="px-4 pt-6 pb-10 md:pt-10 md:pb-12">
-      <div className="mx-auto max-w-[1320px]">
-        <Link href={`/market/${pick.productId}`} className="block">
-          <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-lg md:flex md:gap-10 md:p-10 p-6">
-            {/* 왼쪽: 금융 */}
-            <div className="flex-1 space-y-4 md:space-y-6">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight">
-                {pick.title}
-              </h2>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-                  Lv.{level} {levelCfg.icon} {levelCfg.label}
-                </span>
-                {fandom.trim() && (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
-                    팬: {fandom.trim()}
-                  </span>
-                )}
-              </div>
-              <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 tabular-nums">
-                {pick.sharePriceKrw != null ? formatKrw(pick.sharePriceKrw) : '—'}
-              </div>
-              <p className="text-2xl md:text-3xl font-bold text-emerald-600">
-                월 예상 수익률 {monthlyYield}%
-              </p>
-              <p className="text-sm md:text-base text-slate-600">
-                최근 3개월 연속 배당 지급
-              </p>
-              <div
-                className="w-full md:w-auto inline-flex items-center justify-center h-[52px] md:h-[56px] px-8 rounded-xl text-lg font-bold text-white transition hover:opacity-90"
-                style={{ backgroundColor: 'var(--royal-blue)', minHeight: 52 }}
-              >
-                {pick.ctaLabel}
-              </div>
-            </div>
-            {/* 오른쪽: OTT 미디어 */}
-            <div className="mt-6 md:mt-0 md:w-[45%] shrink-0">
-              <div className="relative aspect-video md:aspect-[4/3] rounded-2xl overflow-hidden shadow-md bg-slate-100">
-                <img
-                  src={pick.thumbnailUrl}
-                  alt=""
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                />
-                <span
-                  className="absolute top-3 left-3 inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold text-white"
-                  style={{ backgroundColor: 'var(--royal-blue)' }}
-                >
-                  공식 스폰서 픽
-                </span>
-              </div>
-            </div>
-          </div>
-        </Link>
-      </div>
-    </section>
-  );
-}
+    let cancelled = false;
 
-/* ===== B) 배당 안정성 스냅샷 3카드 ===== */
-function DividendSnapshotSection({ isLoggedIn }: { isLoggedIn: boolean }) {
-  const { data: investSummary, loading } = useInvestSummary(isLoggedIn);
+    (async () => {
+      try {
+        setPopularLoading(true);
+        const r = await fetch('/api/home/popular', { cache: 'no-store' });
+        if (r.ok) {
+          const j = await r.json();
+          const items: PopularItem[] = j?.items ?? j?.data ?? j ?? [];
+          if (!cancelled) setPopular(Array.isArray(items) && items.length > 0 ? items.slice(0, 10) : FALLBACK_RAIL_ITEMS);
+        } else {
+          if (!cancelled) setPopular(FALLBACK_RAIL_ITEMS);
+        }
+      } catch {
+        if (!cancelled) setPopular(FALLBACK_RAIL_ITEMS);
+      } finally {
+        if (!cancelled) setPopularLoading(false);
+      }
+    })();
 
-  const avgMonthly = investSummary?.monthlyProfit != null ? formatKrw(investSummary.monthlyProfit) : '—';
-  const lastPayDate = '—';
-  const streak = investSummary && investSummary.monthlyProfit > 0 ? '3개월 연속' : '—';
-
-  return (
-    <section className="px-4 pb-10">
-      <div className="mx-auto max-w-[1320px]">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <CardV5 className="p-6 md:p-8">
-            <p className="text-sm font-medium text-slate-500 mb-2">평균 월 배당</p>
-            <p className="text-xl md:text-2xl font-bold text-slate-900 tabular-nums">
-              {loading ? '—' : avgMonthly}
-            </p>
-          </CardV5>
-          <CardV5 className="p-6 md:p-8">
-            <p className="text-sm font-medium text-slate-500 mb-2">최근 배당 지급일</p>
-            <p className="text-xl md:text-2xl font-bold text-slate-900 tabular-nums">
-              {lastPayDate}
-            </p>
-          </CardV5>
-          <CardV5 className="p-6 md:p-8">
-            <p className="text-sm font-medium text-slate-500 mb-2">연속 지급 스트릭</p>
-            <p className="text-xl md:text-2xl font-bold text-slate-900 tabular-nums">
-              {loading ? '—' : streak}
-            </p>
-          </CardV5>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ===== C) 실시간 거래 중 자산 (거래소 감성) ===== */
-function LiveTradingSection() {
-  const { items, loading } = useMomentumPicks(true);
-
-  return (
-    <section className="px-4 pb-10">
-      <div className="mx-auto max-w-[1320px]">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-slate-900" style={{ fontSize: 20 }}>
-            실시간 거래 중 자산
-          </h3>
-          <Link
-            href="/market"
-            className="text-sm font-semibold text-blue-700 hover:underline"
-          >
-            전체보기
-          </Link>
-        </div>
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[0, 1, 2, 3, 4, 5].map((i) => (
-              <HBCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : items.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {items.slice(0, 6).map((item) => {
-              const totalRaise = item.total_raise ?? 0;
-              const changeRate = 0;
-              const isUp = changeRate > 0;
-              const isDown = changeRate < 0;
-              return (
-                <Link
-                  key={item.id}
-                  href={`/market/${item.id}`}
-                  className="block rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition"
-                >
-                  <h4 className="font-bold text-slate-900 line-clamp-2 mb-3">{item.title}</h4>
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-2xl font-bold text-slate-900 tabular-nums">
-                      {totalRaise > 0 ? formatKrw(totalRaise) : '—'}
-                    </span>
-                    <span
-                      className={`text-sm font-semibold tabular-nums ${
-                        isUp ? 'text-red-600' : isDown ? 'text-blue-600' : 'text-slate-500'
-                      }`}
-                    >
-                      {changeRate !== 0 ? `${isUp ? '+' : ''}${changeRate}%` : '—'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-2">거래량 —</p>
-                </Link>
-              );
-            })}
-          </div>
-        ) : (
-          <CardV5 variant="ghost">
-            <p className="body-sm text-center text-slate-500">수익권이 없습니다.</p>
-          </CardV5>
-        )}
-      </div>
-    </section>
-  );
-}
-
-/* ===== D) 팬 등급 & 리워드 ===== */
-function FanLevelSection() {
-  const levels = [
-    { name: 'BRONZE', icon: Gift, desc: '굿즈 구매 시 5% 할인' },
-    { name: 'SILVER', icon: MessageCircle, desc: '팬 채팅 참여 가능' },
-    { name: 'GOLD', icon: Award, desc: '한정판 배지 수령' },
-  ];
-
-  return (
-    <section className="px-4 pb-10">
-      <div className="mx-auto max-w-[1320px]">
-        <h3 className="text-xl font-bold text-slate-900 mb-6" style={{ fontSize: 20 }}>
-          팬 등급 & 리워드
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {levels.map(({ name, icon: Icon, desc }) => (
-            <CardV5 key={name} className="p-6 md:p-8 flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-                <Icon size={24} className="text-slate-600" strokeWidth={2} />
-              </div>
-              <p className="font-bold text-slate-900 mb-2">{name}</p>
-              <p className="text-sm text-slate-600">{desc}</p>
-            </CardV5>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function AssetSummarySection({ data, loading, isLoggedIn }: { data: AssetData | null; loading?: boolean; isLoggedIn: boolean }) {
-  if (!isLoggedIn) {
-    return (
-      <Section>
-        <CardV5>
-          <p className="body text-center" style={{ color: 'var(--text-secondary)' }}>로그인 후 자산 현황을 확인하세요</p>
-          <Link
-            href="/login"
-            className="block mt-4 py-3 rounded-xl body font-semibold text-center text-white transition hover:opacity-90"
-            style={{ backgroundColor: 'var(--royal-blue)' }}
-          >
-            로그인
-          </Link>
-        </CardV5>
-      </Section>
-    );
-  }
-
-  if (loading || !data) {
-    return (
-      <Section>
-        <CardV5>
-          <div className="skeleton rounded-lg h-12 w-32 mb-4" />
-          <div className="skeleton rounded-lg h-6 w-24" />
-        </CardV5>
-      </Section>
-    );
-  }
-
-  const { totalAssets, returnAmount, returnRate } = data;
-  const isPositive = returnRate >= 0;
-
-  return (
-    <Section>
-      <Link href="/mypage" className="block">
-        <CardV5>
-          <p className="caption font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>총 자산</p>
-          <div className="metric-xl tabular-nums" style={{ color: 'var(--text)' }}>{formatKrw(totalAssets)}</div>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="body-sm font-semibold tabular-nums" style={{ color: isPositive ? 'var(--emerald)' : 'var(--accent-loss)' }}>
-              {isPositive ? '+' : ''}{formatRate(returnRate)}
-            </span>
-            <span className="caption" style={{ color: 'var(--text-secondary)' }}>
-              ({isPositive ? '+' : ''}{formatKrw(returnAmount)})
-            </span>
-          </div>
-        </CardV5>
-      </Link>
-    </Section>
-  );
-}
-
-function InfoRail() {
-  return (
-    <Section title="정보" rightHref="/trust" rightLabel="전체보기">
-      <CardV5 variant="ghost">
-        <p className="body-sm line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
-          IP 수익권 · 배당 · 모집 · 원장검증
-        </p>
-      </CardV5>
-    </Section>
-  );
-}
-
-function InvestRail() {
-  const { items, loading } = useDeadlinePicks(true);
-
-  return (
-    <Section title="투자" rightHref="/market?tab=deadline" rightLabel="전체보기">
-      {loading ? (
-        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="w-[180px] shrink-0">
-              <HBCardSkeleton />
-            </div>
-          ))}
-        </div>
-      ) : items.length > 0 ? (
-        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-          {items.map((item, i) => (
-            <div key={item.id} className="w-[180px] shrink-0">
-              <CardV5MarketCard item={item as RailItem} index={i} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <CardV5 variant="ghost">
-          <p className="body-sm text-center" style={{ color: 'var(--text-secondary)' }}>마감 예정인 작품이 없습니다.</p>
-        </CardV5>
-      )}
-    </Section>
-  );
-}
-
-export default function HomeV4({ assetData, assetLoading = false, isLoggedIn, demoMode = false, showBottomNav = true }: Props) {
-  return (
-    <div className="pb-24 bg-slate-50 min-h-screen">
-      <div className="mx-auto max-w-[1320px]">
-        <HeroSection />
-        <DividendSnapshotSection isLoggedIn={isLoggedIn} />
-        <LiveTradingSection />
-        <FanLevelSection />
-      </div>
-
-      <div className="px-4 pt-6">
-        <div className="mx-auto max-w-[1320px] space-y-6">
-          <AssetSummarySection data={assetData} loading={assetLoading} isLoggedIn={isLoggedIn} />
-          <InfoRail />
-          <InvestRail />
-        </div>
-      </div>
-
-      <Section title="모두의 추천" rightHref="/market?tab=popular" rightLabel="전체보기">
-        <RecommendationRail />
-      </Section>
-
-      <CompanyFooter />
-      {showBottomNav && <BottomNavigation demoMode={demoMode} />}
-      <SupportBubble />
-    </div>
-  );
-}
-
-function RecommendationRail() {
-  const { items, loading } = usePopularPicks(true);
+    return () => {
+      cancelled = true;
+    };
+  }, [hasSession]);
 
   if (loading) {
     return (
-      <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <div key={i} className="w-[180px] shrink-0">
-            <HBCardSkeleton />
+      <div className={styles.page}>
+        <div className={styles.container}>
+          <div className={styles.guestCard}>
+            <div className={styles.guestTitle}>로딩 중…</div>
+            <div className={styles.guestDesc}>세션을 확인하고 있습니다.</div>
           </div>
-        ))}
+        </div>
+        <BottomNavigation />
       </div>
     );
   }
 
-  if (items.length === 0) {
+  // 비로그인: 최소 유도(마케팅 홈은 나중에 별도)
+  if (!hasSession) {
     return (
-      <CardV5 variant="ghost">
-        <p className="body-sm text-center" style={{ color: 'var(--text-secondary)' }}>아직 추천 작품이 없습니다.</p>
-      </CardV5>
+      <div className={styles.page}>
+        <div className={styles.container}>
+          <div className={styles.guestCard}>
+            <div className={styles.guestTitle}>HANBANG</div>
+            <div className={styles.guestDesc}>
+              로그인 후 내 자산 대시보드와 종목 거래 화면을 이용할 수 있습니다.
+            </div>
+            <div className={styles.guestActions}>
+              <button className={styles.primaryBtn} onClick={() => router.push('/login')}>
+                로그인
+              </button>
+              <button className={styles.secondaryBtn} onClick={() => router.push('/market')}>
+                둘러보기
+              </button>
+            </div>
+          </div>
+        </div>
+        <BottomNavigation />
+      </div>
     );
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-      {items.map((item, i) => (
-        <div key={item.id} className="w-[180px] shrink-0">
-          <CardV5MarketCard item={item as RailItem} index={i} />
-        </div>
-      ))}
+    <div className={styles.page}>
+      <div className={styles.container}>
+        {/* 1) 내 자산 카드 */}
+        <section className={styles.assetCard}>
+          <div className={styles.assetHeaderRow}>
+            <div className={styles.assetLabel}>내 자산 (KRW)</div>
+            <div className={styles.assetMiniPill}>LIVE{dash.loading ? ' …' : ''}</div>
+          </div>
+
+          <div className={styles.assetValueRow}>
+            <div className={styles.assetValue}>{formatKrw(dash.totalKrw || 0)}원</div>
+          </div>
+
+          <div className={styles.assetButtons}>
+            <button className={styles.fillBtn} onClick={() => router.push('/wallet')}>
+              채우기
+            </button>
+            <button className={styles.sendBtn} onClick={() => router.push('/wallet')}>
+              보내기
+            </button>
+          </div>
+        </section>
+
+        {/* 2) 자산 요약 2x2 */}
+        <section className={styles.summaryGrid}>
+          <div className={styles.summaryCard}>
+            <div className={styles.summaryLabel}>모든 자산</div>
+            <div className={styles.summaryValue}>{formatKrw(dash.totalKrw || 0)}원</div>
+          </div>
+          <div className={styles.summaryCard}>
+            <div className={styles.summaryLabel}>현금</div>
+            <div className={styles.summaryValue}>{formatKrw(dash.cashKrw || 0)}원</div>
+          </div>
+          <div className={styles.summaryCard}>
+            <div className={styles.summaryLabel}>보유 자산</div>
+            <div className={styles.summaryValue}>{dash.holdingCount > 0 ? `${dash.holdingCount}개` : '0개'}</div>
+          </div>
+          <div className={styles.summaryCard}>
+            <div className={styles.summaryLabel}>수익률</div>
+            <div className={styles.summaryValueAccent}>
+              {dash.depositsKrw === 0 ? '0.00%' : `${dash.yieldPct >= 0 ? '+' : ''}${dash.yieldPct.toFixed(2)}%`}
+            </div>
+          </div>
+        </section>
+
+        {/* 3) 투자 등급 */}
+        <section className={styles.levelCard}>
+          <div className={styles.levelTopRow}>
+            <div className={styles.levelTitle}>나의 투자 등급</div>
+            <div className={styles.levelBadge}>호랑이 등급</div>
+          </div>
+          <div className={styles.levelDesc}>수수료 50% 우대 · 우선 청약 혜택</div>
+        </section>
+
+        {/* 4) 추천 레일 */}
+        <section className={styles.railSection}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionTitle}>회원님을 위한 추천</div>
+            <button className={styles.sectionLink} onClick={() => router.push('/market?tab=popular')}>
+              전체보기
+            </button>
+          </div>
+
+          <div className={styles.rail}>
+            {(popularLoading ? Array.from({ length: 6 }) : (popular.length > 0 ? popular : FALLBACK_RAIL_ITEMS).slice(0, 10)).map((it: any, idx: number) => {
+              const id = it?.id ?? `fallback-${idx}`;
+              const title = it?.title ?? '추천 종목';
+              const subtitle = it?.subtitle ?? '상장 종목';
+              const thumb = safeThumb(it?.thumbnail_url);
+              const price = typeof it?.price_krw === 'number' ? it.price_krw : 12300;
+              const yr = typeof it?.yield_rate === 'number' ? it.yield_rate : 4.2;
+              const hasDeadline = !!(it?.deadline ?? it?.due_date);
+              const chipLabel = hasDeadline
+                ? '마감임박'
+                : yr >= 10
+                  ? '급등'
+                  : yr >= 5 && yr < 10
+                    ? '핫'
+                    : '안정형';
+
+              return (
+                <button
+                  key={id}
+                  className={styles.railCard}
+                  onClick={() => router.push(it?.id && !String(it.id).startsWith('fallback-') ? `/market/${it.id}` : '/market')}
+                >
+                  <div className={styles.railThumbWrap}>
+                    <span className={styles.railChip}>{chipLabel}</span>
+                    <img className={styles.railThumb} src={thumb} alt={title} />
+                  </div>
+                  <div className={styles.railMeta}>
+                    <div className={styles.railTitle}>{title}</div>
+                    <div className={styles.railSub}>{subtitle}</div>
+                    <div className={styles.railBottom}>
+                      <div className={styles.railPrice}>₩{formatKrw(price)}</div>
+                      <div className={styles.railYield}>+{yr.toFixed(1)}%</div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* 5) 시장 동향(K-CIX 지수) */}
+        <section className={styles.trendCard}>
+          <div className={styles.sectionHeader}>
+            <div>
+              <div className={styles.sectionTitle}>시장 동향</div>
+              <div className={styles.trendSub}>K-콘텐츠 종합 지수 (K-CIX)</div>
+            </div>
+            <div className={styles.trendTopRight}>
+              {(() => {
+                const abs = Math.abs(trendChangePct);
+                const isNeutral = abs < 0.05;
+                const isUp = trendChangePct >= 0.05;
+                const isDown = trendChangePct <= -0.05;
+                const pillText = isNeutral
+                  ? '0.0%'
+                  : isUp
+                    ? `▲ ${trendChangePct.toFixed(1)}%`
+                    : `▼ ${abs.toFixed(1)}%`;
+                const pillClass = isNeutral
+                  ? styles.trendPillNeutral
+                  : isUp
+                    ? styles.trendPillUp
+                    : styles.trendPillDown;
+                return (
+                  <span className={pillClass}>{pillText}</span>
+                );
+              })()}
+              <button className={styles.sectionLink} onClick={() => router.push('/market')}>
+                더보기
+              </button>
+            </div>
+          </div>
+          <div className={styles.trendChartWrap}>
+            <Sparkline values={trendValues} />
+          </div>
+        </section>
+
+        {/* 6) KYC 유도 */}
+        <section className={styles.kycCard}>
+          <div className={styles.kycTitle}>KYC 인증을 완료하고 거래를 시작하세요</div>
+          <div className={styles.kycDesc}>인증 완료 시 출금/거래 한도가 상향됩니다.</div>
+          <button className={styles.kycBtn} onClick={() => router.push('/kyc')}>
+            KYC 인증하기
+          </button>
+        </section>
+
+        {/* 7) 공지사항 */}
+        <section className={styles.noticeCard}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionTitle}>공지사항</div>
+            <button className={styles.sectionLink} onClick={() => router.push('/notifications')}>
+              전체
+            </button>
+          </div>
+          <ul className={styles.noticeList}>
+            <li className={styles.noticeItem}>[안내] 서비스 베타 운영 정책</li>
+            <li className={styles.noticeItem}>[점검] 결제/정산 시스템 점검 일정</li>
+            <li className={styles.noticeItem}>[공지] 신규 종목 상장 안내</li>
+          </ul>
+        </section>
+
+        {/* 8) 1:1 문의 플로팅 */}
+        <button className={styles.fab} onClick={() => router.push('/support')}>
+          1:1 문의
+        </button>
+      </div>
+
+      <BottomNavigation />
     </div>
   );
 }
