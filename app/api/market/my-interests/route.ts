@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 import { getYtThumb } from "@/lib/thumbnails";
 import { extractYoutubeId } from "@/lib/youtube";
 
@@ -8,7 +8,7 @@ export const revalidate = 60;
 /** 로그인 유저만: user_interests 기반 관심 목록, created_at ASC, limit/offset */
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ items: [], next_cursor: null });
 

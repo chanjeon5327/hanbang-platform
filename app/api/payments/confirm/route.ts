@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/server";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 import { logSystem } from "@/lib/systemLog";
 
 const PG_SANDBOX = process.env.PG_SANDBOX === "true";
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL("/market?error=no_payment_id", req.url));
   }
 
-  const admin = createAdminClient();
+  const admin = getAdminSupabase();
   const { data: payment, error: payErr } = await admin
     .from("payments")
     .select("id, order_id, user_id, content_id, amount, status")
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "payment_id required" }, { status: 400 });
     }
 
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
     const { data: payment, error: payErr } = await admin
       .from("payments")
       .select("id, order_id, user_id, content_id, amount, status")

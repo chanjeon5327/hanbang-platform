@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/utils/supabase/server";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 import { logSystem } from "./systemLog";
 
 /**
@@ -31,7 +31,7 @@ export async function checkFraud(
   ip: string | null,
   headers: Headers
 ): Promise<FraudCheckResult> {
-  const admin = createAdminClient();
+  const admin = getAdminSupabase();
 
   // 1) 10분 내 5회 이상 결제 시도
   const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
@@ -86,7 +86,7 @@ export async function checkFraud(
 }
 
 async function insertFraudAndNotify(
-  admin: ReturnType<typeof import("@/utils/supabase/server").createAdminClient>,
+  admin: ReturnType<typeof import("@/utils/supabase/admin").getAdminSupabase>,
   userId: string,
   contentId: string,
   amount: number,

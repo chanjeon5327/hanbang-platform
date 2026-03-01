@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Search, Phone, Mail, Wallet, MessageSquare, FileText, Shield } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
-import { createClient } from "@/utils/supabase/client";
+import { getBrowserSupabase } from "@/utils/supabase/client";
 
 interface User {
   id: string;
@@ -58,7 +58,7 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
     }
     setSendingReset(true);
     try {
-      const supabase = createClient();
+      const supabase = getBrowserSupabase();
       const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });

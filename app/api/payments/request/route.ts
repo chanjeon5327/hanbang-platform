@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient, createAdminClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 import { getClientIp, checkFraud } from "@/lib/fraudDetection";
 import { logSystem } from "@/lib/systemLog";
 
@@ -12,7 +13,7 @@ const PG_SANDBOX = process.env.PG_SANDBOX === "true";
  */
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
     const { data: authData, error: authError } = await supabase.auth.getUser();
 
     if (authError || !authData?.user) {
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     const returnUrl = typeof body.return_url === "string" ? body.return_url : undefined;
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
     const now = new Date().toISOString();
 
     let orderId: string;

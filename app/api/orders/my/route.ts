@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getServerSupabase } from '@/utils/supabase/server';
 
 function num(x: unknown, d = 0) {
   const n = Number(x);
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
     const { searchParams } = new URL(req.url);
     const limit = Math.min(Math.max(num(searchParams.get('limit'), 30), 1), 200);
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 import { getYtThumb } from "@/lib/thumbnails";
 import { extractYoutubeId } from "@/lib/youtube";
 
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(24, Math.max(1, parseInt(searchParams.get("limit") ?? "24", 10)));
     const offset = Math.max(0, parseInt(searchParams.get("offset") ?? "0", 10));
 
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
     const now = new Date().toISOString();
 
     const { data: schema } = await supabase

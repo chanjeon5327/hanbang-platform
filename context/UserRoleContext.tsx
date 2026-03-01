@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 import type { UserRole, KycStatus } from '@/lib/types/user';
 
 export type CurrentUser = {
@@ -36,7 +36,7 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
   const mountedRef = useRef(true);
 
   const fetchCurrentUser = useCallback(async () => {
-    const supabase = createClient();
+    const supabase = getBrowserSupabase();
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!mountedRef.current) return;

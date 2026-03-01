@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 import { getYtThumb } from "@/lib/thumbnails";
 import { extractYoutubeId } from "@/lib/youtube";
 
@@ -8,7 +8,7 @@ export const revalidate = 60;
 /** deadline > now() 작품만, (deadline - now()) asc, 같은 날 마감은 random */
 export async function GET() {
   try {
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
     const now = new Date().toISOString();
 
     const { data: schema } = await supabase

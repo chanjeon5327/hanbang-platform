@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getServerSupabase } from '@/utils/supabase/server';
 
 /**
  * PG 결제 콜백 웹훅 (KCP 등)
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const supabase = await createClient();
+  const supabase = await getServerSupabase();
 
   try {
     const { data, error } = await supabase.rpc('rpc_confirm_payment', {

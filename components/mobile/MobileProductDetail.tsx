@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 import { getYtThumb } from '@/lib/thumbnails';
 import { useToast } from '@/context/ToastContext';
 import { formatKrw } from '@/lib/utils/format';
@@ -19,7 +19,7 @@ type Product = {
 };
 
 export default function MobileProductDetail({ productId }: { productId: string }) {
-  const supabase = createClient();
+  const supabase = getBrowserSupabase();
   const router = useRouter();
   const { toast } = useToast();
 

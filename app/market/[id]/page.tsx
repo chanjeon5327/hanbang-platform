@@ -10,6 +10,7 @@ import RealPriceChart from '@/components/market/RealPriceChart';
 import LiveTradesMock from '@/components/market/LiveTradesMock';
 import TradingPanelV2 from '@/components/market/TradingPanelV2';
 import DepthRibbon from '@/components/market/DepthRibbon';
+import MarketHeroHybrid from '@/components/market/MarketHeroHybrid';
 import { ArrowUp } from 'lucide-react';
 import { FALLBACK_PREVIEW_IMAGE, PRODUCT_PLACEHOLDER } from '@/lib/thumbnails';
 import BottomNavigation from '@/components/home/BottomNavigation';
@@ -24,7 +25,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [tab, setTab] = useState<'info' | 'order' | 'quote'>('info');
   const [t1t2, setT1t2] = useState<'T1' | 'T2'>('T1');
-  const [videoPlaying, setVideoPlaying] = useState(false);
   const [lastTradePrice, setLastTradePrice] = useState(0);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
@@ -69,70 +69,10 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        {/* 1) 상단 배너 썸네일 */}
-        {item && (
-          <section className={styles.bannerSection}>
-            <div className={styles.bannerWrap}>
-              {item.youtube_video_id ? (
-                <div className={styles.bannerVideoWrap}>
-                  <iframe
-                    src={`https://www.youtube.com/embed/${item.youtube_video_id}?autoplay=0&mute=1`}
-                    title="미리보기"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                  <div
-                    className={`${styles.previewPlayOverlay} ${videoPlaying ? styles.hidden : ''}`}
-                    onClick={() => {
-                      setVideoPlaying(true);
-                      const iframe = document.querySelector(`iframe[title="미리보기"]`) as HTMLIFrameElement;
-                      if (iframe?.src) iframe.src = iframe.src.replace('autoplay=0', 'autoplay=1');
-                    }}
-                    aria-hidden={videoPlaying}
-                  >
-                    <div className={styles.previewPlayBtn}>
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <img
-                  src={item.thumbnail_url || FALLBACK_PREVIEW_IMAGE}
-                  alt=""
-                  className={styles.bannerImg}
-                  onError={(e) => {
-                    const el = e.currentTarget;
-                    if (!el.src.includes('placeholders/')) el.src = PRODUCT_PLACEHOLDER;
-                  }}
-                />
-              )}
-            </div>
-          </section>
-        )}
+        {/* 1) 상단 OTT+금융 하이브리드 히어로 */}
+        {item && <MarketHeroHybrid item={item as Record<string, unknown>} />}
 
-        {/* 2) 종목 헤더 (영상형 촘촘) */}
-        <section className={styles.headerSection}>
-          <div className={styles.heroTitleRow}>
-            <h1 className={styles.headerTitle}>{title}</h1>
-            <div className={styles.t1t2Toggle}>
-              <button type="button" className={t1t2 === 'T1' ? styles.t1t2Active : ''} onClick={() => setT1t2('T1')}>T1</button>
-              <button type="button" className={t1t2 === 'T2' ? styles.t1t2Active : ''} onClick={() => setT1t2('T2')}>T2</button>
-            </div>
-          </div>
-          <div className={styles.heroPriceRow}>
-            <span className={styles.priceValue}>{priceDisplay}</span>
-            {changeText && <span className={`${styles.changeBadge} ${isUp ? styles.changeUp : styles.changeDown}`}>{changeText}</span>}
-            <span className={styles.heroPills}>
-              <span className={styles.pillLive}>LIVE</span>
-              <span className={styles.pillTrades}>trades {typeof tradesCount === 'number' ? tradesCount : 112}</span>
-            </span>
-          </div>
-          <div className={styles.heroMetaWrap}>
-            <span className={styles.usdText}>{usdDisplay}</span>
-          </div>
-        </section>
-
-        {/* 3) 탭 바 */}
+        {/* 2) 탭 바 */}
         <div className={styles.tabBar}>
           <button type="button" className={tab === 'info' ? styles.tabActive : styles.tabInactive} onClick={() => setTab('info')}>
             정보

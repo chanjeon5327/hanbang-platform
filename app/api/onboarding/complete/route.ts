@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getServerSupabase } from '@/utils/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 });
@@ -36,10 +36,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: statusError.message }, { status: 500 });
     }
 
-    // profiles.status → ACTIVE (기존 호환)
+    // profiles.status → ACTIVE, onboarding_completed → true (기존 호환 + 유입 확대 3-1)
     await (supabase as any)
       .from('profiles')
-      .update({ status: 'ACTIVE', updated_at: new Date().toISOString() })
+      .update({
+        status: 'ACTIVE',
+        onboarding_completed: true,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', user.id);
 
     return NextResponse.json({ ok: true, status: 'ACTIVE' });

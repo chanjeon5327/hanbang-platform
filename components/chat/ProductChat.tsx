@@ -6,7 +6,7 @@ import { MessageCircle, Send, User } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useToast } from '@/context/ToastContext';
 import { filterProfanity, containsProfanity } from '@/lib/chat/profanityFilter';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 
 const MAX_MESSAGE_LENGTH = 300;
 const POLL_INTERVAL_MS = 10_000;
@@ -83,7 +83,7 @@ export default function ProductChat({ productId }: Props) {
   }, [fetchMessages]);
 
   useEffect(() => {
-    const supabase = createClient();
+    const supabase = getBrowserSupabase();
     const channel = supabase
       .channel(`product_chat:${productId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'product_chat_messages', filter: `product_id=eq.${productId}` }, () => {

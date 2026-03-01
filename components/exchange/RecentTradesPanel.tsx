@@ -12,12 +12,13 @@ export default function RecentTradesPanel({ assetId }: { assetId: string }) {
   const [trades, setTrades] = useState<TradePublic[]>([]);
 
   const fetch_ = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/exchange/trades/${assetId}`, { cache: 'no-store' });
-      if (!res.ok) return;
-      const d = await res.json();
-      setTrades(d.trades ?? []);
-    } catch { /* ignore */ }
+    // TODO: experimental — exchange API is admin-only. Uncomment for internal testing.
+    // try {
+    //   const res = await fetch(`/api/exchange/trades/${assetId}`, { cache: 'no-store' });
+    //   if (!res.ok) return;
+    //   const d = await res.json();
+    //   setTrades(d.trades ?? []);
+    // } catch { /* ignore */ }
   }, [assetId]);
 
   useEffect(() => { fetch_(); const t = setInterval(fetch_, 5000); return () => clearInterval(t); }, [fetch_]);

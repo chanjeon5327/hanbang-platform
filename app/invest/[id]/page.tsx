@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useParams } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 import { useToast } from '@/context/ToastContext';
 
 export default function InvestPage() {
@@ -9,7 +9,7 @@ export default function InvestPage() {
   const params = useParams();
   const productId = params.id as string;
   const { toast } = useToast();
-  const supabase = createClient();
+  const supabase = getBrowserSupabase();
 
   const handleBuy = async () => {
     // ✅ 1. orders 생성

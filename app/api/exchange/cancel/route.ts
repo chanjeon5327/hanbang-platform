@@ -1,16 +1,22 @@
 /**
- * POST /api/exchange/cancel — 거래소 주문 취소 (인증 필수)
+ * WARNING:
+ * This exchange API is experimental/internal only.
+ * Do NOT expose to public users.
+ *
+ * POST /api/exchange/cancel — 거래소 주문 취소 (관리자 전용)
  *
  * body: { order_id }
  */
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
+import { requireAdmin } from "@/lib/admin/requireAdmin";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient();
+    await requireAdmin();
+    const supabase = await getServerSupabase();
     const { data: { user }, error: authErr } = await supabase.auth.getUser();
     if (authErr || !user) {
       return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });

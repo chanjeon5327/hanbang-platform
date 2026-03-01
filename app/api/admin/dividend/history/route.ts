@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabase/server';
+import { getAdminSupabase } from '@/utils/supabase/admin';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 /**
@@ -9,7 +9,7 @@ import { requireAdmin } from '@/lib/admin/requireAdmin';
 export async function GET(req: Request) {
   try {
     await requireAdmin();
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
     const { searchParams } = new URL(req.url);
     const itemId = searchParams.get('item_id');
     const dateFrom = searchParams.get('date_from');

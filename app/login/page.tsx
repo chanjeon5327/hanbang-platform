@@ -3,13 +3,13 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './login.module.css';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 
 type Tab = 'investor' | 'creator';
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useMemo(() => getBrowserSupabase(), []);
 
   const [tab, setTab] = useState<Tab>('investor');
   const [email, setEmail] = useState('test@hanbang.com');

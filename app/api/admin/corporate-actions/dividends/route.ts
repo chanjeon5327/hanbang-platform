@@ -8,7 +8,7 @@
  *   - "pay"       → 배당 지급
  */
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/server";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     await requireAdmin();
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
     const { data, error } = await admin
       .from("corporate_actions")
       .select("*")
@@ -32,7 +32,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const adminUser = await requireAdmin();
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
 
     let body: Record<string, unknown>;
     try { body = await req.json(); } catch {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 
 const allItems = Array.from({ length: 12 }).map((_, i) => ({
   id: String(i),
@@ -9,7 +9,7 @@ const allItems = Array.from({ length: 12 }).map((_, i) => ({
 }));
 
 export default function AdminRailConfigPage() {
-  const supabase = createClient();
+  const supabase = getBrowserSupabase();
   const [pins, setPins] = useState<Record<string, string[]>>({
     hot: [],
     popular: [],

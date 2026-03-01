@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabase/server';
+import { getAdminSupabase } from '@/utils/supabase/admin';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 /**
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'dividend_id required' }, { status: 400 });
     }
 
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
     const { data, error } = await admin.rpc('rpc_execute_dividend', {
       p_dividend_id: dividendId,
     });

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 import { formatQty } from '@/lib/utils/format';
 import Divider from '@/components/ui/Divider';
 
@@ -88,7 +88,7 @@ export default function TradeHistoryRealtime({ contentId, onTrade, disabled }: P
   }, [fetchTrades]);
 
   useEffect(() => {
-    const supabase = createClient();
+    const supabase = getBrowserSupabase();
     if (!supabase?.channel) return;
 
     const channel = supabase

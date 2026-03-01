@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 
 type Order = {
   id: string;
@@ -45,7 +45,7 @@ function formatDate(value: any): string {
 export default function AdminOrderDetailPage() {
   const params = useParams();
   const orderId = params?.order_id as string;
-  const supabase = createClient();
+  const supabase = getBrowserSupabase();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [ledger, setLedger] = useState<LedgerEntry[]>([]);

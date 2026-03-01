@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getServerSupabase } from '@/utils/supabase/server';
 import { isAdminEmail } from '@/lib/auth/isAdminEmail';
 
 export async function GET(req: Request) {
-  const supabase = await createClient();
+  const supabase = await getServerSupabase();
 
   const {
     data: { user },

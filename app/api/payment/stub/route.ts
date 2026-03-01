@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getServerSupabase } from '@/utils/supabase/server';
 
 /**
  * 결제 검증 스텁 (KCP 연동 전 E2E용)
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const supabase = await createClient();
+  const supabase = await getServerSupabase();
   const { data: order } = await supabase
     .from('orders')
     .select('id, total_amount_krw, status')

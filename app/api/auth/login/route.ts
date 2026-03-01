@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { supabaseAdmin } from '@/lib/supabase/admin';
+import { getAdminSupabase } from '@/utils/supabase/admin';
 import { checkLoginRateLimit, resetLoginRateLimit } from '@/lib/auth/rateLimit';
 import crypto from 'crypto';
 
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
   // ─────────────────────────────────────────────
   const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
-  const { count: failCount } = await supabaseAdmin
+  const { count: failCount } = await getAdminSupabase()
     .from('auth_login_audit')
     .select('id', { count: 'exact', head: true })
     .eq('email', emailTrimmed)
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     .gte('created_at', tenMinutesAgo);
 
   if ((failCount ?? 0) >= 5) {
-    await supabaseAdmin.from('auth_login_audit').insert({
+    await getAdminSupabase().from('auth_login_audit').insert({
       email: emailTrimmed,
       ip_address: ipAddress,
       user_agent: userAgent,
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
   if (error) {
     console.error('[LOGIN ERROR]', error);
 
-    await supabaseAdmin.from('auth_login_audit').insert({
+    await getAdminSupabase().from('auth_login_audit').insert({
       user_id: null,
       email: emailTrimmed,
       ip_address: ipAddress,
@@ -105,7 +105,7 @@ export async function POST(req: Request) {
 
   if (userId) {
     // 1) 감사 로그(성공)
-    await supabaseAdmin.from('auth_login_audit').insert({
+    await getAdminSupabase().from('auth_login_audit').insert({
       user_id: userId,
       email: emailTrimmed,
       ip_address: ipAddress,
@@ -116,7 +116,7 @@ export async function POST(req: Request) {
     // 2) 동시 로그인 제한: 새 session_version 발급 → DB 저장
     let sessionVersion: string | null = crypto.randomUUID();
 
-    const { error: svErr } = await supabaseAdmin
+    const { error: svErr } = await getAdminSupabase()
       .from('profiles')
       .update({ last_login_at: nowIso, session_version: sessionVersion })
       .eq('id', userId);
@@ -124,7 +124,7 @@ export async function POST(req: Request) {
     if (svErr) {
       console.error('[LOGIN] session_version update failed:', svErr);
       // fallback: 기존 session_version이라도 쿠키에 맞춰주기
-      const { data: p2 } = await supabaseAdmin
+      const { data: p2 } = await getAdminSupabase()
         .from('profiles')
         .select('session_version')
         .eq('id', userId)
@@ -132,7 +132,7 @@ export async function POST(req: Request) {
       sessionVersion = (p2 as any)?.session_version ?? null;
 
       // last_login_at만이라도 업데이트 시도
-      await supabaseAdmin.from('profiles').update({ last_login_at: nowIso }).eq('id', userId);
+      await getAdminSupabase().from('profiles').update({ last_login_at: nowIso }).eq('id', userId);
     }
 
     // 3) 세션 고정 공격 방어: 토큰 강제 재발급(refresh)

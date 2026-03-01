@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/server";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 
 /**
@@ -16,7 +16,7 @@ export async function GET(
       return NextResponse.json({ error: "user id required" }, { status: 400 });
     }
 
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
     const { data, error } = await admin
       .from("profiles")
       .select("id, daily_invest_limit, monthly_invest_limit, kyc_level")
@@ -68,7 +68,7 @@ export async function PATCH(
       return NextResponse.json({ error: "no valid fields to update" }, { status: 400 });
     }
 
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
     const { data, error } = await admin
       .from("profiles")
       .update(updates)

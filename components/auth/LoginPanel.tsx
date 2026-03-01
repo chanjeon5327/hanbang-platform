@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { login } from '@/lib/auth/client';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 import { useToast } from '@/context/ToastContext';
 import { WalletConnect } from '@/components/WalletConnect';
 import { Loader2 } from 'lucide-react';
@@ -45,7 +45,7 @@ export default function LoginPanel({ onSuccess, onClose, showCloseButton = false
   };
 
   const handleOAuth = async (provider: 'kakao' | 'google') => {
-    const supabase = createClient();
+    const supabase = getBrowserSupabase();
     if (!supabase?.auth) {
       toast('로그인을 사용할 수 없습니다.');
       return;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/admin';
+import { getAdminSupabase } from '@/utils/supabase/admin';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 /**
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // 데이터 조회 (service role — RLS bypass)
-    let query = supabaseAdmin
+    let query = getAdminSupabase()
       .from('auth_login_audit')
       .select('id, user_id, email, ip_address, user_agent, success, event_type, failure_reason, created_at', { count: 'exact' })
       .gte('created_at', new Date(Date.now() - periodDays * 86400_000).toISOString())

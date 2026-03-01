@@ -1,14 +1,28 @@
 /**
- * GET /api/exchange/my-orders — 내 거래소 주문 목록
+ * WARNING:
+ * This exchange API is experimental/internal only.
+ * Do NOT expose to public users.
+ *
+ * GET /api/exchange/my-orders — 내 거래소 주문 목록 (관리자 전용)
  */
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
+import { requireAdmin } from "@/lib/admin/requireAdmin";
 import type { ExchangeOrder } from "@/lib/types/financial";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const supabase = await createClient();
+  try {
+    await requireAdmin();
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "";
+    return NextResponse.json(
+      { ok: false, error: msg.includes("Forbidden") ? "FORBIDDEN" : "UNAUTHORIZED" },
+      { status: msg.includes("Forbidden") ? 403 : 401 },
+    );
+  }
+  const supabase = await getServerSupabase();
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
   if (authErr || !user) return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
 

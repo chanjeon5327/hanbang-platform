@@ -35,12 +35,14 @@ export default function PlaceOrderPanel({ assetId }: { assetId: string }) {
         body.quantity = Number(quantity);
       }
 
-      const res = await fetch('/api/exchange/place', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
+      // TODO: experimental — exchange API is admin-only. Uncomment for internal testing.
+      // const res = await fetch('/api/exchange/place', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(body),
+      // });
+      // const data = await res.json();
+      const data = { ok: false, error: 'EXCHANGE_DISABLED' };
       setResult(data);
       if (data.ok) { setPrice(''); setQuantity(''); setAmountMax(''); }
     } catch (e) {

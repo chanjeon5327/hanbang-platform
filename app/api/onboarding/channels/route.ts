@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getServerSupabase } from '@/utils/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET() {
   try {
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
     const { data: rpcData, error: rpcError } = await (supabase as any)
       .rpc('get_random_onboarding_channels', { lim: 50 });
 

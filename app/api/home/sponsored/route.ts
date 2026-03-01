@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 import { FALLBACK_IDS } from "@/lib/constants/fallbackIds";
 import { getYtThumb } from "@/lib/thumbnails";
 
@@ -32,7 +32,7 @@ const MOCK_SPONSORED: SponsoredPick = {
 
 export async function GET() {
   try {
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
 
     // TODO: home_sponsored_slots 테이블 또는 admin 설정 연동
     // const { data } = await supabase.from("home_sponsored_slots").select("*").eq("slot_key", "main_top").single();

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabase/server';
+import { getAdminSupabase } from '@/utils/supabase/admin';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 const VALID_STATUS = ['APPROVED', 'REJECTED'] as const;
@@ -29,7 +29,7 @@ export async function PATCH(
       );
     }
 
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
     const { data, error } = await admin
       .from('profiles')
       .update({ creator_status: status })

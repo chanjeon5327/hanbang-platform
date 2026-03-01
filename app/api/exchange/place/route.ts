@@ -1,10 +1,15 @@
 /**
- * POST /api/exchange/place — 거래소 주문 배치 (인증 필수)
+ * WARNING:
+ * This exchange API is experimental/internal only.
+ * Do NOT expose to public users.
+ *
+ * POST /api/exchange/place — 거래소 주문 배치 (관리자 전용)
  *
  * body: { asset_id, side, order_type, price?, quantity?, amount_max?, idempotency_key? }
  */
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
+import { requireAdmin } from "@/lib/admin/requireAdmin";
 import { requireKycApproved } from "@/lib/kyc/requireKycApproved";
 import type { ExchangePlaceRequest, ExchangePlaceResult } from "@/lib/types/financial";
 
@@ -12,7 +17,8 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient();
+    await requireAdmin();
+    const supabase = await getServerSupabase();
     const { data: { user }, error: authErr } = await supabase.auth.getUser();
     if (authErr || !user) {
       return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });

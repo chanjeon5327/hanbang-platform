@@ -13,26 +13,28 @@ export default function MyOrdersPanel({ assetId }: { assetId: string }) {
   const [canceling, setCanceling] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/exchange/my-orders?asset_id=${assetId}`, { cache: 'no-store' });
-      if (!res.ok) return;
-      const d = await res.json();
-      setOrders(d.orders ?? []);
-    } catch { /* ignore */ }
+    // TODO: experimental — exchange API is admin-only. Uncomment for internal testing.
+    // try {
+    //   const res = await fetch(`/api/exchange/my-orders?asset_id=${assetId}`, { cache: 'no-store' });
+    //   if (!res.ok) return;
+    //   const d = await res.json();
+    //   setOrders(d.orders ?? []);
+    // } catch { /* ignore */ }
   }, [assetId]);
 
   useEffect(() => { fetchOrders(); const t = setInterval(fetchOrders, 5000); return () => clearInterval(t); }, [fetchOrders]);
 
   const cancel = useCallback(async (orderId: string) => {
+    // TODO: experimental — exchange API is admin-only. Uncomment for internal testing.
     setCanceling(orderId);
-    try {
-      await fetch('/api/exchange/cancel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id: orderId }),
-      });
-      await fetchOrders();
-    } catch { /* ignore */ }
+    // try {
+    //   await fetch('/api/exchange/cancel', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ order_id: orderId }),
+    //   });
+    //   await fetchOrders();
+    // } catch { /* ignore */ }
     setCanceling(null);
   }, [fetchOrders]);
 

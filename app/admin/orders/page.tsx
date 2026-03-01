@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 
 type Order = {
   id: string;
@@ -12,7 +12,7 @@ type Order = {
 };
 
 export default function AdminOrdersPage() {
-  const supabase = createClient();
+  const supabase = getBrowserSupabase();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 

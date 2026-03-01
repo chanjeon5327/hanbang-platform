@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "item_id required" }, { status: 400 });
   }
 
-  const supabase = await createClient();
+  const supabase = await getServerSupabase();
 
   const { data: hasOb } = await (supabase as any)
     .from("orderbook_orders")

@@ -13,13 +13,14 @@ export default function OrderBookPanel({ assetId }: { assetId: string }) {
   const [asks, setAsks] = useState<OrderBookLevel[]>([]);
 
   const fetch_ = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/exchange/orderbook/${assetId}`, { cache: 'no-store' });
-      if (!res.ok) return;
-      const d = await res.json();
-      setBids(d.bids ?? []);
-      setAsks(d.asks ?? []);
-    } catch { /* ignore */ }
+    // TODO: experimental — exchange API is admin-only. Uncomment for internal testing.
+    // try {
+    //   const res = await fetch(`/api/exchange/orderbook/${assetId}`, { cache: 'no-store' });
+    //   if (!res.ok) return;
+    //   const d = await res.json();
+    //   setBids(d.bids ?? []);
+    //   setAsks(d.asks ?? []);
+    // } catch { /* ignore */ }
   }, [assetId]);
 
   useEffect(() => { fetch_(); const t = setInterval(fetch_, 3000); return () => clearInterval(t); }, [fetch_]);

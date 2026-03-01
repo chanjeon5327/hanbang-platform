@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 
 const BUCKET = 'creator-plans';
 
@@ -37,7 +37,7 @@ export default function CreatorUploadPage() {
     setSuccess('');
 
     try {
-      const supabase = createClient();
+      const supabase = getBrowserSupabase();
       if (!supabase?.storage) {
         throw new Error('스토리지 초기화 실패');
       }

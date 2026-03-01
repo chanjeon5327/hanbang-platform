@@ -3,13 +3,13 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './login-modal.module.css';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 
 type Tab = 'investor' | 'creator';
 
 export default function LoginModal(props: any) {
   const router = useRouter();
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useMemo(() => getBrowserSupabase(), []);
 
   // ---- tolerant props (call sites differ) ----
   const open: boolean = !!(props?.open ?? props?.isOpen ?? props?.visible);

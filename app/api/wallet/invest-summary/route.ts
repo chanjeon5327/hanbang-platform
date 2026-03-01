@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 import { requireActiveUser } from "@/lib/auth/requireActiveUser";
 
 /**
@@ -13,7 +13,7 @@ import { requireActiveUser } from "@/lib/auth/requireActiveUser";
  * - 이번 달 수익 = 이번 달 CASH_CREDIT (settlement) 합계
  */
 export async function GET() {
-  const supabase = await createClient();
+  const supabase = await getServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });

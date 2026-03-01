@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { User, LogOut, LogIn, UserPlus, ChevronDown, Wallet } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
+import LogoutButton from '@/components/auth/LogoutButton';
 
 export default function Header() {
   const pathname = usePathname();
   const isLegacy = pathname === '/login';
-  const { user, profile, loading, signOut, openLoginModal } = useAuth();
+  const { user, profile, loading, openLoginModal } = useAuth();
   const displayName = profile?.display_name || user?.email || '사용자';
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -100,18 +101,14 @@ export default function Header() {
                       <User size={18} strokeWidth={2} />
                       마이페이지
                     </Link>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        signOut();
-                      }}
+                    <LogoutButton
                       className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm font-medium transition text-left"
                       style={{ color: 'var(--legacy-text)' }}
+                      redirectTo="/"
                     >
                       <LogOut size={18} strokeWidth={2} />
                       로그아웃
-                    </button>
+                    </LogoutButton>
                   </div>
                 )}
               </div>

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 import { getYtThumb } from "@/lib/thumbnails";
 
 export const revalidate = 60;
@@ -7,7 +7,7 @@ export const revalidate = 60;
 /** 랭킹: 관심수 TOP10, 모집률 TOP10, 최근 급상승 TOP10 */
 export async function GET() {
   try {
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
 
     // 1) 관심 수 TOP10 (popular_content_mv)
     let interestTop: { id: string; title: string; creator_name?: string; thumbnail_url?: string; cnt: number }[] = [];

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabase/server';
+import { getAdminSupabase } from '@/utils/supabase/admin';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 /**
@@ -10,7 +10,7 @@ export async function GET() {
   try {
     await requireAdmin();
 
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
 
     const { data: profiles, error } = await (admin as any)
       .from('profiles')

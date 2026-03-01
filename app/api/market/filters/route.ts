@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 
 export const revalidate = 300;
 
@@ -8,7 +8,7 @@ const CATEGORIES = ['여행', '게임', '음악', '웹툰', '웹소설', '드라
 /** GET /api/market/filters - 카테고리, artist_keyword 목록 */
 export async function GET() {
   try {
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
 
     const { data } = await supabase
       .from("content_items")
