@@ -55,3 +55,4 @@ smoke-test-report.md
 playwright-report/
 test-results/
 
+__dump__/
