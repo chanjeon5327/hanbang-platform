@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSupabase } from "@/utils/supabase/server";
 import { requireActiveUser } from "@/lib/auth/requireActiveUser";
+import { requireKycApproved } from "@/lib/kyc/requireKycApproved";
 
 /**
  * GET /api/wallet/invest-summary
@@ -18,6 +19,8 @@ export async function GET() {
   if (!user) {
     return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
   }
+  const kycCheck = await requireKycApproved(supabase, user.id);
+  if (!kycCheck.approved) return kycCheck.response;
 
   try {
     await requireActiveUser(user.id);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { requireActiveUser } from '@/lib/auth/requireActiveUser';
+import { requireKycApproved } from '@/lib/kyc/requireKycApproved';
 
 /**
  * 수익률 정의 (거래소형 고정)
@@ -17,6 +18,8 @@ export async function GET(req: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
   }
+  const kycCheck = await requireKycApproved(supabase, user.id);
+  if (!kycCheck.approved) return kycCheck.response;
 
   try {
     await requireActiveUser(user.id);

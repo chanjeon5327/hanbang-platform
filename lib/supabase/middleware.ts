@@ -98,45 +98,38 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // 공개 페이지: /demo, /market 하위 경로까지 인증 없이 접근 가능
+  // ─────────────────────────────────────────────────
+  // 🔒 [압도 긴급수리] 열람 공개 / 거래만 KYC
+  // 보호 라우트가 아니면 즉시 통과 (/, /market, /feature 등 열람 허용)
+  // ─────────────────────────────────────────────────
   const pathname = request.nextUrl.pathname
-  const isPublicPath =
-    pathname === '/' ||
-    pathname.startsWith('/login') ||
-    pathname.startsWith('/signup') ||
-    pathname.startsWith('/auth') ||
-    pathname.startsWith('/projects') ||
-    pathname.startsWith('/active-invest') ||
-    pathname.startsWith('/notice') ||
-    pathname.startsWith('/demo') ||
-    pathname.startsWith('/design') ||
-    pathname.startsWith('/market') ||
-    pathname.startsWith('/api')
+  const protectedPrefixes = ['/wallet', '/order', '/dashboard', '/mypage', '/admin', '/creator/upload', '/invest', '/active-invest']
+  const isProtectedPath = protectedPrefixes.some((p) => pathname.startsWith(p))
 
-  // 공개 페이지가 아니고 로그인하지 않은 경우에만 리다이렉트
-  if (!user && !isPublicPath) {
+  if (!isProtectedPath) {
+    return supabaseResponse
+  }
+
+  // 보호 라우트: 미로그인 → /login
+  if (!user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('next', pathname)
     return NextResponse.redirect(url)
   }
 
-  // ─────────────────────────────────────────────────
-  // 🔒 [유입 확대 3-1] KYC/온보딩 강제 라우팅
-  // 투자 관련 경로: KYC 미승인 → /kyc, 온보딩 미완료 → /onboarding
-  // ─────────────────────────────────────────────────
-  const protectedPaths = ['/wallet', '/market', '/trade', '/order']
-  const isProtectedPath = protectedPaths.some((p) => pathname.startsWith(p))
-
-  if (user && isProtectedPath) {
+  // 보호 라우트: 로그인 + KYC 미승인 → /kyc (admin은 별도 가드)
+  if (!pathname.startsWith('/admin')) {
     if (!profileData || profileData.kyc_status !== 'approved') {
       const url = request.nextUrl.clone()
       url.pathname = '/kyc'
+      url.searchParams.set('next', pathname)
       return NextResponse.redirect(url)
     }
     if (!profileData.onboarding_completed) {
       const url = request.nextUrl.clone()
       url.pathname = '/onboarding'
+      url.searchParams.set('next', pathname)
       return NextResponse.redirect(url)
     }
   }
