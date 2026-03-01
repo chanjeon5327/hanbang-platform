@@ -132,6 +132,25 @@ export async function GET() {
   const unrealizedRate =
     totalRemainingCost > 0 ? (totalUnrealizedPnl / totalRemainingCost) * 100 : 0;
 
+  let latestDividendId: string | null = null;
+  let latestDividendAt: string | null = null;
+
+  const { data: ledgerRow } = await (supabase as any)
+    .from("ledger_entries")
+    .select("id, created_at")
+    .eq("user_id", user.id)
+    .eq("entry_type", "CASH_CREDIT")
+    .or("memo.ilike.%DIVIDEND%,memo.ilike.%배당%,metadata->>reason.in.(DIVIDEND,REVENUE_DISTRIBUTION)")
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (ledgerRow?.id) {
+    latestDividendId = ledgerRow.id;
+    latestDividendAt = ledgerRow.created_at ?? null;
+  }
+
   return NextResponse.json({
     totalInvest: totalInvest,
     cashBalance,
@@ -140,5 +159,7 @@ export async function GET() {
     unrealizedRate: Math.round(unrealizedRate * 100) / 100,
     monthlyProfit,
     holdingsValue,
+    latestDividendId,
+    latestDividendAt,
   });
 }

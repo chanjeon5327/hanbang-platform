@@ -1,8 +1,6 @@
 "use client";
 import React from 'react';
 import TopHeader from '../../components/TopHeader';
-import BottomNav from '../../components/BottomNav';
-
 export default function Notice() {
   return (
     <div style={{ paddingBottom: '100px' }}>
@@ -26,7 +24,6 @@ export default function Notice() {
           </ul>
         </div>
       </div>
-      <BottomNav />
     </div>
   );
 }

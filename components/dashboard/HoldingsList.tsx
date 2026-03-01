@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { formatKrw, formatRate } from '@/lib/utils/format';
+import PortfolioDonutChart from '@/components/dashboard/PortfolioDonutChart';
 
 export type Holding = {
   asset_id: string;
@@ -32,9 +33,19 @@ export default function HoldingsList({ items, isLocked }: Props) {
   }
 
   const sorted = [...items].sort((a, b) => (b.unrealized_rate ?? 0) - (a.unrealized_rate ?? 0));
+  const donutItems = sorted.map((p) => ({ asset_id: p.asset_id, title: p.title, current_value: p.current_value }));
 
   return (
     <div className="flex flex-col gap-3">
+      {donutItems.length > 0 && (
+        <div
+          className="rounded-2xl p-4 mb-2"
+          style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+        >
+          <div className="caption font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>자산 비율</div>
+          <PortfolioDonutChart items={donutItems} maxShow={5} />
+        </div>
+      )}
       {sorted.map((pos) => (
         <Link
           key={pos.asset_id}

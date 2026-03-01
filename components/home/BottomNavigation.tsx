@@ -23,7 +23,14 @@ export default function BottomNavigation({ demoMode }: { demoMode?: boolean }) {
   const items = demoMode ? demoNavItems : navItems;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 flex justify-around items-center bg-[var(--toss-card)] border-t border-black/5" aria-label="주 메뉴">
+    <nav
+      className="fixed bottom-0 left-0 right-0 h-16 flex justify-around items-center z-[50]"
+      style={{
+        backgroundColor: 'var(--toss-card)',
+        borderTop: '1px solid rgba(0,0,0,0.08)',
+      }}
+      aria-label="주 메뉴"
+    >
       {items.map((item) => {
         const isLoginModal = 'openModal' in item && item.openModal;
         if (isLoginModal) {

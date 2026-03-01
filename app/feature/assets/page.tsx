@@ -2,7 +2,6 @@
 import React from 'react';
 import Link from 'next/link';
 import TopHeader from '../../../components/TopHeader';
-import BottomNav from '../../../components/BottomNav';
 import { ArrowLeft, Share2, TrendingUp, Users, Zap } from 'lucide-react';
 import { getYtThumb } from '@/lib/thumbnails';
 
@@ -110,8 +109,6 @@ export default function AssetsPage() {
           </Link>
         </div>
       </div>
-
-      <BottomNav />
     </div>
   );
 }

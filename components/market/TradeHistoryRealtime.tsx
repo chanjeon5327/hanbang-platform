@@ -169,7 +169,7 @@ export default function TradeHistoryRealtime({ contentId, onTrade, disabled }: P
           return (
             <React.Fragment key={t.id}>
               <div
-                className={`grid grid-cols-3 gap-2 py-2 px-1 body-sm items-center transition-colors ${
+                className={`grid grid-cols-3 gap-2 py-2 px-1 body-sm items-center transition-all duration-400 ${
                   isBlink ? (isBuy ? 'trade-blink-buy' : 'trade-blink-sell') : ''
                 }`}
               >
@@ -195,15 +195,15 @@ export default function TradeHistoryRealtime({ contentId, onTrade, disabled }: P
       )}
       <style>{`
         @keyframes tradeBlinkBuy {
-          0% { background-color: rgba(5,150,105,0.3); }
-          100% { background-color: transparent; }
+          0% { transform: scale(1.03); background-color: rgba(239,68,68,0.4); box-shadow: 0 0 12px rgba(239,68,68,0.5); }
+          100% { transform: scale(1); background-color: transparent; box-shadow: none; }
         }
         @keyframes tradeBlinkSell {
-          0% { background-color: rgba(220,38,38,0.3); }
-          100% { background-color: transparent; }
+          0% { transform: scale(1.03); background-color: rgba(59,130,246,0.4); box-shadow: 0 0 12px rgba(59,130,246,0.5); }
+          100% { transform: scale(1); background-color: transparent; box-shadow: none; }
         }
-        .trade-blink-buy { animation: tradeBlinkBuy 0.3s ease-out forwards; }
-        .trade-blink-sell { animation: tradeBlinkSell 0.3s ease-out forwards; }
+        .trade-blink-buy { animation: tradeBlinkBuy 0.4s ease-out forwards; }
+        .trade-blink-sell { animation: tradeBlinkSell 0.4s ease-out forwards; }
       `}</style>
     </div>
   );

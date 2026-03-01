@@ -1,155 +1,144 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import styles from '@/app/market/[id]/market-detail.module.css';
 
-function krw(n:number){
+function krw(n: number) {
   return new Intl.NumberFormat('ko-KR').format(Math.round(n));
 }
 
 export default function TradingPanelV2({ currentPriceKrw = 13500 }) {
+  const [type, setType] = useState<'limit' | 'market'>('limit');
+  const [side, setSide] = useState<'buy' | 'sell'>('buy');
+  const [price, setPrice] = useState(currentPriceKrw);
+  const [qty, setQty] = useState(1);
 
-  const [type,setType] = useState<'limit'|'market'>('limit');
-  const [side,setSide] = useState<'buy'|'sell'>('buy');
-  const [price,setPrice] = useState(currentPriceKrw);
-  const [qty,setQty] = useState(1);
+  const subtotal = useMemo(() => price * qty, [price, qty]);
+  const fee = subtotal * 0.0003;
+  const total = subtotal + fee;
 
-  const subtotal = useMemo(()=>price*qty,[price,qty]);
-  const fee = subtotal*0.0003;
-  const total = subtotal+fee;
+  const buyColor = '#DC2626';
+  const sellColor = '#2563EB';
 
-  return(
-    <div style={{background:'#fff',padding:16,borderRadius:16,border:'1px solid #eee'}}>
-
-      {/* 지정가/시장가 */}
-      <div style={{display:'flex',gap:8,marginBottom:12}}>
+  return (
+    <div className={styles.terminalOrderPanel}>
+      {/* 지정가/시장가 - 1.3배 축소 */}
+      <div className={styles.compactTabs}>
         <button
-          onClick={()=>setType('limit')}
+          type="button"
+          onClick={() => setType('limit')}
+          className={type === 'limit' ? styles.orderTypeActive : ''}
           style={{
-            flex:1,
-            height:44,
-            borderRadius:12,
-            border:'1px solid #e5e5e5',
-            background:type==='limit'?'#111827':'#f5f5f5',
-            color:type==='limit'?'#fff':'#111',
-            fontWeight:700,
-            fontSize:'0.77rem'
-          }}>
+            background: type === 'limit' ? (side === 'buy' ? buyColor : sellColor) : undefined,
+          }}
+        >
           지정가
         </button>
         <button
-          onClick={()=>setType('market')}
+          type="button"
+          onClick={() => setType('market')}
+          className={type === 'market' ? styles.orderTypeActive : ''}
           style={{
-            flex:1,
-            height:44,
-            borderRadius:12,
-            border:'1px solid #e5e5e5',
-            background:type==='market'?'#111827':'#f5f5f5',
-            color:type==='market'?'#fff':'#111',
-            fontWeight:700,
-            fontSize:'0.77rem'
-          }}>
+            background: type === 'market' ? (side === 'buy' ? buyColor : sellColor) : undefined,
+          }}
+        >
           시장가
         </button>
       </div>
 
-      {/* 매수/매도 */}
-      <div style={{display:'flex',gap:8,marginBottom:12}}>
+      {/* 매수/매도 - 매수=빨강, 매도=파랑 */}
+      <div className={styles.compactTabs}>
         <button
-          onClick={()=>setSide('buy')}
-          style={{
-            flex:1,
-            height:44,
-            borderRadius:12,
-            border:'1px solid #e5e5e5',
-            background:side==='buy'?'#2563eb':'#f5f5f5',
-            color:side==='buy'?'#fff':'#111',
-            fontWeight:800,
-            fontSize:'0.77rem'
-          }}>
+          type="button"
+          onClick={() => setSide('buy')}
+          className={side === 'buy' ? styles.orderTypeActive : ''}
+          style={{ background: side === 'buy' ? buyColor : undefined }}
+        >
           매수
         </button>
         <button
-          onClick={()=>setSide('sell')}
-          style={{
-            flex:1,
-            height:44,
-            borderRadius:12,
-            border:'1px solid #e5e5e5',
-            background:side==='sell'?'#ef4444':'#f5f5f5',
-            color:side==='sell'?'#fff':'#111',
-            fontWeight:800,
-            fontSize:'0.77rem'
-          }}>
+          type="button"
+          onClick={() => setSide('sell')}
+          className={side === 'sell' ? styles.orderTypeActive : ''}
+          style={{ background: side === 'sell' ? sellColor : undefined }}
+        >
           매도
         </button>
       </div>
 
       {/* 가격 */}
-      <div style={{marginBottom:12}}>
-        <div style={{fontSize:13,fontWeight:700,marginBottom:6}}>가격 (KRW)</div>
+      <div className={styles.orderField}>
+        <label className={styles.orderLabel}>가격 (KRW)</label>
         <input
           type="number"
-          disabled={type==='market'}
-          value={type==='market'?currentPriceKrw:price}
-          onChange={e=>setPrice(Number(e.target.value))}
-          style={{
-            width:'100%',
-            height:44,
-            borderRadius:12,
-            border:'1px solid #e5e5e5',
-            padding:'0 12px',
-            fontWeight:700
-          }}
+          disabled={type === 'market'}
+          value={type === 'market' ? currentPriceKrw : price}
+          onChange={(e) => setPrice(Number(e.target.value))}
+          className={styles.orderInput}
         />
       </div>
 
-      {/* 수량 */}
-      <div style={{marginBottom:12}}>
-        <div style={{fontSize:13,fontWeight:700,marginBottom:6}}>수량</div>
-        <div style={{display:'flex',gap:8}}>
-          <button onClick={()=>setQty(q=>Math.max(1,q-1))}
-            style={{width:44,height:44,borderRadius:12,border:'1px solid #e5e5e5'}}>−</button>
+      {/* 수량 + 스텝퍼 */}
+      <div className={styles.orderField}>
+        <label className={styles.orderLabel}>수량</label>
+        <div className={styles.qtyStepper}>
+          <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} className={styles.stepperBtn}>
+            −
+          </button>
           <input
             type="number"
             value={qty}
-            onChange={e=>setQty(Number(e.target.value))}
-            style={{flex:1,height:44,borderRadius:12,border:'1px solid #e5e5e5',textAlign:'center',fontWeight:800}}
+            onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))}
+            className={`${styles.orderInput} ${styles.numMono}`}
+            style={{ textAlign: 'center', flex: 1 }}
           />
-          <button onClick={()=>setQty(q=>q+1)}
-            style={{width:44,height:44,borderRadius:12,border:'1px solid #e5e5e5'}}>+</button>
+          <button type="button" onClick={() => setQty((q) => q + 1)} className={styles.stepperBtn}>
+            +
+          </button>
         </div>
       </div>
 
-      {/* 예상 체결금액 */}
-      <div style={{background:'#f9fafb',padding:14,borderRadius:14,border:'1px solid #eee',marginBottom:12}}>
-        <div style={{display:'flex',justifyContent:'space-between'}}>
-          <span style={{fontWeight:700}}>예상 체결금액</span>
-          <span style={{fontWeight:900,fontSize:18}}>₩{krw(subtotal)}</span>
+      {/* % 버튼 25/50/75/100 (가용금액 기준 비율, mock: 100만원) */}
+      <div className={styles.pctRow}>
+        {[25, 50, 75, 100].map((p) => {
+          const maxQty = price > 0 ? Math.floor(1000000 / price) : 1000;
+          return (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setQty(Math.max(1, Math.floor(maxQty * (p / 100))))}
+              className={styles.pctBtn}
+            >
+              {p}%
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 예상 체결금액 / 수수료 / 총액 - 굵게 강조 2줄 */}
+      <div className={styles.orderSummaryBox}>
+        <div className={styles.orderSummaryRow}>
+          <span>예상 체결금액</span>
+          <span className={styles.numMono}>₩{krw(subtotal)}</span>
         </div>
-        <div style={{marginTop:6,fontSize:12,color:'#6b7280'}}>
-          수수료 ₩{krw(fee)}
+        <div className={styles.orderSummaryRow}>
+          <span>수수료</span>
+          <span className={styles.numMono}>₩{krw(fee)}</span>
         </div>
-        <div style={{marginTop:8,display:'flex',justifyContent:'space-between'}}>
-          <span style={{fontWeight:800}}>총액</span>
-          <span style={{fontWeight:900}}>₩{krw(total)}</span>
+        <div className={`${styles.orderSummaryRow} ${styles.orderTotal}`}>
+          <span>총액</span>
+          <span className={styles.numMono}>₩{krw(total)}</span>
         </div>
       </div>
 
-      {/* 실행 버튼 */}
+      {/* 실행 버튼 - 매수=빨강, 매도=파랑 */}
       <button
-        style={{
-          width:'100%',
-          height:50,
-          borderRadius:14,
-          border:'none',
-          fontWeight:900,
-          background:side==='buy'?'#2563eb':'#ef4444',
-          color:'#fff',
-          fontSize:'0.77rem'
-        }}>
-        {side==='buy'?'매수하기':'매도하기'}
+        type="button"
+        className={styles.orderExecBtn}
+        style={{ background: side === 'buy' ? buyColor : sellColor }}
+      >
+        {side === 'buy' ? '매수하기' : '매도하기'}
       </button>
-
     </div>
   );
 }

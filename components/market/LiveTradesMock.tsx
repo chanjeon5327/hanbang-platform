@@ -36,7 +36,7 @@ export default function LiveTradesMock({ basePriceKrw }: Props) {
     const newTrade: Trade = { id, price, qty, side, time: nowTime() };
     setTrades((prev) => [newTrade, ...prev].slice(0, 20));
     setEnteringIds((prev) => new Set(prev).add(id));
-    setTimeout(() => setEnteringIds((p) => { const s = new Set(p); s.delete(id); return s; }), 250);
+    setTimeout(() => setEnteringIds((p) => { const s = new Set(p); s.delete(id); return s; }), 300);
   }, [basePriceKrw]);
 
   useEffect(() => {
@@ -49,15 +49,15 @@ export default function LiveTradesMock({ basePriceKrw }: Props) {
       {trades.map((t) => (
         <div
           key={t.id}
-          className={`${styles.tickerRow} ${enteringIds.has(t.id) ? styles.tradeEnter : ''}`}
+          className={`${styles.tickerRow} ${styles.tickerRowCompact} ${enteringIds.has(t.id) ? styles.tradeEnter : ''}`}
         >
           <span
-            className={styles.tickerPrice}
-            style={{ color: t.side === 'buy' ? '#2563EB' : '#DC2626' }}
+            className={`${styles.tickerPrice} ${styles.numMono}`}
+            style={{ color: t.side === 'buy' ? '#DC2626' : '#2563EB' }}
           >
             {formatKrw(t.price)}
           </span>
-          <span className={styles.tickerQty}>{t.qty}주</span>
+          <span className={`${styles.tickerQty} ${styles.numMono}`}>{t.qty}주</span>
           <span className={styles.tickerTime}>{t.time}</span>
         </div>
       ))}

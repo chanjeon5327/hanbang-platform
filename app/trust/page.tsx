@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { ArrowLeft, Shield, CreditCard, CheckCircle, FileCheck } from "lucide-react";
-import BottomNavigation from "@/components/home/BottomNavigation";
-
 const GOLD = "#C5A059";
 const BG = "#000000";
 
@@ -88,8 +86,6 @@ export default function TrustPage() {
           홈으로
         </Link>
       </div>
-
-      <BottomNavigation />
     </div>
   );
 }

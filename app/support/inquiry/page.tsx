@@ -2,8 +2,6 @@
 
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import BottomNavigation from '@/components/home/BottomNavigation';
-
 export default function SupportInquiryPage() {
   return (
     <div className="pb-24" style={{ backgroundColor: 'var(--toss-bg)' }}>
@@ -18,7 +16,6 @@ export default function SupportInquiryPage() {
           연락처: 010-2164-7327 · 카톡: jbc01 · 이메일: jbc001@nate.com
         </p>
       </div>
-      <BottomNavigation />
     </div>
   );
 }

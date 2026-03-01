@@ -329,6 +329,11 @@
     @apply pb-32;
   }
 
+  /* 하단 네비 여유 (BottomNav 64px + 8px) */
+  .main-with-bottom-nav {
+    padding-bottom: 72px;
+  }
+
   /* glass-card */
   .glass-card {
     @apply rounded-[16px] p-5;

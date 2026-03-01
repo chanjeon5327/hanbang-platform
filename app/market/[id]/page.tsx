@@ -6,14 +6,16 @@ import { useMarketItem } from '@/hooks/useMarketItem';
 import { useToast } from '@/context/ToastContext';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { formatKrw, formatRate } from '@/lib/utils/format';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import RealPriceChart from '@/components/market/RealPriceChart';
 import LiveTradesMock from '@/components/market/LiveTradesMock';
 import TradingPanelV2 from '@/components/market/TradingPanelV2';
 import DepthRibbon from '@/components/market/DepthRibbon';
 import MarketHeroHybrid from '@/components/market/MarketHeroHybrid';
+import TerminalLayout from '@/components/market/TerminalLayout';
+import BuySellPulseBar from '@/components/market/BuySellPulseBar';
 import { ArrowUp } from 'lucide-react';
 import { FALLBACK_PREVIEW_IMAGE, PRODUCT_PLACEHOLDER } from '@/lib/thumbnails';
-import BottomNavigation from '@/components/home/BottomNavigation';
 import styles from './market-detail.module.css';
 
 export default function MarketDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -26,6 +28,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const [tab, setTab] = useState<'info' | 'order' | 'quote'>('info');
   const [t1t2, setT1t2] = useState<'T1' | 'T2'>('T1');
   const [lastTradePrice, setLastTradePrice] = useState(0);
+  const [positionQty, setPositionQty] = useState(0);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
@@ -47,6 +50,14 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
     if (!loading && sharePriceKrw > 0) setLastTradePrice(Math.round(sharePriceKrw));
   }, [loading, sharePriceKrw]);
 
+  useEffect(() => {
+    if (!user || !id) return;
+    fetch(`/api/wallet/position?asset_id=${id}`, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => setPositionQty(Number(j?.quantity ?? 0)))
+      .catch(() => setPositionQty(0));
+  }, [user, id]);
+
   const changeText = changeRate !== 0 || changeAmountKrw !== 0
     ? `${isUp ? '+' : ''}${formatRate(changeRate)} (${isUp ? '+' : ''}${Math.round(changeAmountKrw).toLocaleString('ko-KR')})`
     : null;
@@ -61,7 +72,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           <p className={styles.errorText}>정보를 불러올 수 없습니다.</p>
           <button onClick={() => refetch()} className={styles.retryBtn}>다시 시도</button>
         </div>
-        <BottomNavigation />
       </div>
     );
   }
@@ -72,23 +82,41 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
         {/* 1) 상단 OTT+금융 하이브리드 히어로 */}
         {item && <MarketHeroHybrid item={item as Record<string, unknown>} />}
 
-        {/* 2) 탭 바 */}
+        {/* 2) 탭 바: 정보 | 거래(주문+시세 통합) */}
         <div className={styles.tabBar}>
           <button type="button" className={tab === 'info' ? styles.tabActive : styles.tabInactive} onClick={() => setTab('info')}>
             정보
           </button>
           <button type="button" className={tab === 'order' ? styles.tabActive : styles.tabInactive} onClick={() => setTab('order')}>
-            주문
-          </button>
-          <button type="button" className={tab === 'quote' ? styles.tabActive : styles.tabInactive} onClick={() => setTab('quote')}>
-            시세
+            거래
           </button>
         </div>
 
         {/* 4) 탭 콘텐츠 */}
         {tab === 'info' && (
           <section className={styles.tabContent}>
-            {/* A) 투자 개요 */}
+            {/* A) 내 예상 수익 (보유 시) */}
+            {positionQty > 0 && (
+              <div className={styles.infoCard} style={{ borderLeft: '4px solid var(--emerald)' }}>
+                <div className={styles.infoTitle}>내 예상 수익</div>
+                <div className={styles.kvRow}>
+                  <span className={styles.kvLabel}>보유 수량</span>
+                  <span className={styles.kvValue}>{positionQty}주</span>
+                </div>
+                <div className={styles.kvRow}>
+                  <span className={styles.kvLabel}>월 예상 배당 (최근 기준)</span>
+                  <span className={styles.kvValue} style={{ color: 'var(--emerald)', fontWeight: 700 }}>
+                    <AnimatedNumber
+                      value={positionQty * ((item as any)?.dividend_monthly_usd_per_share ?? (item as any)?.dividendPerShare ?? 0) * fxRate}
+                      duration={600}
+                      format="krw"
+                    />
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* B) 투자 개요 */}
             <div className={styles.infoCard}>
               <div className={styles.infoTitle}>투자 개요</div>
               <div className={styles.kvRow}>
@@ -169,58 +197,103 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
             </div>
 
             {/* D) 작가의 기획 PDF */}
-            {typeof (item as Record<string, unknown>)?.creator_plan_pdf === 'string' && (
-              <section className={styles.creatorPlan}>
-                <h3>작가의 기획</h3>
-                <a
-                  href={(item as Record<string, unknown>).creator_plan_pdf as string}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.downloadBtn}
-                >
-                  PDF 다운로드
-                </a>
-              </section>
-            )}
+            <section className={styles.creatorPlan}>
+              <h3>작가의 기획</h3>
+              {(() => {
+                const pdfUrl = (item as Record<string, unknown>)?.plan_pdf_url ?? (item as Record<string, unknown>)?.creator_plan_pdf;
+                if (typeof pdfUrl === 'string' && pdfUrl) {
+                  return (
+                    <a
+                      href={pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.downloadBtn}
+                    >
+                      PDF 다운로드
+                    </a>
+                  );
+                }
+                return (
+                  <span className={styles.planPdfBtn} style={{ opacity: 0.7, cursor: 'default', pointerEvents: 'none' }}>
+                    자료 준비중
+                  </span>
+                );
+              })()}
+            </section>
+
+            {/* E) 작가의 전략 요약 (5초 이해용) */}
+            {(() => {
+              const it = item as Record<string, unknown> | null;
+              const summary = typeof it?.strategy_summary === 'string' ? it.strategy_summary : null;
+              const targetMarket = typeof it?.target_market === 'string' ? it.target_market : null;
+              const revenueModel = typeof it?.revenue_model === 'string' ? it.revenue_model : null;
+              const coreTeam = typeof it?.core_team === 'string' ? it.core_team : null;
+              const equipmentStack = typeof it?.equipment_stack === 'string' ? it.equipment_stack : null;
+              const distributionPlan = typeof it?.distribution_plan === 'string' ? it.distribution_plan : null;
+              const hasAny = summary || targetMarket || revenueModel || coreTeam || equipmentStack || distributionPlan;
+              if (!hasAny) return null;
+              return (
+                <div className={styles.infoCard} style={{ marginTop: 14 }}>
+                  <div className={styles.infoTitle}>작가의 전략</div>
+                  {summary && (
+                    <p className={styles.strategySummary}>{summary}</p>
+                  )}
+                  <div>
+                    {targetMarket && (
+                      <div className={styles.kvRow}>
+                        <span className={styles.kvLabel}>타겟 시장</span>
+                        <span className={styles.kvValue}>{targetMarket}</span>
+                      </div>
+                    )}
+                    {revenueModel && (
+                      <div className={styles.kvRow}>
+                        <span className={styles.kvLabel}>수익 모델</span>
+                        <span className={styles.kvValue}>{revenueModel}</span>
+                      </div>
+                    )}
+                    {coreTeam && (
+                      <div className={styles.kvRow}>
+                        <span className={styles.kvLabel}>핵심 팀</span>
+                        <span className={styles.kvValue}>{coreTeam}</span>
+                      </div>
+                    )}
+                    {equipmentStack && (
+                      <div className={styles.kvRow}>
+                        <span className={styles.kvLabel}>장비/인프라</span>
+                        <span className={styles.kvValue}>{equipmentStack}</span>
+                      </div>
+                    )}
+                    {distributionPlan && (
+                      <div className={styles.kvRow}>
+                        <span className={styles.kvLabel}>유통 전략</span>
+                        <span className={styles.kvValue}>{distributionPlan}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </section>
         )}
 
         {tab === 'order' && id && (
           <section ref={(el) => { sectionRefs.current['orderbook'] = el; }} className={styles.tabContent}>
-            <div className={styles.tradingTop}>
-              <TradingPanelV2 currentPriceKrw={lastTradePrice || sharePriceKrw} />
-            </div>
-            <div className={styles.orderBookWrap}>
-              <DepthRibbon midPriceKrw={lastTradePrice || sharePriceKrw} />
-            </div>
-            <div className={styles.bottomNav}>
-              <button type="button" className={styles.listBtn} onClick={() => router.push('/market')}>
-                목록
-              </button>
-              <button type="button" className={styles.walletBtn} onClick={() => router.push('/wallet')}>
-                지갑
-              </button>
-            </div>
-          </section>
-        )}
-
-        {tab === 'quote' && (
-          <section className={styles.tabContent}>
-            <div className={styles.chartSection}>
-              <div className={styles.card}>
-                <h3 className={styles.sectionTitle}>가격 차트</h3>
-                <RealPriceChart priceKrw={lastTradePrice || sharePriceKrw} loading={loading} height={280} theme="light" />
-              </div>
-            </div>
-            <div className={styles.tradeSection}>
-              <div className={styles.card}>
-                <h3 className={styles.sectionTitle}>실시간 체결</h3>
-                <LiveTradesMock basePriceKrw={sharePriceKrw} />
-              </div>
-            </div>
-            <div className={styles.tradeSection}>
-              <DepthRibbon midPriceKrw={lastTradePrice || sharePriceKrw} dense />
-            </div>
+            <TerminalLayout
+              chart={
+                <RealPriceChart
+                  priceKrw={lastTradePrice || sharePriceKrw}
+                  loading={loading}
+                  height={280}
+                  theme="light"
+                />
+              }
+              trades={<LiveTradesMock basePriceKrw={sharePriceKrw} />}
+              pulseBar={<BuySellPulseBar useMock />}
+              orderPanel={<TradingPanelV2 currentPriceKrw={lastTradePrice || sharePriceKrw} />}
+              orderBook={<DepthRibbon midPriceKrw={lastTradePrice || sharePriceKrw} dense />}
+              onListClick={() => router.push('/market')}
+              onWalletClick={() => router.push('/wallet')}
+            />
           </section>
         )}
 
@@ -230,7 +303,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           </button>
         )}
       </div>
-      <BottomNavigation />
     </div>
   );
 }

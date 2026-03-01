@@ -7,6 +7,7 @@ import styles from '@/app/market/[id]/market-detail.module.css';
 type LineDataPoint = { time: string; value: number };
 
 const TIMEFRAMES = ['tick', '1d', '1w', '1M', '1Y'] as const;
+const TIMEFRAME_LABELS: Record<string, string> = { tick: 'TICK', '1d': '1D', '1w': '1W', '1M': '1M', '1Y': '1Y' };
 type Timeframe = (typeof TIMEFRAMES)[number];
 
 const INDICATORS = ['MA5', 'MA20', 'BB'] as const;
@@ -309,41 +310,25 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+      <div className={styles.compactTabs} style={{ marginBottom: 10 }}>
         {TIMEFRAMES.map((tf) => (
           <button
             key={tf}
             type="button"
             onClick={() => setTimeframe(tf)}
-            style={{
-              fontSize: 12,
-              padding: '6px 12px',
-              border: '1px solid #E5E7EB',
-              borderRadius: 20,
-              background: timeframe === tf ? '#111827' : '#F9FAFB',
-              color: timeframe === tf ? 'white' : '#374151',
-              cursor: 'pointer',
-            }}
+            className={timeframe === tf ? styles.chartTabActive : styles.chartTab}
           >
-            {tf}
+            {TIMEFRAME_LABELS[tf] ?? tf}
           </button>
         ))}
       </div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+      <div className={styles.compactTabs} style={{ marginBottom: 10 }}>
         {INDICATORS.map((id) => (
           <button
             key={id}
             type="button"
             onClick={() => toggleIndicator(id)}
-            style={{
-              fontSize: 12,
-              padding: '6px 12px',
-              border: '1px solid #E5E7EB',
-              borderRadius: 20,
-              background: indicators[id] ? '#111827' : '#F9FAFB',
-              color: indicators[id] ? 'white' : '#374151',
-              cursor: 'pointer',
-            }}
+            className={indicators[id] ? styles.chartTabActive : styles.chartTab}
           >
             {id}
           </button>

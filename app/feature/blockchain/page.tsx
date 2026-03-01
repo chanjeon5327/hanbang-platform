@@ -2,7 +2,6 @@
 import React from 'react';
 import Link from 'next/link';
 import TopHeader from '../../../components/TopHeader';
-import BottomNav from '../../../components/BottomNav';
 import { ArrowLeft, Shield, Lock, Database } from 'lucide-react';
 import { getYtThumb } from '@/lib/thumbnails';
 
@@ -99,7 +98,6 @@ export default function BlockchainPage() {
         </div>
       </div>
 
-      <BottomNav />
     </div>
   );
 }

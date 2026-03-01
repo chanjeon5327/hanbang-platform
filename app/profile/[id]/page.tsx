@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, User } from 'lucide-react';
-import BottomNavigation from '@/components/home/BottomNavigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useArtistContribution } from '@/hooks/useArtistContribution';
 import { useArtistProgress } from '@/hooks/useArtistProgress';
@@ -75,7 +74,6 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
           <div className="h-32 w-32 rounded-full bg-black/10 animate-pulse mx-auto" />
           <div className="h-6 w-32 rounded bg-black/10 animate-pulse mx-auto mt-4" />
         </div>
-        <BottomNavigation />
       </div>
     );
   }
@@ -144,8 +142,6 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
           </section>
         </div>
       </div>
-
-      <BottomNavigation />
     </div>
   );
 }

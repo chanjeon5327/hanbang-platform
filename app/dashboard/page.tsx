@@ -22,6 +22,7 @@ import { formatKrw, formatRate } from '@/lib/utils/format';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import HoldingsList from '@/components/dashboard/HoldingsList';
 import KycGateBanner from '@/components/kyc/KycGateBanner';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
 
 const HB_FANDOM_KEY = 'hb_fandom';
 
@@ -156,7 +157,11 @@ export default function DashboardPage() {
         {/* 1) 상단 요약 카드 */}
         <div
           className="rounded-2xl p-4 mb-4"
-          style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+          style={{
+            backgroundColor: 'var(--card)',
+            border: '1px solid var(--border)',
+            boxShadow: todayChange > 0 ? '0 0 20px rgba(16,185,129,0.15)' : todayChange < 0 ? '0 0 20px rgba(239,68,68,0.15)' : undefined,
+          }}
         >
           {loading ? (
             <SummaryCardSkeleton />
@@ -176,7 +181,11 @@ export default function DashboardPage() {
                 )}
               </div>
               <div className="font-bold tabular-nums" style={{ fontSize: 28, color: 'var(--text)' }}>
-                {isLoggedIn ? formatKrw(totalAssets) : '●●●●●●'}
+                {isLoggedIn ? (
+                  <AnimatedNumber value={totalAssets} duration={800} format="krw" />
+                ) : (
+                  '●●●●●●'
+                )}
               </div>
               <div
                 className="caption tabular-nums mt-1"
@@ -187,6 +196,7 @@ export default function DashboardPage() {
                         ? 'var(--emerald)'
                         : 'var(--accent-loss)'
                       : 'var(--text-secondary)',
+                  textShadow: todayChange > 0 ? '0 0 8px rgba(16,185,129,0.4)' : todayChange < 0 ? '0 0 8px rgba(239,68,68,0.4)' : undefined,
                 }}
               >
                 {isLoggedIn
@@ -195,6 +205,11 @@ export default function DashboardPage() {
                     : '오늘 변동 없음'
                   : '—'}
               </div>
+              {isLoggedIn && (todayRate !== 0 || todayChange !== 0) && (
+                <div className="caption tabular-nums mt-1" style={{ color: 'var(--text-muted)' }}>
+                  누적 수익률 {formatRate(todayRate)}%
+                </div>
+              )}
             </>
           )}
         </div>
