@@ -10,10 +10,11 @@ import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import RealPriceChart from '@/components/market/RealPriceChart';
 import LiveTradesMock from '@/components/market/LiveTradesMock';
 import TradingPanelV2 from '@/components/market/TradingPanelV2';
-import DepthRibbon from '@/components/market/DepthRibbon';
+import MockOrderBook from '@/components/market/MockOrderBook';
 import MarketHeroHybrid from '@/components/market/MarketHeroHybrid';
 import TerminalLayout from '@/components/market/TerminalLayout';
 import BuySellPulseBar from '@/components/market/BuySellPulseBar';
+import { LiquidityProvider } from '@/components/market/LiquidityContext';
 import { ArrowUp } from 'lucide-react';
 import { FALLBACK_PREVIEW_IMAGE, PRODUCT_PLACEHOLDER } from '@/lib/thumbnails';
 import styles from './market-detail.module.css';
@@ -278,6 +279,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
 
         {tab === 'order' && id && (
           <section ref={(el) => { sectionRefs.current['orderbook'] = el; }} className={styles.tabContent}>
+            <LiquidityProvider>
             <TerminalLayout
               chart={
                 <RealPriceChart
@@ -290,10 +292,11 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
               trades={<LiveTradesMock basePriceKrw={sharePriceKrw} />}
               pulseBar={<BuySellPulseBar useMock />}
               orderPanel={<TradingPanelV2 currentPriceKrw={lastTradePrice || sharePriceKrw} />}
-              orderBook={<DepthRibbon midPriceKrw={lastTradePrice || sharePriceKrw} dense />}
+              orderBook={<MockOrderBook basePriceKrw={lastTradePrice || sharePriceKrw} loading={loading} theme="light" onPriceChange={(p) => setLastTradePrice(p)} />}
               onListClick={() => router.push('/market')}
               onWalletClick={() => router.push('/wallet')}
             />
+            </LiquidityProvider>
           </section>
         )}
 

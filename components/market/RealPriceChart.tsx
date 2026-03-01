@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { createChart, ColorType, LineSeries, CrosshairMode } from 'lightweight-charts';
+import { createChart, ColorType, LineSeries, HistogramSeries, CrosshairMode } from 'lightweight-charts';
 import { formatPriceKRW } from '@/lib/format/number';
+import { useLiquidity } from './LiquidityContext';
 import styles from '@/app/market/[id]/market-detail.module.css';
 
 type LineDataPoint = { time: string; value: number };
@@ -59,6 +60,18 @@ function generatePriceData(
   return data;
 }
 
+type VolumePoint = { time: string; value: number; color?: string };
+
+function generateVolumeData(priceData: LineDataPoint[], seed: number): VolumePoint[] {
+  let r = seed;
+  return priceData.map((p, i) => {
+    r = (r * 9301 + 49297) % 233280;
+    const baseVol = 50 + (r / 233280) * 150;
+    const vol = Math.round(baseVol);
+    return { time: p.time, value: vol };
+  });
+}
+
 function calculateSMA(data: LineDataPoint[], period: number): LineDataPoint[] {
   const result: LineDataPoint[] = [];
   for (let i = 0; i < data.length; i++) {
@@ -97,6 +110,8 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
   const [chartPulseActive, setChartPulseActive] = useState(false);
   const prevPriceRef = useRef(priceKrw);
   const lastPulseTimeRef = useRef(0);
+  const liquidity = useLiquidity();
+  const lastLargeTradeRef = useRef(liquidity?.lastTrade ?? null);
 
   const chartTargetRef = useRef(priceKrw);
   const chartDisplayRef = useRef(priceKrw);
@@ -140,6 +155,19 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
         }
       }
 
+      const lt = liquidity?.lastTrade;
+      if (lt?.isLarge && lt !== lastLargeTradeRef.current) {
+        lastLargeTradeRef.current = lt;
+        const lastTime = lastBarTimeRef.current;
+        const volArr = volumeRef.current;
+        if (lastTime && volArr.length > 0 && volumeSeriesRef.current) {
+          const lastVol = volArr[volArr.length - 1];
+          const spikeVol = Math.round(lastVol.value * (3 + Math.random() * 2));
+          volumeSeriesRef.current.update({ time: lastTime, value: spikeVol, color: lt.side === 'buy' ? 'rgba(239,68,68,0.5)' : 'rgba(59,130,246,0.5)' });
+          volArr[volArr.length - 1] = { ...lastVol, value: spikeVol };
+        }
+      }
+
       frameId = requestAnimationFrame(loop);
     }
 
@@ -169,18 +197,19 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
   });
 
   const dataRef = useRef<LineDataPoint[]>([]);
+  const volumeRef = useRef<VolumePoint[]>([]);
   const lastBarTimeRef = useRef<string | null>(null);
   const mainSeriesRef = useRef<{ update: (data: LineDataPoint) => void } | null>(null);
+  const volumeSeriesRef = useRef<{ update: (data: VolumePoint) => void } | null>(null);
 
   useEffect(() => {
     if (!loading && priceKrw > 0) {
       const initialPrice = chartDisplayRef.current > 0 ? chartDisplayRef.current : priceKrw;
-      const initial = generatePriceData(
-        initialPrice,
-        Math.floor(initialPrice) % 233280 + timeframe.length,
-        timeframe
-      );
+      const seed = Math.floor(initialPrice) % 233280 + timeframe.length;
+      const initial = generatePriceData(initialPrice, seed, timeframe);
+      const volData = generateVolumeData(initial, seed + 1);
       dataRef.current = initial;
+      volumeRef.current = volData;
       lastBarTimeRef.current = initial.length > 0 ? initial[initial.length - 1].time : null;
     }
   }, [loading, timeframe]);
@@ -265,6 +294,19 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
     });
     mainSeries.setData(data);
 
+    const volData = volumeRef.current.length > 0 ? volumeRef.current : generateVolumeData(data, Math.floor(priceKrw) % 233280);
+    const volumeSeries = chart.addSeries(HistogramSeries, {
+      color: 'rgba(59, 130, 246, 0.4)',
+      priceFormat: { type: 'volume' },
+      priceScaleId: '',
+    });
+    volumeSeries.priceScale().applyOptions({
+      scaleMargins: { top: 0.75, bottom: 0 },
+      borderVisible: false,
+    });
+    volumeSeries.setData(volData);
+    volumeSeriesRef.current = volumeSeries;
+
     const priceScale = chart.priceScale('right');
     priceScale.applyOptions({
       autoScale: false,
@@ -287,9 +329,10 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
 
     return () => {
       mainSeriesRef.current = null;
+      volumeSeriesRef.current = null;
       chart.remove();
     };
-  }, [loading, timeframe, indicators, height, bgColor, textColor, gridColor]);
+  }, [loading, timeframe, indicators, height, bgColor, textColor, gridColor, priceKrw]);
 
   const toggleIndicator = (id: Indicator) => {
     setIndicators((p) => ({ ...p, [id]: !p[id] }));

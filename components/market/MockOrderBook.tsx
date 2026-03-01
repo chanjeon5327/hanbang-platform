@@ -7,8 +7,9 @@ import detailStyles from '@/app/market/[id]/market-detail.module.css';
 
 type Row = { price: number; qty: number };
 
-const PC_LINES = 5;
-const MOBILE_LINES = 8;
+const PC_LINES = 10;
+const MOBILE_LINES = 10;
+const TOTAL_LEVELS = 20;
 
 type Props = {
   basePriceKrw: number;
@@ -17,14 +18,21 @@ type Props = {
   onPriceChange?: (price: number) => void;
 };
 
-function generateRows(base: number, count: number, direction: 'up' | 'down'): Row[] {
+function generateRows(base: number, count: number, direction: 'up' | 'down', surgeTop?: boolean): Row[] {
   const step = Math.max(100, Math.floor(base * 0.002));
   const baseQty = 35;
   const variance = Math.floor(baseQty * 0.3);
-  return Array.from({ length: count }, (_, i) => ({
-    price: base + (direction === 'up' ? 1 : -1) * step * (i + 1),
-    qty: Math.max(1, baseQty + Math.floor((Math.random() - 0.5) * 2 * variance)),
-  }));
+  const top3Multiplier = 2.2;
+  const surgeMultiplier = surgeTop ? 3 : 1;
+  return Array.from({ length: count }, (_, i) => {
+    let qty = Math.max(1, baseQty + Math.floor((Math.random() - 0.5) * 2 * variance));
+    if (i < 3) qty = Math.floor(qty * top3Multiplier);
+    if (surgeTop && i < 2) qty = Math.floor(qty * surgeMultiplier);
+    return {
+      price: base + (direction === 'up' ? 1 : -1) * step * (i + 1),
+      qty,
+    };
+  });
 }
 
 export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark', onPriceChange }: Props) {
@@ -80,8 +88,9 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark', o
     }
     prevPriceRef.current = nextPrice;
 
-    const newAsks = generateRows(nextPrice, MOBILE_LINES, 'up');
-    const newBids = generateRows(nextPrice, MOBILE_LINES, 'down');
+    const surgeTop = Math.random() < 0.1;
+    const newAsks = generateRows(nextPrice, TOTAL_LEVELS, 'up', surgeTop);
+    const newBids = generateRows(nextPrice, TOTAL_LEVELS, 'down', surgeTop);
     const prev = prevRowsRef.current;
     const changed = new Set<number>();
     newAsks.forEach((r) => {
@@ -113,8 +122,8 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark', o
 
   useEffect(() => {
     if (basePriceKrw <= 0) return;
-    const initAsks = generateRows(basePriceKrw, MOBILE_LINES, 'up');
-    const initBids = generateRows(basePriceKrw, MOBILE_LINES, 'down');
+    const initAsks = generateRows(basePriceKrw, TOTAL_LEVELS, 'up');
+    const initBids = generateRows(basePriceKrw, TOTAL_LEVELS, 'down');
     setCurrentPrice(basePriceKrw);
     setDisplayPrice(basePriceKrw);
     targetPriceRef.current = basePriceKrw;
@@ -190,6 +199,9 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark', o
     return () => clearTimeout(timeoutId);
   }, [tick]);
 
+  const barWidthRef = useRef<Map<string, number>>(new Map());
+  const SMOOTH_ALPHA = 0.15;
+
   const allQtys = [...asks, ...bids].map((r) => r.qty);
   const maxQty = Math.max(1, ...allQtys);
 
@@ -203,7 +215,14 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark', o
     side: 'ask' | 'bid';
     i: number;
     pulseKey?: number;
-  }) => (
+  }) => {
+    const key = `${side}-${r.price}`;
+    const rawPct = (r.qty / maxQty) * 100;
+    const prev = barWidthRef.current.get(key) ?? rawPct;
+    const smoothed = prev + (rawPct - prev) * SMOOTH_ALPHA;
+    barWidthRef.current.set(key, smoothed);
+    const widthPct = Math.min(100, Math.max(2, smoothed));
+    return (
     <div
       key={`${side}-${i}-${pulseKey ?? 'base'}`}
       className={pulseKey ? detailStyles.orderSizeChange : ''}
@@ -216,8 +235,10 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark', o
           top: 0,
           left: 0,
           bottom: 0,
-          width: `${(r.qty / maxQty) * 100}%`,
-          background: side === 'ask' ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)',
+          width: `${widthPct}%`,
+          maxWidth: '100%',
+          background: side === 'ask' ? 'rgba(239,68,68,0.15)' : 'rgba(59,130,246,0.15)',
+          transition: 'width 200ms ease-out',
         }}
       />
       <div
@@ -229,11 +250,12 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark', o
           zIndex: 1,
         }}
       >
-        <span style={{ color: side === 'ask' ? '#EF4444' : '#22C55E', fontWeight: 600 }}>{formatKrw(r.price)}</span>
+        <span style={{ color: side === 'ask' ? '#ef4444' : '#3b82f6', fontWeight: 600 }}>{formatKrw(r.price)}</span>
         <span style={{ fontSize: 14, color: '#6B7280' }}>{r.qty}</span>
       </div>
     </div>
   );
+  };
 
   if (loading) {
     return (
@@ -252,8 +274,9 @@ export default function MockOrderBook({ basePriceKrw, loading, theme = 'dark', o
     );
   }
 
-  const askSlice = asks.sort((a, b) => a.price - b.price).reverse().slice(0, displayLines);
-  const bidSlice = bids.sort((a, b) => b.price - a.price).slice(0, displayLines);
+  const displayCount = Math.max(displayLines, 10);
+  const askSlice = asks.sort((a, b) => a.price - b.price).reverse().slice(0, displayCount);
+  const bidSlice = bids.sort((a, b) => b.price - a.price).slice(0, displayCount);
 
   return (
     <div

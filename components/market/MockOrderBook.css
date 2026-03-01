@@ -1,3 +1,7 @@
+.volumeBar {
+  max-width: 100%;
+}
+
 .orderRowFlash {
   animation: flash 180ms ease-out;
 }
