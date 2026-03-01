@@ -11,9 +11,11 @@ type Props = {
   suffix?: string;
   className?: string;
   format?: 'number' | 'krw';
+  /** 외부 formatter: (n: number) => string. 사용 시 애니메이션 점프 제어 가능 */
+  formatter?: (n: number) => string;
 };
 
-export default function AnimatedNumber({ value, duration = 600, decimals = 0, prefix = '', suffix = '', className = '', format: fmt = 'number' }: Props) {
+export default function AnimatedNumber({ value, duration = 600, decimals = 0, prefix = '', suffix = '', className = '', format: fmt = 'number', formatter }: Props) {
   const [display, setDisplay] = useState(value);
 
   useEffect(() => {
@@ -32,7 +34,11 @@ export default function AnimatedNumber({ value, duration = 600, decimals = 0, pr
     requestAnimationFrame(tick);
   }, [value, duration]);
 
-  const formatted = fmt === 'krw' ? formatKrw(Math.round(display)) : (decimals > 0 ? display.toFixed(decimals) : Math.round(display).toString());
+  const formatted = formatter
+    ? formatter(display)
+    : fmt === 'krw'
+      ? formatKrw(Math.round(display))
+      : (decimals > 0 ? display.toFixed(decimals) : Math.round(display).toString());
   return (
     <span className={className}>
       {prefix}{formatted}{suffix}

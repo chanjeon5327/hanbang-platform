@@ -2,10 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import styles from '@/app/market/[id]/market-detail.module.css';
-
-function krw(n: number) {
-  return new Intl.NumberFormat('ko-KR').format(Math.round(n));
-}
+import { formatKRW, formatPriceKRW, formatQty } from '@/lib/format/number';
 
 export default function TradingPanelV2({ currentPriceKrw = 13500 }) {
   const [type, setType] = useState<'limit' | 'market'>('limit');
@@ -74,7 +71,7 @@ export default function TradingPanelV2({ currentPriceKrw = 13500 }) {
           disabled={type === 'market'}
           value={type === 'market' ? currentPriceKrw : price}
           onChange={(e) => setPrice(Number(e.target.value))}
-          className={`${styles.orderInput} price-number text-2xl`}
+          className={`${styles.orderInput} ${styles.monoNum} ${styles.numCol} price-number text-2xl`}
         />
       </div>
 
@@ -89,7 +86,7 @@ export default function TradingPanelV2({ currentPriceKrw = 13500 }) {
             type="number"
             value={qty}
             onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))}
-            className={`${styles.orderInput} price-number`}
+            className={`${styles.orderInput} ${styles.monoNum} ${styles.numCol} price-number`}
             style={{ textAlign: 'center', flex: 1 }}
           />
           <button type="button" onClick={() => setQty((q) => q + 1)} className={styles.stepperBtn}>
@@ -119,15 +116,15 @@ export default function TradingPanelV2({ currentPriceKrw = 13500 }) {
       <div className={styles.orderSummaryBox}>
         <div className={styles.orderSummaryRow}>
           <span>예상 체결금액</span>
-          <span className="price-number text-2xl">₩{krw(subtotal)}</span>
+          <span className={`${styles.monoNum} ${styles.numCol} price-number text-2xl`}>{formatKRW(subtotal)}</span>
         </div>
         <div className={styles.orderSummaryRow}>
           <span>수수료</span>
-          <span className="price-number">₩{krw(fee)}</span>
+          <span className={`${styles.monoNum} ${styles.numCol} price-number`}>{formatKRW(fee)}</span>
         </div>
         <div className={`${styles.orderSummaryRow} ${styles.orderTotal}`}>
           <span>총액</span>
-          <span className="price-number text-2xl">₩{krw(total)}</span>
+          <span className={`${styles.monoNum} ${styles.numCol} price-number text-2xl`}>{formatKRW(total)}</span>
         </div>
       </div>
 

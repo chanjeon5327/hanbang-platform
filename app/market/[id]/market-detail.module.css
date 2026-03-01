@@ -1,4 +1,26 @@
 /* ===== Gate-3: Toss + Upbit 하이브리드 (정돈/밀도) ===== */
+/* ===== 압도 4-AUTHORITY: 금융 표기 규칙 ===== */
+.numCol {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.monoNum {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.pos {
+  color: #ef4444;
+}
+
+.neg {
+  color: #3b82f6;
+}
+
+.zero {
+  color: #6b7280;
+}
 
 .page {
   min-height: 100vh;

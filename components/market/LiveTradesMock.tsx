@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { formatKrw } from '@/lib/utils/format';
+import { formatPriceKRW, formatQty } from '@/lib/format/number';
 import styles from '@/app/market/[id]/market-detail.module.css';
 
 type Trade = { id: string; price: number; qty: number; side: 'buy' | 'sell'; time: string };
@@ -52,12 +52,11 @@ export default function LiveTradesMock({ basePriceKrw }: Props) {
           className={`${styles.tickerRow} ${styles.tickerRowCompact} ${enteringIds.has(t.id) ? styles.tradeEnter : ''}`}
         >
           <span
-            className={`${styles.tickerPrice} price-number`}
-            style={{ color: t.side === 'buy' ? '#ef4444' : '#3b82f6' }}
+            className={`${styles.tickerPrice} ${styles.monoNum} ${styles.numCol} price-number ${t.side === 'buy' ? styles.pos : styles.neg}`}
           >
-            {formatKrw(t.price)}
+            {formatPriceKRW(t.price)}
           </span>
-          <span className={`${styles.tickerQty} price-number`}>{t.qty}주</span>
+          <span className={`${styles.tickerQty} ${styles.monoNum} ${styles.numCol} price-number`}>{formatQty(t.qty)}주</span>
           <span className={styles.tickerTime}>{t.time}</span>
         </div>
       ))}

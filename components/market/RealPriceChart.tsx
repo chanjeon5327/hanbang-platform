@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createChart, ColorType, LineSeries, CrosshairMode } from 'lightweight-charts';
+import { formatPriceKRW } from '@/lib/format/number';
 import styles from '@/app/market/[id]/market-detail.module.css';
 
 type LineDataPoint = { time: string; value: number };
@@ -197,6 +198,9 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
     const bb = calculateBB(data, 20);
 
     const chart = createChart(ref.current, {
+      localization: {
+        priceFormatter: (price: number) => formatPriceKRW(price),
+      },
       layout: {
         background: { type: ColorType.Solid, color: bgColor },
         textColor,
