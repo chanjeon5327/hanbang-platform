@@ -152,6 +152,7 @@ export default function ExchangeSection({
             }}
           >
             <TradingPanelV2
+              assetId={contentId}
               currentPriceKrw={
                 lastTradePrice != null ? Math.round(lastTradePrice * fxRate) : Math.round(sharePriceUsd * fxRate)
               }
