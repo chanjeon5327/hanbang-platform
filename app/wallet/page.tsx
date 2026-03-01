@@ -7,6 +7,9 @@ import { useWalletLedger, type LedgerEntry } from '@/hooks/useWalletLedger';
 import { formatKrw, formatRate } from '@/lib/utils/format';
 import Skeleton from '@/components/ui/Skeleton';
 import EmptyState from '@/components/ui/EmptyState';
+import { useToast } from '@/context/ToastContext';
+
+const LAST_SEEN_DIVIDEND_KEY = 'hb_last_seen_dividend_id';
 
 const ROYAL = { bg: 'var(--bg)', card: 'var(--card)', blue: 'var(--royal-blue)', text: 'var(--text)', secondary: 'var(--text-secondary)', border: 'var(--border)', positive: 'var(--emerald)', negative: 'var(--accent-loss)' };
 
@@ -17,6 +20,8 @@ type InvestSummary = {
   unrealizedPnl: number;
   unrealizedRate: number;
   holdingsValue: number;
+  latestDividendId?: string | null;
+  latestDividendAt?: string | null;
 };
 
 type WalletSummaryApi = {
@@ -29,6 +34,7 @@ type WalletSummaryApi = {
 };
 
 export default function Wallet() {
+  const { toast } = useToast();
   const { summary, loading, error, refetch } = useWalletLedger();
   const [investSummary, setInvestSummary] = useState<InvestSummary | null>(null);
   const [walletSummary, setWalletSummary] = useState<WalletSummaryApi | null>(null);
@@ -70,6 +76,22 @@ export default function Wallet() {
       window.removeEventListener('invest-success', onRefresh);
     };
   }, [fetchInvestSummary, fetchWalletSummary]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!investSummary || loading) return;
+    const latestId = investSummary.latestDividendId;
+    if (!latestId) return;
+    try {
+      const lastSeen = localStorage.getItem(LAST_SEEN_DIVIDEND_KEY);
+      if (lastSeen !== latestId) {
+        toast('배당금이 지갑에 반영되었습니다.');
+        localStorage.setItem(LAST_SEEN_DIVIDEND_KEY, latestId);
+      }
+    } catch {
+      toast('배당금이 지갑에 반영되었습니다.');
+    }
+  }, [investSummary, loading, toast]);
 
   const totalDisplay = investSummary?.totalValue ?? walletSummary?.totalAssets ?? summary.cashBalance;
   const displayReturn =

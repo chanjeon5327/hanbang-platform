@@ -2,8 +2,6 @@
 
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import BottomNavigation from '@/components/home/BottomNavigation';
-
 export default function SupportFaqPage() {
   return (
     <div className="pb-24" style={{ backgroundColor: 'var(--toss-bg)' }}>
@@ -16,7 +14,6 @@ export default function SupportFaqPage() {
       <div className="py-6">
         <p className="body-sm" style={{ color: 'var(--toss-text-secondary)' }}>자주 묻는 질문을 준비 중입니다.</p>
       </div>
-      <BottomNavigation />
     </div>
   );
 }

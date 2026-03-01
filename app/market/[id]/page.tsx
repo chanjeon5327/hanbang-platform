@@ -1,699 +1,374 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { Moon, Sun, Share2, Check } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
-import YouTubeEmbed from '@/components/common/YouTubeEmbed';
-import MarketStatsBar from '@/components/market/MarketStatsBar';
-import ExpectedReturnBox from '@/components/market/ExpectedReturnBox';
-import TrustBadges from '@/components/market/TrustBadges';
-import RecentInvestLog from '@/components/market/RecentInvestLog';
-import InvestConfirmModal from '@/components/market/InvestConfirmModal';
-import DividendInfo from '@/components/market/DividendInfo';
-import Toast from '@/components/ui/Toast';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useMarketItem } from '@/hooks/useMarketItem';
-import { useRecentInvestLog } from '@/hooks/useRecentInvestLog';
-import { useArtistContribution } from '@/hooks/useArtistContribution';
-import { useArtistProgress } from '@/hooks/useArtistProgress';
-import { formatKrw, formatRate } from '@/lib/utils/format';
-import DividendCard from '@/components/market/DividendCard';
-import ProductStorySection from '@/components/market/ProductStorySection';
-import ProductPitchDeckSection from '@/components/market/ProductPitchDeckSection';
-import DividendExplainSection from '@/components/market/DividendExplainSection';
-import DividendSimulatorV2 from '@/components/market/DividendSimulatorV2';
-import ExchangeSection from '@/components/market/ExchangeSection';
-import Skeleton from '@/components/ui/Skeleton';
-import { CardV5 } from '@/components/ui/CardV5';
-import MetricRow from '@/components/ui/MetricRow';
-import Divider from '@/components/ui/Divider';
-import TopAppBar from '@/components/ui/TopAppBar';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { formatKrw } from '@/lib/utils/format';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import RealPriceChart from '@/components/market/RealPriceChart';
+import LiveTradesMock from '@/components/market/LiveTradesMock';
+import TradingPanelV2 from '@/components/market/TradingPanelV2';
+import MockOrderBook from '@/components/market/MockOrderBook';
+import MarketHeroHybrid from '@/components/market/MarketHeroHybrid';
+import BuySellPulseBar from '@/components/market/BuySellPulseBar';
+import { LiquidityProvider } from '@/components/market/LiquidityContext';
+import { ArrowUp } from 'lucide-react';
+import styles from './market-detail.module.css';
 
-const YT_FALLBACK = 'HosW0gulISQ';
-const YT_START_SEC = 25;
-const DEFAULT_AMOUNT = 100_000;
-/** 스크롤 테스트용: true면 각 섹션에 1px debug outline 표시, 정렬 확인 후 false로 변경 */
-const DEBUG_SECTIONS = false;
+export default function MarketDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter();
+  const { user } = useAuth();
+  const { id } = React.use(params);
+  const { item, loading, error, refetch } = useMarketItem(id);
 
-type TabKey = 'info' | 'trade' | 'invest';
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [tab, setTab] = useState<'info' | 'order'>('info');
+  const [lastTradePrice, setLastTradePrice] = useState(0);
+  const [positionQty, setPositionQty] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [lastOrderLine, setLastOrderLine] = useState<string | null>(null);
 
-function calcProgress(total?: number | null, current?: number | null): number {
-  if (total != null && total > 0 && current != null) {
-    return Math.min(100, Math.round((current / total) * 100));
-  }
-  return 0;
-}
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(typeof window !== 'undefined' && window.scrollY > 300);
+    window.addEventListener('scroll', onScroll);
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
-function isDeadlineSoon(deadline: string | null | undefined): boolean {
-  if (!deadline) return false;
-  const d = new Date(deadline);
-  const now = new Date();
-  const diffDays = (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-  return diffDays >= 0 && diffDays <= 3;
-}
+  const fxRate = (item as any)?.fx_rate ?? 1350;
+  const sharePriceUsd = (item as any)?.share_price_usd ?? 10;
+  const sharePriceKrw = sharePriceUsd * fxRate;
 
-function DetailHeader({ onShare }: { onShare?: () => void }) {
-  const { theme, toggleTheme } = useTheme();
-  return (
-    <TopAppBar
-      title=""
-      backHref="/market"
-      backLabel="마켓으로"
-      right={
-        <div className="flex items-center gap-1">
-          {onShare && (
-            <button
-              type="button"
-              onClick={onShare}
-              className="p-2 rounded-lg transition hover:opacity-80"
-              style={{ color: 'var(--text-secondary)' }}
-              aria-label="공유"
-            >
-              <Share2 size={20} strokeWidth={2} />
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="p-2 rounded-lg transition hover:opacity-80"
-            style={{ color: 'var(--text-secondary)' }}
-            aria-label={theme === 'light' ? '다크 모드' : '라이트 모드'}
-          >
-            {theme === 'light' ? <Moon size={22} strokeWidth={2} /> : <Sun size={22} strokeWidth={2} />}
+  useEffect(() => {
+    if (!loading && sharePriceKrw > 0) setLastTradePrice(Math.round(sharePriceKrw));
+  }, [loading, sharePriceKrw]);
+
+  const fetchPositionQty = useCallback(() => {
+    if (!user || !id) return;
+    fetch(`/api/wallet/position?asset_id=${id}`, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => setPositionQty(Number(j?.quantity ?? 0)))
+      .catch(() => setPositionQty(0));
+  }, [user, id]);
+
+  useEffect(() => {
+    fetchPositionQty();
+  }, [fetchPositionQty]);
+
+  useEffect(() => {
+    const handler = (e: CustomEvent<{ assetId: string; payload?: { side: string; type: string; qty: number }; result?: { url: string; data: unknown } }>) => {
+      const { assetId: evAssetId, payload } = e.detail ?? {};
+      if (evAssetId !== id) return;
+      setRefreshKey((k) => k + 1);
+      if (payload) {
+        const sideKr = payload.side === 'buy' ? '매수' : '매도';
+        const typeKr = payload.type === 'market' ? '시장가' : '지정가';
+        setLastOrderLine(`방금 ${sideKr} ${payload.qty}주 ${typeKr} 주문 접수`);
+      }
+      fetchPositionQty();
+    };
+    window.addEventListener('hb:order-placed', handler as EventListener);
+    return () => window.removeEventListener('hb:order-placed', handler as EventListener);
+  }, [id, fetchPositionQty]);
+
+  if (error && !item) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.container}>
+          <p className={styles.errorText}>정보를 불러올 수 없습니다.</p>
+          <button onClick={() => refetch()} className={styles.retryBtn}>
+            다시 시도
           </button>
         </div>
-      }
-    />
-  );
-}
-
-function MediaHero({
-  ytId,
-  loading,
-  title,
-  platform,
-  category,
-  isPopular,
-  deadlineSoon,
-}: {
-  ytId: string;
-  loading: boolean;
-  title: string;
-  platform: string;
-  category: string;
-  isPopular: boolean;
-  deadlineSoon: boolean;
-}) {
-  return (
-    <section className="relative w-full overflow-hidden" style={{ aspectRatio: '16/9', backgroundColor: 'var(--border)' }}>
-      {loading ? (
-        <Skeleton className="w-full h-full" />
-      ) : (
-        <YouTubeEmbed
-          videoId={ytId}
-          className="!rounded-none h-full w-full"
-          title="작품 미리보기"
-          autoplay
-          mute
-          controls
-          loop={false}
-          start={YT_START_SEC}
-          fill
-        />
-      )}
-      <div className="absolute top-0 left-0 p-4 flex gap-2" style={{ padding: 'var(--space-md)' }}>
-        {isPopular && (
-          <span className="caption font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--emerald)', color: '#fff' }}>
-            인기
-          </span>
-        )}
-        {deadlineSoon && (
-          <span className="caption font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--accent-loss)', color: '#fff' }}>
-            마감임박
-          </span>
-        )}
-      </div>
-      <div
-        className="absolute bottom-0 left-0 right-0 p-4 flex flex-col justify-end"
-        style={{
-          padding: 'var(--space-md)',
-          background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
-        }}
-      >
-        <h2 className="h2 font-bold" style={{ color: '#fff' }}>{title}</h2>
-        <p className="caption mt-1" style={{ color: 'rgba(255,255,255,0.9)' }}>{platform} · {category}</p>
-      </div>
-    </section>
-  );
-}
-
-function SummaryFinancialCard({
-  currentPriceKrw,
-  expectedYield,
-  progress,
-  participants,
-  todayCount,
-  integrityOk,
-  settlementCount,
-  cumulativeDividend,
-  avgMonthlyDividend,
-  contentId,
-}: {
-  currentPriceKrw: number;
-  expectedYield: number;
-  progress: number;
-  participants: number;
-  todayCount: number;
-  integrityOk?: boolean;
-  settlementCount?: number;
-  cumulativeDividend?: number | null;
-  avgMonthlyDividend?: number | null;
-  contentId?: string;
-}) {
-  const extraMetrics = [
-    { label: '누적 배당', value: cumulativeDividend != null && cumulativeDividend > 0 ? formatKrw(cumulativeDividend) : '—' },
-    { label: '정산', value: settlementCount != null ? `${settlementCount}건` : '—' },
-    { label: '월배당', value: avgMonthlyDividend != null ? formatKrw(avgMonthlyDividend) : '—' },
-  ];
-  return (
-    <CardV5 style={{ marginTop: 'var(--space-lg)' }} className="card-inner-gap">
-      {/* ZONE A: 현재가 단독 영역 */}
-      <div style={{ paddingTop: 28, paddingBottom: 16 }}>
-        <div className="metric-xl metric-number font-extrabold" style={{ color: 'var(--text)', letterSpacing: '-0.02em', lineHeight: 1.03, marginTop: 4 }}>
-          {formatKrw(currentPriceKrw)}
-        </div>
-        <p className="caption" style={{ color: 'var(--text-secondary)' }}>현재가</p>
-      </div>
-      <Divider />
-      {/* ZONE B: 예상수익률 + 모집률 */}
-      <div style={{ opacity: 0.7 }}>
-        <div className="body font-bold metric-number" style={{ color: 'var(--emerald)', fontSize: '0.85em' }}>
-          {formatRate(expectedYield)}
-        </div>
-        <p className="caption" style={{ color: 'var(--text-secondary)' }}>예상 연수익률</p>
-      </div>
-      <MetricRow items={[{ label: '모집률', value: `${progress.toFixed(1)}%` }]} columns={2} dense compact valueClassName="caption" />
-      <div className="w-full rounded-full overflow-hidden" style={{ height: 4, backgroundColor: 'var(--border)' }}>
-        <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, progress)}%`, backgroundColor: 'var(--royal-blue)' }} />
-      </div>
-      {/* ZONE C: 참여/오늘/정산 */}
-      <p className="caption metric-number" style={{ color: 'var(--text-muted)' }}>
-        {participants}명 · 오늘 {todayCount}건
-      </p>
-      <MetricRow items={extraMetrics} columns={3} dense compact />
-      <Divider />
-      <div className="flex flex-wrap items-center gap-2 pt-2">
-        <span className="inline-flex items-center gap-1 caption px-2 py-0.5 rounded-full border" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border)', backgroundColor: 'var(--bg-secondary)' }}>
-          <Check size={10} style={{ color: 'var(--emerald)' }} />
-          원장 기록 기반
-        </span>
-        <span className="inline-flex items-center gap-1 caption px-2 py-0.5 rounded-full border" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border)', backgroundColor: 'var(--bg-secondary)' }}>
-          <span className="w-1 h-1 rounded-full bg-[var(--emerald)] animate-pulse" style={{ animationDuration: '1.5s' }} />
-          실시간 체결 데이터
-        </span>
-        <Link
-          href="/trust"
-          className="caption font-medium underline"
-          style={{ color: 'var(--royal-blue)' }}
-        >
-          정산 이력 공개
-        </Link>
-      </div>
-    </CardV5>
-  );
-}
-
-function TabNavigation({
-  activeTab,
-  onTabChange,
-  isTradable,
-}: {
-  activeTab: TabKey;
-  onTabChange: (t: TabKey) => void;
-  isTradable: boolean;
-}) {
-  const tabs: { key: TabKey; label: string }[] = [
-    { key: 'info', label: '정보' },
-    { key: 'trade', label: '거래' },
-    { key: 'invest', label: '투자' },
-  ];
-  return (
-    <nav
-      className="sticky top-14 z-40 flex border-b"
-      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-    >
-      {tabs.map((t) => (
-        <button
-          key={t.key}
-          type="button"
-          onClick={() => onTabChange(t.key)}
-          disabled={t.key === 'trade' && !isTradable}
-          className="flex-1 py-3 body-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{
-            color: activeTab === t.key ? 'var(--royal-blue)' : 'var(--text-secondary)',
-            borderBottom: activeTab === t.key ? '2px solid var(--royal-blue)' : '2px solid transparent',
-          }}
-        >
-          {t.label}
-        </button>
-      ))}
-    </nav>
-  );
-}
-
-export default function MarketDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = React.use(params);
-  const [activeTab, setActiveTab] = useState<TabKey>('info');
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [investLoading, setInvestLoading] = useState(false);
-  const [investAmount, setInvestAmount] = useState(DEFAULT_AMOUNT);
-  const [toastVisible, setToastVisible] = useState(false);
-  const [toastMessage, setToastMessage] = useState('투자 완료되었습니다.');
-  const [todayCount, setTodayCount] = useState<number>(0);
-
-  const { user } = useAuth();
-  const { item, loading: itemLoading, error: itemError, refetch: refetchItem } = useMarketItem(id);
-  useEffect(() => {
-    if (item) console.log(item);
-  }, [item]);
-  const { items: investLogs, refetch: refetchInvestLogs } = useRecentInvestLog(id);
-  const { refetch: refetchContributions } = useArtistContribution(false);
-  const { refetch: refetchProgress } = useArtistProgress(false);
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    if (searchParams.get('invest') === 'done') {
-      refetchItem();
-      refetchInvestLogs();
-      refetchContributions();
-      refetchProgress();
-      window.dispatchEvent(new Event('invest-success'));
-    }
-  }, [searchParams, refetchItem, refetchInvestLogs, refetchContributions, refetchProgress]);
-
-  useEffect(() => {
-    fetch('/api/metrics/live', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((j) => setTodayCount(j.today_count ?? 0))
-      .catch(() => {});
-  }, []);
-
-  const hasSession = !!user;
-  const ytId = item?.youtube_video_id ?? YT_FALLBACK;
-  const title = item?.title ?? '여행가 제이';
-  const creator = item?.creator_name ?? '크리에이터';
-  const category = item?.category ?? '여행';
-  const platform = item?.platform ?? '유튜브';
-
-  const productType = item?.product_type ?? 'DIVIDEND_ONLY';
-  const isTradable = productType === 'DIVIDEND_TRADABLE';
-  const fxRate = item?.fx_rate ?? 1350;
-
-  const targetAmount = item?.total_raise ?? 0;
-  const currentAmount = item?.current_raise ?? 0;
-  const progress = useMemo(() => calcProgress(targetAmount, currentAmount), [targetAmount, currentAmount]);
-  const remainingAmount = Math.max(0, targetAmount - currentAmount);
-  const participants = item?.participants ?? Math.max(1, Math.floor(currentAmount / 300_000));
-  const isPopular = (item?.popular_cnt ?? 0) >= 20;
-  const deadlineSoon = isDeadlineSoon(item?.deadline ?? null);
-  const yieldRate = item?.yield_rate ?? item?.dividend_monthly_rate ?? 8.4;
-  const dday = useMemo(() => {
-    const ed = item?.event_date;
-    if (!ed) return null;
-    const d = new Date(ed);
-    const now = new Date();
-    const diff = Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return diff >= 0 ? diff : null;
-  }, [item?.event_date]);
-
-  const sharePriceUsd = item?.share_price_usd ?? null;
-  const totalRaiseUsd = item?.total_raise_usd ?? null;
-  const currentRaiseUsd = item?.current_raise_usd ?? null;
-  const hasUsdData = sharePriceUsd != null || (totalRaiseUsd != null && currentRaiseUsd != null);
-
-  const expectedYield = item?.expectedAnnualYield ?? yieldRate;
-  const sharePriceKrw = (sharePriceUsd ?? 10) * fxRate;
-  const dividendPerShare = item?.dividendPerShare ?? 360;
-
-  const handleShare = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(typeof window !== 'undefined' ? window.location.href : '');
-      setToastMessage('주소가 복사되었습니다.');
-      setToastVisible(true);
-    } catch {
-      setToastMessage('복사에 실패했습니다.');
-      setToastVisible(true);
-    }
-  }, []);
-
-  const handleInvestConfirm = async () => {
-    if (!hasSession) return;
-    setInvestLoading(true);
-    const idempotencyKey = crypto.randomUUID();
-    try {
-      const res = await fetch('/api/orders/place', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          product_id: id,
-          content_id: id,
-          amount: investAmount,
-          idempotency_key: idempotencyKey,
-        }),
-      });
-      const json = await res.json();
-      if (json?.success) {
-        setShowConfirm(false);
-        setToastMessage('주문이 체결되었습니다.');
-        setToastVisible(true);
-        refetchItem();
-        refetchInvestLogs();
-        refetchContributions();
-        window.dispatchEvent(new Event('invest-success'));
-        window.dispatchEvent(new Event('wallet-refresh'));
-      } else {
-        setToastMessage(
-          json?.error === 'INSUFFICIENT_FUNDS'
-            ? '잔고가 부족합니다.'
-            : json?.code === 'LOCK_BUSY'
-              ? '잠시 후 다시 시도해 주세요.'
-              : '투자에 실패했습니다.'
-        );
-        setToastVisible(true);
-      }
-    } catch {
-      setToastMessage('투자에 실패했습니다.');
-      setToastVisible(true);
-    } finally {
-      setInvestLoading(false);
-    }
-  };
-
-  const ctaSubtext =
-    (item?.last_1h_count ?? 0) >= 5
-      ? '최근 1시간 집중 참여 중'
-      : dday != null && dday <= 3
-        ? '공연 전 마지막 파트너십 기회'
-        : isTradable
-          ? '투자 후 거래 가능'
-          : '지금 참여하면 오늘 집계에 반영됩니다';
-
-  const ctaButtonText =
-    dday != null && dday <= 3
-      ? `D-${dday} 공연 전 매수하기`
-      : isTradable
-        ? `${formatKrw(investAmount)} 매수`
-        : `${formatKrw(investAmount)} 매수하기`;
-
-  if (!itemLoading && itemError && !item) {
-    return (
-      <div className="flex flex-col items-center justify-center p-6" style={{ backgroundColor: 'var(--card)' }}>
-        <DetailHeader onShare={handleShare} />
-        <p className="body-sm mb-4" style={{ color: 'var(--text-secondary)' }}>정보를 불러올 수 없습니다.</p>
-        <button
-          onClick={refetchItem}
-          className="px-4 py-2 rounded-lg body-sm font-semibold"
-          style={{ backgroundColor: 'var(--royal-blue)', color: '#fff' }}
-        >
-          다시 시도
-        </button>
       </div>
     );
   }
 
-  const sectionGap = { gap: 'var(--space-lg)' };
+  const priceKrw = lastTradePrice || sharePriceKrw;
 
   return (
-    <div style={{ backgroundColor: 'var(--bg)' }}>
-      <DetailHeader onShare={handleShare} />
+    <div className={styles.page}>
+      <div className={styles.container}>
+        {/* 1) 상단 OTT+금융 하이브리드 히어로 */}
+        {item && <MarketHeroHybrid item={item as Record<string, unknown>} />}
 
-      <div
-        style={{
-          paddingLeft: 'var(--space-lg)',
-          paddingRight: 'var(--space-lg)',
-        }}
-      >
-        <MediaHero
-          ytId={ytId}
-          loading={itemLoading}
-          title={title}
-          platform={platform}
-          category={category}
-          isPopular={isPopular}
-          deadlineSoon={deadlineSoon}
-        />
-      </div>
-
-      <div
-        className="flex flex-col hb-stagger"
-        style={{
-          paddingLeft: 'var(--space-lg)',
-          paddingRight: 'var(--space-lg)',
-          gap: 'var(--space-md)',
-        }}
-      >
-        <SummaryFinancialCard
-          currentPriceKrw={sharePriceKrw}
-          expectedYield={expectedYield}
-          progress={progress}
-          participants={participants}
-          todayCount={todayCount}
-          integrityOk={item?.integrity_ok ?? false}
-          settlementCount={item?.settlement_count}
-          cumulativeDividend={null}
-          avgMonthlyDividend={dividendPerShare}
-          contentId={id}
-        />
-        <CardV5 className="card-inner-gap">
-          <Divider />
-          <p className="caption font-medium" style={{ color: 'var(--text-secondary)' }}>Performance Snapshot</p>
-          <MetricRow
-            items={[
-              { label: '최근 30일 수익률', value: '—' },
-              { label: '최근 90일 수익률', value: '—' },
-              { label: '변동성 지수', value: '—' },
-            ]}
-            columns={3}
-            dense
-          />
-          <Divider />
-        </CardV5>
-      </div>
-
-      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} isTradable={isTradable} />
-
-      <div
-        className={
-          activeTab === 'trade' && isTradable ? 'pb-80' :
-          activeTab === 'invest' ? 'pb-32' : 'pb-24'
-        }
-      >
-        {activeTab === 'info' && (
-          <div
-            className="flex flex-col hb-stagger"
-            style={{
-              padding: 'var(--space-lg)',
-              ...sectionGap,
-            }}
+        {/* 2) 탭 바: 정보 | 거래 */}
+        <div className={styles.tabBar}>
+          <button
+            type="button"
+            className={tab === 'info' ? styles.tabActive : styles.tabInactive}
+            onClick={() => setTab('info')}
           >
-            <CardV5 className="card-inner-gap">
-              <p className="caption font-medium" style={{ color: 'var(--text-secondary)' }}>Risk Snapshot</p>
-              <MetricRow
-                items={[
-                  { label: '최대 낙폭 (MDD)', value: '—' },
-                  { label: '평균 회수 기간', value: '—' },
-                  { label: '누적 배당 지급률', value: '—' },
-                ]}
-                columns={3}
-                dense
-                compact
-                valueClassName="caption metric-number"
-              />
-            </CardV5>
-            <CardV5 className="card-inner-gap">
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                {item?.integrity_ok && <span className="caption px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--emerald)', color: '#fff' }}>원장</span>}
-                <span className="caption px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--royal-blue)', color: '#fff' }}>실시간</span>
-                {(item?.settlement_count ?? 0) > 0 && <span className="caption px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--emerald)', color: '#fff' }}>정산 {item?.settlement_count}건</span>}
-              </div>
-              <MetricRow
-                items={[
-                  { label: '현재가', value: formatKrw(sharePriceKrw) },
-                  { label: '예상수익률', value: formatRate(expectedYield), tone: 'positive' },
-                  { label: '참여자', value: `${participants}명` },
-                ]}
-                columns={3}
-                dense
-              />
-            </CardV5>
-            <ProductStorySection
-              creatorStory={item?.creator_story}
-              growthReason1={item?.growth_reason_1}
-              growthReason2={item?.growth_reason_2}
-              growthReason3={item?.growth_reason_3}
-            />
-            <DividendExplainSection creatorStory={item?.creator_story ?? undefined} />
-            <ProductPitchDeckSection
-              creatorStory={item?.creator_story ?? undefined}
-              growthReason1={item?.growth_reason_1 ?? undefined}
-              growthReason2={item?.growth_reason_2 ?? undefined}
-              growthReason3={item?.growth_reason_3 ?? undefined}
-            />
-            {!hasUsdData && (
-              <MarketStatsBar
-                progress={progress}
-                targetAmount={targetAmount}
-                currentAmount={currentAmount}
-                participants={participants}
-                remainingAmount={remainingAmount}
-                isLive
-                isDeadlineSoon={deadlineSoon}
-              />
-            )}
-            <DividendInfo
-              payoutDay={item?.payout_day ?? 3}
-              dividendMonthlyRate={item?.dividend_monthly_rate}
-              dividendMonthlyUsdPerShare={item?.dividend_monthly_usd_per_share}
-              sharePriceUsd={sharePriceUsd}
-              fxRate={fxRate}
-            />
-            {((item?.last_1h_count ?? 0) > 0 || (item?.last_24h_amount ?? 0) > 0) && (
-              <div
-                className="w-full py-2 px-4 flex items-center justify-center gap-4 caption font-medium rounded-[20px]"
-                style={{ backgroundColor: 'var(--midnight-navy)', color: '#C5A059', borderRadius: 'var(--radius-lg)' }}
-              >
-                <span className="inline-flex items-center gap-1.5 tabular-nums font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#C5A059] animate-pulse" />
-                  1h {(item?.last_1h_count ?? 0)}명
-                </span>
-                <span className="opacity-70">|</span>
-                <span className="tabular-nums font-bold">24h {formatKrw(item?.last_24h_amount ?? 0)}</span>
-              </div>
-            )}
-            <ExpectedReturnBox yieldRate={yieldRate} defaultAmount={DEFAULT_AMOUNT} onAmountChange={setInvestAmount} />
-            <div>
-              <p className="caption mb-2" style={{ color: 'var(--text-secondary)' }}>최근 체결 · 정산/원장 기반</p>
-              <TrustBadges />
-            </div>
-            <RecentInvestLog items={investLogs} />
-          </div>
-        )}
-
-        {activeTab === 'trade' && (
-          <div
-            style={{
-              padding: 'var(--space-lg)',
-            }}
+            정보
+          </button>
+          <button
+            type="button"
+            className={tab === 'order' ? styles.tabActive : styles.tabInactive}
+            onClick={() => setTab('order')}
           >
-            {isTradable ? (
-              <ExchangeSection
-                  contentId={id}
-                  sharePriceUsd={sharePriceUsd ?? sharePriceKrw / fxRate}
-                  fxRate={fxRate}
-                  isTradable={isTradable}
-                  isLoggedIn={hasSession}
-                  userId={user?.id}
-                  totalSupplyShares={
-                    (sharePriceUsd ?? sharePriceKrw / fxRate) > 0 && item?.total_raise_usd != null
-                      ? item.total_raise_usd / (sharePriceUsd ?? sharePriceKrw / fxRate)
-                      : null
-                  }
-                  totalRaiseUsd={item?.total_raise_usd}
-                  currentRaiseUsd={item?.current_raise_usd}
-                  volume24hKrw={item?.last_24h_amount ?? null}
-                  tradeCount24h={item?.last_24h_count ?? null}
-                  onToast={(msg) => {
-                    setToastMessage(msg);
-                    setToastVisible(true);
-                  }}
-                />
-            ) : (
-              <CardV5 className="text-center">
-                <p className="body" style={{ color: 'var(--text-secondary)' }}>
-                  현재는 거래가 준비 중이에요. 모집 완료 후 거래가 가능합니다.
-                </p>
-              </CardV5>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'invest' && (
-          <div
-            className="flex flex-col hb-stagger"
-            style={{
-              padding: 'var(--space-lg)',
-              ...sectionGap,
-            }}
-          >
-            <DividendCard
-              monthlyRevenue={item?.monthlyRevenue ?? 120_000_000}
-              dividendRatio={item?.dividendRatio ?? 0.3}
-              dividendPerShare={item?.dividendPerShare ?? 360}
-              expectedAnnualYield={item?.expectedAnnualYield ?? expectedYield}
-            />
-            <DividendSimulatorV2
-              sharePriceKrw={sharePriceKrw}
-              dividendPerShare={dividendPerShare}
-              expectedAnnualYield={expectedYield}
-              monthlyRevenue={item?.monthlyRevenue ?? 120_000_000}
-              dividendRatio={item?.dividendRatio ?? 0.3}
-              totalShares={item?.total_shares ?? 100_000}
-              loading={itemLoading}
-              error={itemError ? '정보를 불러올 수 없습니다' : null}
-              onInvestClick={(amt) => {
-                setInvestAmount(amt);
-                hasSession ? setShowConfirm(true) : (window.location.href = '/login');
-              }}
-            />
-          </div>
-        )}
-      </div>
-
-      {activeTab === 'invest' && (
-        <div
-          className="fixed bottom-0 left-0 right-0 z-50 border-t"
-          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-        >
-          <div className="py-3" style={{ paddingLeft: 'var(--space-lg)', paddingRight: 'var(--space-lg)' }}>
-            <p className="caption text-center mb-1 metric-number" style={{ color: 'var(--text-secondary)' }}>
-              {participants}명 · 오늘 {todayCount}건
-            </p>
-            <p className="caption text-center mb-1" style={{ color: 'var(--text-muted)' }}>
-              투자 후 매월 배당 · 원장 자동 기록
-            </p>
-            <p className="caption text-center mb-2" style={{ color: 'var(--text-secondary)' }}>{ctaSubtext}</p>
-            <button
-              type="button"
-              onClick={() => (hasSession ? setShowConfirm(true) : (window.location.href = '/login'))}
-              className={`w-full rounded-2xl py-4 body font-bold transition-opacity duration-200 hover:opacity-95 active:opacity-90 tabular-nums ${dday != null && dday <= 3 ? 'animate-pulse' : ''}`}
-              style={{
-                background: dday != null && dday <= 3 ? 'linear-gradient(135deg, var(--accent-loss), #7f1d1d)' : 'var(--royal-blue)',
-                color: '#fff',
-              }}
-            >
-              {ctaButtonText}
-            </button>
-          </div>
+            거래
+          </button>
         </div>
-      )}
 
-      <Toast message={toastMessage} visible={toastVisible} onHide={() => setToastVisible(false)} />
+        {/* 3) 탭 콘텐츠 */}
+        {tab === 'info' && (
+          <section className={styles.tabContent}>
+            {/* A) 내 예상 수익 (보유 시) */}
+            {positionQty > 0 && (
+              <div className={styles.infoCard} style={{ borderLeft: '4px solid var(--emerald)' }}>
+                <div className={styles.infoTitle}>내 예상 수익</div>
+                <div className={styles.kvRow}>
+                  <span className={styles.kvLabel}>보유 수량</span>
+                  <span className={styles.kvValue}>{positionQty}주</span>
+                </div>
+                <div className={styles.kvRow}>
+                  <span className={styles.kvLabel}>월 예상 배당 (최근 기준)</span>
+                  <span className={styles.kvValue} style={{ color: 'var(--emerald)', fontWeight: 700 }}>
+                    <AnimatedNumber
+                      value={
+                        positionQty *
+                        (((item as any)?.dividend_monthly_usd_per_share ?? (item as any)?.dividendPerShare ?? 0) * fxRate)
+                      }
+                      duration={600}
+                      format="krw"
+                    />
+                  </span>
+                </div>
+              </div>
+            )}
 
-      {showConfirm && (
-        <InvestConfirmModal
-          amount={investAmount}
-          productTitle={title}
-          onConfirm={handleInvestConfirm}
-          onCancel={() => setShowConfirm(false)}
-          loading={investLoading}
-        />
-      )}
+            {/* B) 투자 개요 */}
+            <div className={styles.infoCard}>
+              <div className={styles.infoTitle}>투자 개요</div>
+              <div className={styles.kvRow}>
+                <span className={styles.kvLabel}>총 투자 모집액</span>
+                <span className={styles.kvValue}>
+                  {loading
+                    ? '—'
+                    : formatKrw(
+                        (() => {
+                          const it = item as Record<string, unknown> | null;
+                          const v =
+                            (it as any)?.total_raise_krw ??
+                            (it as any)?.raise_krw ??
+                            (it as any)?.total_krw ??
+                            (typeof (it as any)?.total_raise === 'number' ? (it as any).total_raise : null) ??
+                            (typeof (it as any)?.total_raise_usd === 'number' ? (it as any).total_raise_usd * fxRate : null) ??
+                            1_000_000_000;
+                          return Number(v);
+                        })()
+                      )}
+                </span>
+              </div>
+              <div className={styles.kvRow}>
+                <span className={styles.kvLabel}>주당 가격</span>
+                <span className={styles.kvValue}>{loading ? '—' : formatKrw(sharePriceKrw)}</span>
+              </div>
+              <div className={styles.kvRow}>
+                <span className={styles.kvLabel}>카테고리</span>
+                <span className={styles.kvValue}>
+                  {(item as any)?.category_name ?? (item as any)?.category ?? (item as any)?.tags?.[0] ?? '웹툰'}
+                </span>
+              </div>
+              <div className={styles.kvRow}>
+                <span className={styles.kvLabel}>예상 수익률</span>
+                <span className={styles.kvValue}>
+                  {loading
+                    ? '—'
+                    : `${(item as any)?.expected_yield_rate ?? (item as any)?.yield_rate ?? (item as any)?.expectedAnnualYield ?? 15.5}%`}
+                </span>
+              </div>
+            </div>
+
+            {/* C) 수익 배분율 */}
+            <div className={styles.infoCard}>
+              <div className={styles.infoTitle}>수익 배분율</div>
+              <div className={styles.bars}>
+                <div className={styles.barRow}>
+                  <span className={styles.barLabel}>창작자</span>
+                  <div className={styles.barTrack}>
+                    <div className={styles.barFill} style={{ width: '50%', background: '#6D28D9' }} />
+                  </div>
+                  <span className={styles.barPct}>50%</span>
+                </div>
+                <div className={styles.barRow}>
+                  <span className={styles.barLabel}>투자자</span>
+                  <div className={styles.barTrack}>
+                    <div className={styles.barFill} style={{ width: '47%', background: '#2563EB' }} />
+                  </div>
+                  <span className={styles.barPct}>47%</span>
+                </div>
+                <div className={styles.barRow}>
+                  <span className={styles.barLabel}>수수료</span>
+                  <div className={styles.barTrack}>
+                    <div className={styles.barFill} style={{ width: '3%', background: '#6B7280' }} />
+                  </div>
+                  <span className={styles.barPct}>3%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* D) 투자 계획 */}
+            <div className={styles.infoCard}>
+              <div className={styles.infoTitle}>투자 계획</div>
+              <div className={styles.planBody}>
+                {(item as any)?.plan ??
+                  (item as any)?.description ??
+                  (item as any)?.summary ??
+                  '글로벌 3억 뷰 달성 예정! 대작 웹툰의 주인이 되세요.'}
+              </div>
+              <a href="/dummy-investment-plan.pdf" target="_blank" rel="noopener noreferrer" className={styles.planPdfBtn}>
+                PDF 다운로드
+              </a>
+            </div>
+
+            {/* E) 작가의 기획 PDF */}
+            <section className={styles.creatorPlan}>
+              <h3>작가의 기획</h3>
+              {(() => {
+                const pdfUrl = (item as any)?.plan_pdf_url ?? (item as any)?.creator_plan_pdf;
+                if (typeof pdfUrl === 'string' && pdfUrl) {
+                  return (
+                    <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className={styles.downloadBtn}>
+                      PDF 다운로드
+                    </a>
+                  );
+                }
+                return (
+                  <span className={styles.planPdfBtn} style={{ opacity: 0.7, cursor: 'default', pointerEvents: 'none' }}>
+                    자료 준비중
+                  </span>
+                );
+              })()}
+            </section>
+
+            {/* F) 작가의 전략 요약 (있을 때만) */}
+            {(() => {
+              const it = item as any;
+              const summary = typeof it?.strategy_summary === 'string' ? it.strategy_summary : null;
+              const targetMarket = typeof it?.target_market === 'string' ? it.target_market : null;
+              const revenueModel = typeof it?.revenue_model === 'string' ? it.revenue_model : null;
+              const coreTeam = typeof it?.core_team === 'string' ? it.core_team : null;
+              const equipmentStack = typeof it?.equipment_stack === 'string' ? it.equipment_stack : null;
+              const distributionPlan = typeof it?.distribution_plan === 'string' ? it.distribution_plan : null;
+              const hasAny = summary || targetMarket || revenueModel || coreTeam || equipmentStack || distributionPlan;
+              if (!hasAny) return null;
+
+              return (
+                <div className={styles.infoCard} style={{ marginTop: 14 }}>
+                  <div className={styles.infoTitle}>작가의 전략</div>
+                  {summary && <p className={styles.strategySummary}>{summary}</p>}
+                  <div>
+                    {targetMarket && (
+                      <div className={styles.kvRow}>
+                        <span className={styles.kvLabel}>타겟 시장</span>
+                        <span className={styles.kvValue}>{targetMarket}</span>
+                      </div>
+                    )}
+                    {revenueModel && (
+                      <div className={styles.kvRow}>
+                        <span className={styles.kvLabel}>수익 모델</span>
+                        <span className={styles.kvValue}>{revenueModel}</span>
+                      </div>
+                    )}
+                    {coreTeam && (
+                      <div className={styles.kvRow}>
+                        <span className={styles.kvLabel}>핵심 팀</span>
+                        <span className={styles.kvValue}>{coreTeam}</span>
+                      </div>
+                    )}
+                    {equipmentStack && (
+                      <div className={styles.kvRow}>
+                        <span className={styles.kvLabel}>장비/인프라</span>
+                        <span className={styles.kvValue}>{equipmentStack}</span>
+                      </div>
+                    )}
+                    {distributionPlan && (
+                      <div className={styles.kvRow}>
+                        <span className={styles.kvLabel}>유통 전략</span>
+                        <span className={styles.kvValue}>{distributionPlan}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </section>
+        )}
+
+        {/* ✅ 거래 탭: 순서 "직접 보장" */}
+        {tab === 'order' && id && (
+          <section className={styles.tabContent}>
+            <LiquidityProvider>
+              <div className={styles.terminalSection}>
+                <div className={styles.terminalGrid}>
+                  {/* 좌: 차트 위 / 체결 아래 */}
+                  <div className={styles.terminalLeft}>
+                    <div className={styles.panelCard}>
+                      <h3 className={styles.terminalTitle}>가격 차트</h3>
+                      <div className={styles.chartWrap}>
+                        <RealPriceChart key={`chart-${refreshKey}`} priceKrw={priceKrw} loading={loading} height={280} theme="light" />
+                      </div>
+                      <BuySellPulseBar useMock />
+                    </div>
+
+                    <div className={styles.panelCard}>
+                      <h3 className={styles.terminalTitle}>실시간 체결</h3>
+                      <LiveTradesMock key={`trades-${refreshKey}`} basePriceKrw={sharePriceKrw} />
+                    </div>
+                  </div>
+
+                  {/* 우: 주문 위 / 호가 아래 */}
+                  <div className={styles.terminalRight}>
+                    <div className={styles.panelCard}>
+                      <h3 className={styles.terminalTitle}>주문</h3>
+                      {lastOrderLine && (
+                        <div className="mb-2 text-center text-xs text-emerald-600" aria-live="polite">
+                          {lastOrderLine}
+                        </div>
+                      )}
+                      <TradingPanelV2 assetId={id} currentPriceKrw={priceKrw} />
+                    </div>
+
+                    <div className={styles.panelCard}>
+                      <h3 className={styles.terminalTitle}>호가창</h3>
+                      <MockOrderBook
+                        key={`orderbook-${refreshKey}`}
+                        basePriceKrw={priceKrw}
+                        loading={loading}
+                        theme="light"
+                        onPriceChange={(p) => setLastTradePrice(p)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 모바일 하단: 목록 / 지갑 */}
+                <div className={styles.terminalMobileBar}>
+                  <button type="button" className={styles.mobileBarBtn} onClick={() => router.push('/market')}>
+                    목록
+                  </button>
+                  <button type="button" className={styles.mobileBarBtn} onClick={() => router.push('/wallet')}>
+                    지갑
+                  </button>
+                </div>
+              </div>
+            </LiquidityProvider>
+          </section>
+        )}
+
+        {showScrollTop && (
+          <button
+            type="button"
+            className={styles.scrollTopBtn}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            aria-label="맨 위로"
+          >
+            <ArrowUp size={22} strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
     </div>
   );
 }

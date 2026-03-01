@@ -3,8 +3,9 @@
 import { AdminRoute } from '@/components/AdminRoute';
 import { AuthProvider } from '@/context/AuthContext';
 import { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import LogoutButton from '@/components/auth/LogoutButton';
 import {
   LayoutDashboard,
   Users,
@@ -48,7 +49,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
-  const { adminUser, logout, hasPermission } = useAuth();
+  const { adminUser, hasPermission } = useAuth();
 
   if (
     pathname === '/admin/login' ||
@@ -169,8 +170,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
 
         <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)' }}>
-          <button
-            onClick={logout}
+          <LogoutButton
             style={{
               width: '100%',
               padding: '12px',
@@ -183,10 +183,11 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
               cursor: 'pointer',
               fontSize: '14px',
             }}
+            redirectTo="/admin/login"
           >
             <LogOut size={20} />
-            {sidebarOpen && <span>????</span>}
-          </button>
+            {sidebarOpen && <span>로그아웃</span>}
+          </LogoutButton>
         </div>
       </div>
 

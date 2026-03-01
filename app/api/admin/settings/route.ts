@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/server";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 
 /**
@@ -9,7 +9,7 @@ import { requireAdmin } from "@/lib/admin/requireAdmin";
 export async function GET() {
   try {
     await requireAdmin();
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
     const { data, error } = await admin.from("settings").select("key, value, updated_at");
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -36,7 +36,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "key and value required" }, { status: 400 });
     }
 
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
     const { error } = await admin
       .from("settings")
       .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });

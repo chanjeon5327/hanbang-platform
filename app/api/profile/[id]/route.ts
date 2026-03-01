@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/server";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 
 /** 공개 프로필 조회 - nickname, avatar_url 등 최소 필드만 */
 export async function GET(
@@ -12,7 +12,7 @@ export async function GET(
       return NextResponse.json({ error: "id required" }, { status: 400 });
     }
 
-    const supabase = createAdminClient();
+    const supabase = getAdminSupabase();
     const { data, error } = await supabase
       .from("profiles")
       .select("id, nickname, avatar_url, display_name, role")

@@ -2,162 +2,118 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Check, Upload, Shield } from 'lucide-react';
+import KycStatusCard, { type KycStatus } from '@/components/kyc/KycStatusCard';
+import KycForm from '@/components/kyc/KycForm';
 
-const STEPS = ['????', '??? ??', '?? ??'];
+function parseKycStatus(data: Record<string, unknown> | null): { status: KycStatus; reason?: string } {
+  if (!data) return { status: 'NOT_STARTED' };
+
+  const verification = data.verification as Record<string, unknown> | undefined;
+  const raw = String(data.kyc_status ?? data.user_status ?? verification?.status ?? '').toLowerCase();
+  const verificationStatus = String(verification?.status ?? '').toLowerCase();
+  const userStatus = String(data.user_status ?? '').toUpperCase();
+  const reason = verification?.rejection_reason as string | undefined;
+
+  if (
+    raw.includes('approved') ||
+    verificationStatus.includes('approved') ||
+    raw === 'approved'
+  ) {
+    return { status: 'APPROVED' };
+  }
+  if (
+    raw.includes('reject') ||
+    raw.includes('denied') ||
+    verificationStatus.includes('reject') ||
+    verificationStatus.includes('denied')
+  ) {
+    return { status: 'REJECTED', reason };
+  }
+  if (
+    raw.includes('pending') ||
+    raw.includes('submitted') ||
+    verificationStatus.includes('submitted') ||
+    verificationStatus.includes('in_review') ||
+    userStatus === 'KYC_SUBMITTED'
+  ) {
+    return { status: 'PENDING', reason };
+  }
+
+  return { status: 'NOT_STARTED' };
+}
+
+const STEPS = [
+  '1) 본인 정보 입력',
+  '2) 제출',
+  '3) 심사 완료',
+];
 
 export default function KycPage() {
-  const [step, setStep] = useState(0);
-  const [realName, setRealName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [idCardFrontUrl, setIdCardFrontUrl] = useState('');
-  const [idCardBackUrl, setIdCardBackUrl] = useState('');
-  const [userStatus, setUserStatus] = useState<string | null>(null);
-  const [kycStatus, setKycStatus] = useState<string | null>(null);
-  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [status, setStatus] = useState<KycStatus>('NOT_STARTED');
+  const [reason, setReason] = useState<string | undefined>();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/kyc/status', { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
-        if (d?.user_status) setUserStatus(d.user_status);
-        if (d?.kyc_status) setKycStatus(d.kyc_status);
-        if (d?.verification?.rejection_reason) setRejectionReason(d.verification.rejection_reason);
+        const parsed = parseKycStatus(d);
+        setStatus(parsed.status);
+        setReason(parsed.reason);
       })
-      .catch(() => {});
+      .catch(() => setStatus('NOT_STARTED'))
+      .finally(() => setLoading(false));
   }, []);
 
-  const isSubmitted = userStatus === 'KYC_SUBMITTED';
-  const isApproved = kycStatus === 'APPROVED';
+  const handleSubmitted = () => {
+    setStatus('PENDING');
+  };
 
   return (
-    <div style={{ backgroundColor: 'var(--bg)' }}>
-      <header className="sticky top-0 z-50 border-b px-4 py-3" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+    <div className="pb-24" style={{ backgroundColor: 'var(--bg)' }}>
+      <header
+        className="sticky top-0 z-50 border-b px-4 py-3"
+        style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+      >
         <div className="flex items-center justify-between">
           <Link href="/mypage" className="body-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-            ? ??
+            ‹ 마이페이지
           </Link>
-          <h1 className="body-lg font-bold" style={{ color: 'var(--text)' }}>??? ??(KYC)</h1>
+          <h1 className="body-lg font-bold" style={{ color: 'var(--text)' }}>
+            KYC 인증
+          </h1>
           <span className="w-14" />
         </div>
       </header>
 
-      <div className="py-6">
-        <div className="rounded-[16px] p-4 mb-6" style={{ backgroundColor: 'rgba(30, 58, 138, 0.08)', border: '1px solid rgba(30, 58, 138, 0.2)' }}>
-          <p className="body-sm" style={{ color: 'var(--text)' }}>
-            <strong>KYC? ? ??????</strong> ?? ? ???? ??? ?? ?? ??? ?????. ??? ?? ??? ?? ???? ??? ?????.
-          </p>
+      <div className="px-4 py-6 mx-auto max-w-[480px]">
+        {loading ? (
+          <div
+            className="rounded-2xl p-4 h-24 animate-pulse"
+            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+          />
+        ) : (
+          <KycStatusCard status={status} reason={reason} />
+        )}
+
+        <div className="mt-6 mb-6">
+          <h3 className="font-semibold mb-3" style={{ fontSize: 14, color: 'var(--text)' }}>
+            진행 단계
+          </h3>
+          <ul className="space-y-2">
+            {STEPS.map((s) => (
+              <li key={s} className="body-sm" style={{ color: 'var(--text-secondary)' }}>
+                {s}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {rejectionReason && (
-          <div className="rounded-[12px] p-3 mb-4" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
-            <p className="body-sm" style={{ color: 'var(--accent-loss)' }}>?? ??: {rejectionReason}</p>
-          </div>
-        )}
+        {status !== 'APPROVED' && !loading && <KycForm onSubmitted={handleSubmitted} />}
 
-        {isSubmitted && !isApproved && (
-          <div className="rounded-[12px] p-4 mb-6" style={{ backgroundColor: 'rgba(234, 179, 8, 0.1)', border: '1px solid rgba(234, 179, 8, 0.3)' }}>
-            <p className="body-sm font-medium" style={{ color: 'var(--text)' }}>?? ?? ??????.</p>
-            <p className="caption mt-1" style={{ color: 'var(--text-secondary)' }}>??? ?? 1~2? ?? ??????.</p>
-          </div>
-        )}
-
-        {isApproved && (
-          <div className="rounded-[12px] p-4 mb-6" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
-            <p className="body-sm font-medium" style={{ color: 'var(--emerald)' }}>KYC ?? ??</p>
-            <Link href="/onboarding" className="body-sm mt-2 block" style={{ color: 'var(--royal-blue)' }}>??? ?? ?</Link>
-          </div>
-        )}
-
-        {!isSubmitted && !isApproved && (
-          <>
-            <div className="flex gap-2 mb-8">
-              {STEPS.map((s, i) => (
-                <div key={s} className="flex-1 h-2 rounded-full" style={{ backgroundColor: i <= step ? 'var(--royal-blue)' : 'var(--border)' }} />
-              ))}
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block body-sm mb-1" style={{ color: 'var(--text-secondary)' }}>?? *</label>
-                <input
-                  type="text"
-                  value={realName}
-                  onChange={(e) => setRealName(e.target.value)}
-                  placeholder="???"
-                  className="w-full px-4 py-3 rounded-[12px] border"
-                  style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
-                />
-              </div>
-              <div>
-                <label className="block body-sm mb-1" style={{ color: 'var(--text-secondary)' }}>???</label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="010-1234-5678"
-                  className="w-full px-4 py-3 rounded-[12px] border"
-                  style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
-                />
-              </div>
-              <div>
-                <label className="block body-sm mb-1" style={{ color: 'var(--text-secondary)' }}>??? ?? URL (????)</label>
-                <input
-                  type="url"
-                  value={idCardFrontUrl}
-                  onChange={(e) => setIdCardFrontUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full px-4 py-3 rounded-[12px] border"
-                  style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
-                />
-              </div>
-              <div>
-                <label className="block body-sm mb-1" style={{ color: 'var(--text-secondary)' }}>??? ?? URL (????)</label>
-                <input
-                  type="url"
-                  value={idCardBackUrl}
-                  onChange={(e) => setIdCardBackUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full px-4 py-3 rounded-[12px] border"
-                  style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
-                />
-              </div>
-            </div>
-
-            <button
-              type="button"
-              disabled={submitting || !realName.trim()}
-              onClick={async () => {
-                setSubmitting(true);
-                try {
-                  const res = await fetch('/api/kyc/submit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      real_name: realName.trim(),
-                      phone: phone || null,
-                      id_card_front_url: idCardFrontUrl || null,
-                      id_card_back_url: idCardBackUrl || null,
-                    }),
-                  });
-                  const json = await res.json();
-                  if (json.ok) {
-                    setUserStatus('KYC_SUBMITTED');
-                  } else {
-                    alert(json.error ?? '?? ??');
-                  }
-                } finally {
-                  setSubmitting(false);
-                }
-              }}
-              className="w-full mt-8 py-4 rounded-[16px] font-bold tap-scale disabled:opacity-60"
-              style={{ backgroundColor: 'var(--royal-blue)', color: '#fff', boxShadow: 'var(--shadow-royal)' }}
-            >
-              {submitting ? '?? ??' : '????'}
-            </button>
-          </>
-        )}
+        <p className="mt-6 caption text-center" style={{ color: 'var(--text-secondary)' }}>
+          승인 후 출금/고액거래 한도 상향
+        </p>
       </div>
     </div>
   );

@@ -1,0 +1,626 @@
+.page {
+  background: #f6f7fb;
+  min-height: 100vh;
+  padding: 18px 14px 28px;
+}
+
+.container {
+  max-width: 404px;
+  margin: 0 auto;
+}
+
+/* ===== Featured (Top curated) ===== */
+.featuredSection {
+  margin-bottom: 14px;
+}
+
+.featuredCard {
+  display: block;
+  background: #ffffff;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 18px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+}
+
+.featuredTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 8px;
+}
+
+.featuredTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #111827;
+  background: rgba(124, 58, 237, 0.10);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.featuredMeta {
+  display: flex;
+  align-items: center;
+}
+
+.featuredMetaPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.10);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.featuredMedia {
+  padding: 0 12px 10px;
+}
+
+.featuredImg {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 16px;
+  display: block;
+}
+
+.featuredInfo {
+  padding: 0 12px 14px;
+}
+
+.featuredTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.featuredTitle {
+  font-size: 17px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.featuredCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.10);
+  padding: 8px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.featuredPriceRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.featuredPrice {
+  font-size: 18px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.featuredSub {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ===== Asset Card ===== */
+.assetCard {
+  background: #ffffff;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.assetHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.assetTitle {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 700;
+}
+
+.livePill {
+  font-size: 11px;
+  font-weight: 800;
+  color: #ef4444;
+  background: rgba(16, 185, 129, 0.10);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.liveDots {
+  margin-left: 4px;
+}
+
+.assetAmount {
+  font-size: 26px;
+  font-weight: 900;
+  color: #111827;
+  margin-top: 10px;
+}
+
+.assetButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.btnPrimary {
+  height: 44px;
+  border: none;
+  border-radius: 14px;
+  background: #6d28d9;
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.btnSecondary {
+  height: 44px;
+  border: none;
+  border-radius: 14px;
+  background: #e5e7eb;
+  color: #111827;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+/* ===== Summary Grid ===== */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.summaryCard {
+  background: #ffffff;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.summaryLabel {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 700;
+}
+
+.summaryValue {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #111827;
+  font-weight: 900;
+}
+
+.summaryValueAccent {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #7c3aed;
+  font-weight: 900;
+}
+
+/* ===== Rank Card ===== */
+.rankCard {
+  background: #ffffff;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 18px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.rankLeft {
+  min-width: 0;
+}
+
+.rankTitle {
+  font-size: 14px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.rankSub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.rankBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(124, 58, 237, 0.10);
+  color: #6d28d9;
+  font-weight: 900;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.rankEmoji {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.rankLabel {
+  line-height: 1;
+}
+
+/* ===== Section Header ===== */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.sectionMore {
+  font-size: 12px;
+  font-weight: 800;
+  color: #6d28d9;
+  text-decoration: none;
+}
+
+/* ===== Rail ===== */
+.railSection {
+  margin-bottom: 14px;
+}
+
+.rail {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+}
+
+.rail::-webkit-scrollbar {
+  height: 6px;
+}
+.rail::-webkit-scrollbar-thumb {
+  background: rgba(17, 24, 39, 0.12);
+  border-radius: 999px;
+}
+
+.railCard {
+  flex: 0 0 150px;
+  background: #ffffff;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  scroll-snap-align: start;
+}
+
+.railThumb {
+  position: relative;
+  height: 110px;
+  background: #f3f4f6;
+}
+
+.railImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.railBadge {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 6px 8px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(17, 24, 39, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.railBody {
+  padding: 10px 10px 12px;
+}
+
+.railTitle {
+  font-size: 13px;
+  font-weight: 900;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.railSub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 700;
+}
+
+.railBottom {
+  margin-top: 10px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.railPrice {
+  font-size: 12px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.railChange {
+  font-size: 12px;
+  font-weight: 900;
+  color: #ef4444;
+}
+
+.railLoading {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 700;
+}
+
+/* ===== Trend (K-CIX) ===== */
+.trendCard {
+  background: #ffffff;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 18px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.trendTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.trendTitle {
+  font-size: 14px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.trendSub {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 700;
+}
+
+.trendTopRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.trendPillUp {
+  font-size: 12px;
+  font-weight: 900;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.trendPillDown {
+  font-size: 12px;
+  font-weight: 900;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.12);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.trendChartWrap {
+  margin-top: 12px;
+  background: #f9fafb;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  border-radius: 14px;
+  padding: 10px;
+}
+
+.trendSvg {
+  width: 100%;
+  height: 92px;
+  display: block;
+}
+
+.trendMidLine {
+  stroke: rgba(17, 24, 39, 0.10);
+  stroke-width: 1;
+}
+
+.trendPath {
+  fill: none;
+  stroke: #7c3aed;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ===== KYC ===== */
+.kycCard {
+  border-radius: 18px;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.10), rgba(59, 130, 246, 0.08), rgba(236, 72, 153, 0.05));
+  border: 1px solid rgba(124, 58, 237, 0.14);
+}
+
+.kycLeft {
+  margin-bottom: 12px;
+}
+
+.kycTitle {
+  font-size: 14px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.kycSub {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+.kycBadges {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.kycBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.70);
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.kycBtn {
+  width: 100%;
+  height: 48px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  color: #fff;
+  font-weight: 900;
+  font-size: 14px;
+}
+
+/* ===== Notice ===== */
+.noticeCard {
+  background: #ffffff;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 18px;
+  padding: 14px;
+  margin-bottom: 64px;
+}
+
+.noticeList {
+  margin: 0;
+  padding-left: 16px;
+  color: #111827;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.noticeList li {
+  margin: 6px 0;
+}
+
+/* ===== FAB ===== */
+.helpFab {
+  position: fixed;
+  right: 16px;
+  bottom: 82px;
+  background: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 14px;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+/* ===== KYC 귀여운 레터링/소녀 아이콘 ===== */
+.kycCuteRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.kycCuteKyc {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.10);
+  box-shadow: 0 10px 22px rgba(17, 24, 39, 0.08);
+  font-weight: 900;
+  letter-spacing: -0.6px;
+}
+
+.kycCuteKyc span:nth-child(1) {
+  color: #7c3aed;
+}
+.kycCuteKyc span:nth-child(2) {
+  color: #ec4899;
+}
+.kycCuteKyc span:nth-child(3) {
+  color: #2563eb;
+}
+
+.kycCuteGirl {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.10);
+  box-shadow: 0 10px 22px rgba(17, 24, 39, 0.08);
+}
+
+.kycCuteCaption {
+  font-size: 12px;
+  color: #374151;
+}
+
+@media (min-width: 768px) {
+  .helpFab {
+    right: calc(50% - 202px);
+  }
+}

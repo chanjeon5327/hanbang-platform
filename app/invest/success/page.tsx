@@ -21,7 +21,7 @@ export default function InvestSuccessPage() {
 
   return (
     <div className="flex flex-col items-center justify-center px-4" style={{ backgroundColor: 'var(--upbit-bg)' }}>
-      <CheckCircle size={64} className="text-emerald-500 mb-4" strokeWidth={2} />
+      <CheckCircle size={64} className="text-red-500 mb-4" strokeWidth={2} />
       <h1 className="h3 font-bold" style={{ color: 'var(--upbit-text)' }}>
         투자 확정 완료
       </h1>

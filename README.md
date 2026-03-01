@@ -1,4 +1,12 @@
+HANBANG 개발 메모: Cursor Agent 연결 확인 완료
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## 환경 변수
+
+| 변수 | 설명 | 기본값 |
+|------|------|--------|
+| `DEMO_TRADING` | `true`일 때 상세페이지 매수/매도 시 즉시 체결(sim fill) 동작. 프로덕션에서는 `false` 권장 | `false` |
 
 ## Getting Started
 

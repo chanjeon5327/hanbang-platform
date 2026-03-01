@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 
 type RailKey = "top" | "experiment";
 
@@ -40,7 +40,7 @@ function pickReason(m: {
 
 export async function GET() {
   try {
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
 
     // 1) 콘텐츠 가져오기
     const { data: rows, error } = await supabase

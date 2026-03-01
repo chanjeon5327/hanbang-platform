@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
+import { requireKycApproved } from "@/lib/kyc/requireKycApproved";
 
 function toPositiveNumber(value: unknown): number {
   const n = typeof value === "number" ? value : Number(value);
@@ -14,7 +15,7 @@ function toPositiveNumber(value: unknown): number {
  */
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
     const { data: authData, error: authError } = await supabase.auth.getUser();
 
     if (authError || !authData?.user) {
@@ -25,6 +26,16 @@ export async function POST(req: Request) {
     }
 
     const user = authData.user;
+
+    const isDemoTrading = process.env.DEMO_TRADING === "true";
+
+    if (!isDemoTrading) {
+      const kycCheck = await requireKycApproved(supabase, user.id);
+      if (!kycCheck.approved) {
+        return kycCheck.response;
+      }
+    }
+
     let body: { product_id?: string; content_id?: string; quantity?: unknown; idempotency_key?: string };
     try {
       body = await req.json();

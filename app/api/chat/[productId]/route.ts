@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
-import { createAdminClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 import { requireActiveUser } from "@/lib/auth/requireActiveUser";
 import { filterProfanity, containsProfanity } from "@/lib/chat/profanityFilter";
 
@@ -30,7 +30,7 @@ export async function GET(
       return NextResponse.json({ error: "productId must be a valid UUID" }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
 
     const url = new URL(req.url);
     const cursor = url.searchParams.get("cursor");
@@ -73,7 +73,7 @@ export async function GET(
     const userIds = [...new Set(allRows.map((r: Record<string, unknown>) => r.user_id).filter(Boolean))] as string[];
     const profileMap = new Map<string, { nickname?: string; avatar_url?: string }>();
     if (userIds.length > 0) {
-      const admin = createAdminClient();
+      const admin = getAdminSupabase();
       const { data: profiles } = await admin
         .from("profiles")
         .select("id, nickname, avatar_url, display_name")
@@ -117,7 +117,7 @@ export async function POST(
   { params }: { params: Promise<{ productId: string }> }
 ) {
   try {
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {

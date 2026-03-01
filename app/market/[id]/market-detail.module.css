@@ -1,0 +1,1133 @@
+/* ===== Gate-3: Toss + Upbit 하이브리드 (정돈/밀도) ===== */
+/* ===== 압도 4-AUTHORITY: 금융 표기 규칙 ===== */
+.numCol {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.monoNum {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.pos {
+  color: #ef4444;
+}
+
+.neg {
+  color: #3b82f6;
+}
+
+.zero {
+  color: #6b7280;
+}
+
+.page {
+  min-height: 100vh;
+  background: #f8f9fb;
+  padding-bottom: 92px;
+}
+
+.container {
+  max-width: 404px;
+  margin: 0 auto;
+  padding: 14px 16px;
+}
+
+/* ----- 에러 ----- */
+.errorText {
+  font-size: 14px;
+  color: #6B7280;
+  margin-bottom: 12px;
+}
+
+.retryBtn {
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background: #6D28D9;
+  border: 0;
+  cursor: pointer;
+}
+
+/* ----- 배너 썸네일 ----- */
+.bannerSection {
+  margin-bottom: 8px;
+}
+
+.bannerWrap {
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f3f4f6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.bannerImg {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+}
+
+.bannerVideoWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #F3F4F6;
+}
+
+.bannerVideoWrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.previewPlayOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.previewPlayOverlay:hover {
+  background: rgba(0,0,0,0.4);
+}
+
+.previewPlayOverlay.hidden,
+.hidden {
+  pointer-events: none;
+  opacity: 0;
+}
+
+.previewPlayBtn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #111827;
+}
+
+/* ----- 헤더 (종목 헤더 영상형 촘촘) ----- */
+.headerSection {
+  margin-bottom: 14px;
+}
+
+.heroTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.headerTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+  flex: 1;
+  min-width: 0;
+}
+
+.t1t2Toggle {
+  display: flex;
+  gap: 0;
+  background: #F3F4F6;
+  border-radius: 999px;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.t1t2Toggle button {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.t1t2Active {
+  background: #6D28D9 !important;
+  color: #fff !important;
+}
+
+.heroPriceRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.priceValue {
+  font-size: 22px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.4px;
+}
+
+.changeBadge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.changeUp {
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
+}
+
+.changeDown {
+  background: rgba(59,130,246,0.12);
+  color: #3b82f6;
+}
+
+.heroPills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.pillLive {
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pillTrades {
+  background: rgba(17,24,39,0.06);
+  color: #374151;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.heroMetaWrap {
+  margin-top: 10px;
+}
+
+.usdText {
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+/* ----- 탭 바 (세그먼트 컨트롤) ----- */
+.tabBar {
+  display: flex;
+  gap: 2px;
+  height: 40px;
+  padding: 3px;
+  background: #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+.tabBar button {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tabInactive {
+  background: transparent;
+  color: #6b7280;
+}
+
+.tabActive {
+  background: #fff;
+  color: #111827;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* ----- 탭 콘텐츠 ----- */
+.tabContent {
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.card:last-child {
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 10px;
+  letter-spacing: -0.2px;
+}
+
+/* ----- 정보 탭 (영상형 3블록) ----- */
+.infoCard {
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.infoCard:first-child {
+  margin-top: 0;
+}
+
+.infoTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 12px;
+  letter-spacing: -0.2px;
+}
+
+.kvRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.kvLabel {
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.kvValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.barLabel {
+  font-size: 13px;
+  color: #374151;
+  min-width: 56px;
+}
+
+.barTrack {
+  flex: 1;
+  height: 8px;
+  background: #F3F4F6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.2s;
+}
+
+.barPct {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111827;
+  min-width: 36px;
+  text-align: right;
+}
+
+.planBody {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #374151;
+}
+
+.strategySummary {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #111827;
+  margin: 0 0 12px 0;
+}
+
+.planPdfBtn {
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin-top: 12px;
+  border-radius: 12px;
+  background: #111827;
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+  line-height: 44px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+.planPdfBtn:hover {
+  opacity: 0.9;
+}
+
+/* ----- 투자 정보 블록 (legacy, 주문/시세 탭에서 사용) ----- */
+.investBlock {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+}
+
+.investBlock:last-child {
+  border-bottom: none;
+}
+
+.investBlockTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+.investRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #374151;
+}
+
+.investRow span:first-child {
+  color: #6B7280;
+}
+
+.projectContent {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #374151;
+}
+
+/* ----- 주문 (TradingPanel 상단 + 호가 + 목록/지갑) ----- */
+.tradingTop {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin-bottom: 12px;
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.orderBookWrap {
+  margin-top: 6px;
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.bottomNav {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.listBtn,
+.walletBtn {
+  flex: 1;
+  height: 46px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 12px;
+  background: #f1f3f5;
+  color: #111827;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.listBtn:hover,
+.walletBtn:hover {
+  background: #e9ecef;
+}
+
+/* ----- 시세 탭 (차트 + 실시간 체결) ----- */
+.chartSection {
+  margin-bottom: 10px;
+}
+
+.tradeSection {
+  margin-top: 6px;
+}
+
+.tradeRow {
+  font-size: 13px;
+  padding: 6px 0;
+}
+
+.tradePrice {
+  font-weight: 700;
+}
+
+.tradeQty {
+  opacity: 0.7;
+}
+
+.tradeTime {
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+/* ----- 작가의 기획 PDF ----- */
+.creatorPlan {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.creatorPlan h3 {
+  font-size: 15px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.2px;
+}
+
+.downloadBtn {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: #6d28d9;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.downloadBtn:hover {
+  opacity: 0.9;
+}
+
+/* ----- legacy tradeGrid (호가 + 주문 패널) ----- */
+.tradeGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tradePanel {
+  background: #FFFFFF;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  border-radius: 20px;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.orderPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.orderTypeTabs {
+  display: flex;
+  gap: 4px;
+  background: #F3F4F6;
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.orderTypeTabs button {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.orderTypeActive {
+  background: #6D28D9 !important;
+  color: #fff !important;
+}
+
+.orderInput {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  font-size: 15px;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 12px;
+  background: #F9FAFB;
+}
+
+.orderInput:focus {
+  outline: none;
+  border-color: #6D28D9;
+}
+
+.orderPctRow {
+  display: flex;
+  gap: 6px;
+}
+
+.orderPctRow button {
+  flex: 1;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 8px;
+  background: #F9FAFB;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.orderPctRow button:hover {
+  background: #F3F4F6;
+}
+
+.orderSummary {
+  padding: 12px 0;
+  border-top: 1px solid rgba(17, 24, 39, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.orderSummaryRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #6B7280;
+}
+
+.orderTotal {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #111827 !important;
+  margin-top: 4px;
+}
+
+.orderBtnRow {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.orderBtnBuy,
+.orderBtnSell {
+  flex: 1;
+  height: 48px;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.orderBtnBuy {
+  background: #DC2626;
+  color: #fff;
+}
+
+.orderBtnSell {
+  background: #2563EB;
+  color: #fff;
+}
+
+.orderBtnBuy:hover,
+.orderBtnSell:hover {
+  opacity: 0.9;
+}
+
+.orderAuxRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.orderAuxBtn {
+  flex: 1;
+  height: 44px;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  background: #F3F4F6;
+  color: #111827;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.orderAuxBtn:hover {
+  opacity: 0.9;
+}
+
+/* ----- 실시간 체결 (밀도 개선) ----- */
+.tickerList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.tickerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 12px;
+  line-height: 1.25;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.04);
+}
+
+.tickerRow:last-child {
+  border-bottom: none;
+}
+
+.tickerPrice {
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.tickerQty {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.tickerTime {
+  font-size: 11px;
+  color: #9ca3af;
+  opacity: 0.7;
+}
+
+.tradeEnter {
+  animation: tradeSlide 140ms ease-out;
+}
+
+.tradeLarge {
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+}
+
+.tradeLarge:has(.neg) {
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
+}
+
+@keyframes tradeSlide {
+  0% {
+    opacity: 0.85;
+    transform: translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ----- scrollTop ----- */
+.scrollTopBtn {
+  position: fixed;
+  right: 16px;
+  bottom: 96px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #6D28D9;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.scrollTopBtn:hover {
+  opacity: 0.9;
+}
+
+/* ----- MockOrderBook 애니메이션 ----- */
+@keyframes priceImpact {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+.priceImpact {
+  animation: priceImpact 0.15s ease-out;
+}
+
+@keyframes sizePulse {
+  0%, 100% { background: transparent; }
+  50% { background: rgba(109, 40, 217, 0.12); }
+}
+
+.orderSizeChange {
+  animation: sizePulse 0.12s ease;
+}
+
+/* ===== Terminal Layout (압도 모드) ===== */
+.terminalSection {
+  margin-top: 14px;
+  position: relative;
+}
+
+.terminalGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .terminalGrid {
+    flex-direction: row;
+    gap: 16px;
+  }
+}
+
+.terminalLeft {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  .terminalLeft {
+    flex: 0 0 60%;
+  }
+}
+
+.terminalRight {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  .terminalRight {
+    flex: 0 0 calc(40% - 16px);
+  }
+}
+
+.panelCard {
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.panelCard:last-child {
+  margin-bottom: 0;
+}
+
+.panelTitle,
+.terminalTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.2px;
+}
+
+.chartWrap {
+  margin-bottom: 8px;
+}
+
+.pulseWrap {
+  height: 6px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f3f4f6;
+  margin-top: 8px;
+}
+
+.pulseBar {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  transition: width 3.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pulseBuy {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.25), rgba(239, 68, 68, 0.45));
+  transition: width 3.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pulseSell {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.45), rgba(59, 130, 246, 0.25));
+  transition: width 3.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.compactTabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.compactTabs button {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: #374151;
+  cursor: pointer;
+  transition: all 120ms ease-out;
+}
+
+.chartTab {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: #374151;
+  cursor: pointer;
+}
+
+.chartTabActive {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #111827;
+  border-radius: 8px;
+  background: #111827;
+  color: #fff;
+  cursor: pointer;
+}
+
+.numMono {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+.tickerRowCompact {
+  min-height: 28px;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.tradeEnter {
+  animation: tradeSlide 140ms ease-out;
+}
+
+@keyframes tradeSlide {
+  0% {
+    opacity: 0.85;
+    transform: translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.terminalAuxBar {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .terminalAuxBar {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+  }
+}
+
+.auxBtn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #e5e7eb;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.auxBtn:hover {
+  background: #d1d5db;
+}
+
+.terminalMobileBar {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 0;
+}
+
+@media (min-width: 768px) {
+  .terminalMobileBar {
+    display: none;
+  }
+}
+
+.mobileBarBtn {
+  flex: 1;
+  height: 46px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 12px;
+  background: #f1f3f5;
+  color: #111827;
+  cursor: pointer;
+}
+
+/* Terminal Order Panel */
+.terminalOrderPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.orderField {
+  padding: 0;
+}
+
+.orderLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.qtyStepper {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.stepperBtn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #374151;
+  transition: all 120ms ease-out;
+}
+
+.pctRow {
+  display: flex;
+  gap: 6px;
+}
+
+.pctBtn {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: #374151;
+  cursor: pointer;
+  transition: all 120ms ease-out;
+}
+
+.pctBtn:hover {
+  background: #f3f4f6;
+}
+
+.orderSummaryBox {
+  background: #f9fafb;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+.orderSummaryRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 4px 0;
+  color: #6b7280;
+}
+
+.orderSummaryRow.orderTotal {
+  font-size: 14px;
+  font-weight: 800;
+  color: #111827;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.orderExecBtn {
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 900;
+  font-size: 14px;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 120ms ease-out;
+}
+
+.orderExecBtn:hover {
+  opacity: 0.9;
+}
+
+.orderTypeActive {
+  color: #fff !important;
+}

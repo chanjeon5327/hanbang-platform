@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 
 export type TasteScore = {
   id: string;
@@ -14,7 +14,7 @@ type TasteState = {
   rate: (id: string, score: number) => Promise<void>;
 };
 
-const supabase = createClient();
+const supabase = getBrowserSupabase();
 
 export const useUserTaste = create<TasteState>((set, get) => ({
   tastes: [],

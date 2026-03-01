@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { getYtThumb } from '@/lib/thumbnails';
+import { getYtThumb, PRODUCT_PLACEHOLDER } from '@/lib/thumbnails';
 import { ChevronRight } from 'lucide-react';
 
 const TOSS = {
@@ -55,7 +55,16 @@ function ListCard({ item, index }: { item: MarketCardItem; index: number }) {
     >
       {/* 썸네일 */}
       <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-black/5">
-        <img src={thumbSrc} alt="" className="w-full h-full object-cover group-hover:opacity-95 transition-transform" loading="lazy" />
+        <img
+          src={thumbSrc}
+          alt=""
+          className="w-full h-full object-cover group-hover:opacity-95 transition-transform"
+          loading="lazy"
+          onError={(e) => {
+            const el = e.currentTarget;
+            if (!el.src.includes('placeholders/')) el.src = PRODUCT_PLACEHOLDER;
+          }}
+        />
       </div>
 
       <div className="flex-1 min-w-0">
@@ -127,7 +136,16 @@ export default function MarketCard({ item, index, variant = 'list' }: Props) {
         aria-label={`${item.title} 수익권 보기`}
       >
         <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0">
-          <img src={thumbSrc} alt="" className="w-full h-full object-cover group-hover:opacity-95 transition-transform" loading="lazy" />
+          <img
+            src={thumbSrc}
+            alt=""
+            className="w-full h-full object-cover group-hover:opacity-95 transition-transform"
+            loading="lazy"
+            onError={(e) => {
+              const el = e.currentTarget;
+              if (!el.src.includes('placeholders/')) el.src = PRODUCT_PLACEHOLDER;
+            }}
+          />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
@@ -172,7 +190,16 @@ export default function MarketCard({ item, index, variant = 'list' }: Props) {
     >
       <div className="relative overflow-hidden rounded-2xl border border-black/5 active:opacity-95 transition-all duration-200" style={{ backgroundColor: TOSS.card, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
         <div className="aspect-[4/5] relative overflow-hidden">
-          <img src={thumbSrc} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:opacity-95" loading="lazy" />
+          <img
+            src={thumbSrc}
+            alt=""
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:opacity-95"
+            loading="lazy"
+            onError={(e) => {
+              const el = e.currentTarget;
+              if (!el.src.includes('placeholders/')) el.src = PRODUCT_PLACEHOLDER;
+            }}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" aria-hidden />
           {item.revenueBadge && (
             <span className="absolute top-2 left-2 rounded px-2 py-0.5 caption font-semibold text-white" style={{ backgroundColor: TOSS.blue }}>{item.revenueBadge}</span>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 import { useToast } from '@/context/ToastContext';
 
 type Item = {
@@ -16,7 +16,7 @@ const allItems: Item[] = Array.from({ length: 12 }).map((_, i) => ({
 
 export default function AdminHomeConfigPage() {
   const { toast } = useToast();
-  const supabase = createClient();
+  const supabase = getBrowserSupabase();
   const [fixedHeroId, setFixedHeroId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 

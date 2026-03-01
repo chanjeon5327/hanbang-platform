@@ -1,8 +1,8 @@
 'use client';
 
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 
-const supabase = createClient();
+const supabase = getBrowserSupabase();
 
 export async function logEvent(
   event_type: string,

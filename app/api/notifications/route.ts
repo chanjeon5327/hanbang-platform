@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 
 /**
  * GET: 알림 목록 (본인만, 최신순)
  */
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ notifications: [], unreadCount: 0 });
 
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ ok: true });
 

@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Bell } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
-import BottomNavigation from '@/components/home/BottomNavigation';
-
 type NotificationItem = {
   id: string;
   type: string;
@@ -98,8 +96,6 @@ export default function NotificationsPage() {
           </ul>
         )}
       </div>
-
-      <BottomNavigation />
     </div>
   );
 }

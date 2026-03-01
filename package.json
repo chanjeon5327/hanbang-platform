@@ -14,11 +14,13 @@
     "migrations:dump-local": "node scripts/dump-local-migrations.mjs",
     "migrations:compare": "node scripts/dump-remote-migrations.mjs && node scripts/dump-local-migrations.mjs && node scripts/compare-migrations.mjs",
     "test:partial-sell": "node scripts/run-partial-sell-test.mjs",
+    "test:trade:demo": "node scripts/e2e-trade-demo.mjs",
     "test:e2e:engine": "node scripts/e2e-engine-v1_5.mjs",
     "test:e2e:exchange": "node scripts/e2e-exchange-dividend.mjs",
     "release:exchange-v2": "node scripts/release-exchange-v2.mjs",
     "release:exchange-v2:auto": "powershell -ExecutionPolicy Bypass -File scripts/run-release-exchange-v2.ps1",
     "ops:reset-test-accounts": "node scripts/ops/reset-test-accounts.mjs",
+    "seed:channels": "node scripts/seed-youtube-channels.mjs",
     "prepare": "husky"
   },
   "dependencies": {
@@ -55,6 +57,7 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "recharts": "^3.7.0",
+    "server-only": "^0.0.1",
     "tailwind-merge": "^3.4.0",
     "viem": "^2.45.0",
     "wagmi": "^3.4.1",

@@ -14,7 +14,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/server";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 
 import type { RevenueEventCreateRequest } from "@/lib/types/financial";
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const supabaseAdmin = createAdminClient();
+    const supabaseAdmin = getAdminSupabase();
 
     const { data, error } = await supabaseAdmin
       .from("revenue_events")
@@ -77,7 +77,7 @@ export async function GET() {
   try {
     await requireAdmin();
 
-    const supabaseAdmin = createAdminClient();
+    const supabaseAdmin = getAdminSupabase();
 
     const { data, error } = await supabaseAdmin
       .from("revenue_events")

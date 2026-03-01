@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { formatRate } from '@/lib/utils/format';
+import { PRODUCT_PLACEHOLDER } from '@/lib/thumbnails';
 import { useSponsoredPick } from '@/hooks/useSponsoredPick';
 import { CardV5 } from '@/components/ui/CardV5';
 import Skeleton from '@/components/ui/Skeleton';
@@ -39,6 +40,10 @@ export default function SponsoredPickHeroV5() {
               alt=""
               className="w-full h-full object-cover"
               loading="eager"
+              onError={(e) => {
+                const el = e.currentTarget;
+                if (!el.src.includes('placeholders/')) el.src = PRODUCT_PLACEHOLDER;
+              }}
             />
           </div>
           <div className="p-5">

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Heart } from 'lucide-react';
-import { getYtThumb } from '@/lib/thumbnails';
+import { getYtThumb, PRODUCT_PLACEHOLDER } from '@/lib/thumbnails';
 import { useInterestToggle } from '@/hooks/useInterestToggle';
 import { useAuth } from '@/components/auth/AuthProvider';
 
@@ -25,7 +25,16 @@ export default function InterestCard({ id, thumbUrl, title = '여행가 제이',
   const content = (
     <>
       <div className="relative h-[100px] bg-[#e5e8eb]">
-        <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />
+        <img
+        src={src}
+        alt=""
+        className="w-full h-full object-cover"
+        loading="lazy"
+        onError={(e) => {
+          const el = e.currentTarget;
+          if (!el.src.includes('placeholders/')) el.src = PRODUCT_PLACEHOLDER;
+        }}
+      />
         {user && id && (
           <button
             type="button"

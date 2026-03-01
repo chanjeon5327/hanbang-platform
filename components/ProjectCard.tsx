@@ -9,7 +9,7 @@ import { Database } from "@/lib/supabase/types"
 import { ArrowRight, TrendingUp } from "lucide-react"
 import Image from "next/image"
 import LoginModal from "@/components/auth/LoginModal"
-import { createClient } from "@/utils/supabase/client"
+import { getBrowserSupabase } from "@/utils/supabase/client"
 import { getYtThumb } from "@/lib/thumbnails"
 import { formatKrw, formatRate } from "@/lib/utils/format"
 
@@ -21,7 +21,7 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-  const supabase = createClient()
+  const supabase = getBrowserSupabase()
 
   const handleInvestClick = async (e: React.MouseEvent) => {
     e.preventDefault()

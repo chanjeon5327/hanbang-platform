@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 import { requireActiveUser } from "@/lib/auth/requireActiveUser";
+import { requireKycApproved } from "@/lib/kyc/requireKycApproved";
 
 /**
  * GET /api/wallet/invest-summary
@@ -13,11 +14,13 @@ import { requireActiveUser } from "@/lib/auth/requireActiveUser";
  * - 이번 달 수익 = 이번 달 CASH_CREDIT (settlement) 합계
  */
 export async function GET() {
-  const supabase = await createClient();
+  const supabase = await getServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
   }
+  const kycCheck = await requireKycApproved(supabase, user.id);
+  if (!kycCheck.approved) return kycCheck.response;
 
   try {
     await requireActiveUser(user.id);
@@ -132,6 +135,25 @@ export async function GET() {
   const unrealizedRate =
     totalRemainingCost > 0 ? (totalUnrealizedPnl / totalRemainingCost) * 100 : 0;
 
+  let latestDividendId: string | null = null;
+  let latestDividendAt: string | null = null;
+
+  const { data: ledgerRow } = await (supabase as any)
+    .from("ledger_entries")
+    .select("id, created_at")
+    .eq("user_id", user.id)
+    .eq("entry_type", "CASH_CREDIT")
+    .or("memo.ilike.%DIVIDEND%,memo.ilike.%배당%,metadata->>reason.in.(DIVIDEND,REVENUE_DISTRIBUTION)")
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (ledgerRow?.id) {
+    latestDividendId = ledgerRow.id;
+    latestDividendAt = ledgerRow.created_at ?? null;
+  }
+
   return NextResponse.json({
     totalInvest: totalInvest,
     cashBalance,
@@ -140,5 +162,7 @@ export async function GET() {
     unrealizedRate: Math.round(unrealizedRate * 100) / 100,
     monthlyProfit,
     holdingsValue,
+    latestDividendId,
+    latestDividendAt,
   });
 }

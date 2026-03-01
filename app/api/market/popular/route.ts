@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 import { getYtThumb } from "@/lib/thumbnails";
 import { extractYoutubeId } from "@/lib/youtube";
 
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     const sort = searchParams.get("sort") ?? "recommendation";
     const artistKeyword = searchParams.get("artist_keyword");
 
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
 
     if (sort === "recommendation") {
       const { data: scored, error: scoredError } = await supabase
@@ -134,7 +134,7 @@ export async function GET(req: NextRequest) {
 }
 
 async function fetchAndEnrich(
-  supabase: Awaited<ReturnType<typeof import("@/utils/supabase/server").createClient>>,
+  supabase: Awaited<ReturnType<typeof import("@/utils/supabase/server").getServerSupabase>>,
   pageIds: string[],
   offset: number,
   limit: number,

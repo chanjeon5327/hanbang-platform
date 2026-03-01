@@ -1,49 +1,49 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { NextResponse } from 'next/server';
+import { getServerSupabase } from '@/utils/supabase/server';
 
-export const dynamic = "force-dynamic";
+function num(x: unknown, d = 0) {
+  const n = Number(x);
+  return Number.isFinite(n) ? n : d;
+}
 
-export async function GET(req: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+export const dynamic = 'force-dynamic';
+
+export async function GET(req: Request) {
+  try {
+    const supabase = await getServerSupabase();
+    const { searchParams } = new URL(req.url);
+    const limit = Math.min(Math.max(num(searchParams.get('limit'), 30), 1), 200);
+
+    const { data: auth } = await supabase.auth.getUser();
+    const user = auth?.user;
+    if (!user) return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
+
+    const { data, error } = await (supabase as any)
+      .from('orders')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 400 });
+
+    const orders = (data ?? []).map((o: Record<string, unknown>) => {
+      const contentId =
+        o?.content_id ?? o?.content_item_id ?? o?.item_id ?? o?.product_id ?? o?.asset_id ?? null;
+
+      return {
+        ...o,
+        _content_id: contentId,
+        _side: o?.side ?? o?.order_side ?? o?.type ?? null,
+        _status: o?.status ?? o?.state ?? null,
+        _qty: o?.quantity ?? o?.qty ?? o?.amount ?? null,
+        _price_krw: o?.price_krw ?? o?.price ?? null,
+        _total_krw: o?.total_krw ?? o?.total ?? null,
+      };
+    });
+
+    return NextResponse.json({ ok: true, orders });
+  } catch (e: unknown) {
+    return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : 'UNKNOWN' }, { status: 500 });
   }
-
-  const itemId = req.nextUrl.searchParams.get("item_id");
-  const limit = Math.min(50, Math.max(1, parseInt(req.nextUrl.searchParams.get("limit") ?? "20", 10)));
-
-  let q = (supabase as any)
-    .from("orders")
-    .select("id, content_id, product_id, type, order_type, price, quantity, filled_quantity, status, created_at")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-
-  if (itemId) {
-    q = q.or(`content_id.eq.${itemId},product_id.eq.${itemId}`);
-  }
-
-  const { data: orders, error } = await q;
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  const items = (orders ?? []).map((o: { id: string; content_id?: string; product_id?: string; type?: string; order_type?: string; price?: number; quantity?: number; filled_quantity?: number; status?: string | null; created_at?: string }) => ({
-    id: o.id,
-    content_id: o.content_id,
-    product_id: o.product_id,
-    type: o.type,
-    order_type: o.order_type,
-    price: Number(o.price ?? 0),
-    quantity: Number(o.quantity ?? 0),
-    filled_quantity: Number(o.filled_quantity ?? o.quantity ?? 0),
-    status: o.status,
-    created_at: o.created_at,
-    executed_quantity: Number(o.filled_quantity ?? o.quantity ?? 0),
-    remaining_quantity: Math.max(0, Number(o.quantity ?? 0) - Number(o.filled_quantity ?? o.quantity ?? 0)),
-  }));
-
-  return NextResponse.json({ orders: items });
 }

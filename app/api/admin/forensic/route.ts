@@ -20,7 +20,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/server";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 
 import type {
@@ -37,7 +37,7 @@ export async function GET() {
   try {
     await requireAdmin();
 
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
     const now = new Date();
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
 

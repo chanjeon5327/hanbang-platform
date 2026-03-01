@@ -1,14 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
+import { getAdminSupabase } from '@/utils/supabase/admin';
 
-function requireEnv(name: string): string {
-  const v = process.env[name];
-  if (!v || v.trim() === "") {
-    throw new Error(`Supabase env required but empty: ${name}`);
-  }
-  return v;
-}
-
-export const supabaseAdmin = createClient(
-  requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
-  requireEnv("SUPABASE_SERVICE_ROLE_KEY")
-);
+export { getAdminSupabase };
+/** @deprecated Use getAdminSupabase() instead */
+export const supabaseAdmin = getAdminSupabase();

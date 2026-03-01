@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getServerSupabase } from '@/utils/supabase/server';
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
+  const supabase = await getServerSupabase();
   const body = await req.json();
 
   const { item_id, score } = body;

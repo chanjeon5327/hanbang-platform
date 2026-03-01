@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
+  const supabase = await getServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ ok:false, error:"UNAUTH" }, { status:401 });
 

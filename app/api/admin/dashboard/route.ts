@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 
 /**
@@ -9,7 +9,7 @@ import { requireAdmin } from "@/lib/admin/requireAdmin";
 export async function GET() {
   try {
     await requireAdmin();
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
 
     const [dailyRes, suspiciousRes, topRes] = await Promise.all([
       supabase.from("v_admin_daily_summary").select("*").limit(1).single(),

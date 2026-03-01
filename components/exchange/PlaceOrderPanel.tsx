@@ -35,12 +35,14 @@ export default function PlaceOrderPanel({ assetId }: { assetId: string }) {
         body.quantity = Number(quantity);
       }
 
-      const res = await fetch('/api/exchange/place', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
+      // TODO: experimental — exchange API is admin-only. Uncomment for internal testing.
+      // const res = await fetch('/api/exchange/place', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(body),
+      // });
+      // const data = await res.json();
+      const data = { ok: false, error: 'EXCHANGE_DISABLED' };
       setResult(data);
       if (data.ok) { setPrice(''); setQuantity(''); setAmountMax(''); }
     } catch (e) {
@@ -127,7 +129,7 @@ export default function PlaceOrderPanel({ assetId }: { assetId: string }) {
         <div
           className="mt-2 caption p-2 rounded-lg"
           style={{
-            backgroundColor: result.ok ? 'rgba(5,150,105,0.08)' : 'rgba(220,38,38,0.08)',
+            backgroundColor: result.ok ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)',
             color: result.ok ? 'var(--emerald)' : 'var(--accent-loss)',
           }}
         >

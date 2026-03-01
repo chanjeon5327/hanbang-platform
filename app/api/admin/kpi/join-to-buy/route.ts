@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 
 export async function GET() {
   await requireAdmin();
 
-  const supabase = supabaseAdmin;
+  const supabase = getAdminSupabase();
 
   const { data, error } = await supabase
     .from("v_join_to_buy_7d")

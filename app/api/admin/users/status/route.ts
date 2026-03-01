@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabase/server';
+import { getAdminSupabase } from '@/utils/supabase/admin';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 /**
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'user_id required' }, { status: 400 });
     }
 
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
 
     const { data: profile } = await (admin as any).from('profiles').select('id, email, status, role').eq('id', userId).single();
     const { data: logs } = await (admin as any).from('user_status_log').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(20);

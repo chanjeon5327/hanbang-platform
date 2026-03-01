@@ -14,14 +14,15 @@ export default function DividendInfoPanel({ assetId }: { assetId: string }) {
   const [action, setAction] = useState<CorporateActionDividend | null>(null);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(`/api/exchange/dividend-info/${assetId}`, { cache: 'no-store' });
-        if (!res.ok) return;
-        const d = await res.json();
-        if (d.action) setAction(d.action);
-      } catch { /* ignore */ }
-    })();
+    // TODO: experimental — exchange API is admin-only. Uncomment for internal testing.
+    // (async () => {
+    //   try {
+    //     const res = await fetch(`/api/exchange/dividend-info/${assetId}`, { cache: 'no-store' });
+    //     if (!res.ok) return;
+    //     const d = await res.json();
+    //     if (d.action) setAction(d.action);
+    //   } catch { /* ignore */ }
+    // })();
   }, [assetId]);
 
   if (!action) return null;

@@ -9,6 +9,7 @@ import {
   LineSeries,
 } from 'lightweight-charts';
 import { useTheme } from '@/context/ThemeContext';
+import styles from '@/app/market/[id]/market-detail.module.css';
 
 type TF = '1s' | '5s' | '1m' | '1h' | '1D' | '1W' | '1M';
 
@@ -164,7 +165,7 @@ const THEME = {
     ask: '#e53935',
     sma5: '#8b5cf6',
     sma20: '#f59e0b',
-    rsi: '#10b981',
+    rsi: '#ef4444',
   },
   dark: {
     bg: '#0d0d0d',
@@ -174,7 +175,7 @@ const THEME = {
     ask: '#e53935',
     sma5: '#a78bfa',
     sma20: '#fbbf24',
-    rsi: '#34d399',
+    rsi: '#f87171',
   },
 };
 
@@ -186,6 +187,7 @@ export default function MobilePriceChart() {
     sma20: true,
     rsi: true,
   });
+  const [chartPulseActive, setChartPulseActive] = useState(false);
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const colors = isDark ? THEME.dark : THEME.light;
@@ -193,6 +195,14 @@ export default function MobilePriceChart() {
   const toggleIndicator = (id: IndicatorId) => {
     setIndicators((prev) => ({ ...prev, [id]: !prev[id] }));
   };
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setChartPulseActive(true);
+      setTimeout(() => setChartPulseActive(false), 200);
+    }, 3500 + Math.random() * 2000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -295,7 +305,10 @@ export default function MobilePriceChart() {
           );
         })}
       </div>
-      <div ref={ref} className="w-full h-[280px] rounded-[var(--upbit-radius)] overflow-hidden" />
+      <div className="relative w-full">
+        <div ref={ref} className="w-full h-[280px] rounded-[var(--upbit-radius)] overflow-hidden" />
+        {chartPulseActive && <div className={styles.chartPulse} aria-hidden />}
+      </div>
       <div className="flex gap-2 mt-2 overflow-x-auto no-scrollbar pb-1">
         {(['1s', '5s', '1m', '1h', '1D', '1W', '1M'] as TF[]).map((k) => (
           <button

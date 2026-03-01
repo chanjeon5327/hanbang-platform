@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getServerSupabase } from '@/utils/supabase/server';
 import { isAdminEmail } from '@/lib/auth/isAdminEmail';
 
 export async function GET(req: Request) {
-  const supabase = await createClient();
+  const supabase = await getServerSupabase();
 
   const {
     data: { user },
@@ -19,13 +19,13 @@ export async function GET(req: Request) {
     .eq('id', user.id)
     .single();
 
-  if (error) {
-    console.error('profile fetch error:', error);
+  if (error && process.env.NODE_ENV === 'development') {
+    console.warn('[session] profile fetch:', error.message);
   }
 
   // 정지 계정 처리
   if (profile?.status === 'SUSPENDED') {
-    await supabase.auth.signOut({ scope: 'local' });
+    await supabase.auth.signOut();
     return NextResponse.json({ user: null });
   }
 

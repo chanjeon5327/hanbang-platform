@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 import { formatQty } from '@/lib/utils/format';
 
 type OrderbookRow = { price_usd: number; quantity: number };
@@ -45,7 +45,7 @@ export default function OrderBookRealtime({ contentId, currentPriceUsd, myOrderP
   }, [fetchOrderbook]);
 
   useEffect(() => {
-    const supabase = createClient();
+    const supabase = getBrowserSupabase();
     if (!supabase?.channel) return;
 
     const channel = supabase

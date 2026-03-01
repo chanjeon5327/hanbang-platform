@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabase/server';
+import { getAdminSupabase } from '@/utils/supabase/admin';
 import { ADMIN_EMAILS } from '@/lib/admin/env';
 
 /**
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
     const { data } = await admin.auth.admin.listUsers({ perPage: 1000 });
     const matches = data?.users?.filter((u) =>
       ADMIN_EMAILS.includes(u.email?.toLowerCase() ?? '')

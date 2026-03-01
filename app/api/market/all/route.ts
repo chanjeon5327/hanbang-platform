@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 import { getYtThumb } from "@/lib/thumbnails";
 import { extractYoutubeId } from "@/lib/youtube";
 
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     const artistKeyword = searchParams.get("artist_keyword");
     const sort = searchParams.get("sort") ?? "created_at";
 
-    const supabase = await createClient();
+    const supabase = await getServerSupabase();
 
     let query = supabase
       .from("content_items")

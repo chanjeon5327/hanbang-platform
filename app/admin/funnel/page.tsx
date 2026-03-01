@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 
 type Row = {
@@ -13,7 +13,7 @@ type Row = {
 };
 
 export default function AdminFunnelPage() {
-  const supabase = createClient();
+  const supabase = getBrowserSupabase();
   const router = useRouter();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);

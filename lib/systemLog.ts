@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/utils/supabase/server";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 
 export type SystemLogType =
   | "API_ERROR"
@@ -14,7 +14,7 @@ export async function logSystem(
   payload: Record<string, unknown>
 ): Promise<void> {
   try {
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
     await admin.from("system_logs").insert({
       type,
       payload: payload as Record<string, never>,

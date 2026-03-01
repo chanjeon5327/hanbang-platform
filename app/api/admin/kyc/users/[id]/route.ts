@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabase/server';
+import { getAdminSupabase } from '@/utils/supabase/admin';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 const VALID_STATUS = ['APPROVED', 'REJECTED'] as const;
@@ -19,7 +19,7 @@ export async function GET(
       return NextResponse.json({ error: 'id required' }, { status: 400 });
     }
 
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
 
     const { data: profile } = await admin.from('profiles').select('id, email, status').eq('id', id).single();
     const { data: invProfile } = await (admin as any).from('investor_profiles').select('*').eq('user_id', id).single();
@@ -63,7 +63,7 @@ export async function PATCH(
       );
     }
 
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
 
     // investor_profiles 업데이트
     const { data: invData, error: invError } = await (admin as any)

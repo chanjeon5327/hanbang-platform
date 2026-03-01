@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { getYtThumb } from '@/lib/thumbnails';
+import { getYtThumb, PRODUCT_PLACEHOLDER } from '@/lib/thumbnails';
 import SectionHeader from '@/components/home/SectionHeader';
 import { useRecommendedRails, type Rail, type RailItem } from '@/hooks/useRecommendedRails';
 
@@ -27,14 +27,23 @@ function RailCard({ item, index, badge }: { item: RailItem; index: number; badge
     >
       <div className="relative overflow-hidden rounded-2xl border border-black/5 active:opacity-95 transition-all duration-200" style={{ backgroundColor: 'var(--toss-card)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
         <div className="aspect-[4/5] relative overflow-hidden">
-          <img src={thumbSrc} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:opacity-95" loading="lazy" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" aria-hidden />
+          <img
+            src={thumbSrc}
+            alt=""
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:opacity-95"
+            loading="lazy"
+            onError={(e) => {
+              const el = e.currentTarget;
+              if (!el.src.includes('placeholders/')) el.src = PRODUCT_PLACEHOLDER;
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" aria-hidden />
           {badge && (
-            <span className="absolute top-2 right-2 rounded-full px-2 py-0.5 caption font-bold text-white" style={{ backgroundColor: TOSS.negative }}>
+            <span className="absolute top-2 right-2 rounded-full px-2 py-0.5 caption font-bold text-white pointer-events-none" style={{ backgroundColor: TOSS.negative }}>
               {badge}
             </span>
           )}
-          <div className="absolute bottom-2 left-2 right-2">
+          <div className="absolute bottom-2 left-2 right-2 pointer-events-none">
             <span className="inline-block rounded-lg px-2 py-0.5 caption font-semibold text-white" style={{ backgroundColor: TOSS.blue }}>수익권</span>
           </div>
         </div>

@@ -2,7 +2,6 @@
 import React from 'react';
 import Link from 'next/link';
 import TopHeader from '../../../components/TopHeader';
-import BottomNav from '../../../components/BottomNav';
 import { ArrowLeft, Users, TrendingUp, Globe } from 'lucide-react';
 import { getYtThumb } from '@/lib/thumbnails';
 
@@ -97,8 +96,6 @@ export default function FandomPage() {
           </Link>
         </div>
       </div>
-
-      <BottomNav />
     </div>
   );
 }

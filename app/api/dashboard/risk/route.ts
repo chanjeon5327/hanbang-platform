@@ -19,7 +19,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getServerSupabase } from "@/utils/supabase/server";
 import { requireActiveUser } from "@/lib/auth/requireActiveUser";
 
 import type { RiskResponse, MddResult, RollingReturn } from "@/lib/types/financial";
@@ -27,7 +27,7 @@ import type { RiskResponse, MddResult, RollingReturn } from "@/lib/types/financi
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const supabase = await createClient();
+  const supabase = await getServerSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();

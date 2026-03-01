@@ -16,7 +16,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/server";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 
 import type { RevenueDistributeResult } from "@/lib/types/financial";
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const supabaseAdmin = createAdminClient();
+    const supabaseAdmin = getAdminSupabase();
 
     const { data, error } = await supabaseAdmin.rpc("rpc_distribute_revenue", {
       p_event_id: body.event_id,

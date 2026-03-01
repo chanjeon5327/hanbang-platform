@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabase/server';
+import { getAdminSupabase } from '@/utils/supabase/admin';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 /**
@@ -18,7 +18,7 @@ export async function GET(
       return NextResponse.json({ ok: false, error: 'dividend_id required' }, { status: 200 });
     }
 
-    const admin = createAdminClient();
+    const admin = getAdminSupabase();
 
     const { data: dists, error } = await (admin as any)
       .from('dividend_distributions')

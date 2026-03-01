@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Star } from 'lucide-react';
-import { getYtThumb } from '@/lib/thumbnails';
+import { getYtThumb, PRODUCT_PLACEHOLDER } from '@/lib/thumbnails';
 
 export type InterestCardData = {
   id: string;
@@ -46,7 +46,16 @@ export default function InterestCard({
   return (
     <div className="w-[160px] shrink-0">
       <div className="aspect-[4/5] rounded-xl overflow-hidden bg-black/20">
-        <img src={thumbSrc} alt="" className="w-full h-full object-cover" loading="lazy" />
+        <img
+        src={thumbSrc}
+        alt=""
+        className="w-full h-full object-cover"
+        loading="lazy"
+        onError={(e) => {
+          const el = e.currentTarget;
+          if (!el.src.includes('placeholders/')) el.src = PRODUCT_PLACEHOLDER;
+        }}
+      />
       </div>
       <div className="mt-1 text-sm font-semibold truncate">{data.title}</div>
       {mode === 'onboarding' && (

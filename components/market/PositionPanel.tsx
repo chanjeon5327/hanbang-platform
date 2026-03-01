@@ -128,7 +128,7 @@ export default function PositionPanel({ assetId, sharePriceUsd, fxRate, isLogged
       <div className="flex justify-between body-sm pt-1 border-t" style={{ borderColor: 'var(--upbit-border)' }}>
         <span style={{ color: 'var(--upbit-text-dim)' }}>평가 손익</span>
         <span
-          className={`font-bold tabular-nums text-right ${pnlPositive ? 'text-emerald-600' : 'text-[var(--accent-loss)]'}`}
+          className={`font-bold tabular-nums text-right ${pnlPositive ? 'text-red-600' : 'text-[var(--accent-loss)]'}`}
         >
           {(position.unrealized_pnl >= 0 ? '+' : '') + formatKrw(position.unrealized_pnl)}
         </span>
@@ -136,7 +136,7 @@ export default function PositionPanel({ assetId, sharePriceUsd, fxRate, isLogged
       <div className="flex justify-between body-sm">
         <span style={{ color: 'var(--upbit-text-dim)' }}>수익률</span>
         <span
-          className={`text-subtitle font-semibold tabular-nums text-right ${pnlPositive ? 'text-emerald-600' : 'text-[var(--accent-loss)]'}`}
+          className={`text-subtitle font-semibold tabular-nums text-right ${pnlPositive ? 'text-red-600' : 'text-[var(--accent-loss)]'}`}
         >
           {(position.unrealized_rate >= 0 ? '+' : '') + formatRate(position.unrealized_rate)}
         </span>

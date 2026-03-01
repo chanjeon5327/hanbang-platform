@@ -32,19 +32,11 @@ export async function middleware(request: NextRequest) {
 
 /**
  * Matcher 설정:
- * - 정적 파일, API 라우트, Next.js 내부 경로는 제외
- * - 실제 페이지 라우트에만 미들웨어 적용
+ * - 정적/API 제외, 페이지 라우트에 적용 (세션 갱신)
+ * - 리다이렉트는 보호 라우트만 (lib/supabase/middleware)
  */
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, robots.txt, sitemap.xml (metadata files)
-     * - /api/* (API routes - 각자 인증 처리)
-     * - /*.* (static files with extension)
-     */
     '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|api|.*\\..*).*)',
   ],
 };

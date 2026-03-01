@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle } from 'lucide-react';
+import Confetti from '@/components/ui/Confetti';
 
 type Order = {
   id: string;
@@ -66,6 +67,7 @@ function OrderSuccessContent() {
 
   return (
     <div className="min-h-screen flex flex-col px-6 pt-12 pb-8 bg-[var(--toss-bg)]">
+      <Confetti duration={600} />
       <div className="flex-1 flex flex-col items-center justify-center">
         <CheckCircle size={58} strokeWidth={2} className="mb-4 text-[var(--toss-blue)]" />
         <h1 className="h2 font-bold mb-1 text-[var(--toss-text)]">매수 완료</h1>

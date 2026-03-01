@@ -42,63 +42,96 @@ export async function updateSession(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────
-  // 🔒 관리자 강제 로그아웃 확인
+  // 🔒 [AUTH Phase-2] 관리자 강제 로그아웃 + 동시 로그인 제한 확인
+  // 🔒 [유입 확대 3-1] KYC/온보딩 강제 라우팅용 profile 캐시
+  // 단일 DB 조회로 두 가지 정책을 동시에 처리
   // ─────────────────────────────────────────────────
+  let profileData: { kyc_status?: string; onboarding_completed?: boolean; last_login_at?: string; force_logout_at?: string; session_version?: string } | null = null
+
   if (user) {
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('last_login_at, force_logout_at')
+        .select('last_login_at, force_logout_at, session_version, kyc_status, onboarding_completed')
         .eq('id', user.id)
         .single()
 
-      if (profile?.force_logout_at && profile?.last_login_at) {
-        const forceLogoutTime = new Date(profile.force_logout_at).getTime()
-        const lastLoginTime = new Date(profile.last_login_at).getTime()
+      profileData = profile ?? null
 
-        // 관리자가 설정한 강제 로그아웃 시간이 마지막 로그인 시간보다 나중이면
-        // → 세션 무효화 (관리자가 사용자 강제 로그아웃 처리)
-        if (forceLogoutTime > lastLoginTime) {
-          console.warn(`[FORCE_LOGOUT] User ${user.id} - Admin forced logout`)
-          
-          // 세션 무효화
+      if (profile) {
+        // ── 관리자 강제 로그아웃 확인 ──
+        if (profile.force_logout_at && profile.last_login_at) {
+          const forceLogoutTime = new Date(profile.force_logout_at).getTime()
+          const lastLoginTime = new Date(profile.last_login_at).getTime()
+
+          if (forceLogoutTime > lastLoginTime) {
+            console.warn(`[FORCE_LOGOUT] User ${user.id}`)
+            await supabase.auth.signOut()
+            const url = request.nextUrl.clone()
+            url.pathname = '/login'
+            url.searchParams.set('reason', 'force_logout')
+            return NextResponse.redirect(url)
+          }
+        }
+
+        // ── [AUTH Phase-2 / 8-2] 동시 로그인 제한 ──
+        // 쿠키에 session_version이 있고 DB 값과 다르면 → 다른 기기/브라우저에서 로그인한 것
+        // 현재 세션을 무효화하고 /login?reason=concurrent 으로 리다이렉트
+        const cookieSessionVersion = request.cookies.get('hb_session_version')?.value
+        if (
+          profile.session_version &&
+          cookieSessionVersion &&
+          cookieSessionVersion !== profile.session_version
+        ) {
+          console.warn(`[CONCURRENT_SESSION] User ${user.id} - evicting old session`)
           await supabase.auth.signOut()
-
-          // /login으로 리다이렉트
           const url = request.nextUrl.clone()
           url.pathname = '/login'
-          url.searchParams.set('reason', 'force_logout')
+          url.searchParams.set('reason', 'concurrent')
           return NextResponse.redirect(url)
         }
       }
     } catch (err) {
-      // profiles 조회 실패 시 무시 (서비스 중단 방지)
-      console.error('[MIDDLEWARE] Failed to check force_logout_at:', err)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[MIDDLEWARE] session policies check:', (err as Error)?.message);
+      }
     }
   }
 
-  // 공개 페이지: /demo, /market 하위 경로까지 인증 없이 접근 가능
+  // ─────────────────────────────────────────────────
+  // 🔒 [압도 긴급수리] 열람 공개 / 거래만 KYC
+  // 보호 라우트가 아니면 즉시 통과 (/, /market, /feature 등 열람 허용)
+  // ─────────────────────────────────────────────────
   const pathname = request.nextUrl.pathname
-  const isPublicPath =
-    pathname === '/' ||
-    pathname.startsWith('/login') ||
-    pathname.startsWith('/signup') ||
-    pathname.startsWith('/auth') ||
-    pathname.startsWith('/projects') ||
-    pathname.startsWith('/active-invest') ||
-    pathname.startsWith('/notice') ||
-    pathname.startsWith('/demo') ||
-    pathname.startsWith('/design') ||
-    pathname.startsWith('/market') ||
-    pathname.startsWith('/api')
+  const protectedPrefixes = ['/wallet', '/order', '/dashboard', '/mypage', '/admin', '/creator/upload', '/invest', '/active-invest']
+  const isProtectedPath = protectedPrefixes.some((p) => pathname.startsWith(p))
 
-  // 공개 페이지가 아니고 로그인하지 않은 경우에만 리다이렉트
-  if (!user && !isPublicPath) {
+  if (!isProtectedPath) {
+    return supabaseResponse
+  }
+
+  // 보호 라우트: 미로그인 → /login
+  if (!user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    // 원래 경로를 ?next= 쿼리로 보존하여 로그인 후 돌아올 수 있게 함
     url.searchParams.set('next', pathname)
     return NextResponse.redirect(url)
+  }
+
+  // 보호 라우트: 로그인 + KYC 미승인 → /kyc (admin은 별도 가드)
+  if (!pathname.startsWith('/admin')) {
+    if (!profileData || profileData.kyc_status !== 'approved') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/kyc'
+      url.searchParams.set('next', pathname)
+      return NextResponse.redirect(url)
+    }
+    if (!profileData.onboarding_completed) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/onboarding'
+      url.searchParams.set('next', pathname)
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

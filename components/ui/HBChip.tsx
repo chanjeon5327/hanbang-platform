@@ -13,7 +13,7 @@ interface HBChipProps extends React.HTMLAttributes<HTMLSpanElement> {
 const toneStyles: Record<HBChipTone, React.CSSProperties> = {
   default: { background: 'var(--bg-secondary)', color: 'var(--text)' },
   blue: { background: 'rgba(30, 64, 175, 0.1)', color: 'var(--royal-blue)' },
-  green: { background: 'rgba(5, 150, 105, 0.1)', color: 'var(--emerald)' },
+  green: { background: 'rgba(239, 68, 68, 0.1)', color: 'var(--emerald)' },
   red: { background: 'rgba(220, 38, 38, 0.1)', color: 'var(--accent-loss)' },
   amber: { background: 'rgba(245, 158, 11, 0.1)', color: '#D97706' },
   muted: { background: 'var(--bg-secondary)', color: 'var(--text-muted)' },

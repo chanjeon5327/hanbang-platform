@@ -13,13 +13,14 @@ export default function OrderBookPanel({ assetId }: { assetId: string }) {
   const [asks, setAsks] = useState<OrderBookLevel[]>([]);
 
   const fetch_ = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/exchange/orderbook/${assetId}`, { cache: 'no-store' });
-      if (!res.ok) return;
-      const d = await res.json();
-      setBids(d.bids ?? []);
-      setAsks(d.asks ?? []);
-    } catch { /* ignore */ }
+    // TODO: experimental — exchange API is admin-only. Uncomment for internal testing.
+    // try {
+    //   const res = await fetch(`/api/exchange/orderbook/${assetId}`, { cache: 'no-store' });
+    //   if (!res.ok) return;
+    //   const d = await res.json();
+    //   setBids(d.bids ?? []);
+    //   setAsks(d.asks ?? []);
+    // } catch { /* ignore */ }
   }, [assetId]);
 
   useEffect(() => { fetch_(); const t = setInterval(fetch_, 3000); return () => clearInterval(t); }, [fetch_]);
@@ -58,8 +59,8 @@ export default function OrderBookPanel({ assetId }: { assetId: string }) {
 function HogaRow({ price, qty, maxQty, side }: { price: number; qty: number; maxQty: number; side: 'BUY' | 'SELL' }) {
   const pct = (qty / maxQty) * 100;
   const isBuy = side === 'BUY';
-  const bg = isBuy ? 'rgba(5,150,105,0.06)' : 'rgba(220,38,38,0.06)';
-  const barBg = isBuy ? 'rgba(5,150,105,0.12)' : 'rgba(220,38,38,0.12)';
+  const bg = isBuy ? 'rgba(239,68,68,0.06)' : 'rgba(59,130,246,0.06)';
+  const barBg = isBuy ? 'rgba(239,68,68,0.12)' : 'rgba(59,130,246,0.12)';
   const color = isBuy ? 'var(--emerald)' : 'var(--accent-loss)';
 
   return (
