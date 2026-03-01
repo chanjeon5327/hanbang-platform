@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMarketItem } from '@/hooks/useMarketItem';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -26,6 +26,8 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const [tab, setTab] = useState<'info' | 'order'>('info');
   const [lastTradePrice, setLastTradePrice] = useState(0);
   const [positionQty, setPositionQty] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [lastOrderLine, setLastOrderLine] = useState<string | null>(null);
 
   useEffect(() => {
     const onScroll = () => setShowScrollTop(typeof window !== 'undefined' && window.scrollY > 300);
@@ -42,13 +44,33 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
     if (!loading && sharePriceKrw > 0) setLastTradePrice(Math.round(sharePriceKrw));
   }, [loading, sharePriceKrw]);
 
-  useEffect(() => {
+  const fetchPositionQty = useCallback(() => {
     if (!user || !id) return;
     fetch(`/api/wallet/position?asset_id=${id}`, { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => setPositionQty(Number(j?.quantity ?? 0)))
       .catch(() => setPositionQty(0));
   }, [user, id]);
+
+  useEffect(() => {
+    fetchPositionQty();
+  }, [fetchPositionQty]);
+
+  useEffect(() => {
+    const handler = (e: CustomEvent<{ assetId: string; payload?: { side: string; type: string; qty: number }; result?: { url: string; data: unknown } }>) => {
+      const { assetId: evAssetId, payload } = e.detail ?? {};
+      if (evAssetId !== id) return;
+      setRefreshKey((k) => k + 1);
+      if (payload) {
+        const sideKr = payload.side === 'buy' ? '매수' : '매도';
+        const typeKr = payload.type === 'market' ? '시장가' : '지정가';
+        setLastOrderLine(`방금 ${sideKr} ${payload.qty}주 ${typeKr} 주문 접수`);
+      }
+      fetchPositionQty();
+    };
+    window.addEventListener('hb:order-placed', handler as EventListener);
+    return () => window.removeEventListener('hb:order-placed', handler as EventListener);
+  }, [id, fetchPositionQty]);
 
   if (error && !item) {
     return (
@@ -286,14 +308,14 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
                     <div className={styles.panelCard}>
                       <h3 className={styles.terminalTitle}>가격 차트</h3>
                       <div className={styles.chartWrap}>
-                        <RealPriceChart priceKrw={priceKrw} loading={loading} height={280} theme="light" />
+                        <RealPriceChart key={`chart-${refreshKey}`} priceKrw={priceKrw} loading={loading} height={280} theme="light" />
                       </div>
                       <BuySellPulseBar useMock />
                     </div>
 
                     <div className={styles.panelCard}>
                       <h3 className={styles.terminalTitle}>실시간 체결</h3>
-                      <LiveTradesMock basePriceKrw={sharePriceKrw} />
+                      <LiveTradesMock key={`trades-${refreshKey}`} basePriceKrw={sharePriceKrw} />
                     </div>
                   </div>
 
@@ -301,12 +323,18 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
                   <div className={styles.terminalRight}>
                     <div className={styles.panelCard}>
                       <h3 className={styles.terminalTitle}>주문</h3>
-                      <TradingPanelV2 currentPriceKrw={priceKrw} />
+                      {lastOrderLine && (
+                        <div className="mb-2 text-center text-xs text-emerald-600" aria-live="polite">
+                          {lastOrderLine}
+                        </div>
+                      )}
+                      <TradingPanelV2 assetId={id} currentPriceKrw={priceKrw} />
                     </div>
 
                     <div className={styles.panelCard}>
                       <h3 className={styles.terminalTitle}>호가창</h3>
                       <MockOrderBook
+                        key={`orderbook-${refreshKey}`}
                         basePriceKrw={priceKrw}
                         loading={loading}
                         theme="light"
