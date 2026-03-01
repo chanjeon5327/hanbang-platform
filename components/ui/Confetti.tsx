@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+const COLORS = ['#3B82F6', '#EF4444', '#F59E0B', '#8B5CF6', '#EC4899'];
 
 export default function Confetti({ duration = 600, onComplete }: { duration?: number; onComplete?: () => void }) {
   const [pieces] = useState(() =>

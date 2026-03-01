@@ -8,6 +8,6 @@ export const gradients = {
   royalButton: 'linear-gradient(180deg, #2563EB 0%, #1E40AF 100%)',
   royalGlow: 'linear-gradient(135deg, rgba(30, 58, 138, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%)',
   darkOverlay: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 100%)',
-  metricPositive: 'linear-gradient(135deg, #059669 0%, #10B981 100%)',
-  metricNegative: 'linear-gradient(135deg, #DC2626 0%, #EF4444 100%)',
+  metricPositive: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
+  metricNegative: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
 } as const;

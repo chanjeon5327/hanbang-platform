@@ -17,8 +17,8 @@ export default function TradingPanelV2({ currentPriceKrw = 13500 }) {
   const fee = subtotal * 0.0003;
   const total = subtotal + fee;
 
-  const buyColor = '#DC2626';
-  const sellColor = '#2563EB';
+  const buyColor = '#ef4444';
+  const sellColor = '#3b82f6';
 
   return (
     <div className={styles.terminalOrderPanel}>
@@ -74,7 +74,7 @@ export default function TradingPanelV2({ currentPriceKrw = 13500 }) {
           disabled={type === 'market'}
           value={type === 'market' ? currentPriceKrw : price}
           onChange={(e) => setPrice(Number(e.target.value))}
-          className={styles.orderInput}
+          className={`${styles.orderInput} price-number text-2xl`}
         />
       </div>
 
@@ -89,7 +89,7 @@ export default function TradingPanelV2({ currentPriceKrw = 13500 }) {
             type="number"
             value={qty}
             onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))}
-            className={`${styles.orderInput} ${styles.numMono}`}
+            className={`${styles.orderInput} price-number`}
             style={{ textAlign: 'center', flex: 1 }}
           />
           <button type="button" onClick={() => setQty((q) => q + 1)} className={styles.stepperBtn}>
@@ -119,15 +119,15 @@ export default function TradingPanelV2({ currentPriceKrw = 13500 }) {
       <div className={styles.orderSummaryBox}>
         <div className={styles.orderSummaryRow}>
           <span>예상 체결금액</span>
-          <span className={styles.numMono}>₩{krw(subtotal)}</span>
+          <span className="price-number text-2xl">₩{krw(subtotal)}</span>
         </div>
         <div className={styles.orderSummaryRow}>
           <span>수수료</span>
-          <span className={styles.numMono}>₩{krw(fee)}</span>
+          <span className="price-number">₩{krw(fee)}</span>
         </div>
         <div className={`${styles.orderSummaryRow} ${styles.orderTotal}`}>
           <span>총액</span>
-          <span className={styles.numMono}>₩{krw(total)}</span>
+          <span className="price-number text-2xl">₩{krw(total)}</span>
         </div>
       </div>
 

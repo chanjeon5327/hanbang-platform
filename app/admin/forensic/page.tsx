@@ -220,7 +220,7 @@ function LoginStatsCard({ stats }: { stats: LoginStats }) {
       </div>
       <div className="space-y-2 text-sm">
         <StatRow label="총 시도" value={stats.total_attempts.toLocaleString()} />
-        <StatRow label="성공" value={stats.success_count.toLocaleString()} color="#16a34a" />
+        <StatRow label="성공" value={stats.success_count.toLocaleString()} color="#ef4444" />
         <StatRow label="실패" value={stats.failure_count.toLocaleString()} color="#dc2626" />
         <StatRow
           label="실패율"
@@ -280,7 +280,7 @@ function IntegritySummaryCard({ integrity }: { integrity: LedgerIntegrityResult 
       </div>
       <div
         className="text-3xl font-bold mb-1"
-        style={{ color: integrity.integrity_ok ? '#16a34a' : '#dc2626' }}
+        style={{ color: integrity.integrity_ok ? '#ef4444' : '#dc2626' }}
       >
         {integrity.integrity_ok ? 'PASS' : 'FAIL'}
       </div>

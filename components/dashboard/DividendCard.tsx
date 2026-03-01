@@ -83,7 +83,7 @@ export default function DividendCard() {
     >
       {/* 헤더 */}
       <div className="flex items-center gap-2 mb-1">
-        <Banknote size={16} style={{ color: 'var(--upbit-positive, #16a34a)' }} />
+        <Banknote size={16} style={{ color: 'var(--upbit-positive, #ef4444)' }} />
         <span className="text-xs font-medium" style={{ color: 'var(--text-secondary, #6b7280)' }}>
           수익분배
         </span>
@@ -93,7 +93,7 @@ export default function DividendCard() {
       <div className="flex items-end gap-4 mb-4">
         <div>
           <div className="text-xs" style={{ color: 'var(--text-muted, #9ca3af)' }}>이번 달</div>
-          <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--upbit-positive, #16a34a)' }}>
+          <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--upbit-positive, #ef4444)' }}>
             {formatKrw(data.this_month)}
           </div>
         </div>
@@ -140,7 +140,7 @@ export default function DividendCard() {
               <span style={{ color: 'var(--text-secondary, #6b7280)' }}>
                 {new Date(d.created_at).toLocaleDateString('ko-KR')}
               </span>
-              <span className="font-medium tabular-nums" style={{ color: 'var(--upbit-positive, #16a34a)' }}>
+              <span className="font-medium tabular-nums" style={{ color: 'var(--upbit-positive, #ef4444)' }}>
                 +{formatKrw(d.amount)}
               </span>
             </div>

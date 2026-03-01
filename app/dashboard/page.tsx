@@ -160,7 +160,7 @@ export default function DashboardPage() {
           style={{
             backgroundColor: 'var(--card)',
             border: '1px solid var(--border)',
-            boxShadow: todayChange > 0 ? '0 0 20px rgba(16,185,129,0.15)' : todayChange < 0 ? '0 0 20px rgba(239,68,68,0.15)' : undefined,
+            boxShadow: todayChange > 0 ? '0 0 20px rgba(239,68,68,0.15)' : todayChange < 0 ? '0 0 20px rgba(59,130,246,0.15)' : undefined,
           }}
         >
           {loading ? (
@@ -196,7 +196,7 @@ export default function DashboardPage() {
                         ? 'var(--emerald)'
                         : 'var(--accent-loss)'
                       : 'var(--text-secondary)',
-                  textShadow: todayChange > 0 ? '0 0 8px rgba(16,185,129,0.4)' : todayChange < 0 ? '0 0 8px rgba(239,68,68,0.4)' : undefined,
+                  textShadow: todayChange > 0 ? '0 0 8px rgba(239,68,68,0.4)' : todayChange < 0 ? '0 0 8px rgba(59,130,246,0.4)' : undefined,
                 }}
               >
                 {isLoggedIn

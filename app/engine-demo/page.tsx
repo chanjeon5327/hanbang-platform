@@ -97,7 +97,7 @@ export default function EngineDemoPage() {
                     ) : (
                       data.trades.map((t) => (
                         <tr key={t.id} className="border-t" style={{ borderColor: '#21262D' }}>
-                          <td className="py-2 font-bold" style={{ color: t.type === 'BUY' ? '#10B981' : '#EF4444' }}>
+                          <td className="py-2 font-bold" style={{ color: t.type === 'BUY' ? '#ef4444' : '#EF4444' }}>
                             {formatKrw(t.price)}
                           </td>
                           <td className="py-2 font-semibold">{t.quantity}</td>
@@ -146,7 +146,7 @@ export default function EngineDemoPage() {
                   data.settlement.batches.map((b) => (
                     <div key={b.id} className="flex flex-wrap items-center gap-2 py-2 border-b last:border-b-0" style={{ borderColor: '#21262D' }}>
                       <span className="font-semibold">{b.batch_date}</span>
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${b.status === 'sealed' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${b.status === 'sealed' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}`}>
                         {b.status}
                       </span>
                       {b.hash && (

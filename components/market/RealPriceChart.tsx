@@ -200,6 +200,7 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
       layout: {
         background: { type: ColorType.Solid, color: bgColor },
         textColor,
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
       },
       grid: {
         vertLines: { visible: false },
@@ -225,7 +226,7 @@ export default function RealPriceChart({ priceKrw, loading, height = 420, theme 
 
     if (indicators.MA20 && sma20.length > 0) {
       const s = chart.addSeries(LineSeries, {
-        color: '#10B981',
+        color: '#3b82f6',
         lineWidth: 2,
         title: 'MA20',
       });

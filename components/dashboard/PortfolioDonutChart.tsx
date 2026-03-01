@@ -1,6 +1,6 @@
 'use client';
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#6B7280'];
+const COLORS = ['#3B82F6', '#EF4444', '#F59E0B', '#8B5CF6', '#EC4899', '#6B7280'];
 
 type Item = { asset_id: string; title: string; current_value: number };
 

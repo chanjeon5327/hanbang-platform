@@ -338,7 +338,7 @@ export default function SmokePage() {
         <div className="space-y-2 text-[13px] font-bold">
           {summaryLines.map((l, i) => (
             <div key={i} className="flex items-center gap-2">
-              <span className={l.skip ? 'text-gray-400' : l.ok ? 'text-emerald-600' : 'text-red-600'}>
+              <span className={l.skip ? 'text-gray-400' : l.ok ? 'text-red-600' : 'text-red-600'}>
                 {l.skip ? '⏭' : l.ok ? '✅' : '❌'}
               </span>
               <span className={l.skip ? 'text-gray-500' : l.ok ? 'text-gray-900' : 'text-red-600'}>{l.text}</span>
@@ -350,7 +350,7 @@ export default function SmokePage() {
       <div className="mt-6 grid gap-4">
         <div className="rounded-2xl border border-black/10 bg-white p-5">
           <div className="text-[13px] font-extrabold text-gray-900">로그인 여부</div>
-          <div className="mt-2 text-[13px] font-bold text-emerald-700">
+          <div className="mt-2 text-[13px] font-bold text-red-700">
             {session.loading ? '로딩…' : session.ok ? `로그인됨 — ${(session.data?.user as Record<string, unknown>)?.email || session.data?.email || (session.data?.user as Record<string, unknown>)?.id || ''}` : `실패 — ${session.error}`}
           </div>
         </div>
@@ -406,7 +406,7 @@ export default function SmokePage() {
                 <div key={String(e?.id ?? idx)} className="rounded-xl border border-black/10 bg-white px-4 py-3 text-[12px] font-bold text-gray-700">
                   <div className="flex items-center justify-between">
                     <span>{String(e?.entry_type || e?.type || e?.kind || '—')}</span>
-                    <span className="text-emerald-700">
+                    <span className="text-red-700">
                       {String(e?.amount_krw ?? e?.amount ?? e?.delta ?? '—')}
                     </span>
                   </div>
@@ -427,7 +427,7 @@ export default function SmokePage() {
             disabled={buyLoading || !demoOn}
             className={[
               'mt-3 w-full rounded-2xl px-4 py-4 text-[14px] font-extrabold text-white',
-              buyLoading || !demoOn ? 'bg-gray-300' : 'bg-emerald-600',
+              buyLoading || !demoOn ? 'bg-gray-300' : 'bg-red-600',
             ].join(' ')}
           >
             {buyLoading ? '실행 중…' : demoOn ? '데모 매수 1회' : 'DEMO_TRADING OFF (실행 불가)'}

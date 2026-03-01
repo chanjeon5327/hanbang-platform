@@ -75,7 +75,7 @@ export default function PnLCard() {
   }
 
   const isPositive = data.total_unrealized_pnl >= 0;
-  const pnlColor = isPositive ? 'var(--upbit-positive, #16a34a)' : 'var(--upbit-ask, #dc2626)';
+  const pnlColor = isPositive ? 'var(--upbit-positive, #ef4444)' : 'var(--upbit-ask, #dc2626)';
 
   return (
     <div
@@ -115,7 +115,7 @@ export default function PnLCard() {
         <div className="mt-4 space-y-2">
           {data.positions.slice(0, 5).map((pos) => {
             const posColor = pos.unrealized_pnl >= 0
-              ? 'var(--upbit-positive, #16a34a)'
+              ? 'var(--upbit-positive, #ef4444)'
               : 'var(--upbit-ask, #dc2626)';
             return (
               <div

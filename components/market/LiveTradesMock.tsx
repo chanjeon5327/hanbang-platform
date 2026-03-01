@@ -45,19 +45,19 @@ export default function LiveTradesMock({ basePriceKrw }: Props) {
   }, [addTrade]);
 
   return (
-    <div className={styles.tickerList}>
+    <div className={styles.tickerList} style={{ lineHeight: 1.2 }}>
       {trades.map((t) => (
         <div
           key={t.id}
           className={`${styles.tickerRow} ${styles.tickerRowCompact} ${enteringIds.has(t.id) ? styles.tradeEnter : ''}`}
         >
           <span
-            className={`${styles.tickerPrice} ${styles.numMono}`}
-            style={{ color: t.side === 'buy' ? '#DC2626' : '#2563EB' }}
+            className={`${styles.tickerPrice} price-number`}
+            style={{ color: t.side === 'buy' ? '#ef4444' : '#3b82f6' }}
           >
             {formatKrw(t.price)}
           </span>
-          <span className={`${styles.tickerQty} ${styles.numMono}`}>{t.qty}주</span>
+          <span className={`${styles.tickerQty} price-number`}>{t.qty}주</span>
           <span className={styles.tickerTime}>{t.time}</span>
         </div>
       ))}

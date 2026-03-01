@@ -188,7 +188,7 @@ export default function CreatorUploadPage() {
         </div>
 
         {error && <p style={{ color: '#dc2626', fontSize: 14 }}>{error}</p>}
-        {success && <p style={{ color: '#059669', fontSize: 14 }}>{success}</p>}
+        {success && <p style={{ color: '#ef4444', fontSize: 14 }}>{success}</p>}
         {planPdfUrl && (
           <p style={{ fontSize: 14 }}>
             <a href={planPdfUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#6D28D9', textDecoration: 'underline' }}>

@@ -165,7 +165,7 @@ const THEME = {
     ask: '#e53935',
     sma5: '#8b5cf6',
     sma20: '#f59e0b',
-    rsi: '#10b981',
+    rsi: '#ef4444',
   },
   dark: {
     bg: '#0d0d0d',
@@ -175,7 +175,7 @@ const THEME = {
     ask: '#e53935',
     sma5: '#a78bfa',
     sma20: '#fbbf24',
-    rsi: '#34d399',
+    rsi: '#f87171',
   },
 };
 

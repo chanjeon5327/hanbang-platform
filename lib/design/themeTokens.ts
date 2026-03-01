@@ -31,11 +31,11 @@ export const lightTokens = {
   royalBlue: '#1E40AF',
   royalBlueLight: '#2563EB',
   royalBlueDark: '#1D4ED8',
-  /** 액센트 */
-  emerald: '#059669',
-  emeraldLight: '#10B981',
-  accentLoss: '#DC2626',
-  accentLossLight: '#EF4444',
+  /** 액센트 (매수=red, 매도=blue) */
+  emerald: '#ef4444',
+  emeraldLight: '#f87171',
+  accentLoss: '#3b82f6',
+  accentLossLight: '#60a5fa',
 } as const;
 
 /** 다크 모드: 딥 네이비/차콜 계열 (회색 종이 X) */
@@ -64,11 +64,11 @@ export const darkTokens = {
   royalBlue: '#3B82F6',
   royalBlueLight: '#60A5FA',
   royalBlueDark: '#2563EB',
-  /** 액센트 */
-  emerald: '#10B981',
-  emeraldLight: '#34D399',
-  accentLoss: '#EF4444',
-  accentLossLight: '#F87171',
+  /** 액센트 (매수=red, 매도=blue) */
+  emerald: '#ef4444',
+  emeraldLight: '#f87171',
+  accentLoss: '#3b82f6',
+  accentLossLight: '#60a5fa',
 } as const;
 
 export const themeTokens = {

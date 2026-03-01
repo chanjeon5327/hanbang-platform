@@ -59,8 +59,8 @@ export default function OrderBookPanel({ assetId }: { assetId: string }) {
 function HogaRow({ price, qty, maxQty, side }: { price: number; qty: number; maxQty: number; side: 'BUY' | 'SELL' }) {
   const pct = (qty / maxQty) * 100;
   const isBuy = side === 'BUY';
-  const bg = isBuy ? 'rgba(5,150,105,0.06)' : 'rgba(220,38,38,0.06)';
-  const barBg = isBuy ? 'rgba(5,150,105,0.12)' : 'rgba(220,38,38,0.12)';
+  const bg = isBuy ? 'rgba(239,68,68,0.06)' : 'rgba(59,130,246,0.06)';
+  const barBg = isBuy ? 'rgba(239,68,68,0.12)' : 'rgba(59,130,246,0.12)';
   const color = isBuy ? 'var(--emerald)' : 'var(--accent-loss)';
 
   return (

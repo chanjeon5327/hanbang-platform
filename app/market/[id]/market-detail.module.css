@@ -23,7 +23,7 @@
   padding: 10px 20px;
   border-radius: 12px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: #fff;
   background: #6D28D9;
   border: 0;
@@ -129,7 +129,7 @@
 .t1t2Toggle button {
   padding: 4px 10px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   border: none;
   border-radius: 999px;
   background: transparent;
@@ -161,17 +161,17 @@
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .changeUp {
-  background: rgba(16,185,129,0.12);
-  color: #059669;
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
 }
 
 .changeDown {
-  background: rgba(239,68,68,0.12);
-  color: #DC2626;
+  background: rgba(59,130,246,0.12);
+  color: #3b82f6;
 }
 
 .heroPills {
@@ -182,8 +182,8 @@
 }
 
 .pillLive {
-  background: rgba(16,185,129,0.12);
-  color: #059669;
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
   border-radius: 999px;
   padding: 4px 8px;
   font-size: 11px;
@@ -302,7 +302,7 @@
 
 .kvValue {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: #111827;
 }
 
@@ -340,7 +340,7 @@
 
 .barPct {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: #111827;
   min-width: 36px;
   text-align: right;
@@ -450,7 +450,7 @@
   flex: 1;
   height: 46px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   border: none;
   border-radius: 12px;
   background: #f1f3f5;
@@ -479,7 +479,7 @@
 }
 
 .tradePrice {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .tradeQty {
@@ -559,7 +559,7 @@
   flex: 1;
   padding: 8px 12px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   border: none;
   border-radius: 8px;
   background: transparent;
@@ -597,7 +597,7 @@
   flex: 1;
   padding: 8px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 8px;
   background: #F9FAFB;
@@ -711,7 +711,7 @@
 }
 
 .tickerPrice {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 12px;
 }
 
@@ -806,6 +806,7 @@
 .terminalLeft {
   flex: 1;
   min-width: 0;
+  font-size: 14px;
 }
 
 @media (min-width: 768px) {
@@ -817,6 +818,7 @@
 .terminalRight {
   flex: 1;
   min-width: 0;
+  font-size: 14px;
 }
 
 @media (min-width: 768px) {
@@ -838,9 +840,10 @@
   margin-bottom: 0;
 }
 
-.panelTitle {
+.panelTitle,
+.terminalTitle {
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   color: #111827;
   margin: 0 0 10px 0;
   letter-spacing: -0.2px;
@@ -896,7 +899,7 @@
 .chartTab {
   padding: 6px 12px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #f9fafb;
@@ -907,7 +910,7 @@
 .chartTabActive {
   padding: 6px 12px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
   border: 1px solid #111827;
   border-radius: 8px;
   background: #111827;
@@ -957,7 +960,7 @@
 .auxBtn {
   padding: 8px 16px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   background: #e5e7eb;
@@ -987,7 +990,7 @@
   flex: 1;
   height: 46px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   border: none;
   border-radius: 12px;
   background: #f1f3f5;

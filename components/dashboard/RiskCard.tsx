@@ -72,13 +72,13 @@ export default function RiskCard() {
   }
 
   const mddPct = data.mdd?.mdd_pct ?? 0;
-  const mddColor = mddPct < -20 ? '#dc2626' : mddPct < -10 ? '#f59e0b' : '#16a34a';
+  const mddColor = mddPct < -20 ? '#3b82f6' : mddPct < -10 ? '#f59e0b' : '#ef4444';
   const r30 = data.rolling_returns.return_30d;
   const r90 = data.rolling_returns.return_90d;
 
   const chartColor = (data.equity_history.length >= 2 &&
     data.equity_history[data.equity_history.length - 1].equity >= data.equity_history[0].equity)
-    ? '#16a34a' : '#dc2626';
+    ? '#ef4444' : '#3b82f6';
 
   return (
     <div
@@ -105,7 +105,7 @@ export default function RiskCard() {
           <div className="text-xs" style={{ color: 'var(--text-muted, #9ca3af)' }}>30일</div>
           <div
             className="text-lg font-bold tabular-nums"
-            style={{ color: (r30 ?? 0) >= 0 ? 'var(--upbit-positive, #16a34a)' : 'var(--upbit-ask, #dc2626)' }}
+            style={{ color: (r30 ?? 0) >= 0 ? 'var(--upbit-positive, #ef4444)' : 'var(--upbit-ask, #3b82f6)' }}
           >
             {r30 != null ? formatRate(r30) : '—'}
           </div>
@@ -114,7 +114,7 @@ export default function RiskCard() {
           <div className="text-xs" style={{ color: 'var(--text-muted, #9ca3af)' }}>90일</div>
           <div
             className="text-lg font-bold tabular-nums"
-            style={{ color: (r90 ?? 0) >= 0 ? 'var(--upbit-positive, #16a34a)' : 'var(--upbit-ask, #dc2626)' }}
+            style={{ color: (r90 ?? 0) >= 0 ? 'var(--upbit-positive, #ef4444)' : 'var(--upbit-ask, #3b82f6)' }}
           >
             {r90 != null ? formatRate(r90) : '—'}
           </div>

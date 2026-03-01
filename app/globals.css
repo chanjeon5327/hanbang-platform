@@ -14,11 +14,11 @@
     --midnight-navy: #0D1117;
     --midnight-navy-light: #161B22;
 
-    /* 액센트 */
-    --emerald: #059669;
-    --emerald-light: #10B981;
-    --accent-loss: #DC2626;
-    --accent-loss-light: #EF4444;
+    /* 액센트 (매수=red, 매도=blue) */
+    --emerald: #ef4444;
+    --emerald-light: #f87171;
+    --accent-loss: #3b82f6;
+    --accent-loss-light: #60a5fa;
 
     /* 배경/카드 (토스 부드러운 톤) */
     --bg: #F8FAFC;
@@ -53,8 +53,8 @@
     --upbit-bg: var(--bg);
     --upbit-panel: var(--card);
     --upbit-border: var(--border);
-    --upbit-bid: var(--royal-blue);
-    --upbit-ask: var(--accent-loss);
+    --upbit-bid: #ef4444;
+    --upbit-ask: #3b82f6;
     --upbit-text: var(--text);
     --upbit-text-dim: var(--text-muted);
     --upbit-positive: var(--emerald);
@@ -110,10 +110,10 @@
     --royal-blue: #3B82F6;
     --royal-blue-light: #60A5FA;
     --royal-blue-dark: #2563EB;
-    --emerald: #10B981;
-    --emerald-light: #34D399;
-    --accent-loss: #EF4444;
-    --accent-loss-light: #F87171;
+    --emerald: #ef4444;
+    --emerald-light: #f87171;
+    --accent-loss: #3b82f6;
+    --accent-loss-light: #60a5fa;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -2px rgba(0, 0, 0, 0.25);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
@@ -173,9 +173,9 @@
 
   html, body {
     font-family: 'Pretendard Variable', 'Pretendard', system-ui, -apple-system, sans-serif;
-    font-weight: 450;
+    font-weight: 400;
     line-height: 1.65;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.3px;
     -webkit-font-smoothing: antialiased;
     background: var(--bg);
     color: var(--text);
@@ -191,14 +191,23 @@
     background: #FFFFFF !important;
   }
 
+  h1, h2, h3 {
+    font-weight: 700;
+  }
+
   h2 {
     font-size: 18px;
-    font-weight: 600;
   }
 
   h3 {
     font-size: 16px;
-    font-weight: 600;
+  }
+
+  /* 거래소급 숫자 밀도 */
+  .price-number {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 700;
+    letter-spacing: -0.4px;
   }
 }
 
