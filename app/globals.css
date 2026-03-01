@@ -1,6 +1,23 @@
 @import "tailwindcss";
 @import '../styles/tokens.css';
 
+/* ===== 전역 transition 통일 (압도 3-MOTION) ===== */
+* {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-fast {
+  transition: all 120ms ease-out;
+}
+
+.flash-fast {
+  animation-duration: 180ms;
+}
+
+.slide-fast {
+  animation-duration: 140ms;
+}
+
 /* ===== HANBANG 디자인 시스템 ===== */
 /* 토스증권형 × 투자 × 배당 중심 × 로얄블루 */
 

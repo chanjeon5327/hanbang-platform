@@ -727,13 +727,13 @@
 }
 
 .tradeEnter {
-  animation: tradeSlide 0.25s ease;
+  animation: tradeSlide 140ms ease-out;
 }
 
 @keyframes tradeSlide {
   0% {
-    opacity: 0;
-    transform: translateY(-6px);
+    opacity: 0.85;
+    transform: translateY(-2px);
   }
   100% {
     opacity: 1;
@@ -865,17 +865,17 @@
   display: flex;
   height: 100%;
   width: 100%;
-  transition: width 0.3s ease;
+  transition: width 3.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .pulseBuy {
-  background: linear-gradient(90deg, rgba(220, 38, 38, 0.4), rgba(220, 38, 38, 0.7));
-  transition: width 0.3s ease;
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.25), rgba(239, 68, 68, 0.45));
+  transition: width 3.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .pulseSell {
-  background: linear-gradient(90deg, rgba(37, 99, 235, 0.7), rgba(37, 99, 235, 0.4));
-  transition: width 0.3s ease;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.45), rgba(59, 130, 246, 0.25));
+  transition: width 3.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .compactTabs {
@@ -893,7 +893,7 @@
   background: #f9fafb;
   color: #374151;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 120ms ease-out;
 }
 
 .chartTab {
@@ -930,13 +930,13 @@
 }
 
 .tradeEnter {
-  animation: tradeSlide 0.3s ease-out;
+  animation: tradeSlide 140ms ease-out;
 }
 
 @keyframes tradeSlide {
   0% {
-    opacity: 0;
-    transform: translateY(-4px);
+    opacity: 0.85;
+    transform: translateY(-2px);
   }
   100% {
     opacity: 1;
@@ -1033,6 +1033,7 @@
   font-weight: 700;
   cursor: pointer;
   color: #374151;
+  transition: all 120ms ease-out;
 }
 
 .pctRow {
@@ -1050,6 +1051,7 @@
   background: #f9fafb;
   color: #374151;
   cursor: pointer;
+  transition: all 120ms ease-out;
 }
 
 .pctBtn:hover {
@@ -1089,7 +1091,7 @@
   font-size: 14px;
   color: #fff;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity 120ms ease-out;
 }
 
 .orderExecBtn:hover {

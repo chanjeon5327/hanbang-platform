@@ -1,26 +1,26 @@
 .orderRowFlash {
-  animation: flash 0.3s ease;
+  animation: flash 180ms ease-out;
 }
 
 @keyframes flash {
-  0% { background: rgba(255,255,0,0.3); }
+  0% { background: rgba(255,255,0,0.15); }
   100% { background: transparent; }
 }
 
 .priceUpFlash {
-  animation: upFlash 0.25s ease;
+  animation: upFlash 180ms ease-out;
 }
 
 .priceDownFlash {
-  animation: downFlash 0.25s ease;
+  animation: downFlash 180ms ease-out;
 }
 
 @keyframes upFlash {
-  0% { background: rgba(239,68,68,0.3); }
+  0% { background: rgba(239,68,68,0.15); }
   100% { background: transparent; }
 }
 
 @keyframes downFlash {
-  0% { background: rgba(239,68,68,0.3); }
+  0% { background: rgba(59,130,246,0.15); }
   100% { background: transparent; }
 }

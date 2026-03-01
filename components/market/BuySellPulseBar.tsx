@@ -20,7 +20,7 @@ export default function BuySellPulseBar({ buyPower: buyProp = 50, sellPower: sel
   useEffect(() => {
     if (!useMock) return;
     const id = setInterval(() => {
-      const d = (Math.random() - 0.48) * 8;
+      const d = (Math.random() - 0.48) * 5.6;
       setMockBuy((b) => Math.max(20, Math.min(80, b + d)));
       setMockSell((s) => Math.max(20, Math.min(80, s - d)));
     }, 1200);
@@ -37,8 +37,8 @@ export default function BuySellPulseBar({ buyPower: buyProp = 50, sellPower: sel
     let rafId: number;
     function loop() {
       const { buy: pb, sell: ps } = prevRef.current;
-      const nb = smoothValue(pb, buyPropFinal, 0.06);
-      const ns = smoothValue(ps, sellPropFinal, 0.06);
+      const nb = smoothValue(pb, buyPropFinal, 0.047);
+      const ns = smoothValue(ps, sellPropFinal, 0.047);
       prevRef.current = { buy: nb, sell: ns };
       setBuy(nb);
       setSell(ns);
