@@ -7,6 +7,7 @@ import { Sparkles, TrendingUp, Flame } from 'lucide-react';
 import styles from './home-legacy.module.css';
 import { useDashboardSummary } from './useDashboardSummary';
 import OverlayRecoCard from '@/components/home/OverlayRecoCard';
+import { marketItems } from '@/lib/mock/marketItems';
 
 /**
  * 홈 요구사항
@@ -389,26 +390,11 @@ export default function HomeV4() {
           </div>
 
           <div className={styles.rail}>
-            {rail3.map((it, idx) => {
-              const id = pickId(it) || `fallback-${idx}`;
-              const price = safeNum(it.price_krw, 12300);
-              const change = safeNum(it.change_pct, 4.2);
-              const priceKrw = (it as { priceKrw?: number }).priceKrw ?? price;
-              const changeRate = (it as { changeRate?: number }).changeRate ?? change;
-
-              return (
-                <div key={id} className={styles.railCardOverlay}>
-                  <OverlayRecoCard
-                    title={it.title ?? it.name ?? '콘텐츠'}
-                    priceText={priceKrw ? `${Number(priceKrw).toLocaleString('ko-KR')}원` : (it as { price?: string }).price ? String((it as { price?: string }).price) : ''}
-                    changeText={changeRate != null ? `${changeRate >= 0 ? '+' : ''}${changeRate}%` : (it as { badgeRight?: string }).badgeRight ?? ''}
-                    badgeText={(it as { badgeLeft?: string }).badgeLeft ?? '안정형'}
-                    thumbnailUrl={(it as { thumbnailUrl?: string }).thumbnailUrl ?? it.thumbnail_url ?? it.image_url ?? null}
-                    onClick={() => router.push(id ? `/market/${id}` : '/market')}
-                  />
-                </div>
-              );
-            })}
+            {marketItems.slice(0, 6).map((it) => (
+              <div key={it.id} className={styles.railCardOverlay}>
+                <OverlayRecoCard item={it} />
+              </div>
+            ))}
           </div>
 
           {popularLoading ? <div className={styles.railLoading}>추천 로딩중…</div> : null}

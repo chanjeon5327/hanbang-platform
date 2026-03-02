@@ -1,13 +1,7 @@
 'use client';
 
-import HeroCinematic from '@/components/HeroCinematic';
-import HomeV4 from '@/components/home/HomeV4';
+import HomeV6 from '@/components/home/HomeV6';
 
 export default function HomePage() {
-  return (
-    <>
-      <HeroCinematic />
-      <HomeV4 />
-    </>
-  );
+  return <HomeV6 />;
 }

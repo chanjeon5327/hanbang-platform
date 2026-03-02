@@ -1,404 +1,226 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useMarketItem } from '@/hooks/useMarketItem';
-import { useAuth } from '@/components/auth/AuthProvider';
-import { formatKrw } from '@/lib/utils/format';
-import AnimatedNumber from '@/components/ui/AnimatedNumber';
-import RealPriceChart from '@/components/market/RealPriceChart';
-import LiveTradesMock from '@/components/market/LiveTradesMock';
-import TradingPanelV2 from '@/components/market/TradingPanelV2';
-import MusicowAssetHeader from '@/components/market/MusicowAssetHeader';
-import MusicowOrderBook from '@/components/market/MusicowOrderBook';
-import TradeBottomSheet from '@/components/market/TradeBottomSheet';
-import TradeActionDock from '@/components/market/TradeActionDock';
-import { ArrowUp } from 'lucide-react';
-import styles from './market-detail.module.css';
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import FloatingSupportBubble from '@/components/common/FloatingSupportBubble';
+import UpbitLineBarsChart from '@/components/charts/UpbitLineBarsChart';
+import LiveTradesLite from '@/components/market/LiveTradesLite';
+import { marketItems, formatKRW } from '@/lib/mock/marketItems';
+import { makeRealisticSeries } from '@/lib/mock/series';
 
-type TabType = 'trade' | 'quote' | 'info';
+type Tab = 'info' | 'price' | 'trade';
 
-export default function MarketDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const router = useRouter();
-  const { user } = useAuth();
-  const { id } = React.use(params);
-  const { item, loading, error, refetch } = useMarketItem(id);
+function SegTabs<T extends string>({
+  value,
+  onChange,
+  items,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  items: { key: T; label: string }[];
+}) {
+  return (
+    <div className="inline-flex rounded-2xl border border-black/10 bg-white p-1 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
+      {items.map((it) => (
+        <button
+          key={it.key}
+          onClick={() => onChange(it.key)}
+          className={`px-4 py-3 rounded-xl text-sm font-extrabold transition ${
+            value === it.key ? 'bg-[#2563EB] text-white' : 'text-black/60 hover:text-black'
+          }`}
+        >
+          {it.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const [tab, setTab] = useState<TabType>('info');
-  const [lastTradePrice, setLastTradePrice] = useState(0);
-  const [positionQty, setPositionQty] = useState(0);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [lastOrderLine, setLastOrderLine] = useState<string | null>(null);
+function Chip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-[12px] px-2.5 py-1 rounded-full bg-black/5 border border-black/10 text-black/70">
+      {children}
+    </span>
+  );
+}
 
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [sheetSide, setSheetSide] = useState<'buy' | 'sell'>('buy');
+export default function MarketDetailPage() {
+  const params = useParams<{ id: string }>();
+  const id = params?.id ?? '';
 
-  useEffect(() => {
-    const onScroll = () => setShowScrollTop(typeof window !== 'undefined' && window.scrollY > 300);
-    window.addEventListener('scroll', onScroll);
-    onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  const item = useMemo(() => marketItems.find((x) => x.id === id), [id]);
+  const [tab, setTab] = useState<Tab>('info');
 
-  const fxRate = (item as any)?.fx_rate ?? 1350;
-  const sharePriceUsd = (item as any)?.share_price_usd ?? 10;
-  const sharePriceKrw = sharePriceUsd * fxRate;
+  const title = item?.title ?? `알 수 없는 종목 (${id})`;
+  const category = item?.category ?? '카테고리';
+  const price = item?.price ?? 12300;
+  const chgPct = item?.chgPct ?? 0.0;
+  const up = chgPct >= 0;
 
-  useEffect(() => {
-    if (!loading && sharePriceKrw > 0) setLastTradePrice(Math.round(sharePriceKrw));
-  }, [loading, sharePriceKrw]);
-
-  const fetchPositionQty = useCallback(() => {
-    if (!user || !id) return;
-    fetch(`/api/wallet/position?asset_id=${id}`, { cache: 'no-store' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j) => setPositionQty(Number(j?.quantity ?? 0)))
-      .catch(() => setPositionQty(0));
-  }, [user, id]);
-
-  useEffect(() => {
-    fetchPositionQty();
-  }, [fetchPositionQty]);
-
-  useEffect(() => {
-    const handler = (e: CustomEvent<{ assetId: string; payload?: { side: string; type: string; qty: number }; result?: { url: string; data: unknown } }>) => {
-      const { assetId: evAssetId, payload } = e.detail ?? {};
-      if (evAssetId !== id) return;
-      setSheetOpen(false);
-      setRefreshKey((k) => k + 1);
-      if (payload) {
-        const sideKr = payload.side === 'buy' ? '매수' : '매도';
-        const typeKr = payload.type === 'market' ? '시장가' : '지정가';
-        setLastOrderLine(`방금 ${sideKr} ${payload.qty}주 ${typeKr} 주문 접수`);
-      }
-      fetchPositionQty();
-    };
-    window.addEventListener('hb:order-placed', handler as EventListener);
-    return () => window.removeEventListener('hb:order-placed', handler as EventListener);
-  }, [id, fetchPositionQty]);
-
-  if (error && !item) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <p className={styles.errorText}>정보를 불러올 수 없습니다.</p>
-          <button onClick={() => refetch()} className={styles.retryBtn}>
-            다시 시도
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const priceKrw = lastTradePrice || sharePriceKrw;
-  const prevCloseUsd = sharePriceUsd * 0.98;
-  const changeRate = ((sharePriceUsd - prevCloseUsd) / prevCloseUsd) * 100;
-  const title = (item as any)?.title ?? '—';
-  const thumbnailUrl = (item as any)?.thumbnail_url ?? null;
+  // 1분 기준(60포인트) 리얼리티 더미
+  const series = useMemo(() => {
+    const vals = makeRealisticSeries({
+      seed: `m1:${id}`,
+      points: 60,
+      start: 80,
+      drift: (up ? 0.03 : -0.02),
+      vol: 0.9,
+      spikeEvery: 13,
+    });
+    // 보기 좋게 정수화
+    return vals.map(v => Math.round(v));
+  }, [id, up]);
 
   return (
-    <div className={styles.page}>
-      <div className={styles.container}>
-        {/* 1) 뮤직카우 헤더 (썸네일 + 현재가 + 등락률) */}
-        <MusicowAssetHeader
-          title={title}
-          thumbnailUrl={thumbnailUrl}
-          priceKrw={priceKrw}
-          changeRate={changeRate}
-        />
+    <div className="min-h-screen bg-[#F7F8FA] text-[#0B1120]">
+      <header className="max-w-7xl mx-auto px-5 sm:px-6 pt-8 pb-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-xs text-black/55">{category} · 콘텐츠 자산</div>
+            <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-[-0.4px]">{title}</h1>
+          </div>
 
-        {/* 2) 탭 바: 정보 | 시세 | 거래 */}
-        <div className={styles.tabBar}>
-          <button
-            type="button"
-            className={tab === 'info' ? styles.tabActive : styles.tabInactive}
-            onClick={() => setTab('info')}
-          >
-            정보
-          </button>
-          <button
-            type="button"
-            className={tab === 'quote' ? styles.tabActive : styles.tabInactive}
-            onClick={() => setTab('quote')}
-          >
-            시세
-          </button>
-          <button
-            type="button"
-            className={tab === 'trade' ? styles.tabActive : styles.tabInactive}
-            onClick={() => setTab('trade')}
-          >
-            거래
-          </button>
+          <div className="flex items-center gap-2">
+            <a
+              href={`/api/market/${id}/prospectus`}
+              className="px-4 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-extrabold transition"
+            >
+              자료 PDF 다운로드
+            </a>
+            <Link
+              href="/market"
+              className="px-4 py-3 rounded-xl bg-white hover:bg-black/5 border border-black/10 text-sm font-bold transition"
+            >
+              마켓으로 →
+            </Link>
+          </div>
         </div>
 
-        {/* 3) 거래 탭: 호가 중심 + 내 거래 요약 + 하단 4버튼 */}
-        {tab === 'trade' && id && (
-          <section className={styles.tabContent} style={{ paddingBottom: 140 }}>
-            {lastOrderLine && (
-              <div className="mb-2 text-center text-xs text-emerald-600" aria-live="polite">
-                {lastOrderLine}
-              </div>
-            )}
-
-            {/* 내 거래 요약 (보유 수량) */}
-            {positionQty > 0 && (
-              <div className={styles.infoCard} style={{ borderLeft: '4px solid var(--emerald)', marginBottom: 12 }}>
-                <div className={styles.infoTitle}>내 보유</div>
-                <div className={styles.kvRow}>
-                  <span className={styles.kvLabel}>보유 수량</span>
-                  <span className={styles.kvValue}>{positionQty}주</span>
-                </div>
-                <div className={styles.kvRow}>
-                  <span className={styles.kvLabel}>평가금액</span>
-                  <span className={styles.kvValue}>{formatKrw(positionQty * priceKrw)}</span>
-                </div>
-              </div>
-            )}
-
-            {/* 호가창 */}
-            <MusicowOrderBook key={`orderbook-${refreshKey}`} basePriceKrw={priceKrw} />
-
-            {/* 하단 4버튼 (구매/판매/주문수정/체결내역) */}
-            <TradeActionDock
-              onBuy={() => {
-                setSheetSide('buy');
-                setSheetOpen(true);
-              }}
-              onSell={() => {
-                setSheetSide('sell');
-                setSheetOpen(true);
-              }}
-              onEdit={() => router.push('/mypage/orders')}
-              onFills={() => router.push('/mypage/orders')}
-            />
-          </section>
-        )}
-
-        {/* 4) 시세 탭: 차트 + 체결 */}
-        {tab === 'quote' && id && (
-          <section className={styles.tabContent}>
-            <div className={styles.panelCard}>
-              <h3 className={styles.terminalTitle}>가격 차트</h3>
-              <div className={styles.chartWrap}>
-                <RealPriceChart key={`chart-${refreshKey}`} priceKrw={priceKrw} loading={loading} height={280} theme="light" />
+        {/* 현재가 + 소개(옆 공간에) */}
+        <div className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+            <div>
+              <div className="text-xs text-black/50">현재가</div>
+              <div className="mt-1 text-3xl font-extrabold tabular-nums">{formatKRW(price)}</div>
+              <div className={`mt-1 text-sm font-extrabold tabular-nums ${up ? 'text-emerald-600' : 'text-red-500'}`}>
+                {up ? '+' : ''}{chgPct.toFixed(1)}%
               </div>
             </div>
-            <div className={styles.panelCard}>
-              <h3 className={styles.terminalTitle}>실시간 체결</h3>
-              <LiveTradesMock key={`trades-${refreshKey}`} basePriceKrw={sharePriceKrw} />
+
+            <div className="flex-1">
+              <div className="text-sm font-extrabold">이 자산은 무엇인가요?</div>
+              <div className="mt-1 text-sm text-black/65 leading-relaxed">
+                청약으로 참여한 뒤, <span className="font-bold">2차 거래</span>가 가능하며, 콘텐츠가 벌어들이는 수익을 <span className="font-bold">정기적으로 배분</span>받는 구조입니다.
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Chip>청약 + 거래형</Chip>
+                <Chip>수익 배분형</Chip>
+                <Chip>거래소 UI</Chip>
+              </div>
             </div>
-          </section>
+          </div>
+        </div>
+
+        <div className="mt-6 flex gap-2">
+          <SegTabs<Tab>
+            value={tab}
+            onChange={setTab}
+            items={[
+              { key: 'info', label: '정보' },
+              { key: 'price', label: '시세' },
+              { key: 'trade', label: '거래' },
+            ]}
+          />
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-5 sm:px-6 pb-14">
+        {!item && (
+          <div className="mb-5 rounded-2xl border border-amber-300/40 bg-amber-100 p-5 text-amber-900">
+            이 종목은 아직 목데이터에 없습니다. (id: <span className="font-bold">{id}</span>)<br />
+            <Link className="underline" href="/market">마켓으로 돌아가기</Link>
+          </div>
         )}
 
-        {/* 5) 정보 탭 */}
         {tab === 'info' && (
-          <section className={styles.tabContent}>
-            {positionQty > 0 && (
-              <div className={styles.infoCard} style={{ borderLeft: '4px solid var(--emerald)' }}>
-                <div className={styles.infoTitle}>내 예상 수익</div>
-                <div className={styles.kvRow}>
-                  <span className={styles.kvLabel}>보유 수량</span>
-                  <span className={styles.kvValue}>{positionQty}주</span>
+          <div className="grid lg:grid-cols-2 gap-5">
+            <div className="rounded-2xl border border-black/10 bg-white overflow-hidden shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
+              <div className="h-[240px] bg-cover bg-center" style={{ backgroundImage: `url('${item?.thumbnail ?? ''}')` }} />
+              <div className="p-5">
+                <div className="text-sm font-extrabold">소개</div>
+                <div className="mt-2 text-black/65 leading-relaxed">
+                  &quot;청약 참여 → 보유 → 수익 배분 → (가능하면) 2차 거래&quot;를 한 문단으로 이해시키는 소개가 들어갑니다.
                 </div>
-                <div className={styles.kvRow}>
-                  <span className={styles.kvLabel}>월 예상 배당 (최근 기준)</span>
-                  <span className={styles.kvValue} style={{ color: 'var(--emerald)', fontWeight: 700 }}>
-                    <AnimatedNumber
-                      value={
-                        positionQty *
-                        (((item as any)?.dividend_monthly_usd_per_share ?? (item as any)?.dividendPerShare ?? 0) * fxRate)
-                      }
-                      duration={600}
-                      format="krw"
-                    />
-                  </span>
-                </div>
-              </div>
-            )}
 
-            <div className={styles.infoCard}>
-              <div className={styles.infoTitle}>투자 개요</div>
-              <div className={styles.kvRow}>
-                <span className={styles.kvLabel}>총 투자 모집액</span>
-                <span className={styles.kvValue}>
-                  {loading
-                    ? '—'
-                    : formatKrw(
-                        (() => {
-                          const it = item as Record<string, unknown> | null;
-                          const v =
-                            (it as any)?.total_raise_krw ??
-                            (it as any)?.raise_krw ??
-                            (it as any)?.total_krw ??
-                            (typeof (it as any)?.total_raise === 'number' ? (it as any).total_raise : null) ??
-                            (typeof (it as any)?.total_raise_usd === 'number' ? (it as any).total_raise_usd * fxRate : null) ??
-                            1_000_000_000;
-                          return Number(v);
-                        })()
-                      )}
-                </span>
-              </div>
-              <div className={styles.kvRow}>
-                <span className={styles.kvLabel}>주당 가격</span>
-                <span className={styles.kvValue}>{loading ? '—' : formatKrw(sharePriceKrw)}</span>
-              </div>
-              <div className={styles.kvRow}>
-                <span className={styles.kvLabel}>카테고리</span>
-                <span className={styles.kvValue}>
-                  {(item as any)?.category_name ?? (item as any)?.category ?? (item as any)?.tags?.[0] ?? '웹툰'}
-                </span>
-              </div>
-              <div className={styles.kvRow}>
-                <span className={styles.kvLabel}>예상 수익률</span>
-                <span className={styles.kvValue}>
-                  {loading
-                    ? '—'
-                    : `${(item as any)?.expected_yield_rate ?? (item as any)?.yield_rate ?? (item as any)?.expectedAnnualYield ?? 15.5}%`}
-                </span>
-              </div>
-            </div>
-
-            <div className={styles.infoCard}>
-              <div className={styles.infoTitle}>수익 배분율</div>
-              <div className={styles.bars}>
-                <div className={styles.barRow}>
-                  <span className={styles.barLabel}>창작자</span>
-                  <div className={styles.barTrack}>
-                    <div className={styles.barFill} style={{ width: '50%', background: '#6D28D9' }} />
-                  </div>
-                  <span className={styles.barPct}>50%</span>
-                </div>
-                <div className={styles.barRow}>
-                  <span className={styles.barLabel}>투자자</span>
-                  <div className={styles.barTrack}>
-                    <div className={styles.barFill} style={{ width: '47%', background: '#2563EB' }} />
-                  </div>
-                  <span className={styles.barPct}>47%</span>
-                </div>
-                <div className={styles.barRow}>
-                  <span className={styles.barLabel}>수수료</span>
-                  <div className={styles.barTrack}>
-                    <div className={styles.barFill} style={{ width: '3%', background: '#6B7280' }} />
-                  </div>
-                  <span className={styles.barPct}>3%</span>
+                <div className="mt-4 rounded-xl border border-black/10 bg-black/5 p-4">
+                  <div className="text-sm font-extrabold">핵심 요약(샘플)</div>
+                  <ul className="mt-2 space-y-1 text-sm text-black/65">
+                    <li>• 보유 기간: (예) 최소 30일</li>
+                    <li>• 수익 배분: (예) 월 1회 정산</li>
+                    <li>• 출구: (예) 거래 탭에서 매도 가능</li>
+                  </ul>
                 </div>
               </div>
             </div>
 
-            <div className={styles.infoCard}>
-              <div className={styles.infoTitle}>투자 계획</div>
-              <div className={styles.planBody}>
-                {(item as any)?.plan ??
-                  (item as any)?.description ??
-                  (item as any)?.summary ??
-                  '글로벌 3억 뷰 달성 예정! 대작 웹툰의 주인이 되세요.'}
+            <div className="space-y-5">
+              <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
+                <div className="text-sm font-extrabold">자료</div>
+                <div className="mt-2 text-sm text-black/65">
+                  사업설명서/운영지표/계약 요약을 PDF로 제공합니다.
+                </div>
+                <a
+                  href={`/api/market/${id}/prospectus`}
+                  className="mt-4 inline-flex px-4 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-extrabold transition"
+                >
+                  자료 PDF 다운로드
+                </a>
               </div>
-              <a href="/dummy-investment-plan.pdf" target="_blank" rel="noopener noreferrer" className={styles.planPdfBtn}>
-                PDF 다운로드
-              </a>
-            </div>
 
-            <section className={styles.creatorPlan}>
-              <h3>작가의 기획</h3>
-              {(() => {
-                const pdfUrl = (item as any)?.plan_pdf_url ?? (item as any)?.creator_plan_pdf;
-                if (typeof pdfUrl === 'string' && pdfUrl) {
-                  return (
-                    <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className={styles.downloadBtn}>
-                      PDF 다운로드
-                    </a>
-                  );
-                }
-                return (
-                  <span className={styles.planPdfBtn} style={{ opacity: 0.7, cursor: 'default', pointerEvents: 'none' }}>
-                    자료 준비중
-                  </span>
-                );
-              })()}
-            </section>
-
-            {(() => {
-              const it = item as any;
-              const summary = typeof it?.strategy_summary === 'string' ? it.strategy_summary : null;
-              const targetMarket = typeof it?.target_market === 'string' ? it.target_market : null;
-              const revenueModel = typeof it?.revenue_model === 'string' ? it.revenue_model : null;
-              const coreTeam = typeof it?.core_team === 'string' ? it.core_team : null;
-              const equipmentStack = typeof it?.equipment_stack === 'string' ? it.equipment_stack : null;
-              const distributionPlan = typeof it?.distribution_plan === 'string' ? it.distribution_plan : null;
-              const hasAny = summary || targetMarket || revenueModel || coreTeam || equipmentStack || distributionPlan;
-              if (!hasAny) return null;
-
-              return (
-                <div className={styles.infoCard} style={{ marginTop: 14 }}>
-                  <div className={styles.infoTitle}>작가의 전략</div>
-                  {summary && <p className={styles.strategySummary}>{summary}</p>}
-                  <div>
-                    {targetMarket && (
-                      <div className={styles.kvRow}>
-                        <span className={styles.kvLabel}>타겟 시장</span>
-                        <span className={styles.kvValue}>{targetMarket}</span>
-                      </div>
-                    )}
-                    {revenueModel && (
-                      <div className={styles.kvRow}>
-                        <span className={styles.kvLabel}>수익 모델</span>
-                        <span className={styles.kvValue}>{revenueModel}</span>
-                      </div>
-                    )}
-                    {coreTeam && (
-                      <div className={styles.kvRow}>
-                        <span className={styles.kvLabel}>핵심 팀</span>
-                        <span className={styles.kvValue}>{coreTeam}</span>
-                      </div>
-                    )}
-                    {equipmentStack && (
-                      <div className={styles.kvRow}>
-                        <span className={styles.kvLabel}>장비/인프라</span>
-                        <span className={styles.kvValue}>{equipmentStack}</span>
-                      </div>
-                    )}
-                    {distributionPlan && (
-                      <div className={styles.kvRow}>
-                        <span className={styles.kvLabel}>유통 전략</span>
-                        <span className={styles.kvValue}>{distributionPlan}</span>
-                      </div>
-                    )}
+              <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
+                <div className="text-sm font-extrabold">예상(샘플)</div>
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-black/10 bg-black/5 p-4">
+                    <div className="text-xs text-black/55">예상 월 매출</div>
+                    <div className="mt-1 font-extrabold tabular-nums">₩ 12,500,000</div>
+                  </div>
+                  <div className="rounded-xl border border-black/10 bg-black/5 p-4">
+                    <div className="text-xs text-black/55">예상 배분율</div>
+                    <div className="mt-1 font-extrabold tabular-nums">3.2%</div>
                   </div>
                 </div>
-              );
-            })()}
-          </section>
+              </div>
+            </div>
+          </div>
         )}
 
-        {/* 바텀시트 주문 */}
-        <TradeBottomSheet
-          open={sheetOpen}
-          title={sheetSide === 'buy' ? '구매' : '판매'}
-          onClose={() => setSheetOpen(false)}
-        >
-          {id && (
-            <TradingPanelV2
-              assetId={id}
-              currentPriceKrw={priceKrw}
-              initialSide={sheetSide}
-              initialType="limit"
-            />
-          )}
-        </TradeBottomSheet>
-
-        {showScrollTop && (
-          <button
-            type="button"
-            className={styles.scrollTopBtn}
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            aria-label="맨 위로"
-          >
-            <ArrowUp size={22} strokeWidth={2.5} />
-          </button>
+        {tab === 'price' && (
+          <div className="grid lg:grid-cols-2 gap-5">
+            <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
+              <UpbitLineBarsChart
+                values={series}
+                theme="light"
+                mode="minute"
+                title="가격 차트"
+                subtitle="1분 기준 · 위(얇은 선) + 아래(빨/파 띠/바)"
+              />
+            </div>
+            <LiveTradesLite symbolId={id} basePrice={price} />
+          </div>
         )}
-      </div>
+
+        {tab === 'trade' && (
+          <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
+            <div className="text-sm font-extrabold">거래</div>
+            <div className="mt-2 text-sm text-black/65">
+              다음 단계에서 &quot;구매/판매/주문수정/체결내역 4버튼 + 호가 5개씩 + 버튼 크게&quot;를 업비트 톤으로 고정합니다.
+            </div>
+          </div>
+        )}
+      </main>
+
+      <FloatingSupportBubble />
     </div>
   );
 }
