@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Sparkles, TrendingUp, Flame } from 'lucide-react';
 import styles from './home-legacy.module.css';
 import { useDashboardSummary } from './useDashboardSummary';
+import OverlayRecoCard from '@/components/home/OverlayRecoCard';
 
 /**
  * 홈 요구사항
@@ -184,6 +186,7 @@ function RankBadge({ label }: { label: string }) {
 }
 
 export default function HomeV4() {
+  const router = useRouter();
   const dash = useDashboardSummary();
 
   const [popular, setPopular] = useState<RailItem[]>([]);
@@ -273,12 +276,15 @@ export default function HomeV4() {
   return (
     <main className={styles.page}>
       <div className={styles.container}>
-        <section className={styles.featuredSection}>
+        {/* (A) 오늘의 큐레이션 */}
+        <section className={styles.blockA}>
+          <h2 className={styles.blockTitle}>오늘의 큐레이션</h2>
+        <div className={styles.featuredSection}>
           <Link href={heroHref} className={styles.featuredCard}>
             <div className={styles.featuredTop}>
               <div className={styles.featuredTag}>
                 <Flame size={14} />
-                <span>오늘의 큐레이션</span>
+                <span>인기 상승</span>
               </div>
               <div className={styles.featuredMeta}>
                 <span className={styles.featuredMetaPill}>
@@ -313,8 +319,17 @@ export default function HomeV4() {
               </div>
             </div>
           </Link>
+        </div>
+        {baseItems[1] && (
+          <Link href={pickId(baseItems[1]) ? `/market/${pickId(baseItems[1])}` : '/market'} className={styles.featuredCardSecondary}>
+            <span className={styles.featuredCardSecondaryTitle}>{pickTitle(baseItems[1])}</span>
+            <span className={styles.featuredCardSecondaryPrice}>{formatKrw(safeNum(baseItems[1].price_krw, 12300))}</span>
+          </Link>
+        )}
         </section>
 
+        {/* (B) 내 자산/수익률/등급 */}
+        <section className={styles.blockB}>
         <section className={styles.assetCard}>
           <div className={styles.assetHeader}>
             <div className={styles.assetTitle}>내 자산 (KRW)</div>
@@ -361,10 +376,13 @@ export default function HomeV4() {
           </div>
           <RankBadge label={(dash as { rankLabel?: string }).rankLabel || '호랑이 등급'} />
         </section>
+        </section>
 
+        {/* (C) 추천/시장동향/KYC/공지 */}
+        <section className={styles.blockC}>
         <section className={styles.railSection}>
           <div className={styles.sectionHeader}>
-            <div className={styles.sectionTitle}>회원님을 위한 추천</div>
+            <div className={styles.sectionTitle}>추천</div>
             <Link href="/market" className={styles.sectionMore}>
               전체보기
             </Link>
@@ -373,31 +391,22 @@ export default function HomeV4() {
           <div className={styles.rail}>
             {rail3.map((it, idx) => {
               const id = pickId(it) || `fallback-${idx}`;
-              const href = pickId(it) ? `/market/${id}` : '/market';
               const price = safeNum(it.price_krw, 12300);
               const change = safeNum(it.change_pct, 4.2);
+              const priceKrw = (it as { priceKrw?: number }).priceKrw ?? price;
+              const changeRate = (it as { changeRate?: number }).changeRate ?? change;
 
               return (
-                <Link key={id} href={href} className={styles.railCard}>
-                  <div className={styles.railThumb}>
-                    <span className={styles.railBadge}>안정형</span>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={pickThumb(it) || 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=60'}
-                      alt={pickTitle(it)}
-                      className={styles.railImg}
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className={styles.railBody}>
-                    <div className={styles.railTitle}>{pickTitle(it)}</div>
-                    <div className={styles.railSub}>상장 종목</div>
-                    <div className={styles.railBottom}>
-                      <span className={styles.railPrice}>{formatKrw(price).replace('원', '')}</span>
-                      <span className={styles.railChange}>{change >= 0 ? `+${change.toFixed(1)}` : change.toFixed(1)}%</span>
-                    </div>
-                  </div>
-                </Link>
+                <div key={id} className={styles.railCardOverlay}>
+                  <OverlayRecoCard
+                    title={it.title ?? it.name ?? '콘텐츠'}
+                    priceText={priceKrw ? `${Number(priceKrw).toLocaleString('ko-KR')}원` : (it as { price?: string }).price ? String((it as { price?: string }).price) : ''}
+                    changeText={changeRate != null ? `${changeRate >= 0 ? '+' : ''}${changeRate}%` : (it as { badgeRight?: string }).badgeRight ?? ''}
+                    badgeText={(it as { badgeLeft?: string }).badgeLeft ?? '안정형'}
+                    thumbnailUrl={(it as { thumbnailUrl?: string }).thumbnailUrl ?? it.thumbnail_url ?? it.image_url ?? null}
+                    onClick={() => router.push(id ? `/market/${id}` : '/market')}
+                  />
+                </div>
               );
             })}
           </div>
@@ -405,11 +414,11 @@ export default function HomeV4() {
           {popularLoading ? <div className={styles.railLoading}>추천 로딩중…</div> : null}
         </section>
 
-        <section className={styles.trendCard}>
+        <section className={`${styles.trendCard} ${styles.marketTrend}`}>
           <div className={styles.trendTop}>
             <div>
               <div className={styles.trendTitle}>시장 동향</div>
-              <div className={styles.trendSub}>K-콘텐츠 종합 지수 (K-CIX)</div>
+              <div className={styles.trendSub}>콘텐츠 종합 지수</div>
             </div>
 
             <div className={styles.trendTopRight}>
@@ -429,7 +438,7 @@ export default function HomeV4() {
 
         <section className={styles.kycCard}>
           <div className={styles.kycLeft}>
-            <div className={styles.kycTitle}>KYC 인증을 완료하고 거래를 시작하세요</div>
+            <div className={styles.kycTitle}>인증 완료 후 거래를 시작하세요</div>
             <div className={styles.kycSub}>인증 완료 시 출금/거래 한도가 상향됩니다. (1분 컷)</div>
             <div className={styles.kycCuteRow}>
               <div className={styles.kycCuteKyc} aria-label="KYC">
@@ -477,6 +486,7 @@ export default function HomeV4() {
             <li>[점검] 결제/정산 시스템 점검 일정</li>
             <li>[공지] 신규 종목 상장 안내</li>
           </ul>
+        </section>
         </section>
 
         <button className={styles.helpFab} type="button">

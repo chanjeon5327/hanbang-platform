@@ -9,9 +9,65 @@
   margin: 0 auto;
 }
 
+/* ===== 3구획 블록 ===== */
+.blockA {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(124, 58, 237, 0.04);
+  border-radius: 18px;
+  border: 1px solid rgba(124, 58, 237, 0.08);
+}
+
+.blockB {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.blockC {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.blockTitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.2px;
+}
+
 /* ===== Featured (Top curated) ===== */
 .featuredSection {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
+}
+
+.featuredCardSecondary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  margin-top: 10px;
+}
+
+.featuredCardSecondaryTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.featuredCardSecondaryPrice {
+  font-size: 14px;
+  font-weight: 800;
+  color: #7c3aed;
 }
 
 .featuredCard {
@@ -124,11 +180,12 @@
 
 /* ===== Asset Card ===== */
 .assetCard {
-  background: #ffffff;
-  border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 18px;
-  padding: 16px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0 0 12px 0;
   margin-bottom: 12px;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.06);
 }
 
 .assetHeader {
@@ -199,8 +256,8 @@
 }
 
 .summaryCard {
-  background: #ffffff;
-  border: 1px solid rgba(17, 24, 39, 0.08);
+  background: #f9fafb;
+  border: 1px solid rgba(17, 24, 39, 0.06);
   border-radius: 14px;
   padding: 12px;
 }
@@ -227,15 +284,15 @@
 
 /* ===== Rank Card ===== */
 .rankCard {
-  background: #ffffff;
-  border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 18px;
-  padding: 14px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 14px 0 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 0;
 }
 
 .rankLeft {
@@ -300,7 +357,11 @@
 
 /* ===== Rail ===== */
 .railSection {
-  margin-bottom: 14px;
+  margin-bottom: 0;
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 18px;
+  padding: 14px;
 }
 
 .rail {
@@ -321,12 +382,17 @@
 
 .railCard {
   flex: 0 0 150px;
-  background: #ffffff;
-  border: 1px solid rgba(17, 24, 39, 0.08);
+  background: #f9fafb;
+  border: 1px solid rgba(17, 24, 39, 0.06);
   border-radius: 16px;
   overflow: hidden;
   text-decoration: none;
   color: inherit;
+  scroll-snap-align: start;
+}
+
+.railCardOverlay {
+  flex: 0 0 140px;
   scroll-snap-align: start;
 }
 
@@ -402,11 +468,11 @@
 
 /* ===== Trend (K-CIX) ===== */
 .trendCard {
-  background: #ffffff;
+  background: #fff;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 18px;
   padding: 14px;
-  margin-bottom: 14px;
+  margin-bottom: 0;
 }
 
 .trendTop {
@@ -483,7 +549,7 @@
 .kycCard {
   border-radius: 18px;
   padding: 14px;
-  margin-bottom: 14px;
+  margin-bottom: 0;
   background: linear-gradient(135deg, rgba(124, 58, 237, 0.10), rgba(59, 130, 246, 0.08), rgba(236, 72, 153, 0.05));
   border: 1px solid rgba(124, 58, 237, 0.14);
 }
@@ -538,7 +604,7 @@
 
 /* ===== Notice ===== */
 .noticeCard {
-  background: #ffffff;
+  background: #fff;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 18px;
   padding: 14px;
@@ -623,4 +689,19 @@
   .helpFab {
     right: calc(50% - 202px);
   }
+}
+
+/* 시장동향 차트가 Recharts일 때 라인 두께/채도 강제 다운 */
+.marketTrend :global(.recharts-line-curve) {
+  stroke-width: 2px !important;
+  opacity: 0.70 !important;
+}
+.marketTrend :global(.recharts-cartesian-grid line) {
+  stroke-opacity: 0.18 !important;
+}
+
+/* 시장동향 Sparkline(SVG) 라인 얇게 */
+.marketTrend .trendPath {
+  stroke-width: 2px !important;
+  opacity: 0.70 !important;
 }

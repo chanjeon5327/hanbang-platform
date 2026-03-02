@@ -9,12 +9,14 @@ import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import RealPriceChart from '@/components/market/RealPriceChart';
 import LiveTradesMock from '@/components/market/LiveTradesMock';
 import TradingPanelV2 from '@/components/market/TradingPanelV2';
-import MockOrderBook from '@/components/market/MockOrderBook';
-import MarketHeroHybrid from '@/components/market/MarketHeroHybrid';
-import BuySellPulseBar from '@/components/market/BuySellPulseBar';
-import { LiquidityProvider } from '@/components/market/LiquidityContext';
+import MusicowAssetHeader from '@/components/market/MusicowAssetHeader';
+import MusicowOrderBook from '@/components/market/MusicowOrderBook';
+import TradeBottomSheet from '@/components/market/TradeBottomSheet';
+import TradeActionDock from '@/components/market/TradeActionDock';
 import { ArrowUp } from 'lucide-react';
 import styles from './market-detail.module.css';
+
+type TabType = 'trade' | 'quote' | 'info';
 
 export default function MarketDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -23,11 +25,14 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const { item, loading, error, refetch } = useMarketItem(id);
 
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [tab, setTab] = useState<'info' | 'order'>('info');
+  const [tab, setTab] = useState<TabType>('info');
   const [lastTradePrice, setLastTradePrice] = useState(0);
   const [positionQty, setPositionQty] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
   const [lastOrderLine, setLastOrderLine] = useState<string | null>(null);
+
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetSide, setSheetSide] = useState<'buy' | 'sell'>('buy');
 
   useEffect(() => {
     const onScroll = () => setShowScrollTop(typeof window !== 'undefined' && window.scrollY > 300);
@@ -60,6 +65,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
     const handler = (e: CustomEvent<{ assetId: string; payload?: { side: string; type: string; qty: number }; result?: { url: string; data: unknown } }>) => {
       const { assetId: evAssetId, payload } = e.detail ?? {};
       if (evAssetId !== id) return;
+      setSheetOpen(false);
       setRefreshKey((k) => k + 1);
       if (payload) {
         const sideKr = payload.side === 'buy' ? '매수' : '매도';
@@ -86,14 +92,23 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   }
 
   const priceKrw = lastTradePrice || sharePriceKrw;
+  const prevCloseUsd = sharePriceUsd * 0.98;
+  const changeRate = ((sharePriceUsd - prevCloseUsd) / prevCloseUsd) * 100;
+  const title = (item as any)?.title ?? '—';
+  const thumbnailUrl = (item as any)?.thumbnail_url ?? null;
 
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        {/* 1) 상단 OTT+금융 하이브리드 히어로 */}
-        {item && <MarketHeroHybrid item={item as Record<string, unknown>} />}
+        {/* 1) 뮤직카우 헤더 (썸네일 + 현재가 + 등락률) */}
+        <MusicowAssetHeader
+          title={title}
+          thumbnailUrl={thumbnailUrl}
+          priceKrw={priceKrw}
+          changeRate={changeRate}
+        />
 
-        {/* 2) 탭 바: 정보 | 거래 */}
+        {/* 2) 탭 바: 정보 | 시세 | 거래 */}
         <div className={styles.tabBar}>
           <button
             type="button"
@@ -104,17 +119,82 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           </button>
           <button
             type="button"
-            className={tab === 'order' ? styles.tabActive : styles.tabInactive}
-            onClick={() => setTab('order')}
+            className={tab === 'quote' ? styles.tabActive : styles.tabInactive}
+            onClick={() => setTab('quote')}
+          >
+            시세
+          </button>
+          <button
+            type="button"
+            className={tab === 'trade' ? styles.tabActive : styles.tabInactive}
+            onClick={() => setTab('trade')}
           >
             거래
           </button>
         </div>
 
-        {/* 3) 탭 콘텐츠 */}
+        {/* 3) 거래 탭: 호가 중심 + 내 거래 요약 + 하단 4버튼 */}
+        {tab === 'trade' && id && (
+          <section className={styles.tabContent} style={{ paddingBottom: 140 }}>
+            {lastOrderLine && (
+              <div className="mb-2 text-center text-xs text-emerald-600" aria-live="polite">
+                {lastOrderLine}
+              </div>
+            )}
+
+            {/* 내 거래 요약 (보유 수량) */}
+            {positionQty > 0 && (
+              <div className={styles.infoCard} style={{ borderLeft: '4px solid var(--emerald)', marginBottom: 12 }}>
+                <div className={styles.infoTitle}>내 보유</div>
+                <div className={styles.kvRow}>
+                  <span className={styles.kvLabel}>보유 수량</span>
+                  <span className={styles.kvValue}>{positionQty}주</span>
+                </div>
+                <div className={styles.kvRow}>
+                  <span className={styles.kvLabel}>평가금액</span>
+                  <span className={styles.kvValue}>{formatKrw(positionQty * priceKrw)}</span>
+                </div>
+              </div>
+            )}
+
+            {/* 호가창 */}
+            <MusicowOrderBook key={`orderbook-${refreshKey}`} basePriceKrw={priceKrw} />
+
+            {/* 하단 4버튼 (구매/판매/주문수정/체결내역) */}
+            <TradeActionDock
+              onBuy={() => {
+                setSheetSide('buy');
+                setSheetOpen(true);
+              }}
+              onSell={() => {
+                setSheetSide('sell');
+                setSheetOpen(true);
+              }}
+              onEdit={() => router.push('/mypage/orders')}
+              onFills={() => router.push('/mypage/orders')}
+            />
+          </section>
+        )}
+
+        {/* 4) 시세 탭: 차트 + 체결 */}
+        {tab === 'quote' && id && (
+          <section className={styles.tabContent}>
+            <div className={styles.panelCard}>
+              <h3 className={styles.terminalTitle}>가격 차트</h3>
+              <div className={styles.chartWrap}>
+                <RealPriceChart key={`chart-${refreshKey}`} priceKrw={priceKrw} loading={loading} height={280} theme="light" />
+              </div>
+            </div>
+            <div className={styles.panelCard}>
+              <h3 className={styles.terminalTitle}>실시간 체결</h3>
+              <LiveTradesMock key={`trades-${refreshKey}`} basePriceKrw={sharePriceKrw} />
+            </div>
+          </section>
+        )}
+
+        {/* 5) 정보 탭 */}
         {tab === 'info' && (
           <section className={styles.tabContent}>
-            {/* A) 내 예상 수익 (보유 시) */}
             {positionQty > 0 && (
               <div className={styles.infoCard} style={{ borderLeft: '4px solid var(--emerald)' }}>
                 <div className={styles.infoTitle}>내 예상 수익</div>
@@ -138,7 +218,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
               </div>
             )}
 
-            {/* B) 투자 개요 */}
             <div className={styles.infoCard}>
               <div className={styles.infoTitle}>투자 개요</div>
               <div className={styles.kvRow}>
@@ -181,7 +260,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
               </div>
             </div>
 
-            {/* C) 수익 배분율 */}
             <div className={styles.infoCard}>
               <div className={styles.infoTitle}>수익 배분율</div>
               <div className={styles.bars}>
@@ -209,7 +287,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
               </div>
             </div>
 
-            {/* D) 투자 계획 */}
             <div className={styles.infoCard}>
               <div className={styles.infoTitle}>투자 계획</div>
               <div className={styles.planBody}>
@@ -223,7 +300,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
               </a>
             </div>
 
-            {/* E) 작가의 기획 PDF */}
             <section className={styles.creatorPlan}>
               <h3>작가의 기획</h3>
               {(() => {
@@ -243,7 +319,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
               })()}
             </section>
 
-            {/* F) 작가의 전략 요약 (있을 때만) */}
             {(() => {
               const it = item as any;
               const summary = typeof it?.strategy_summary === 'string' ? it.strategy_summary : null;
@@ -297,66 +372,21 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           </section>
         )}
 
-        {/* ✅ 거래 탭: 순서 "직접 보장" */}
-        {tab === 'order' && id && (
-          <section className={styles.tabContent}>
-            <LiquidityProvider>
-              <div className={styles.terminalSection}>
-                <div className={styles.terminalGrid}>
-                  {/* 좌: 차트 위 / 체결 아래 */}
-                  <div className={styles.terminalLeft}>
-                    <div className={styles.panelCard}>
-                      <h3 className={styles.terminalTitle}>가격 차트</h3>
-                      <div className={styles.chartWrap}>
-                        <RealPriceChart key={`chart-${refreshKey}`} priceKrw={priceKrw} loading={loading} height={280} theme="light" />
-                      </div>
-                      <BuySellPulseBar useMock />
-                    </div>
-
-                    <div className={styles.panelCard}>
-                      <h3 className={styles.terminalTitle}>실시간 체결</h3>
-                      <LiveTradesMock key={`trades-${refreshKey}`} basePriceKrw={sharePriceKrw} />
-                    </div>
-                  </div>
-
-                  {/* 우: 주문 위 / 호가 아래 */}
-                  <div className={styles.terminalRight}>
-                    <div className={styles.panelCard}>
-                      <h3 className={styles.terminalTitle}>주문</h3>
-                      {lastOrderLine && (
-                        <div className="mb-2 text-center text-xs text-emerald-600" aria-live="polite">
-                          {lastOrderLine}
-                        </div>
-                      )}
-                      <TradingPanelV2 assetId={id} currentPriceKrw={priceKrw} />
-                    </div>
-
-                    <div className={styles.panelCard}>
-                      <h3 className={styles.terminalTitle}>호가창</h3>
-                      <MockOrderBook
-                        key={`orderbook-${refreshKey}`}
-                        basePriceKrw={priceKrw}
-                        loading={loading}
-                        theme="light"
-                        onPriceChange={(p) => setLastTradePrice(p)}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 모바일 하단: 목록 / 지갑 */}
-                <div className={styles.terminalMobileBar}>
-                  <button type="button" className={styles.mobileBarBtn} onClick={() => router.push('/market')}>
-                    목록
-                  </button>
-                  <button type="button" className={styles.mobileBarBtn} onClick={() => router.push('/wallet')}>
-                    지갑
-                  </button>
-                </div>
-              </div>
-            </LiquidityProvider>
-          </section>
-        )}
+        {/* 바텀시트 주문 */}
+        <TradeBottomSheet
+          open={sheetOpen}
+          title={sheetSide === 'buy' ? '구매' : '판매'}
+          onClose={() => setSheetOpen(false)}
+        >
+          {id && (
+            <TradingPanelV2
+              assetId={id}
+              currentPriceKrw={priceKrw}
+              initialSide={sheetSide}
+              initialType="limit"
+            />
+          )}
+        </TradeBottomSheet>
 
         {showScrollTop && (
           <button

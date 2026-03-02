@@ -10,6 +10,8 @@ type Side = 'buy' | 'sell';
 type Props = {
   assetId: string;
   currentPriceKrw?: number;
+  initialSide?: Side;
+  initialType?: OrderType;
 };
 
 async function safeReadJson(res: Response): Promise<any | null> {
@@ -21,31 +23,22 @@ async function safeReadJson(res: Response): Promise<any | null> {
 }
 
 function pickErrMsg(j: any, fallback: string) {
-  return (
-    j?.message ||
-    j?.error ||
-    j?.detail ||
-    j?.msg ||
-    (typeof j === 'string' ? j : null) ||
-    fallback
-  );
+  return j?.message || j?.error || j?.detail || j?.msg || (typeof j === 'string' ? j : null) || fallback;
 }
 
-export default function TradingPanelV2({ assetId, currentPriceKrw = 13500 }: Props) {
-  const [type, setType] = useState<OrderType>('limit');
-  const [side, setSide] = useState<Side>('buy');
+export default function TradingPanelV2({ assetId, currentPriceKrw = 13500, initialSide, initialType }: Props) {
+  const [type, setType] = useState<OrderType>(initialType ?? 'limit');
+  const [side, setSide] = useState<Side>(initialSide ?? 'buy');
   const [price, setPrice] = useState<number>(currentPriceKrw);
   const [qty, setQty] = useState<number>(1);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 토스트(상단) + 화면 하단 안내(aria-live)
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState<string>('');
   const [toastTone, setToastTone] = useState<'ok' | 'err'>('ok');
   const [notice, setNotice] = useState<string | null>(null);
 
-  // ✅ 시장가일 때는 "현재가"로 계산
   const effectivePrice = useMemo(() => {
     const p = type === 'market' ? currentPriceKrw : price;
     return Number.isFinite(p) && p > 0 ? p : 0;
@@ -75,13 +68,11 @@ export default function TradingPanelV2({ assetId, currentPriceKrw = 13500 }: Pro
     setToastMsg(msg);
     setToastTone(tone);
     setShowToast(true);
-    // 1.6초 후 자동 종료
     window.setTimeout(() => setShowToast(false), 1600);
   }
 
   async function postWithFallback(payload: any) {
     const endpoints = ['/api/exchange/place', '/api/orders/orderbook/place', '/api/orders/place'];
-
     let lastErr = '주문 요청에 실패했습니다.';
     for (const url of endpoints) {
       try {
@@ -93,14 +84,12 @@ export default function TradingPanelV2({ assetId, currentPriceKrw = 13500 }: Pro
           body: JSON.stringify(payload),
         });
 
-        // 404면 다음 엔드포인트로 fallback
         if (res.status === 404) {
           lastErr = `${url} (404)`;
           continue;
         }
 
         const j = await safeReadJson(res);
-
         if (!res.ok) {
           lastErr = pickErrMsg(j, `${url} 요청 실패`);
           continue;
@@ -121,12 +110,11 @@ export default function TradingPanelV2({ assetId, currentPriceKrw = 13500 }: Pro
     setIsSubmitting(true);
     setNotice(null);
 
-    // 서버가 어떤 필드명을 기대하든 최대한 안전하게 "양쪽 이름" 같이 보냄
     const payload = {
       asset_id: assetId,
       assetId,
-      side, // buy/sell
-      type, // limit/market
+      side,
+      type,
       order_type: type,
       price: type === 'market' ? null : effectivePrice,
       qty: safeQty,
@@ -151,15 +139,23 @@ export default function TradingPanelV2({ assetId, currentPriceKrw = 13500 }: Pro
       fireToast('주문 요청이 접수되었습니다.', 'ok');
       setNotice('주문 요청이 접수되었습니다.');
 
-      // 다른 컴포넌트가 새로고침 트리거를 받게 이벤트 발사 (payload + 서버응답 포함)
-      const eventPayload = { side, type, qty: safeQty, price: type === 'market' ? currentPriceKrw : effectivePrice, total };
       window.dispatchEvent(
         new CustomEvent('hb:order-placed', {
-          detail: { assetId, payload: eventPayload, result: { url: r.url, data: r.data } },
+          detail: {
+            assetId,
+            payload: {
+              side,
+              type,
+              qty: safeQty,
+              price: type === 'market' ? currentPriceKrw : effectivePrice,
+              total,
+            },
+            result: { url: r.url, data: r.data },
+            ts: Date.now(),
+          },
         })
       );
 
-      // 서버 응답이 있으면 콘솔에 찍기(데모/디버깅)
       console.log('[ORDER_RESPONSE]', r.url, r.data);
     } finally {
       setIsSubmitting(false);
@@ -168,7 +164,6 @@ export default function TradingPanelV2({ assetId, currentPriceKrw = 13500 }: Pro
 
   return (
     <div className={styles.terminalOrderPanel}>
-      {/* 상단 토스트 (alert 대체) */}
       {showToast && (
         <div
           className={`sticky top-0 z-20 mb-2 rounded-lg px-3 py-2 text-sm font-semibold shadow-md ${
@@ -179,7 +174,6 @@ export default function TradingPanelV2({ assetId, currentPriceKrw = 13500 }: Pro
         </div>
       )}
 
-      {/* ✅ 주문조건: 지정가/시장가 2개만 */}
       <div className={styles.compactTabs}>
         <button
           type="button"
@@ -199,7 +193,6 @@ export default function TradingPanelV2({ assetId, currentPriceKrw = 13500 }: Pro
         </button>
       </div>
 
-      {/* 매수/매도 */}
       <div className={styles.compactTabs}>
         <button
           type="button"
@@ -219,7 +212,6 @@ export default function TradingPanelV2({ assetId, currentPriceKrw = 13500 }: Pro
         </button>
       </div>
 
-      {/* 가격 */}
       <div className={styles.orderField}>
         <label className={styles.orderLabel}>가격 (KRW)</label>
         <input
@@ -234,7 +226,6 @@ export default function TradingPanelV2({ assetId, currentPriceKrw = 13500 }: Pro
         />
       </div>
 
-      {/* 수량 + 스텝퍼 */}
       <div className={styles.orderField}>
         <label className={styles.orderLabel}>수량</label>
         <div className={styles.qtyStepper}>
@@ -257,7 +248,6 @@ export default function TradingPanelV2({ assetId, currentPriceKrw = 13500 }: Pro
         </div>
       </div>
 
-      {/* 요약 */}
       <div className={styles.orderSummaryBox}>
         <div className={styles.orderSummaryRow}>
           <span>예상 체결금액</span>
@@ -273,16 +263,12 @@ export default function TradingPanelV2({ assetId, currentPriceKrw = 13500 }: Pro
         </div>
       </div>
 
-      {/* 실행 버튼 */}
       <button
         type="button"
         onClick={onSubmit}
         disabled={!canSubmit}
         className={styles.orderExecBtn}
-        style={{
-          background: side === 'buy' ? buyColor : sellColor,
-          opacity: canSubmit ? 1 : 0.6,
-        }}
+        style={{ background: side === 'buy' ? buyColor : sellColor, opacity: canSubmit ? 1 : 0.6 }}
       >
         {isSubmitting ? '요청 중…' : side === 'buy' ? '매수하기' : '매도하기'}
       </button>

@@ -1,0 +1,68 @@
+/* 다층 그라데이션 + 글로우 */
+.heroWrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #081428;
+}
+
+.heroBg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1200px 520px at 20% 18%, rgba(29,78,216,0.55) 0%, rgba(29,78,216,0.0) 60%),
+    radial-gradient(900px 520px at 82% 24%, rgba(14,165,233,0.35) 0%, rgba(14,165,233,0.0) 55%),
+    radial-gradient(1000px 640px at 55% 92%, rgba(59,130,246,0.28) 0%, rgba(59,130,246,0.0) 62%),
+    linear-gradient(135deg, #071226 0%, #0b1e3d 40%, #081428 100%);
+  filter: saturate(1.1);
+  transform: translateZ(0);
+}
+
+/* 움직임(한 색 바른 느낌 제거) */
+.heroBg::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(closest-side, rgba(37,99,235,0.35), rgba(37,99,235,0) 65%),
+    radial-gradient(closest-side, rgba(56,189,248,0.20), rgba(56,189,248,0) 70%);
+  animation: drift 9.5s ease-in-out infinite;
+  opacity: 0.9;
+}
+
+/* 쉬머(미세 광택) */
+.heroBg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.06) 42%,
+    rgba(255,255,255,0.12) 50%,
+    rgba(255,255,255,0.06) 58%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: translateX(-55%);
+  animation: shimmer 6.2s ease-in-out infinite;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+@keyframes drift {
+  0%   { transform: translate3d(-4%, -2%, 0) scale(1.02); }
+  50%  { transform: translate3d(4%, 2%, 0) scale(1.06); }
+  100% { transform: translate3d(-4%, -2%, 0) scale(1.02); }
+}
+
+@keyframes shimmer {
+  0%   { transform: translateX(-55%); opacity: 0.0; }
+  20%  { opacity: 0.45; }
+  50%  { transform: translateX(55%); opacity: 0.35; }
+  80%  { opacity: 0.0; }
+  100% { transform: translateX(-55%); opacity: 0.0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroBg::before, .heroBg::after { animation: none; }
+}

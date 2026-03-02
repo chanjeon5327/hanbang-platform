@@ -85,7 +85,7 @@ export default function LiveTradesMock({ basePriceKrw }: Props) {
         {trades.map((t) => (
           <div
             key={t.id}
-            className={`${styles.tickerRow} ${styles.tickerRowCompact} ${enteringIds.has(t.id) ? styles.tradeEnter : ''} ${t.isLarge ? styles.tradeLarge : ''}`}
+            className={`${styles.tickerRow} ${styles.tickerRowCompact} ${enteringIds.has(t.id) ? styles.tradeEnter : ''} ${enteringIds.has(t.id) ? styles.tradeSpark : ''} ${t.isLarge ? styles.tradeLarge : ''}`}
           >
             <span
               className={`${styles.tickerPrice} ${styles.monoNum} ${styles.numCol} price-number ${t.side === 'buy' ? styles.pos : styles.neg}`}

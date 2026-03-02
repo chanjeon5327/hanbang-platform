@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap');
 @import "tailwindcss";
 @import '../styles/tokens.css';
 
@@ -189,7 +190,9 @@
   }
 
   html, body {
-    font-family: 'Pretendard Variable', 'Pretendard', system-ui, -apple-system, sans-serif;
+    font-family: 'Noto Sans KR', 'Pretendard Variable', Pretendard, SUIT, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
     font-weight: 400;
     line-height: 1.65;
     letter-spacing: -0.3px;

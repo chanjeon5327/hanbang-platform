@@ -1131,3 +1131,13 @@
 .orderTypeActive {
   color: #fff !important;
 }
+
+@keyframes tradeSpark {
+  0%   { background: rgba(29,78,216,0.00); box-shadow: 0 0 0 rgba(29,78,216,0.0); }
+  25%  { background: rgba(29,78,216,0.06); box-shadow: 0 0 14px rgba(29,78,216,0.18); }
+  60%  { background: rgba(29,78,216,0.03); box-shadow: 0 0 10px rgba(29,78,216,0.10); }
+  100% { background: rgba(29,78,216,0.00); box-shadow: 0 0 0 rgba(29,78,216,0.0); }
+}
+.tradeSpark {
+  animation: tradeSpark 650ms ease-out;
+}

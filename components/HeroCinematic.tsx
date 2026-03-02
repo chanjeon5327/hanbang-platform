@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import styles from './HeroCinematic.module.css';
 
 function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3);
@@ -45,20 +46,18 @@ const STATS = [
 export default function HeroCinematic() {
   return (
     <section
-      className="relative min-h-[70vh] flex flex-col items-center justify-center px-4 py-16 md:py-24"
-      style={{
-        background: 'linear-gradient(180deg, #0b0f1a 0%, #141a2f 100%)',
-      }}
+      className={`relative min-h-[70vh] flex flex-col items-center justify-center px-4 py-16 md:py-24 ${styles.heroWrap}`}
     >
-      <div className="max-w-4xl mx-auto text-center">
+      <div className={styles.heroBg} aria-hidden />
+      <div className="max-w-4xl mx-auto text-center relative z-10">
         <h1
           className="text-[2.2rem] md:text-[3.2rem] font-bold tracking-[-1px] text-white leading-tight mb-4"
           style={{ letterSpacing: '-1px' }}
         >
-          콘텐츠가 자산이 되는 순간
+          콘텐츠 조각을 사고팔고, 매달 수익을 받습니다.
         </h1>
         <p className="text-lg md:text-xl text-white/70 mb-12 md:mb-16">
-          K-IP를 월 단위 수익 구조로 거래합니다.
+          좋아하는 크리에이터/작품의 수익을 함께 나눕니다.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-10 mb-12 md:mb-16">
@@ -72,10 +71,10 @@ export default function HeroCinematic() {
           ))}
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center relative z-10">
           <Link
             href="/market"
-            className="px-8 py-4 rounded-xl font-semibold text-base bg-violet-600 hover:bg-violet-500 text-white transition-colors"
+            className="px-8 py-4 rounded-xl font-semibold text-base bg-[#1D4ED8] hover:bg-[#1E40AF] text-white transition-colors"
           >
             지금 투자 시작
           </Link>
