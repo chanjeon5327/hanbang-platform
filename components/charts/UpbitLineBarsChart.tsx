@@ -3,7 +3,7 @@
 import { useId } from 'react';
 
 type Theme = 'light' | 'dark';
-type Mode = 'tick' | 'minute' | 'day';
+type Mode = 'tick' | 'minute' | 'hour' | 'day' | 'week';
 
 function pad2(n: number) {
   return String(n).padStart(2, '0');
@@ -11,20 +11,23 @@ function pad2(n: number) {
 function fmtHM(d: Date) {
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
+function fmtMD(d: Date) {
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
 function addMinutes(d: Date, n: number) {
   const x = new Date(d);
   x.setMinutes(x.getMinutes() + n);
+  return x;
+}
+function addHours(d: Date, n: number) {
+  const x = new Date(d);
+  x.setHours(x.getHours() + n);
   return x;
 }
 function addDays(d: Date, n: number) {
   const x = new Date(d);
   x.setDate(x.getDate() + n);
   return x;
-}
-function fmtMD(d: Date) {
-  const m = d.getMonth() + 1;
-  const day = d.getDate();
-  return `${m}/${day}`;
 }
 
 export default function UpbitLineBarsChart({
@@ -42,12 +45,12 @@ export default function UpbitLineBarsChart({
 }) {
   const n = Math.max(2, values.length);
   const W = 760;
-  const H = 280; // 한 장에 붙여서(선/바 간격 좁힘)
+  const H = 280;
   const pad = 14;
 
   const LINE_TOP = pad;
-  const LINE_H = 180;              // 위 선영역
-  const BAR_TOP = LINE_TOP + LINE_H + 8; // 간격 최소(8px)
+  const LINE_H = 180;
+  const BAR_TOP = LINE_TOP + LINE_H + 8;
   const BAR_H = 70;
 
   const min = Math.min(...values);
@@ -69,19 +72,43 @@ export default function UpbitLineBarsChart({
   const titleText = isDark ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.92)';
   const subText = isDark ? 'rgba(255,255,255,0.60)' : 'rgba(0,0,0,0.60)';
 
-  // label 계산
+  // labels
   const end = new Date();
   let start: Date;
-  if (mode === 'day') start = addDays(end, -(n - 1));
-  else start = addMinutes(end, -(n - 1));
+  if (mode === 'tick') start = end;
+  else if (mode === 'minute') start = addMinutes(end, -(n - 1));
+  else if (mode === 'hour') start = addHours(end, -(n - 1));
+  else if (mode === 'day') start = addDays(end, -(n - 1));
+  else start = addDays(end, -7 * (n - 1));
 
-  const mid = mode === 'day'
-    ? addDays(start, Math.floor((n - 1) / 2))
-    : addMinutes(start, Math.floor((n - 1) / 2));
+  const midIdx = Math.floor((n - 1) / 2);
+  let mid: Date;
+  if (mode === 'tick') mid = end;
+  else if (mode === 'minute') mid = addMinutes(start, midIdx);
+  else if (mode === 'hour') mid = addHours(start, midIdx);
+  else if (mode === 'day') mid = addDays(start, midIdx);
+  else mid = addDays(start, 7 * midIdx);
 
-  const L1 = mode === 'tick' ? 'T-60' : mode === 'day' ? fmtMD(start) : fmtHM(start);
-  const L2 = mode === 'tick' ? 'T-30' : mode === 'day' ? fmtMD(mid) : fmtHM(mid);
-  const L3 = mode === 'tick' ? 'T0'   : mode === 'day' ? fmtMD(end) : fmtHM(end);
+  const L1 =
+    mode === 'tick' ? `T-${n - 1}` :
+    mode === 'minute' ? fmtHM(start) :
+    mode === 'hour' ? `${fmtMD(start)} ${pad2(start.getHours())}:00` :
+    mode === 'day' ? fmtMD(start) :
+    fmtMD(start);
+
+  const L2 =
+    mode === 'tick' ? `T-${Math.max(1, Math.floor((n - 1) / 2))}` :
+    mode === 'minute' ? fmtHM(mid) :
+    mode === 'hour' ? `${fmtMD(mid)} ${pad2(mid.getHours())}:00` :
+    mode === 'day' ? fmtMD(mid) :
+    fmtMD(mid);
+
+  const L3 =
+    mode === 'tick' ? 'T0' :
+    mode === 'minute' ? fmtHM(end) :
+    mode === 'hour' ? `${fmtMD(end)} ${pad2(end.getHours())}:00` :
+    mode === 'day' ? fmtMD(end) :
+    fmtMD(end);
 
   const uid = useId().replace(/:/g, '');
   const lineGId = `lineG-${uid}`;
@@ -108,36 +135,28 @@ export default function UpbitLineBarsChart({
           </linearGradient>
         </defs>
 
-        {/* grid */}
         {Array.from({ length: 5 }).map((_, i) => {
           const y = LINE_TOP + (i * (LINE_H - 8)) / 4;
           return <line key={i} x1={pad} x2={W - pad} y1={y} y2={y} stroke={grid} strokeWidth="1" />;
         })}
 
-        {/* fill */}
         <path
           d={`${path} L ${xs[n - 1]} ${LINE_TOP + LINE_H} L ${xs[0]} ${LINE_TOP + LINE_H} Z`}
           fill={`url(#${fillGId})`}
         />
 
-        {/* thin line stroke=2 */}
         <path d={path} fill="none" stroke={`url(#${lineGId})`} strokeWidth="2" strokeLinecap="round" />
 
-        {/* last dot */}
         <circle cx={xs[n - 1]} cy={ys[n - 1]} r="5" fill={isDark ? 'rgba(255,255,255,0.90)' : 'rgba(0,0,0,0.85)'} />
 
-        {/* bars baseline */}
         <line x1={pad} x2={W - pad} y1={BAR_TOP + BAR_H} y2={BAR_TOP + BAR_H} stroke={grid} strokeWidth="1" />
 
-        {/* bars */}
         {deltas.map((d, i) => {
           const x = xs[i];
           const h = (Math.abs(d) / absMax) * (BAR_H - 6);
           const y = (BAR_TOP + BAR_H) - h;
           const color = d >= 0 ? 'rgba(37,99,235,0.70)' : 'rgba(239,68,68,0.70)';
-          return (
-            <rect key={i} x={x - 6} y={y} width="12" height={Math.max(2, h)} rx="3" fill={color} />
-          );
+          return <rect key={i} x={x - 6} y={y} width="12" height={Math.max(2, h)} rx="3" fill={color} />;
         })}
       </svg>
 
@@ -148,7 +167,9 @@ export default function UpbitLineBarsChart({
       </div>
       <div className="mt-1 flex items-center justify-between text-xs">
         <span style={{ color: axisText }}>고점 {max} / 저점 {min}</span>
-        <span style={{ color: axisText }}>{mode === 'tick' ? '틱 기준' : mode === 'minute' ? '1분 기준' : '일 기준'}</span>
+        <span style={{ color: axisText }}>
+          {mode === 'tick' ? '60틱' : mode === 'minute' ? '1분' : mode === 'hour' ? '1시간' : mode === 'day' ? '1일' : '1주'}
+        </span>
       </div>
     </div>
   );
