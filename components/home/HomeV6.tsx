@@ -9,7 +9,6 @@ import HallyuIndexSection from '@/components/home/HallyuIndexSection';
 import DeadlineRail from '@/components/home/DeadlineRail';
 import NewsSection from '@/components/home/NewsSection';
 import OverlayRecoCard from '@/components/home/OverlayRecoCard';
-import FloatingSupportBubble from '@/components/common/FloatingSupportBubble';
 import { marketItems } from '@/lib/mock/marketItems';
 
 export default function HomeV6() {
@@ -59,9 +58,6 @@ export default function HomeV6() {
       <footer className="px-6 py-10 text-center text-xs text-black/45">
         © HANBANG. All rights reserved.
       </footer>
-
-      {/* 1:1 문의 말풍선 */}
-      <FloatingSupportBubble />
     </div>
   );
 }

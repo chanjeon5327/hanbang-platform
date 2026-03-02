@@ -5,29 +5,12 @@ import { formatKRW } from '@/lib/mock/marketItems';
 import { mulberry32, hashSeed } from '@/lib/mock/series';
 
 type Side = 'buy' | 'sell';
+type Trade = { id: string; ts: Date; price: number; qty: number; side: Side };
 
-type Trade = {
-  id: string;
-  ts: Date;
-  price: number;
-  qty: number;
-  side: Side;
-};
+function pad2(n: number) { return String(n).padStart(2, '0'); }
+function fmtTime(d: Date) { return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; }
 
-function pad2(n: number) {
-  return String(n).padStart(2, '0');
-}
-function fmtTime(d: Date) {
-  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
-}
-
-export default function LiveTradesLite({
-  symbolId,
-  basePrice,
-}: {
-  symbolId: string;
-  basePrice: number;
-}) {
+export default function LiveTradesLite({ symbolId, basePrice }: { symbolId: string; basePrice: number }) {
   const rnd = useMemo(() => mulberry32(hashSeed(`trades:${symbolId}`)), [symbolId]);
   const [rows, setRows] = useState<Trade[]>([]);
   const tickRef = useRef(0);
@@ -39,20 +22,13 @@ export default function LiveTradesLite({
     const price = Math.max(100, Math.round((basePrice + delta) / 10) * 10);
     const qty = Number((rnd() * 2.5 + 0.05).toFixed(3));
     tickRef.current += 1;
-    return {
-      id: `${t.getTime()}-${tickRef.current}`,
-      ts: t,
-      price,
-      qty,
-      side,
-    };
+    return { id: `${t.getTime()}-${tickRef.current}`, ts: t, price, qty, side };
   };
 
   useEffect(() => {
-    // 초기 14개
     const init: Trade[] = [];
     for (let i = 0; i < 14; i++) init.push(genTrade());
-    init.reverse(); // 최신이 위로
+    init.reverse();
     setRows(init);
 
     const iv = setInterval(() => {
@@ -86,14 +62,10 @@ export default function LiveTradesLite({
           {rows.map((r, idx) => {
             const isNew = idx === 0;
             const sideText = r.side === 'buy' ? '매수' : '매도';
-            const sideColor = r.side === 'buy' ? 'text-blue-600' : 'text-red-500';
+            const sideColor = r.side === 'buy' ? 'text-blue-700' : 'text-red-600';
+            const flashClass = isNew ? (r.side === 'buy' ? 'flash-buy' : 'flash-sell') : '';
             return (
-              <div
-                key={r.id}
-                className={`grid grid-cols-4 px-3 py-2 text-sm border-t border-black/10 ${
-                  isNew ? 'bg-amber-100/50' : 'bg-white'
-                }`}
-              >
+              <div key={r.id} className={`grid grid-cols-4 px-3 py-2 text-sm border-t border-black/10 bg-white ${flashClass}`}>
                 <div className="tabular-nums text-black/70">{fmtTime(r.ts)}</div>
                 <div className="text-right tabular-nums font-extrabold">{formatKRW(r.price)}</div>
                 <div className="text-right tabular-nums text-black/70">{r.qty}</div>
@@ -103,6 +75,19 @@ export default function LiveTradesLite({
           })}
         </div>
       </div>
+
+      <style jsx global>{`
+        .flash-buy { animation: flashBuy 0.30s ease-out; }
+        .flash-sell { animation: flashSell 0.30s ease-out; }
+        @keyframes flashBuy {
+          0% { box-shadow: inset 0 0 0 999px rgba(37,99,235,0.25); }
+          100% { box-shadow: inset 0 0 0 999px rgba(37,99,235,0.0); }
+        }
+        @keyframes flashSell {
+          0% { box-shadow: inset 0 0 0 999px rgba(239,68,68,0.22); }
+          100% { box-shadow: inset 0 0 0 999px rgba(239,68,68,0.0); }
+        }
+      `}</style>
     </div>
   );
 }

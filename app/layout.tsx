@@ -10,6 +10,7 @@ const inter = Inter({
   display: 'swap',
 });
 import BuildStamp from '@/components/dev/BuildStamp';
+import FloatingSupportBubble from '@/components/common/FloatingSupportBubble';
 import AppContainer from '@/components/layout/AppContainer';
 import LegacyWrapper from '@/components/layout/LegacyWrapper';
 
@@ -46,6 +47,7 @@ export default function RootLayout({
           </LegacyWrapper>
         </Providers>
         <BuildStamp />
+        <FloatingSupportBubble />
       </body>
     </html>
   );

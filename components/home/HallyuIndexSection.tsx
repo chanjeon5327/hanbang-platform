@@ -4,10 +4,11 @@ import { useMemo, useState } from 'react';
 import UpbitLineBarsChart from '@/components/charts/UpbitLineBarsChart';
 import { makeRealisticSeries } from '@/lib/mock/series';
 
-type TF = 'tick60' | 'm1' | 'h1' | 'd1' | 'w1';
+type TF = 'tick60' | 's30' | 'm1' | 'h1' | 'd1' | 'w1';
 
 const TF_LABEL: Record<TF, string> = {
   tick60: '60틱',
+  s30: '30초',
   m1: '1분',
   h1: '1시간',
   d1: '1일',
@@ -15,7 +16,7 @@ const TF_LABEL: Record<TF, string> = {
 };
 
 function TimeTabs({ value, onChange }: { value: TF; onChange: (v: TF) => void }) {
-  const items: TF[] = ['tick60', 'm1', 'h1', 'd1', 'w1'];
+  const items: TF[] = ['tick60', 's30', 'm1', 'h1', 'd1', 'w1'];
   return (
     <div className="inline-flex rounded-xl border border-black/10 bg-white p-1">
       {items.map((k) => (
@@ -34,6 +35,7 @@ function TimeTabs({ value, onChange }: { value: TF; onChange: (v: TF) => void })
 }
 
 export default function HallyuIndexSection() {
+  // 기본값: 60틱
   const [tf, setTf] = useState<TF>('tick60');
 
   const { values, mode } = useMemo(() => {
@@ -41,6 +43,12 @@ export default function HallyuIndexSection() {
       return {
         mode: 'tick' as const,
         values: makeRealisticSeries({ seed: 'hallyu-tick60', points: 60, start: 78, drift: 0.02, vol: 1.0, spikeEvery: 13 }).map(v => Math.round(v)),
+      };
+    }
+    if (tf === 's30') {
+      return {
+        mode: 'sec' as const,
+        values: makeRealisticSeries({ seed: 'hallyu-s30', points: 30, start: 78, drift: 0.03, vol: 1.1, spikeEvery: 9 }).map(v => Math.round(v)),
       };
     }
     if (tf === 'm1') {
@@ -73,18 +81,12 @@ export default function HallyuIndexSection() {
         <div className="flex items-end justify-between gap-3 mb-4">
           <div>
             <div className="text-xl sm:text-2xl font-extrabold tracking-[-0.3px]">한류지수</div>
-            <div className="text-sm text-black/55 mt-1">업비트 기준으로(60틱/1분/1시간/1일/1주)</div>
+            <div className="text-sm text-black/55 mt-1">TIP: 30초는 빠른 변동 확인용</div>
           </div>
           <TimeTabs value={tf} onChange={setTf} />
         </div>
 
-        <UpbitLineBarsChart
-          values={values}
-          theme="light"
-          mode={mode}
-          title=""
-          subtitle=""
-        />
+        <UpbitLineBarsChart values={values} theme="light" mode={mode} />
       </div>
     </section>
   );

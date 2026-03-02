@@ -73,7 +73,7 @@ export default function HeroCinematic() {
 
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center relative z-10">
           <Link
-            href="/market"
+            href="/invest/start"
             className="px-8 py-4 rounded-xl font-semibold text-base bg-[#1D4ED8] hover:bg-[#1E40AF] text-white transition-colors"
           >
             지금 투자 시작

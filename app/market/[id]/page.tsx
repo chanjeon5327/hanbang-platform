@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import FloatingSupportBubble from '@/components/common/FloatingSupportBubble';
 import UpbitLineBarsChart from '@/components/charts/UpbitLineBarsChart';
 import LiveTradesLite from '@/components/market/LiveTradesLite';
 import TradePanelUpbit from '@/components/market/TradePanelUpbit';
@@ -11,10 +10,11 @@ import { marketItems, formatKRW } from '@/lib/mock/marketItems';
 import { makeRealisticSeries } from '@/lib/mock/series';
 
 type Tab = 'decide' | 'price' | 'trade';
-type TF = 'tick60' | 'm1' | 'h1' | 'd1' | 'w1';
+type TF = 'tick60' | 's30' | 'm1' | 'h1' | 'd1' | 'w1';
 
 const TF_LABEL: Record<TF, string> = {
   tick60: '60틱',
+  s30: '30초',
   m1: '1분',
   h1: '1시간',
   d1: '1일',
@@ -48,7 +48,7 @@ function SegTabs<T extends string>({
 }
 
 function TimeTabs({ value, onChange }: { value: TF; onChange: (v: TF) => void }) {
-  const items: TF[] = ['tick60', 'm1', 'h1', 'd1', 'w1'];
+  const items: TF[] = ['tick60', 's30', 'm1', 'h1', 'd1', 'w1'];
   return (
     <div className="inline-flex rounded-xl border border-black/10 bg-white p-1">
       {items.map((k) => (
@@ -80,7 +80,7 @@ export default function MarketDetailPage() {
   const item = useMemo(() => marketItems.find((x) => x.id === id), [id]);
 
   const [tab, setTab] = useState<Tab>('decide');
-  const [tf, setTf] = useState<TF>('m1');
+  const [tf, setTf] = useState<TF>('tick60');
 
   const title = item?.title ?? `알 수 없는 종목 (${id})`;
   const category = item?.category ?? '카테고리';
@@ -93,6 +93,12 @@ export default function MarketDetailPage() {
       return {
         mode: 'tick' as const,
         series: makeRealisticSeries({ seed: `tick60:${id}`, points: 60, start: 80, drift: up ? 0.02 : -0.02, vol: 1.1, spikeEvery: 11 }).map(v => Math.round(v)),
+      };
+    }
+    if (tf === 's30') {
+      return {
+        mode: 'sec' as const,
+        series: makeRealisticSeries({ seed: `s30:${id}`, points: 30, start: 80, drift: up ? 0.04 : -0.03, vol: 1.2, spikeEvery: 7 }).map(v => Math.round(v)),
       };
     }
     if (tf === 'm1') {
@@ -144,8 +150,8 @@ export default function MarketDetailPage() {
           </div>
         </div>
 
-        {/* 현재가 + 소개 */}
-        <div className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
+        {/* 현재가 카드: 말풍선 위치 계산용 id */}
+        <div id="market-price-card" className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
             <div>
               <div className="text-xs text-black/50">현재가</div>
@@ -171,8 +177,8 @@ export default function MarketDetailPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-5 sm:px-6 pb-14">
-        {/* 스티키 리모컨형 탭 */}
-        <div className="sticky top-3 z-40 mb-5">
+        {/* 스티키 탭: 말풍선 위치 계산용 id */}
+        <div id="market-sticky-tabs" className="sticky top-3 z-40 mb-5">
           <div className="inline-block rounded-2xl bg-[#F7F8FA]/90 backdrop-blur border border-black/10 p-2 shadow-[0_10px_24px_rgba(0,0,0,0.08)]">
             <SegTabs<Tab>
               value={tab}
@@ -193,6 +199,7 @@ export default function MarketDetailPage() {
           </div>
         )}
 
+        {/* ✅ 살까말까: 공란 제거(2컬럼 풀) */}
         {tab === 'decide' && (
           <div className="grid lg:grid-cols-2 gap-5">
             <div className="rounded-2xl border border-black/10 bg-white overflow-hidden shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
@@ -237,6 +244,10 @@ export default function MarketDetailPage() {
                     <div className="text-xs text-black/55">예상 배분율</div>
                     <div className="mt-1 font-extrabold tabular-nums">3.2%</div>
                   </div>
+                  <div className="rounded-xl border border-black/10 bg-black/5 p-4 col-span-2">
+                    <div className="text-xs text-black/55">예상 수익(샘플)</div>
+                    <div className="mt-1 font-extrabold tabular-nums">₩ 400,000 / 월</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -249,7 +260,7 @@ export default function MarketDetailPage() {
               <div className="flex items-end justify-between gap-3 mb-4">
                 <div>
                   <div className="text-sm font-extrabold">가격 차트</div>
-                  <div className="text-xs text-black/55 mt-1">업비트 기준(60틱/1분/1시간/1일/1주)</div>
+                  <div className="text-xs text-black/55 mt-1">기본 60틱 (가장 즉각적인 움직임)</div>
                 </div>
                 <TimeTabs value={tf} onChange={setTf} />
               </div>
@@ -265,8 +276,6 @@ export default function MarketDetailPage() {
           <TradePanelUpbit assetId={id} basePrice={price} />
         )}
       </main>
-
-      <FloatingSupportBubble />
     </div>
   );
 }

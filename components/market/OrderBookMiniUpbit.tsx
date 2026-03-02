@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { formatKRW } from '@/lib/mock/marketItems';
 import { hashSeed, mulberry32 } from '@/lib/mock/series';
 
@@ -22,16 +22,16 @@ export default function OrderBookMiniUpbit({
   basePrice: number;
   onPickPrice?: (price: number) => void;
 }) {
-  const { asks, bids } = useMemo(() => {
-    const rnd = mulberry32(hashSeed(`ob:${assetId}`));
-    const t = tickSize(basePrice);
+  const rnd = useMemo(() => mulberry32(hashSeed(`ob:${assetId}`)), [assetId]);
 
+  const { asks, bids } = useMemo(() => {
+    const t = tickSize(basePrice);
     const mkQty = () => Number((rnd() * 8 + 0.15).toFixed(3));
+
     const asksRaw: Row[] = Array.from({ length: 5 }, (_, i) => ({
       price: Math.max(1, Math.round((basePrice + (i + 1) * t) / t) * t),
       qty: mkQty(),
     }));
-    // 업비트 느낌: 매도는 위가 더 비싸게(내림차순)
     const asks = asksRaw.sort((a, b) => b.price - a.price);
 
     const bids: Row[] = Array.from({ length: 5 }, (_, i) => ({
@@ -40,10 +40,28 @@ export default function OrderBookMiniUpbit({
     }));
 
     return { asks, bids };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assetId, basePrice]);
+
+  const [pulseAsk, setPulseAsk] = useState<number>(-1);
+  const [pulseBid, setPulseBid] = useState<number>(-1);
+  const [clickKey, setClickKey] = useState<string>('');
+
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setPulseAsk(Math.floor(Math.random() * 5));
+      setPulseBid(Math.floor(Math.random() * 5));
+    }, 1300);
+    return () => clearInterval(iv);
+  }, []);
 
   const maxAsk = Math.max(...asks.map((x) => x.qty), 1);
   const maxBid = Math.max(...bids.map((x) => x.qty), 1);
+
+  const flashClick = (k: string) => {
+    setClickKey(k);
+    setTimeout(() => setClickKey(''), 240);
+  };
 
   return (
     <div className="rounded-2xl border border-black/10 bg-white overflow-hidden shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
@@ -59,24 +77,20 @@ export default function OrderBookMiniUpbit({
           <div className="space-y-2">
             {asks.map((r, idx) => {
               const w = Math.round((r.qty / maxAsk) * 100);
+              const k = `a-${idx}`;
+              const isPulse = idx === pulseAsk;
+              const isClick = clickKey === k;
               return (
                 <button
                   key={idx}
-                  onClick={() => onPickPrice?.(r.price)}
-                  className="relative w-full rounded-xl border border-black/10 bg-white hover:bg-red-50 transition overflow-hidden"
+                  onClick={() => { flashClick(k); onPickPrice?.(r.price); }}
+                  style={{ ['--flash' as string]: 'rgba(239,68,68,0.20)' } as React.CSSProperties}
+                  className={`relative w-full rounded-xl border border-black/10 bg-white hover:bg-red-50 transition overflow-hidden ob-row ${isPulse ? 'row-pulse' : ''} ${isClick ? 'row-click' : ''}`}
                 >
-                  {/* bar */}
-                  <div
-                    className="absolute inset-y-0 right-0 bg-red-500/10"
-                    style={{ width: `${w}%` }}
-                  />
+                  <div className="absolute inset-y-0 right-0 bg-red-500/10" style={{ width: `${w}%` }} />
                   <div className="relative px-3 py-2 flex items-center justify-between">
-                    <div className="text-sm font-extrabold tabular-nums text-red-600">
-                      {formatKRW(r.price)}
-                    </div>
-                    <div className="text-sm tabular-nums text-black/70">
-                      {r.qty}
-                    </div>
+                    <div className="text-sm font-extrabold tabular-nums text-red-600">{formatKRW(r.price)}</div>
+                    <div className="text-sm tabular-nums text-black/70">{r.qty}</div>
                   </div>
                 </button>
               );
@@ -90,24 +104,20 @@ export default function OrderBookMiniUpbit({
           <div className="space-y-2">
             {bids.map((r, idx) => {
               const w = Math.round((r.qty / maxBid) * 100);
+              const k = `b-${idx}`;
+              const isPulse = idx === pulseBid;
+              const isClick = clickKey === k;
               return (
                 <button
                   key={idx}
-                  onClick={() => onPickPrice?.(r.price)}
-                  className="relative w-full rounded-xl border border-black/10 bg-white hover:bg-blue-50 transition overflow-hidden"
+                  onClick={() => { flashClick(k); onPickPrice?.(r.price); }}
+                  style={{ ['--flash' as string]: 'rgba(37,99,235,0.22)' } as React.CSSProperties}
+                  className={`relative w-full rounded-xl border border-black/10 bg-white hover:bg-blue-50 transition overflow-hidden ob-row ${isPulse ? 'row-pulse' : ''} ${isClick ? 'row-click' : ''}`}
                 >
-                  {/* bar */}
-                  <div
-                    className="absolute inset-y-0 left-0 bg-blue-500/10"
-                    style={{ width: `${w}%` }}
-                  />
+                  <div className="absolute inset-y-0 left-0 bg-blue-500/10" style={{ width: `${w}%` }} />
                   <div className="relative px-3 py-2 flex items-center justify-between">
-                    <div className="text-sm font-extrabold tabular-nums text-blue-700">
-                      {formatKRW(r.price)}
-                    </div>
-                    <div className="text-sm tabular-nums text-black/70">
-                      {r.qty}
-                    </div>
+                    <div className="text-sm font-extrabold tabular-nums text-blue-700">{formatKRW(r.price)}</div>
+                    <div className="text-sm tabular-nums text-black/70">{r.qty}</div>
                   </div>
                 </button>
               );
@@ -115,6 +125,21 @@ export default function OrderBookMiniUpbit({
           </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        .ob-row.row-pulse { animation: obPulse 0.55s ease-out; }
+        .ob-row.row-click { animation: obClick 0.30s ease-out; }
+        @keyframes obPulse {
+          0% { box-shadow: inset 0 0 0 999px rgba(0,0,0,0.0); }
+          35% { box-shadow: inset 0 0 0 999px var(--flash); }
+          100% { box-shadow: inset 0 0 0 999px rgba(0,0,0,0.0); }
+        }
+        @keyframes obClick {
+          0% { box-shadow: inset 0 0 0 999px rgba(0,0,0,0.0); }
+          55% { box-shadow: inset 0 0 0 999px var(--flash); }
+          100% { box-shadow: inset 0 0 0 999px rgba(0,0,0,0.0); }
+        }
+      `}</style>
     </div>
   );
 }

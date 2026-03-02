@@ -8,7 +8,7 @@ export default function CurationRail() {
   const curated = marketItems.slice(0, 10);
 
   return (
-    <section className="px-5 sm:px-6 pt-10 sm:pt-12 max-w-7xl mx-auto">
+    <section id="home-ownership-anchor" className="px-5 sm:px-6 pt-10 sm:pt-12 max-w-7xl mx-auto">
       <div className="flex items-end justify-between gap-4 mb-5">
         <div>
           <h2 className="text-xl sm:text-2xl font-extrabold tracking-[-0.3px]">

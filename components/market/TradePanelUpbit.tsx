@@ -219,15 +219,42 @@ export default function TradePanelUpbit({
 
               <div className="rounded-xl border border-black/10 bg-white p-4">
                 <div className="text-xs text-black/55">수량</div>
-                <div className="mt-2">
+                <div className="mt-2 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const cur = Number(qty) || 0;
+                      const next = Math.max(0, Number((cur - 0.5).toFixed(3)));
+                      setQty(String(next));
+                    }}
+                    className="w-12 h-12 rounded-xl border border-black/10 bg-black/5 hover:bg-black/10 text-lg font-extrabold"
+                    aria-label="수량 감소"
+                  >
+                    −
+                  </button>
+
                   <input
                     value={qty}
                     onChange={(e) => setQty(e.target.value)}
-                    className="w-full text-lg font-extrabold tabular-nums outline-none"
+                    className="flex-1 text-lg font-extrabold tabular-nums outline-none text-center"
                     inputMode="decimal"
                     placeholder="수량"
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const cur = Number(qty) || 0;
+                      const next = Number((cur + 0.5).toFixed(3));
+                      setQty(String(next));
+                    }}
+                    className="w-12 h-12 rounded-xl border border-black/10 bg-black/5 hover:bg-black/10 text-lg font-extrabold"
+                    aria-label="수량 증가"
+                  >
+                    +
+                  </button>
                 </div>
+                <div className="mt-2 text-[11px] text-black/45">* 0.5 단위(데모)</div>
               </div>
 
               <div className="rounded-xl border border-black/10 bg-black/5 p-4 text-sm">

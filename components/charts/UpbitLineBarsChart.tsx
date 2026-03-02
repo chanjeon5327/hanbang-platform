@@ -3,7 +3,7 @@
 import { useId } from 'react';
 
 type Theme = 'light' | 'dark';
-type Mode = 'tick' | 'minute' | 'hour' | 'day' | 'week';
+type Mode = 'sec' | 'tick' | 'minute' | 'hour' | 'day' | 'week';
 
 function pad2(n: number) {
   return String(n).padStart(2, '0');
@@ -75,7 +75,7 @@ export default function UpbitLineBarsChart({
   // labels
   const end = new Date();
   let start: Date;
-  if (mode === 'tick') start = end;
+  if (mode === 'sec' || mode === 'tick') start = end;
   else if (mode === 'minute') start = addMinutes(end, -(n - 1));
   else if (mode === 'hour') start = addHours(end, -(n - 1));
   else if (mode === 'day') start = addDays(end, -(n - 1));
@@ -83,13 +83,14 @@ export default function UpbitLineBarsChart({
 
   const midIdx = Math.floor((n - 1) / 2);
   let mid: Date;
-  if (mode === 'tick') mid = end;
+  if (mode === 'sec' || mode === 'tick') mid = end;
   else if (mode === 'minute') mid = addMinutes(start, midIdx);
   else if (mode === 'hour') mid = addHours(start, midIdx);
   else if (mode === 'day') mid = addDays(start, midIdx);
   else mid = addDays(start, 7 * midIdx);
 
   const L1 =
+    mode === 'sec' ? `S-${n - 1}` :
     mode === 'tick' ? `T-${n - 1}` :
     mode === 'minute' ? fmtHM(start) :
     mode === 'hour' ? `${fmtMD(start)} ${pad2(start.getHours())}:00` :
@@ -97,6 +98,7 @@ export default function UpbitLineBarsChart({
     fmtMD(start);
 
   const L2 =
+    mode === 'sec' ? `S-${Math.max(1, Math.floor((n - 1) / 2))}` :
     mode === 'tick' ? `T-${Math.max(1, Math.floor((n - 1) / 2))}` :
     mode === 'minute' ? fmtHM(mid) :
     mode === 'hour' ? `${fmtMD(mid)} ${pad2(mid.getHours())}:00` :
@@ -104,6 +106,7 @@ export default function UpbitLineBarsChart({
     fmtMD(mid);
 
   const L3 =
+    mode === 'sec' ? 'S0' :
     mode === 'tick' ? 'T0' :
     mode === 'minute' ? fmtHM(end) :
     mode === 'hour' ? `${fmtMD(end)} ${pad2(end.getHours())}:00` :
@@ -168,7 +171,7 @@ export default function UpbitLineBarsChart({
       <div className="mt-1 flex items-center justify-between text-xs">
         <span style={{ color: axisText }}>고점 {max} / 저점 {min}</span>
         <span style={{ color: axisText }}>
-          {mode === 'tick' ? '60틱' : mode === 'minute' ? '1분' : mode === 'hour' ? '1시간' : mode === 'day' ? '1일' : '1주'}
+          {mode === 'sec' ? '30초' : mode === 'tick' ? '60틱' : mode === 'minute' ? '1분' : mode === 'hour' ? '1시간' : mode === 'day' ? '1일' : '1주'}
         </span>
       </div>
     </div>

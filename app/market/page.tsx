@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import FloatingSupportBubble from '@/components/common/FloatingSupportBubble';
 import { marketItems, formatKRW, type MarketItem } from '@/lib/mock/marketItems';
 
 const cats = ['전체', '여행', '먹방', '시사/토크', '스포츠', '드라마', '음악', '영화', '코미디', '게임', '교양', '키즈', '뷰티', '다큐', '토크'];
@@ -117,8 +116,6 @@ export default function MarketPage() {
       <footer className="px-6 py-10 text-center text-xs text-black/45">
         © HANBANG. All rights reserved.
       </footer>
-
-      <FloatingSupportBubble />
     </div>
   );
 }
