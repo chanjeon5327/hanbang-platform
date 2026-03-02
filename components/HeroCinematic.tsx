@@ -61,37 +61,40 @@ export default function HeroCinematic({
         <div className="absolute inset-0 bg-black/20" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/10 to-black/45" />
 
+        {/* CTA: 히어로 맨 하단 중앙 */}
+        {(primaryCta || secondaryCta) && (
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 justify-center">
+            {primaryCta && (
+              <a
+                href={primaryCta.href}
+                className="rounded-2xl bg-blue-600 px-5 py-3 text-[14px] font-extrabold text-white shadow-sm active:scale-[0.99]"
+              >
+                {primaryCta.label}
+              </a>
+            )}
+            {secondaryCta && (
+              <a
+                href={secondaryCta.href}
+                className="rounded-2xl border border-white/35 bg-white/10 px-5 py-3 text-[14px] font-extrabold text-white backdrop-blur active:scale-[0.99]"
+              >
+                {secondaryCta.label}
+              </a>
+            )}
+          </div>
+        )}
+
         {/* Content */}
         <div className="relative px-6 py-10 sm:px-10 sm:py-16">
-          <div className="max-w-[720px]">
-            <h1 className="text-[28px] font-extrabold leading-tight tracking-[-0.02em] text-white sm:text-[44px]">
+          <div className="max-w-[720px] mx-auto flex flex-col items-center text-center">
+            <h1 className="text-[28px] font-extrabold leading-tight tracking-[-0.02em] text-white sm:text-[44px] text-center">
               {headline}
             </h1>
 
             {sublineText && (
-              <p className="mt-4 text-[14px] font-semibold text-white/90 sm:text-[16px] whitespace-pre-line">
+              <p className="mt-4 text-[14px] font-semibold text-white/90 sm:text-[16px] whitespace-pre-line text-center">
                 {sublineText}
               </p>
             )}
-
-            <div className="mt-8 flex flex-wrap gap-2">
-              {primaryCta && (
-                <a
-                  href={primaryCta.href}
-                  className="rounded-2xl bg-blue-600 px-5 py-3 text-[14px] font-extrabold text-white shadow-sm active:scale-[0.99]"
-                >
-                  {primaryCta.label}
-                </a>
-              )}
-              {secondaryCta && (
-                <a
-                  href={secondaryCta.href}
-                  className="rounded-2xl border border-white/35 bg-white/10 px-5 py-3 text-[14px] font-extrabold text-white backdrop-blur active:scale-[0.99]"
-                >
-                  {secondaryCta.label}
-                </a>
-              )}
-            </div>
 
             {/* 개발 확인용 (주석)
               - 영상 직접 확인: http://localhost:3000/hero/hero.mp4
