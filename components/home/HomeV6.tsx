@@ -16,7 +16,21 @@ export default function HomeV6() {
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] text-[#0B1120]">
-      <HeroCinematic />
+      <section className="px-5 sm:px-6 pt-6 pb-4 max-w-7xl mx-auto">
+        <HeroCinematic
+          headline={
+            <>
+              내가 좋아하는 콘텐츠 사고 팔고.
+              <br />
+              <br />
+              매달 수익을 받습니다.
+            </>
+          }
+          sublineTop="내가 좋아하는 크리에이터와 동업자가 됩니다."
+          primaryCta={{ label: '지금 투자 시작', href: '/invest/start' }}
+          secondaryCta={{ label: '마켓 둘러보기', href: '/market' }}
+        />
+      </section>
       <MarketTickerBar />
 
       {/* 1) 추천 큐레이팅 */}

@@ -1,89 +1,103 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import styles from './HeroCinematic.module.css';
+import React, { useEffect, useRef } from 'react';
 
-function easeOutCubic(t: number): number {
-  return 1 - Math.pow(1 - t, 3);
-}
+type Props = {
+  headline: React.ReactNode;
+  subline?: string;
+  sublineTop?: string;
+  sublineBottom?: string;
+  primaryCta?: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
+};
 
-function AnimatedNumber({
-  value,
-  duration = 1200,
-  format = (n) => n.toLocaleString('ko-KR'),
-}: {
-  value: number;
-  duration?: number;
-  format?: (n: number) => string;
-}) {
-  const [display, setDisplay] = useState(0);
+export default function HeroCinematic({
+  headline,
+  subline,
+  sublineTop,
+  sublineBottom,
+  primaryCta,
+  secondaryCta,
+}: Props) {
+  const sublineText = subline ?? [sublineTop, sublineBottom].filter(Boolean).join('\n');
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    let start = 0;
-    const startTime = performance.now();
+    const v = videoRef.current;
+    if (!v) return;
 
-    const tick = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = easeOutCubic(progress);
-      setDisplay(Math.round(start + (value - start) * eased));
-      if (progress < 1) requestAnimationFrame(tick);
+    const LIMIT = 59;
+
+    const onTimeUpdate = () => {
+      // 59초 이후는 절대 재생하지 않음: 즉시 0초로 되감기 + 재생 유지
+      if (v.currentTime >= LIMIT) {
+        v.currentTime = 0;
+        void v.play().catch(() => {});
+      }
     };
 
-    requestAnimationFrame(tick);
-  }, [value, duration]);
+    v.addEventListener('timeupdate', onTimeUpdate);
+    return () => v.removeEventListener('timeupdate', onTimeUpdate);
+  }, []);
 
-  return <span className="tabular-nums">{format(display)}</span>;
-}
-
-const STATS = [
-  { label: '총 거래액', value: 124700000000, format: (n: number) => `${(n / 1e8).toFixed(1)}억원` },
-  { label: '오늘 체결 건수', value: 2847, format: (n: number) => `${n.toLocaleString('ko-KR')}건` },
-  { label: '월 배당 예상 수익률', value: 12.8, format: (n: number) => `${n.toFixed(1)}%` },
-];
-
-export default function HeroCinematic() {
   return (
-    <section
-      className={`relative min-h-[70vh] flex flex-col items-center justify-center px-4 py-16 md:py-24 ${styles.heroWrap}`}
-    >
-      <div className={styles.heroBg} aria-hidden />
-      <div className="max-w-4xl mx-auto text-center relative z-10">
-        <h1
-          className="text-[2.2rem] md:text-[3.2rem] font-bold tracking-[-1px] text-white leading-tight mb-4"
-          style={{ letterSpacing: '-1px' }}
+    <section className="relative overflow-hidden rounded-3xl border bg-black">
+      {/* ✅ 높이 확장: 첫인상 압도감 */}
+      <div className="relative min-h-[360px] sm:min-h-[430px] lg:min-h-[500px]">
+        {/* Video Background */}
+        <video
+          ref={videoRef}
+          className="absolute inset-0 h-full w-full object-cover"
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          controls={false}
         >
-          콘텐츠 조각을 사고팔고, 매달 수익을 받습니다.
-        </h1>
-        <p className="text-lg md:text-xl text-white/70 mb-12 md:mb-16">
-          좋아하는 크리에이터/작품의 수익을 함께 나눕니다.
-        </p>
+          <source src="/hero/hero.mp4" type="video/mp4" />
+        </video>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-10 mb-12 md:mb-16">
-          {STATS.map((s) => (
-            <div key={s.label} className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-white mb-1">
-                <AnimatedNumber value={s.value} duration={1200} format={s.format} />
-              </div>
-              <div className="text-sm text-white/60">{s.label}</div>
+        {/* Overlay for readability (너무 검게 덮지 않기) */}
+        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/10 to-black/45" />
+
+        {/* Content */}
+        <div className="relative px-6 py-10 sm:px-10 sm:py-16">
+          <div className="max-w-[720px]">
+            <h1 className="text-[28px] font-extrabold leading-tight tracking-[-0.02em] text-white sm:text-[44px]">
+              {headline}
+            </h1>
+
+            {sublineText && (
+              <p className="mt-4 text-[14px] font-semibold text-white/90 sm:text-[16px] whitespace-pre-line">
+                {sublineText}
+              </p>
+            )}
+
+            <div className="mt-8 flex flex-wrap gap-2">
+              {primaryCta && (
+                <a
+                  href={primaryCta.href}
+                  className="rounded-2xl bg-blue-600 px-5 py-3 text-[14px] font-extrabold text-white shadow-sm active:scale-[0.99]"
+                >
+                  {primaryCta.label}
+                </a>
+              )}
+              {secondaryCta && (
+                <a
+                  href={secondaryCta.href}
+                  className="rounded-2xl border border-white/35 bg-white/10 px-5 py-3 text-[14px] font-extrabold text-white backdrop-blur active:scale-[0.99]"
+                >
+                  {secondaryCta.label}
+                </a>
+              )}
             </div>
-          ))}
-        </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center relative z-10">
-          <Link
-            href="/invest/start"
-            className="px-8 py-4 rounded-xl font-semibold text-base bg-[#1D4ED8] hover:bg-[#1E40AF] text-white transition-colors"
-          >
-            지금 투자 시작
-          </Link>
-          <Link
-            href="/market"
-            className="px-8 py-4 rounded-xl font-semibold text-base border border-white/30 hover:bg-white/10 text-white transition-colors"
-          >
-            마켓 둘러보기
-          </Link>
+            {/* 개발 확인용 (주석)
+              - 영상 직접 확인: http://localhost:3000/hero/hero.mp4
+              - 59초 되면 0초로 돌아가야 함
+            */}
+          </div>
         </div>
       </div>
     </section>
