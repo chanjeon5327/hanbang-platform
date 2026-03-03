@@ -1,7 +1,28 @@
 import { NextResponse } from "next/server";
 import { getServerSupabase } from "@/utils/supabase/server";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 
 type RailKey = "top" | "experiment";
+
+function getItemId(x: unknown): string {
+  const o = x as Record<string, unknown>;
+  return String(o?.id ?? o?.slug ?? o?.asset_id ?? o?.assetId ?? o?.market_id ?? o?.item_id ?? "");
+}
+
+function reorderByIds<T>(items: T[], ids: string[], getId: (x: T) => string): T[] {
+  if (!ids?.length) return items;
+  const map = new Map(items.map((x) => [getId(x), x] as const));
+  const out: T[] = [];
+  for (const id of ids) {
+    const v = map.get(id);
+    if (v) {
+      out.push(v);
+      map.delete(id);
+    }
+  }
+  for (const v of map.values()) out.push(v);
+  return out;
+}
 
 function computeScore(m: {
   impressions_7d: number;
@@ -41,6 +62,25 @@ function pickReason(m: {
 export async function GET() {
   try {
     const supabase = await getServerSupabase();
+
+    // 0) 개인화 ids (로그인 유저)
+    let personalizedIds: string[] = [];
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id) {
+        const admin = getAdminSupabase();
+        const { data: rows } = await admin
+          .from("user_taste_score")
+          .select("item_id")
+          .eq("user_id", user.id)
+          .order("taste_score", { ascending: false })
+          .order("updated_at", { ascending: false })
+          .limit(50);
+        personalizedIds = (rows ?? []).map((r: { item_id?: string }) => String(r.item_id ?? "")).filter(Boolean);
+      }
+    } catch {
+      // 무소음: 개인화 실패 시 기존 정렬 유지
+    }
 
     // 1) 콘텐츠 가져오기
     const { data: rows, error } = await supabase
@@ -158,42 +198,53 @@ export async function GET() {
       // 무소음: 홈 응답은 막지 않음
     }
 
-    // 7) 응답
-    return NextResponse.json({
-      ok: true,
-      rails: [
-        {
-          key: "experiment",
-          title: "실험 레일",
-          items: experimentCandidates.map((x: any) => ({
-            id: x.id,
-            title: x.title,
-            summary: x.summary,
-            thumbnail_url: x.thumbnail_url,
-            creator_name: x.creator_name,
-            category: x.category,
-            platform: x.platform,
-            score: x.score,
-            reason: x.reason,
-          })),
-        },
-        {
-          key: "top",
-          title: "상위 레일",
-          items: topRail.map((x: any) => ({
-            id: x.id,
-            title: x.title,
-            summary: x.summary,
-            thumbnail_url: x.thumbnail_url,
-            creator_name: x.creator_name,
-            category: x.category,
-            platform: x.platform,
-            score: x.score,
-            reason: x.reason,
-          })),
-        },
-      ],
-    });
+    // 7) 개인화 reorder (첫 rail에 적용)
+    let experimentItems = experimentCandidates.map((x: any) => ({
+      id: x.id,
+      title: x.title,
+      summary: x.summary,
+      thumbnail_url: x.thumbnail_url,
+      creator_name: x.creator_name,
+      category: x.category,
+      platform: x.platform,
+      score: x.score,
+      reason: x.reason,
+    }));
+    let topItems = topRail.map((x: any) => ({
+      id: x.id,
+      title: x.title,
+      summary: x.summary,
+      thumbnail_url: x.thumbnail_url,
+      creator_name: x.creator_name,
+      category: x.category,
+      platform: x.platform,
+      score: x.score,
+      reason: x.reason,
+    }));
+    if (personalizedIds.length > 0) {
+      experimentItems = reorderByIds(experimentItems, personalizedIds, getItemId);
+      topItems = reorderByIds(topItems, personalizedIds, getItemId);
+    }
+
+    // 8) 응답
+    return NextResponse.json(
+      {
+        ok: true,
+        rails: [
+          {
+            key: "experiment",
+            title: "실험 레일",
+            items: experimentItems,
+          },
+          {
+            key: "top",
+            title: "상위 레일",
+            items: topItems,
+          },
+        ],
+      },
+      { headers: { "Cache-Control": "no-store" } }
+    );
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ ok: false, error: message }, { status: 500 });

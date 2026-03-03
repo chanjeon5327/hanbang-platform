@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const itemId = body.channelId ?? body.channel_id ?? body.item_id;
+    const itemId = body.item_id ?? body.channel_id ?? body.channelId ?? body.asset_id ?? body.id;
     const score = typeof body.score === 'number' ? body.score : Number(body.score);
 
     if (!itemId || typeof score !== 'number' || score < 1 || score > 5) {
@@ -28,8 +28,9 @@ export async function POST(req: NextRequest) {
       .upsert(
         {
           user_id: user.id,
-          item_id: itemId,
+          item_id: String(itemId),
           score: Math.round(score),
+          updated_at: new Date().toISOString(),
         },
         { onConflict: 'user_id,item_id' }
       );
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown error';
     return NextResponse.json({ error: msg }, { status: 500 });
