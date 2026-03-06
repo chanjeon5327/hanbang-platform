@@ -7,8 +7,12 @@ import { mulberry32, hashSeed } from '@/lib/mock/series';
 type Side = 'buy' | 'sell';
 type Trade = { id: string; ts: Date; price: number; qty: number; side: Side };
 
-function pad2(n: number) { return String(n).padStart(2, '0'); }
-function fmtTime(d: Date) { return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; }
+function pad2(n: number) {
+  return String(n).padStart(2, '0');
+}
+function fmtTime(d: Date) {
+  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+}
 
 export default function LiveTradesLite({ symbolId, basePrice }: { symbolId: string; basePrice: number }) {
   const rnd = useMemo(() => mulberry32(hashSeed(`trades:${symbolId}`)), [symbolId]);
@@ -65,7 +69,10 @@ export default function LiveTradesLite({ symbolId, basePrice }: { symbolId: stri
             const sideColor = r.side === 'buy' ? 'text-blue-700' : 'text-red-600';
             const flashClass = isNew ? (r.side === 'buy' ? 'flash-buy' : 'flash-sell') : '';
             return (
-              <div key={r.id} className={`grid grid-cols-4 px-3 py-2 text-sm border-t border-black/10 bg-white ${flashClass}`}>
+              <div
+                key={r.id}
+                className={`grid grid-cols-4 px-3 py-2 text-sm border-t border-black/10 bg-white ${flashClass}`}
+              >
                 <div className="tabular-nums text-black/70">{fmtTime(r.ts)}</div>
                 <div className="text-right tabular-nums font-extrabold">{formatKRW(r.price)}</div>
                 <div className="text-right tabular-nums text-black/70">{r.qty}</div>
@@ -76,16 +83,28 @@ export default function LiveTradesLite({ symbolId, basePrice }: { symbolId: stri
         </div>
       </div>
 
-      <style jsx global>{`
-        .flash-buy { animation: flashBuy 0.30s ease-out; }
-        .flash-sell { animation: flashSell 0.30s ease-out; }
+      <style jsx>{`
+        .flash-buy {
+          animation: flashBuy 0.3s ease-out;
+        }
+        .flash-sell {
+          animation: flashSell 0.3s ease-out;
+        }
         @keyframes flashBuy {
-          0% { box-shadow: inset 0 0 0 999px rgba(37,99,235,0.25); }
-          100% { box-shadow: inset 0 0 0 999px rgba(37,99,235,0.0); }
+          0% {
+            box-shadow: inset 0 0 0 999px rgba(37, 99, 235, 0.25);
+          }
+          100% {
+            box-shadow: inset 0 0 0 999px rgba(37, 99, 235, 0);
+          }
         }
         @keyframes flashSell {
-          0% { box-shadow: inset 0 0 0 999px rgba(239,68,68,0.22); }
-          100% { box-shadow: inset 0 0 0 999px rgba(239,68,68,0.0); }
+          0% {
+            box-shadow: inset 0 0 0 999px rgba(239, 68, 68, 0.22);
+          }
+          100% {
+            box-shadow: inset 0 0 0 999px rgba(239, 68, 68, 0);
+          }
         }
       `}</style>
     </div>

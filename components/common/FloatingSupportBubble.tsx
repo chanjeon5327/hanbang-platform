@@ -1,201 +1,271 @@
 'use client';
 
-import { MessageCircle } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useMemo, useState, useEffect, useRef } from 'react';
 
 type Mode = 'support' | 'market';
+type Msg = { role: 'me' | 'other'; name?: string; text: string; t: number };
+
+function isMarketDetail(path: string) {
+  return /^\/market\/[^/]+/.test(path);
+}
+function clamp(n: number, a: number, b: number) {
+  return Math.max(a, Math.min(b, n));
+}
+
+const OTHER_NAMES = ['루나', '민수', '지연', 'K-덕후', 'TraderJ', '팬심', '고래'];
+const OTHER_LINES = [
+  '가격 오르나요?',
+  '이거 수익형인가요?',
+  '청약만 하고 끝인가요? 거래 되나요?',
+  '지금 들어가도 늦지 않죠?',
+  '배분은 언제쯤 나와요?',
+  '호가 쌓이는 거 보니 매수세 있네요',
+  '방금 체결 많이 찍혔던데요',
+];
 
 export default function FloatingSupportBubble() {
-  const pathname = usePathname();
+  const pathname = usePathname() || '/';
+  const isDetail = useMemo(() => isMarketDetail(pathname), [pathname]);
+  const mode: Mode = isDetail ? 'market' : 'support';
+
   const [open, setOpen] = useState(false);
 
-  const mode: Mode = useMemo(() => {
-    if (pathname?.startsWith('/market/')) return 'market';
-    return 'support';
+  // 홈에서는 "이것의 소유자…"부터만 보이게
+  const [visible, setVisible] = useState(true);
+
+  // 상세에서는 "현재가 카드"와 "스티키탭" 사이 높이로 자동 배치
+  const [fixedTop, setFixedTop] = useState<number | null>(null);
+
+  const [supportMsgs, setSupportMsgs] = useState<Msg[]>([
+    { role: 'other', name: 'HANBANG', text: '안녕하세요. 1:1 문의입니다. 무엇을 도와드릴까요?', t: Date.now() },
+  ]);
+
+  const [marketMsgs, setMarketMsgs] = useState<Msg[]>([
+    { role: 'other', name: '루나', text: '가격 오르나요?', t: Date.now() - 5000 },
+    { role: 'other', name: '민수', text: '이거 청약+거래형 맞죠?', t: Date.now() - 4200 },
+    { role: 'other', name: '지연', text: '배분은 월 1회인가요?', t: Date.now() - 3300 },
+    { role: 'other', name: 'K-덕후', text: '방금 체결 많이 찍혔어요 👀', t: Date.now() - 2500 },
+  ]);
+
+  const [draft, setDraft] = useState('');
+  const listRef = useRef<HTMLDivElement | null>(null);
+
+  const activeMsgs = mode === 'market' ? marketMsgs : supportMsgs;
+
+  // 홈 노출 시작점(앵커)
+  useEffect(() => {
+    if (pathname !== '/') {
+      setVisible(true);
+      return;
+    }
+
+    const recalc = () => {
+      const el = document.getElementById('home-ownership-anchor');
+      if (!el) {
+        setVisible(true);
+        return;
+      }
+      const y = window.scrollY || 0;
+      const top = el.getBoundingClientRect().top + y;
+      // 앵커 위치 도달하면 표시
+      setVisible(y >= top - 40);
+    };
+
+    recalc();
+    window.addEventListener('scroll', recalc, { passive: true });
+    window.addEventListener('resize', recalc);
+    return () => {
+      window.removeEventListener('scroll', recalc);
+      window.removeEventListener('resize', recalc);
+    };
   }, [pathname]);
 
-  const label = mode === 'support' ? '1:1' : 'CHAT';
+  // 상세 위치 계산(현재가 카드와 스티키탭 사이)
+  useEffect(() => {
+    if (!isDetail) {
+      setFixedTop(null);
+      return;
+    }
+    const recalc = () => {
+      const price = document.getElementById('market-price-card');
+      const tabs = document.getElementById('market-sticky-tabs');
+      if (!price || !tabs) {
+        setFixedTop(200);
+        return;
+      }
+      const pr = price.getBoundingClientRect();
+      const tr = tabs.getBoundingClientRect();
+      const mid = (pr.bottom + tr.top) / 2;
+      // 너무 아래로 내려가면 호가/주문 가림 → 상단으로 제한
+      setFixedTop(clamp(mid - 30, 96, 280));
+    };
 
-  // ✅ 말풍선 크기는 그대로 유지 (h-28 w-28)
-  // ✅ 모서리 배치 유지
-  return (
-    <>
-      <TopBanner open={open} mode={mode} onClose={() => setOpen(false)} />
+    recalc();
+    window.addEventListener('scroll', recalc, { passive: true });
+    window.addEventListener('resize', recalc);
+    return () => {
+      window.removeEventListener('scroll', recalc);
+      window.removeEventListener('resize', recalc);
+    };
+  }, [isDetail]);
 
-      <button
-        type="button"
-        onClick={() => setOpen(v => !v)}
-        className="
-          fixed z-[100]
-          right-3
-          bottom-[calc(env(safe-area-inset-bottom)+78px)]
-          w-[60px] h-[60px]
-          active:scale-95 transition-transform
-        "
-      >
-        <div className="relative w-[60px] h-[60px] flex items-center justify-center">
-          <MessageCircle
-            size={55}
-            strokeWidth={1.25}
-            className="text-blue-500"
-            fill="#ffffff"
-          />
-          <div className="absolute inset-0 flex items-center justify-center font-extrabold text-[12px] text-slate-900">
-            {label}
-          </div>
-        </div>
-      </button>
-    </>
-  );
-}
+  // 상세 그룹 채팅 자동 흐름(패널 열렸을 때만)
+  useEffect(() => {
+    if (!open) return;
+    if (mode !== 'market') return;
 
-function TopBanner({
-  open,
-  mode,
-  onClose,
-}: {
-  open: boolean;
-  mode: Mode;
-  onClose: () => void;
-}) {
-  return (
-    <div
-      className={`
-        fixed left-0 right-0 top-0 z-[95]
-        transition-transform duration-300 ease-out
-        ${open ? 'translate-y-0' : '-translate-y-full'}
-      `}
-    >
-      <div className="mx-auto max-w-[980px] px-3 pt-3">
-        <div className="rounded-2xl border-2 border-blue-500 bg-white shadow-[0_18px_45px_rgba(0,0,0,0.18)]">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-blue-200">
-            <div className="font-extrabold text-blue-700">
-              {mode === 'support' ? '고객센터 1:1' : '유저 CHAT'}
-            </div>
-            <button
-              onClick={onClose}
-              className="h-9 w-9 rounded-full hover:bg-blue-50 active:scale-95 transition"
-              aria-label="닫기"
-              type="button"
-            >
-              ✕
-            </button>
-          </div>
+    const iv = window.setInterval(() => {
+      const name = OTHER_NAMES[Math.floor(Math.random() * OTHER_NAMES.length)];
+      const text = OTHER_LINES[Math.floor(Math.random() * OTHER_LINES.length)];
+      setMarketMsgs((prev) => [...prev.slice(-40), { role: 'other', name, text, t: Date.now() }]);
+    }, 2400);
 
-          <div className="p-4">
-            {mode === 'support' ? <SupportBody /> : <MarketChat />}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SupportBody() {
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
-        {['환불', '결제', '계정', '신고', '기타'].map((item) => (
-          <button
-            key={item}
-            type="button"
-            className="px-3 py-1 rounded-full border border-blue-500 text-blue-700 text-sm font-bold hover:bg-blue-50 active:scale-95 transition"
-          >
-            {item}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex gap-2">
-        <input
-          className="flex-1 rounded-xl border border-blue-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
-          placeholder="문의 내용을 입력하세요…"
-        />
-        <button
-          type="button"
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-extrabold text-white active:scale-95 transition"
-        >
-          보내기
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function MarketChat() {
-  const messages = useMemo(() => {
-    const names = ['JIN', 'MIA', 'KIM', 'SU', 'DAVI', 'HANA', 'MIN', 'SEO'];
-    const texts = [
-      '이거 분위기 좋다.',
-      '배당 구조 진짜면 장기.',
-      '오늘은 눌러볼까.',
-      '자료 보고 왔어요.',
-      '호가 얇다 조심.',
-      '지금 체결 빨라진다.',
-      '분할로 들어가자.',
-      '이거 뉴스 떴다.',
-      '수익률 괜찮네.',
-      '채팅창 생기니까 느낌 산다 ㅋㅋ',
-    ];
-
-    return Array.from({ length: 60 }, (_, i) => ({
-      name: names[i % names.length],
-      text: texts[i % texts.length],
-    }));
-  }, []);
-
-  const listRef = useRef<HTMLDivElement>(null);
+    return () => window.clearInterval(iv);
+  }, [open, mode]);
 
   useEffect(() => {
+    if (!open) return;
     const el = listRef.current;
-    if (!el) return;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [open, activeMsgs.length]);
 
-    let raf = 0;
-    let running = true;
+  const send = () => {
+    const text = draft.trim();
+    if (!text) return;
+    setDraft('');
+    const meMsg: Msg = { role: 'me', text, t: Date.now() };
 
-    const tick = () => {
-      if (!running) return;
-      el.scrollTop += 0.6;
-      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 4) {
-        el.scrollTop = 0;
-      }
-      raf = requestAnimationFrame(tick);
-    };
+    if (mode === 'market') {
+      setMarketMsgs((prev) => [...prev.slice(-60), meMsg]);
+    } else {
+      setSupportMsgs((prev) => [...prev.slice(-60), meMsg]);
+      window.setTimeout(() => {
+        setSupportMsgs((prev) => [
+          ...prev.slice(-60),
+          { role: 'other', name: 'HANBANG', text: '확인했습니다. 화면/URL/시간을 같이 남겨주시면 제일 빨라요.', t: Date.now() },
+        ]);
+      }, 650);
+    }
+  };
 
-    raf = requestAnimationFrame(tick);
-    return () => {
-      running = false;
-      cancelAnimationFrame(raf);
-    };
-  }, []);
+  if (!visible) return null;
+
+  // 공통: 우측 고정(좌측 절대 금지)
+  const bubbleStyle = isDetail
+    ? { top: fixedTop ?? 200 }
+    : { bottom: 'calc(env(safe-area-inset-bottom) + 128px)' }; // 하단 내비/마이 안 겹치게 "충분히 위로"
+
+  const panelStyle = isDetail
+    ? { top: (fixedTop ?? 200) + 74 }
+    : { bottom: 'calc(env(safe-area-inset-bottom) + 206px)' };
 
   return (
-    <div className="space-y-3">
-      <div
-        ref={listRef}
-        className="h-56 overflow-hidden rounded-xl border border-blue-200 bg-white p-3 text-sm"
+    <>
+      {/* 정석 말풍선(둥근 사각 + 꼬리) */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="fixed right-5 z-[9999] bubble-shape"
+        style={bubbleStyle as React.CSSProperties}
+        aria-label="1:1"
       >
-        {messages.map((m, i) => (
-          <div key={i} className="py-1">
-            <b className="text-slate-900">{m.name}</b>{' '}
-            <span className="text-slate-700">{m.text}</span>
-          </div>
-        ))}
-      </div>
+        <span className="bubble-text">1:1</span>
+      </button>
 
-      <div className="flex gap-2">
-        <input
-          className="flex-1 rounded-xl border border-blue-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
-          placeholder="대화를 입력하세요…"
-        />
-        <button
-          type="button"
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-extrabold text-white active:scale-95 transition"
+      {open && (
+        <div
+          className="fixed right-5 z-[9999] w-[360px] max-w-[calc(100vw-24px)] rounded-2xl border border-black/10 bg-white shadow-[0_18px_44px_rgba(0,0,0,0.18)] overflow-hidden"
+          style={panelStyle as React.CSSProperties}
         >
-          전송
-        </button>
-      </div>
-    </div>
+          <div className="px-4 py-3 bg-black/5 flex items-center justify-between">
+            <div className="text-sm font-extrabold">{mode === 'market' ? 'LIVE 채팅' : '1:1 문의'}</div>
+            <div className="flex items-center gap-2">
+              <Link href="/support" className="text-xs font-bold text-black/55 hover:text-black underline">
+                고객센터
+              </Link>
+              <button onClick={() => setOpen(false)} className="text-xs font-extrabold text-black/55 hover:text-black">
+                닫기
+              </button>
+            </div>
+          </div>
+
+          <div ref={listRef} className="max-h-[320px] overflow-auto p-4 space-y-2">
+            {activeMsgs.map((m, i) => (
+              <div key={`${m.t}-${i}`} className={`flex ${m.role === 'me' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[86%] ${m.role === 'me' ? 'text-right' : 'text-left'}`}>
+                  {m.role === 'other' && mode === 'market' && (
+                    <div className="text-[11px] text-black/45 mb-1">{m.name ?? 'user'}</div>
+                  )}
+                  <div
+                    className={`rounded-2xl px-3 py-2 text-sm leading-relaxed ${
+                      m.role === 'me' ? 'bg-[#2563EB] text-white' : 'bg-black/5 text-black'
+                    }`}
+                  >
+                    {m.text}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="p-3 border-t border-black/10 bg-white">
+            <div className="flex gap-2">
+              <input
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') send();
+                }}
+                className="flex-1 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none"
+                placeholder={mode === 'market' ? '대화에 참여해보세요…' : '문의 내용을 입력하세요…'}
+              />
+              <button
+                onClick={send}
+                className="rounded-xl bg-black text-white px-4 py-2 text-sm font-extrabold hover:bg-black/90 transition"
+              >
+                전송
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        .bubble-shape {
+          width: 74px;
+          height: 52px;
+          border-radius: 18px;
+          background: #ffffff;
+          border: 2px solid #2563eb;
+          box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+        }
+        .bubble-text {
+          font-size: 14px;
+          font-weight: 900;
+          color: #0b1120;
+          letter-spacing: 0.2px;
+        }
+        /* 올챙이 꼬리: "정석 말풍선" 느낌으로 아래로 */
+        .bubble-shape::after {
+          content: '';
+          position: absolute;
+          right: 16px;
+          bottom: -10px;
+          width: 18px;
+          height: 18px;
+          background: #ffffff;
+          border-right: 2px solid #2563eb;
+          border-bottom: 2px solid #2563eb;
+          transform: rotate(45deg);
+          border-bottom-right-radius: 7px;
+          box-shadow: 10px 14px 20px rgba(0, 0, 0, 0.08);
+        }
+      `}</style>
+    </>
   );
 }

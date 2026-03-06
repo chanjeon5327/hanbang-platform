@@ -92,36 +92,36 @@ export default function MarketDetailPage() {
     if (tf === 'tick60') {
       return {
         mode: 'tick' as const,
-        series: makeRealisticSeries({ seed: `tick60:${id}`, points: 60, start: 80, drift: up ? 0.02 : -0.02, vol: 1.1, spikeEvery: 11 }).map(v => Math.round(v)),
+        series: makeRealisticSeries({ seed: `tick60:${id}`, points: 60, start: 80, drift: up ? 0.02 : -0.02, vol: 1.1, spikeEvery: 11 }).map((v) => Math.round(v)),
       };
     }
     if (tf === 's30') {
       return {
         mode: 'sec' as const,
-        series: makeRealisticSeries({ seed: `s30:${id}`, points: 30, start: 80, drift: up ? 0.04 : -0.03, vol: 1.2, spikeEvery: 7 }).map(v => Math.round(v)),
+        series: makeRealisticSeries({ seed: `s30:${id}`, points: 30, start: 80, drift: up ? 0.04 : -0.03, vol: 1.2, spikeEvery: 7 }).map((v) => Math.round(v)),
       };
     }
     if (tf === 'm1') {
       return {
         mode: 'minute' as const,
-        series: makeRealisticSeries({ seed: `m1:${id}`, points: 60, start: 80, drift: up ? 0.03 : -0.02, vol: 1.0, spikeEvery: 13 }).map(v => Math.round(v)),
+        series: makeRealisticSeries({ seed: `m1:${id}`, points: 60, start: 80, drift: up ? 0.03 : -0.02, vol: 1.0, spikeEvery: 13 }).map((v) => Math.round(v)),
       };
     }
     if (tf === 'h1') {
       return {
         mode: 'hour' as const,
-        series: makeRealisticSeries({ seed: `h1:${id}`, points: 60, start: 80, drift: up ? 0.01 : -0.01, vol: 0.9, spikeEvery: 17 }).map(v => Math.round(v)),
+        series: makeRealisticSeries({ seed: `h1:${id}`, points: 60, start: 80, drift: up ? 0.01 : -0.01, vol: 0.9, spikeEvery: 17 }).map((v) => Math.round(v)),
       };
     }
     if (tf === 'd1') {
       return {
         mode: 'day' as const,
-        series: makeRealisticSeries({ seed: `d1:${id}`, points: 30, start: 80, drift: up ? 0.05 : -0.03, vol: 1.0, spikeEvery: 9 }).map(v => Math.round(v)),
+        series: makeRealisticSeries({ seed: `d1:${id}`, points: 30, start: 80, drift: up ? 0.05 : -0.03, vol: 1.0, spikeEvery: 9 }).map((v) => Math.round(v)),
       };
     }
     return {
       mode: 'week' as const,
-      series: makeRealisticSeries({ seed: `w1:${id}`, points: 26, start: 80, drift: up ? 0.08 : -0.05, vol: 1.1, spikeEvery: 6 }).map(v => Math.round(v)),
+      series: makeRealisticSeries({ seed: `w1:${id}`, points: 26, start: 80, drift: up ? 0.08 : -0.05, vol: 1.1, spikeEvery: 6 }).map((v) => Math.round(v)),
     };
   }, [tf, id, up]);
 
@@ -194,12 +194,15 @@ export default function MarketDetailPage() {
 
         {!item && (
           <div className="mb-5 rounded-2xl border border-amber-300/40 bg-amber-100 p-5 text-amber-900">
-            이 종목은 아직 목데이터에 없습니다. (id: <span className="font-bold">{id}</span>)<br />
-            <Link className="underline" href="/market">마켓으로 돌아가기</Link>
+            이 종목은 아직 목데이터에 없습니다. (id: <span className="font-bold">{id}</span>)
+            <br />
+            <Link className="underline" href="/market">
+              마켓으로 돌아가기
+            </Link>
           </div>
         )}
 
-        {/* ✅ 살까말까: 공란 제거(2컬럼 풀) */}
+        {/* 살까말까: 공란 제거(2컬럼 풀) */}
         {tab === 'decide' && (
           <div className="grid lg:grid-cols-2 gap-5">
             <div className="rounded-2xl border border-black/10 bg-white overflow-hidden shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
@@ -264,7 +267,6 @@ export default function MarketDetailPage() {
                 </div>
                 <TimeTabs value={tf} onChange={setTf} />
               </div>
-
               <UpbitLineBarsChart values={series} theme="light" mode={mode} />
             </div>
 
@@ -272,9 +274,7 @@ export default function MarketDetailPage() {
           </div>
         )}
 
-        {tab === 'trade' && (
-          <TradePanelUpbit assetId={id} basePrice={price} />
-        )}
+        {tab === 'trade' && <TradePanelUpbit assetId={id} basePrice={price} />}
       </main>
     </div>
   );

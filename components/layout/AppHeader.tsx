@@ -137,7 +137,7 @@ export default function AppHeader() {
                   로그인
                 </Link>
                 <Link
-                  href="/login"
+                  href="/login?mode=signup"
                   className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition"
                   style={{
                     backgroundColor: 'var(--legacy-point)',
@@ -227,7 +227,7 @@ export default function AppHeader() {
                 <span className="text-sm font-medium">로그인</span>
               </Link>
               <Link
-                href="/login"
+                href="/login?mode=signup"
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-white transition"
                 style={{ backgroundColor: 'var(--hb-primary, var(--toss-blue))' }}
                 aria-label="회원가입"

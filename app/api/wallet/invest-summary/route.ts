@@ -2,17 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSupabase } from "@/utils/supabase/server";
 import { requireActiveUser } from "@/lib/auth/requireActiveUser";
 import { requireKycApproved } from "@/lib/kyc/requireKycApproved";
+import { calcPosition } from "@/lib/portfolio/positionMath";
 
-/**
- * GET /api/wallet/invest-summary
- * 수익률 정의 (거래소형 고정):
- *   currentValue = remainingQty * currentPrice
- *   unrealizedPnl = currentValue - remainingCost
- *   unrealizedRate = (unrealizedPnl / remainingCost) * 100 (0 나눔 방지)
- * - totalInvest = ledger CASH_DEBIT 합계 (통계용, UI 메인 수익률에서 제외)
- * - unrealizedPnl, unrealizedRate = 보유 포지션 기준 집계
- * - 이번 달 수익 = 이번 달 CASH_CREDIT (settlement) 합계
- */
+const FX_RATE = 1350;
 export async function GET() {
   const supabase = await getServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
@@ -99,10 +91,9 @@ export async function GET() {
     });
   }
 
-  const fxRate = 1350;
   let holdingsValue = 0;
   let totalUnrealizedPnl = 0;
-  let totalRemainingCost = 0;
+  let totalCostBasis = 0;
   const assetIds = Array.from(assetQtyMap.keys()).filter((id) => (assetQtyMap.get(id) ?? 0) > 0);
 
   if (assetIds.length > 0) {
@@ -121,19 +112,24 @@ export async function GET() {
       if (orderIds) {
         orderIds.forEach((oid) => { totalCost += orderCostMap.get(oid) ?? 0; });
       }
-      const remainingCost = totalBought > 0 ? totalCost * (qty / totalBought) : 0;
       const priceUsd = priceMap.get(aid) ?? 0;
-      const currentValue = qty * priceUsd * fxRate;
-      holdingsValue += currentValue;
-      totalRemainingCost += remainingCost;
-      totalUnrealizedPnl += currentValue - remainingCost;
+      const currentPriceKrw = priceUsd * FX_RATE;
+      const result = calcPosition({
+        position_qty: qty,
+        total_bought: totalBought,
+        total_cost: totalCost,
+        current_price: currentPriceKrw,
+      });
+      holdingsValue += result.market_value;
+      totalUnrealizedPnl += result.unrealized_pnl;
+      totalCostBasis += result.cost_basis;
     }
   }
   holdingsValue = Math.round(Math.max(0, holdingsValue));
 
   const totalValue = cashBalance + holdingsValue;
   const unrealizedRate =
-    totalRemainingCost > 0 ? (totalUnrealizedPnl / totalRemainingCost) * 100 : 0;
+    totalCostBasis > 0 ? (totalUnrealizedPnl / totalCostBasis) * 100 : 0;
 
   let latestDividendId: string | null = null;
   let latestDividendAt: string | null = null;

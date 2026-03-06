@@ -15,14 +15,20 @@ export async function GET(
   const { searchParams } = new URL(req.url);
   const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
 
-  // Mock: 더미 체결
-  const trades = Array.from({ length: Math.min(limit, 10) }, (_, i) => ({
-    id: `mock-${i}`,
-    price_usd: 10 + (i % 3) * 0.1,
-    quantity: 10 + i * 5,
-    side: i % 2 === 0 ? "buy" : "sell",
-    created_at: new Date(Date.now() - i * 60000).toISOString(),
-  }));
+  const USD_KRW = 1350;
+  // Mock: 더미 체결 (price_krw 우선, UI는 KRW 기준)
+  const trades = Array.from({ length: Math.min(limit, 10) }, (_, i) => {
+    const priceUsd = 10 + (i % 3) * 0.1;
+    return {
+      id: `mock-${i}`,
+      price_usd: priceUsd,
+      price_krw: Math.round(priceUsd * USD_KRW),
+      quantity: 10 + i * 5,
+      qty: 10 + i * 5,
+      side: i % 2 === 0 ? "buy" : "sell",
+      created_at: new Date(Date.now() - i * 60000).toISOString(),
+    };
+  });
 
   return NextResponse.json({
     content_id: id,

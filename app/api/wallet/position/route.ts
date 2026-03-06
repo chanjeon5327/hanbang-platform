@@ -2,14 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { requireActiveUser } from '@/lib/auth/requireActiveUser';
 import { requireKycApproved } from '@/lib/kyc/requireKycApproved';
+import { calcPosition, roundForDisplay } from '@/lib/portfolio/positionMath';
 
-/**
- * 수익률 정의 (거래소형 고정)
- * - currentValue = remainingQty * currentPrice
- * - unrealizedPnl = currentValue - remainingCost
- * - unrealizedRate = (unrealizedPnl / remainingCost) * 100 (0 나눔 방지)
- * - 보유 포지션(remainingCost) 기준 미실현 수익률
- */
+const FX_RATE = 1350;
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
@@ -72,10 +68,6 @@ export async function GET(req: NextRequest) {
     });
   }
   quantity = Math.max(0, quantity);
-  // 평균매입가 = 총매수원금 / 총매수수량 (부분 매도 후에도 유지)
-  const avgPrice = totalBought > 0 ? totalCost / totalBought : 0;
-  // 잔여 원금 = 평균매입가 * 잔여수량
-  const remainingCost = quantity > 0 && totalBought > 0 ? totalCost * (quantity / totalBought) : 0;
 
   let currentPriceKrwRes = currentPriceKrw;
   if (currentPriceKrwRes == null || !Number.isFinite(currentPriceKrwRes)) {
@@ -85,20 +77,24 @@ export async function GET(req: NextRequest) {
       .eq('id', assetId)
       .single();
     const sharePriceUsd = Number((item as { share_price_usd?: number } | null)?.share_price_usd ?? 0);
-    currentPriceKrwRes = sharePriceUsd * 1350;
+    currentPriceKrwRes = sharePriceUsd * FX_RATE;
   }
 
-  const currentValue = quantity * currentPriceKrwRes;
-  const unrealizedPnl = currentValue - remainingCost;
-  const unrealizedRate = remainingCost > 0 ? (unrealizedPnl / remainingCost) * 100 : 0;
+  const result = calcPosition({
+    position_qty: quantity,
+    total_bought: totalBought,
+    total_cost: totalCost,
+    current_price: currentPriceKrwRes,
+  });
+  const rounded = roundForDisplay(result);
 
   return NextResponse.json({
     asset_id: assetId,
-    quantity,
-    total_cost: Math.round(remainingCost),
-    avg_price: Math.round(avgPrice),
-    current_value: Math.round(currentValue),
-    unrealized_pnl: Math.round(unrealizedPnl),
-    unrealized_rate: Math.round(unrealizedRate * 100) / 100,
+    quantity: result.position_qty,
+    total_cost: rounded.cost_basis,
+    avg_price: rounded.avg_price,
+    current_value: rounded.market_value,
+    unrealized_pnl: rounded.unrealized_pnl,
+    unrealized_rate: rounded.return_pct,
   });
 }

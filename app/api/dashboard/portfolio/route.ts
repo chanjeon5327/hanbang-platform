@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { getServerSupabase } from "@/utils/supabase/server";
 import { requireActiveUser } from "@/lib/auth/requireActiveUser";
+import { calcPosition, roundForDisplay } from "@/lib/portfolio/positionMath";
 
 export const dynamic = "force-dynamic";
+
+const FX_RATE = 1350;
 
 export async function GET() {
   const supabase = await getServerSupabase();
@@ -22,14 +25,15 @@ export async function GET() {
     .select("entry_type, asset_id, quantity, order_id, amount")
     .eq("user_id", user.id);
 
-  const byAsset: Record<string, { quantity: number; totalCost: number; orderIds: Set<string> }> = {};
+  const byAsset: Record<string, { quantity: number; totalBought: number; orderIds: Set<string> }> = {};
   (entries ?? []).forEach((r) => {
     const aid = r.asset_id as string | null;
     if (!aid) return;
-    if (!byAsset[aid]) byAsset[aid] = { quantity: 0, totalCost: 0, orderIds: new Set<string>() };
+    if (!byAsset[aid]) byAsset[aid] = { quantity: 0, totalBought: 0, orderIds: new Set<string>() };
     const q = Number(r.quantity ?? 0);
     if (r.entry_type === "ASSET_CREDIT") {
       byAsset[aid].quantity += q;
+      byAsset[aid].totalBought += q;
       if (r.order_id) byAsset[aid].orderIds.add(r.order_id);
     }
     if (r.entry_type === "ASSET_DEBIT") byAsset[aid].quantity -= q;
@@ -65,7 +69,6 @@ export async function GET() {
     lastPrices = [];
   }
 
-  const fxRate = 1350;
   const positions = assetIds.map((aid) => {
     const v = byAsset[aid];
     const qty = Math.max(0, v.quantity);
@@ -73,22 +76,28 @@ export async function GET() {
     v.orderIds.forEach((oid) => {
       totalCost += costByOrder[oid] ?? 0;
     });
-    const avgPrice = v.quantity > 0 ? totalCost / v.quantity : 0;
     const item = (items ?? []).find((i: { id: string }) => i.id === aid) as { share_price_usd?: number } | undefined;
     const lastPriceRow = (lastPrices ?? []).find((p: { item_id: string }) => p.item_id === aid);
-    const currentPriceKrw = lastPriceRow?.price_krw ?? (item?.share_price_usd ?? 10) * fxRate;
-    const currentValue = qty * currentPriceKrw;
+    const currentPriceKrw = lastPriceRow?.price_krw ?? (item?.share_price_usd ?? 10) * FX_RATE;
+
+    const result = calcPosition({
+      position_qty: qty,
+      total_bought: v.totalBought,
+      total_cost: totalCost,
+      current_price: currentPriceKrw,
+    });
+    const rounded = roundForDisplay(result);
 
     return {
       asset_id: aid,
       title: (item as { title?: string })?.title ?? "수익권",
-      quantity: qty,
-      avg_price: Math.round(avgPrice),
-      total_cost: Math.round(totalCost),
-      current_value: Math.round(currentValue),
+      quantity: result.position_qty,
+      avg_price: rounded.avg_price,
+      total_cost: rounded.cost_basis,
+      current_value: rounded.market_value,
       total_dividend: 0,
-      unrealized_pnl: Math.round(currentValue - totalCost),
-      unrealized_rate: totalCost > 0 ? ((currentValue - totalCost) / totalCost) * 100 : 0,
+      unrealized_pnl: rounded.unrealized_pnl,
+      unrealized_rate: rounded.return_pct,
     };
   });
 

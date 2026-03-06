@@ -83,9 +83,12 @@ export default function OrderBookMiniUpbit({
               return (
                 <button
                   key={idx}
-                  onClick={() => { flashClick(k); onPickPrice?.(r.price); }}
+                  onClick={() => {
+                    flashClick(k);
+                    onPickPrice?.(r.price);
+                  }}
                   style={{ ['--flash' as string]: 'rgba(239,68,68,0.20)' } as React.CSSProperties}
-                  className={`relative w-full rounded-xl border border-black/10 bg-white hover:bg-red-50 transition overflow-hidden ob-row ${isPulse ? 'row-pulse' : ''} ${isClick ? 'row-click' : ''}`}
+                  className={`relative w-full rounded-xl border border-black/10 bg-white hover:bg-red-50 transition overflow-hidden ${isPulse ? 'row-pulse' : ''} ${isClick ? 'row-click' : ''}`}
                 >
                   <div className="absolute inset-y-0 right-0 bg-red-500/10" style={{ width: `${w}%` }} />
                   <div className="relative px-3 py-2 flex items-center justify-between">
@@ -110,9 +113,12 @@ export default function OrderBookMiniUpbit({
               return (
                 <button
                   key={idx}
-                  onClick={() => { flashClick(k); onPickPrice?.(r.price); }}
+                  onClick={() => {
+                    flashClick(k);
+                    onPickPrice?.(r.price);
+                  }}
                   style={{ ['--flash' as string]: 'rgba(37,99,235,0.22)' } as React.CSSProperties}
-                  className={`relative w-full rounded-xl border border-black/10 bg-white hover:bg-blue-50 transition overflow-hidden ob-row ${isPulse ? 'row-pulse' : ''} ${isClick ? 'row-click' : ''}`}
+                  className={`relative w-full rounded-xl border border-black/10 bg-white hover:bg-blue-50 transition overflow-hidden ${isPulse ? 'row-pulse' : ''} ${isClick ? 'row-click' : ''}`}
                 >
                   <div className="absolute inset-y-0 left-0 bg-blue-500/10" style={{ width: `${w}%` }} />
                   <div className="relative px-3 py-2 flex items-center justify-between">
@@ -126,18 +132,34 @@ export default function OrderBookMiniUpbit({
         </div>
       </div>
 
-      <style jsx global>{`
-        .ob-row.row-pulse { animation: obPulse 0.55s ease-out; }
-        .ob-row.row-click { animation: obClick 0.30s ease-out; }
+      <style jsx>{`
+        .row-pulse {
+          animation: obPulse 0.55s ease-out;
+        }
+        .row-click {
+          animation: obClick 0.3s ease-out;
+        }
         @keyframes obPulse {
-          0% { box-shadow: inset 0 0 0 999px rgba(0,0,0,0.0); }
-          35% { box-shadow: inset 0 0 0 999px var(--flash); }
-          100% { box-shadow: inset 0 0 0 999px rgba(0,0,0,0.0); }
+          0% {
+            box-shadow: inset 0 0 0 999px rgba(0, 0, 0, 0);
+          }
+          35% {
+            box-shadow: inset 0 0 0 999px var(--flash);
+          }
+          100% {
+            box-shadow: inset 0 0 0 999px rgba(0, 0, 0, 0);
+          }
         }
         @keyframes obClick {
-          0% { box-shadow: inset 0 0 0 999px rgba(0,0,0,0.0); }
-          55% { box-shadow: inset 0 0 0 999px var(--flash); }
-          100% { box-shadow: inset 0 0 0 999px rgba(0,0,0,0.0); }
+          0% {
+            box-shadow: inset 0 0 0 999px rgba(0, 0, 0, 0);
+          }
+          55% {
+            box-shadow: inset 0 0 0 999px var(--flash);
+          }
+          100% {
+            box-shadow: inset 0 0 0 999px rgba(0, 0, 0, 0);
+          }
         }
       `}</style>
     </div>

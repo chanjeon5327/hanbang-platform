@@ -1,17 +1,19 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ArrowLeftRight, Upload } from 'lucide-react';
 import { useWalletLedger, type LedgerEntry } from '@/hooks/useWalletLedger';
 import { formatKrw, formatRate } from '@/lib/utils/format';
 import Skeleton from '@/components/ui/Skeleton';
 import EmptyState from '@/components/ui/EmptyState';
 import { useToast } from '@/context/ToastContext';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 const LAST_SEEN_DIVIDEND_KEY = 'hb_last_seen_dividend_id';
 
-const ROYAL = { bg: 'var(--bg)', card: 'var(--card)', blue: 'var(--royal-blue)', text: 'var(--text)', secondary: 'var(--text-secondary)', border: 'var(--border)', positive: 'var(--emerald)', negative: 'var(--accent-loss)' };
+const ROYAL = { positive: 'var(--emerald)', negative: 'var(--accent-loss)' };
 
 type InvestSummary = {
   totalInvest: number;
@@ -33,41 +35,100 @@ type WalletSummaryApi = {
   unrealizedRate: number;
 };
 
+type PortfolioPosition = {
+  asset_id: string;
+  title: string;
+  quantity: number;
+  avg_price: number;
+  total_cost: number;
+  current_value: number;
+  unrealized_pnl: number;
+  unrealized_rate: number;
+};
+
+type PortfolioApi = {
+  cash_balance: number;
+  total_invested: number;
+  total_value: number;
+  total_dividend: number;
+  total_return_rate: number;
+  positions: PortfolioPosition[];
+};
+
 export default function Wallet() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const { summary, loading, error, refetch } = useWalletLedger();
   const [investSummary, setInvestSummary] = useState<InvestSummary | null>(null);
   const [walletSummary, setWalletSummary] = useState<WalletSummaryApi | null>(null);
+  const [portfolio, setPortfolio] = useState<PortfolioApi | null>(null);
+  const [portfolioLoading, setPortfolioLoading] = useState(true);
+  const [portfolioError, setPortfolioError] = useState<string | null>(null);
 
-  const fetchInvestSummary = React.useCallback(() => {
+  const fetchInvestSummary = useCallback(() => {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 8000);
     fetch('/api/wallet/invest-summary', { cache: 'no-store', signal: ctrl.signal })
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => {
+        if (r.status === 401) router.replace('/login?next=/wallet');
+        return r.ok ? r.json() : null;
+      })
       .then((d) => d && setInvestSummary(d))
       .catch(() => setInvestSummary(null))
       .finally(() => clearTimeout(t));
-  }, []);
+  }, [router]);
 
-  const fetchWalletSummary = React.useCallback(() => {
+  const fetchWalletSummary = useCallback(() => {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 8000);
     fetch('/api/wallet/summary', { cache: 'no-store', signal: ctrl.signal })
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => {
+        if (r.status === 401) router.replace('/login?next=/wallet');
+        return r.ok ? r.json() : null;
+      })
       .then((d) => d && setWalletSummary(d))
       .catch(() => setWalletSummary(null))
       .finally(() => clearTimeout(t));
-  }, []);
+  }, [router]);
+
+  const fetchPortfolio = useCallback(() => {
+    setPortfolioError(null);
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    fetch('/api/dashboard/portfolio', { cache: 'no-store', signal: ctrl.signal })
+      .then((r) => {
+        if (r.status === 401) router.replace('/login?next=/wallet');
+        if (!r.ok) throw new Error('조회 실패');
+        return r.json();
+      })
+      .then((d) => setPortfolio(d))
+      .catch((e) => {
+        setPortfolioError(e instanceof Error ? e.message : '오류');
+        setPortfolio(null);
+      })
+      .finally(() => {
+        clearTimeout(t);
+        setPortfolioLoading(false);
+      });
+  }, [router]);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      router.replace('/login?next=/wallet');
+      return;
+    }
     fetchInvestSummary();
     fetchWalletSummary();
-  }, [fetchInvestSummary, fetchWalletSummary, loading]);
+    fetchPortfolio();
+  }, [user, authLoading, fetchInvestSummary, fetchWalletSummary, fetchPortfolio, loading]);
 
   useEffect(() => {
     const onRefresh = () => {
       fetchInvestSummary();
       fetchWalletSummary();
+      fetchPortfolio();
     };
     window.addEventListener('wallet-refresh', onRefresh);
     window.addEventListener('invest-success', onRefresh);
@@ -75,11 +136,10 @@ export default function Wallet() {
       window.removeEventListener('wallet-refresh', onRefresh);
       window.removeEventListener('invest-success', onRefresh);
     };
-  }, [fetchInvestSummary, fetchWalletSummary]);
+  }, [fetchInvestSummary, fetchWalletSummary, fetchPortfolio]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!investSummary || loading) return;
+    if (typeof window === 'undefined' || !investSummary || loading) return;
     const latestId = investSummary.latestDividendId;
     if (!latestId) return;
     try {
@@ -93,130 +153,261 @@ export default function Wallet() {
     }
   }, [investSummary, loading, toast]);
 
-  const totalDisplay = investSummary?.totalValue ?? walletSummary?.totalAssets ?? summary.cashBalance;
+  const totalDisplay =
+    portfolio?.total_value ??
+    investSummary?.totalValue ??
+    walletSummary?.totalAssets ??
+    summary.cashBalance;
   const displayReturn =
     investSummary && investSummary.holdingsValue > 0
       ? { amount: investSummary.unrealizedPnl, rate: investSummary.unrealizedRate }
-      : walletSummary && (walletSummary.unrealizedPnl !== 0 || walletSummary.unrealizedRate !== 0)
-        ? { amount: walletSummary.unrealizedPnl, rate: walletSummary.unrealizedRate }
-        : null;
+      : portfolio && portfolio.total_invested > 0
+        ? {
+            amount: portfolio.total_value - portfolio.total_invested + (portfolio.total_dividend ?? 0),
+            rate: portfolio.total_return_rate ?? 0,
+          }
+        : walletSummary && (walletSummary.unrealizedPnl !== 0 || walletSummary.unrealizedRate !== 0)
+          ? { amount: walletSummary.unrealizedPnl, rate: walletSummary.unrealizedRate }
+          : null;
+  const holdingsCount = portfolio?.positions?.length ?? 0;
+  const isLoading = loading || portfolioLoading;
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center">
+        <div className="text-sm text-black/55">{authLoading ? '로딩 중...' : '리다이렉트 중...'}</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="pb-24" style={{ backgroundColor: 'var(--bg)' }}>
-      <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
-      <header className="sticky top-0 z-50 px-4 py-3 flex items-center" style={{ backgroundColor: 'var(--bg)' }}>
-        <Link href="/" className="body-sm font-medium" style={{ color: 'var(--text-secondary)' }}>‹ 뒤로</Link>
-        <h1 className="flex-1 text-center body-lg font-bold" style={{ color: 'var(--text)' }}>보유 자산</h1>
+    <div className="pb-24 min-h-screen bg-[#F7F8FA] text-[#0B1120]">
+      <header className="sticky top-0 z-50 px-4 py-3 flex items-center bg-[#F7F8FA] border-b border-black/5">
+        <Link href="/" className="text-sm font-medium text-black/60 hover:text-black">
+          ‹ 뒤로
+        </Link>
+        <h1 className="flex-1 text-center text-lg font-bold">보유 자산</h1>
         <span className="w-10" />
       </header>
 
-      <div className="pt-2 pb-8">
-        {/* 0. KPI 3개 */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="rounded-xl p-4 card" style={{ backgroundColor: 'var(--card)' }}>
-            <div className="caption mb-1" style={{ color: 'var(--text-secondary)' }}>총자산</div>
-            {loading ? <Skeleton className="h-5 w-16" /> : <div className="body-sm font-bold tabular-nums" style={{ color: 'var(--text)' }}>{formatKrw(walletSummary?.totalAssets ?? totalDisplay)}</div>}
+      <div className="pt-4 pb-8 px-4 max-w-2xl mx-auto">
+        {/* 자산 요약 카드 4개 */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div className="rounded-2xl p-4 bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
+            <div className="text-xs text-black/55 mb-1">총자산</div>
+            {isLoading ? (
+              <Skeleton className="h-5 w-20" />
+            ) : (
+              <div className="text-sm font-extrabold tabular-nums">{formatKrw(totalDisplay)}</div>
+            )}
           </div>
-          <div className="rounded-xl p-4 card" style={{ backgroundColor: 'var(--card)' }}>
-            <div className="caption mb-1" style={{ color: 'var(--text-secondary)' }}>누적배당</div>
-            {loading ? <Skeleton className="h-5 w-16" /> : <div className="body-sm font-bold tabular-nums text-profit" style={{ color: 'var(--emerald)' }}>{formatKrw(walletSummary?.totalDividend ?? 0)}</div>}
+          <div className="rounded-2xl p-4 bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
+            <div className="text-xs text-black/55 mb-1">미실현손익</div>
+            {isLoading ? (
+              <Skeleton className="h-5 w-16" />
+            ) : (
+              <div
+                className="text-sm font-extrabold tabular-nums"
+                style={{
+                  color:
+                    (investSummary?.unrealizedPnl ?? portfolio?.positions?.reduce((s, p) => s + p.unrealized_pnl, 0) ?? 0) >= 0
+                      ? 'var(--emerald)'
+                      : 'var(--accent-loss)',
+                }}
+              >
+                {(investSummary?.unrealizedPnl ?? portfolio?.positions?.reduce((s, p) => s + p.unrealized_pnl, 0) ?? 0) >= 0 ? '+' : ''}
+                {formatKrw(investSummary?.unrealizedPnl ?? portfolio?.positions?.reduce((s, p) => s + p.unrealized_pnl, 0) ?? 0)}
+              </div>
+            )}
           </div>
-          <div className="rounded-xl p-4 card" style={{ backgroundColor: 'var(--card)' }}>
-            <div className="caption mb-1" style={{ color: 'var(--text-secondary)' }}>미실현손익</div>
-            {loading ? <Skeleton className="h-5 w-16" /> : <div className="body-sm font-bold tabular-nums" style={{ color: (walletSummary?.unrealizedPnl ?? 0) >= 0 ? 'var(--emerald)' : 'var(--accent-loss)' }}>{formatKrw(walletSummary?.unrealizedPnl ?? 0)}</div>}
+          <div className="rounded-2xl p-4 bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
+            <div className="text-xs text-black/55 mb-1">수익률</div>
+            {isLoading ? (
+              <Skeleton className="h-5 w-14" />
+            ) : displayReturn ? (
+              <div
+                className="text-sm font-extrabold tabular-nums"
+                style={{ color: displayReturn.rate >= 0 ? ROYAL.positive : ROYAL.negative }}
+              >
+                {displayReturn.rate >= 0 ? '+' : ''}{formatRate(displayReturn.rate)}
+              </div>
+            ) : (
+              <div className="text-sm font-extrabold tabular-nums text-black/50">—</div>
+            )}
+          </div>
+          <div className="rounded-2xl p-4 bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
+            <div className="text-xs text-black/55 mb-1">보유종목</div>
+            {isLoading ? (
+              <Skeleton className="h-5 w-8" />
+            ) : (
+              <div className="text-sm font-extrabold tabular-nums">{holdingsCount}개</div>
+            )}
           </div>
         </div>
 
-        {/* 1. 총 평가 자산 */}
-        <div className="rounded-[16px] p-6 mb-6 card" style={{ backgroundColor: 'var(--card)', boxShadow: 'var(--shadow-md)' }}>
-          <div className="body-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>총 평가 자산</div>
-          {loading ? (
+        {/* 총 평가 자산 */}
+        <div className="rounded-2xl p-6 mb-6 bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
+          <div className="text-sm font-medium text-black/55 mb-1">총 평가 자산</div>
+          {isLoading ? (
             <Skeleton className="h-8 w-40 mb-2" />
           ) : error ? (
             <div className="flex items-center gap-2">
-              <span className="body-sm" style={{ color: 'var(--text-secondary)' }}>조회 실패</span>
-              <button onClick={refetch} className="body-sm font-semibold" style={{ color: 'var(--royal-blue)' }}>다시 시도</button>
+              <span className="text-sm text-black/55">조회 실패</span>
+              <button onClick={refetch} className="text-sm font-semibold text-[#2563EB]">
+                다시 시도
+              </button>
             </div>
           ) : (
             <>
-              <div className="h1 font-bold tracking-tight tabular-nums metric-xl" style={{ color: 'var(--text)' }}>
-                {formatKrw(totalDisplay)}
-              </div>
+              <div className="text-2xl font-extrabold tracking-tight tabular-nums">{formatKrw(totalDisplay)}</div>
               {displayReturn && (
-                <div className="body-sm font-semibold mt-1 tabular-nums" style={{ color: displayReturn.amount >= 0 ? ROYAL.positive : ROYAL.negative }}>
+                <div
+                  className="text-sm font-semibold mt-1 tabular-nums"
+                  style={{ color: displayReturn.amount >= 0 ? ROYAL.positive : ROYAL.negative }}
+                >
                   {displayReturn.amount >= 0 ? '+' : ''}{formatRate(displayReturn.rate)}
-                  <span className="caption ml-1 font-normal opacity-90">
+                  <span className="text-xs ml-1 font-normal opacity-90">
                     ({displayReturn.amount >= 0 ? '+' : ''}{formatKrw(displayReturn.amount)})
                   </span>
                 </div>
               )}
               {summary.fetchedAt && (
-                <p className="caption mt-1" style={{ color: 'var(--text-secondary)' }}>
+                <p className="text-xs mt-1 text-black/50">
                   집계 기준 {new Date(summary.fetchedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                 </p>
               )}
-              <div className="mt-4 pt-4 flex gap-6 body-sm" style={{ borderTop: '1px solid var(--border)' }}>
+              <div className="mt-4 pt-4 flex gap-6 text-sm border-t border-black/10">
                 <div>
-                  <span style={{ color: 'var(--text-secondary)' }}>예수금 </span>
-                  <span className="font-semibold tabular-nums metric" style={{ color: 'var(--text)' }}>{formatKrw(summary.cashBalance)}</span>
+                  <span className="text-black/55">예수금 </span>
+                  <span className="font-semibold tabular-nums">{formatKrw(summary.cashBalance)}</span>
                 </div>
                 <div>
-                  <span style={{ color: 'var(--text-secondary)' }}>투자원금 </span>
-                  <span className="font-semibold tabular-nums metric" style={{ color: 'var(--text)' }}>{formatKrw(summary.investedPrincipal)}</span>
+                  <span className="text-black/55">투자원금 </span>
+                  <span className="font-semibold tabular-nums">{formatKrw(summary.investedPrincipal)}</span>
                 </div>
               </div>
             </>
           )}
         </div>
 
-        {/* 2. CTA */}
+        {/* CTA */}
         <div className="grid grid-cols-3 gap-2 mb-6">
-          <Link href="/wallet/deposit" className="rounded-[16px] p-4 flex flex-col gap-1 tap-scale" style={{ backgroundColor: 'var(--royal-blue)', color: 'var(--card)', boxShadow: 'var(--shadow-royal)' }}>
-            <Download size={26} strokeWidth={2} />
-            <span className="body-sm font-bold">입금</span>
-            <span className="caption opacity-90">KRW 충전</span>
+          <Link
+            href="/wallet/deposit"
+            className="rounded-2xl p-4 flex flex-col gap-1 bg-[#2563EB] text-white shadow-[0_6px_20px_rgba(37,99,235,0.25)] hover:bg-[#1D4ED8] transition"
+          >
+            <Download size={24} strokeWidth={2} />
+            <span className="text-sm font-bold">입금</span>
+            <span className="text-xs opacity-90">KRW 충전</span>
           </Link>
-          <Link href="/wallet/swap" className="rounded-[16px] p-4 flex flex-col gap-1 tap-scale border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}>
-            <ArrowLeftRight size={26} strokeWidth={2} />
-            <span className="body-sm font-bold">교환</span>
-            <span className="caption" style={{ color: 'var(--text-secondary)' }}>토큰 스왑</span>
+          <Link
+            href="/wallet/swap"
+            className="rounded-2xl p-4 flex flex-col gap-1 bg-white border border-black/10 hover:bg-black/5 transition"
+          >
+            <ArrowLeftRight size={24} strokeWidth={2} />
+            <span className="text-sm font-bold">교환</span>
+            <span className="text-xs text-black/55">토큰 스왑</span>
           </Link>
-          <Link href="/wallet/withdraw" className="rounded-[16px] p-4 flex flex-col gap-1 tap-scale border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}>
-            <Upload size={26} strokeWidth={2} />
-            <span className="body-sm font-bold">출금</span>
-            <span className="caption" style={{ color: 'var(--text-secondary)' }}>계좌 이체</span>
+          <Link
+            href="/wallet/withdraw"
+            className="rounded-2xl p-4 flex flex-col gap-1 bg-white border border-black/10 hover:bg-black/5 transition"
+          >
+            <Upload size={24} strokeWidth={2} />
+            <span className="text-sm font-bold">출금</span>
+            <span className="text-xs text-black/55">계좌 이체</span>
           </Link>
         </div>
 
-        {/* 2.5 최근 배당 5건 */}
+        {/* 보유 종목 */}
         <div className="mb-6">
-          <h3 className="body font-bold mb-3" style={{ color: 'var(--text)' }}>최근 배당</h3>
-          <div className="rounded-[16px] overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            {loading ? (
+          <h3 className="text-base font-bold mb-3">보유 종목</h3>
+          <div className="rounded-2xl overflow-hidden bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
+            {portfolioLoading ? (
+              <div className="py-8 px-4 space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-14 w-full" />
+                ))}
+              </div>
+            ) : portfolioError ? (
+              <div className="py-12 text-center">
+                <p className="text-sm text-black/55 mb-3">보유 종목을 불러올 수 없습니다.</p>
+                <button
+                  onClick={fetchPortfolio}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold bg-[#2563EB] text-white"
+                >
+                  다시 시도
+                </button>
+              </div>
+            ) : !portfolio?.positions?.length ? (
+              <EmptyState
+                title="아직 보유 자산이 없습니다"
+                description="마켓에서 수익권을 매수하면 여기에 표시됩니다"
+                cta={{ label: '마켓 둘러보기', onClick: () => router.push('/market') }}
+              />
+            ) : (
+              <div className="divide-y divide-black/10">
+                {portfolio.positions.map((p) => (
+                  <Link
+                    key={p.asset_id}
+                    href={`/market/${p.asset_id}`}
+                    className="flex justify-between items-center px-4 py-4 hover:bg-black/5 transition"
+                  >
+                    <div>
+                      <div className="font-semibold text-sm">{p.title}</div>
+                      <div className="text-xs text-black/55 mt-0.5">
+                        {p.quantity.toLocaleString()}주 · 평균 {formatKrw(p.avg_price)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-extrabold tabular-nums text-sm">{formatKrw(p.current_value)}</div>
+                      <div
+                        className="text-xs font-semibold tabular-nums"
+                        style={{ color: p.unrealized_pnl >= 0 ? ROYAL.positive : ROYAL.negative }}
+                      >
+                        {p.unrealized_pnl >= 0 ? '+' : ''}{formatKrw(p.unrealized_pnl)} ({p.unrealized_rate >= 0 ? '+' : ''}{formatRate(p.unrealized_rate)})
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 최근 배당 */}
+        <div className="mb-6">
+          <h3 className="text-base font-bold mb-3">최근 배당</h3>
+          <div className="rounded-2xl overflow-hidden bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
+            {isLoading ? (
               <div className="py-8 px-4 space-y-2">
-                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-full" />)}
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
               </div>
             ) : !walletSummary?.recentDividends?.length ? (
               <EmptyState title="아직 배당 내역이 없습니다" description="배당 지급 시 여기에 표시됩니다" />
             ) : (
               walletSummary.recentDividends.map((d) => (
-                <div key={d.id} className="flex justify-between items-center px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
+                <div
+                  key={d.id}
+                  className="flex justify-between items-center px-4 py-3 border-b border-black/10 last:border-0"
+                >
                   <div>
-                    <div className="font-semibold body-sm" style={{ color: 'var(--text)' }}>배당</div>
-                    <div className="caption" style={{ color: 'var(--text-muted)' }}>{new Date(d.created_at).toLocaleString('ko-KR')}</div>
+                    <div className="font-semibold text-sm">배당</div>
+                    <div className="text-xs text-black/50">{new Date(d.created_at).toLocaleString('ko-KR')}</div>
                   </div>
-                  <span className="font-bold body-sm tabular-nums text-profit">+{formatKrw(Number(d.amount))}</span>
+                  <span className="font-bold text-sm tabular-nums text-emerald-600">+{formatKrw(Number(d.amount))}</span>
                 </div>
               ))
             )}
           </div>
         </div>
 
-        {/* 3. 거래 내역 */}
+        {/* 거래 기록 */}
         <div className="mb-6">
-          <h3 className="body font-bold mb-3" style={{ color: 'var(--text)' }}>거래 내역</h3>
-          <p className="caption mb-2" style={{ color: 'var(--text-secondary)' }}>정산·원장 기반</p>
-          <div className="rounded-[16px] overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+          <h3 className="text-base font-bold mb-3">거래 기록</h3>
+          <p className="text-xs text-black/55 mb-2">정산·원장 기반</p>
+          <div className="rounded-2xl overflow-hidden bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
             {loading ? (
               <div className="py-12 px-4 space-y-3">
                 {[1, 2, 3].map((i) => (
@@ -225,8 +416,8 @@ export default function Wallet() {
               </div>
             ) : error ? (
               <div className="py-12 text-center">
-                <p className="body-sm mb-3" style={{ color: 'var(--text-muted)' }}>내역을 불러올 수 없습니다.</p>
-                <button onClick={refetch} className="px-4 py-2 rounded-lg body-sm font-semibold" style={{ backgroundColor: 'var(--royal-blue)', color: '#fff' }}>
+                <p className="text-sm mb-3 text-black/55">내역을 불러올 수 없습니다.</p>
+                <button onClick={refetch} className="px-4 py-2 rounded-xl text-sm font-semibold bg-[#2563EB] text-white">
                   다시 시도
                 </button>
               </div>
@@ -234,26 +425,26 @@ export default function Wallet() {
               <EmptyState
                 title="아직 체결 내역이 없습니다"
                 description="매수하면 여기에 내역이 표시됩니다"
-                cta={{ label: '수익권 둘러보기', onClick: () => window.location.href = '/active-invest' }}
+                cta={{ label: '마켓 둘러보기', onClick: () => router.push('/market') }}
               />
             ) : (
               summary.entries.slice(0, 15).map((l: LedgerEntry) => (
-                <div key={l.id} className="flex justify-between items-center px-4 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
+                <div key={l.id} className="flex justify-between items-center px-4 py-4 border-b border-black/10 last:border-0">
                   <div>
-                    <div className="font-semibold body-sm" style={{ color: 'var(--text)' }}>
+                    <div className="font-semibold text-sm">
                       {l.entry_type === 'CASH_DEBIT' ? '투자' : l.entry_type === 'ASSET_CREDIT' ? '지분' : '입금'}
                     </div>
-                    <div className="caption mt-0.5" style={{ color: 'var(--text-muted)' }}>{new Date(l.created_at).toLocaleString('ko-KR')}</div>
+                    <div className="text-xs text-black/50 mt-0.5">{new Date(l.created_at).toLocaleString('ko-KR')}</div>
                   </div>
                   <div className="text-right">
                     {l.entry_type === 'CASH_DEBIT' && (
-                      <span className="font-bold body-sm tabular-nums text-loss">-{formatKrw(Math.abs(Number(l.amount)))}</span>
+                      <span className="font-bold text-sm tabular-nums text-red-600">-{formatKrw(Math.abs(Number(l.amount)))}</span>
                     )}
                     {l.entry_type === 'CASH_CREDIT' && (
-                      <span className="font-bold body-sm tabular-nums text-profit">+{formatKrw(Number(l.amount))}</span>
+                      <span className="font-bold text-sm tabular-nums text-emerald-600">+{formatKrw(Number(l.amount))}</span>
                     )}
                     {l.entry_type === 'ASSET_CREDIT' && (
-                      <span className="font-bold body-sm tabular-nums text-profit">+{Number(l.quantity).toLocaleString()}주</span>
+                      <span className="font-bold text-sm tabular-nums text-emerald-600">+{Number(l.quantity).toLocaleString()}주</span>
                     )}
                   </div>
                 </div>
@@ -262,11 +453,19 @@ export default function Wallet() {
           </div>
         </div>
 
-        <details className="rounded-[16px] overflow-hidden card">
-          <summary className="px-4 py-4 body-sm font-semibold cursor-pointer" style={{ color: 'var(--text-secondary)' }}>입출금 안내</summary>
-          <div className="px-4 pb-4 pt-0 space-y-2 body-sm">
-            <div className="flex justify-between"><span style={{ color: 'var(--text-secondary)' }}>입금 수수료</span><span style={{ color: 'var(--text)' }}>무료</span></div>
-            <div className="flex justify-between"><span style={{ color: 'var(--text-secondary)' }}>출금 수수료</span><span style={{ color: 'var(--text)' }}>1건당 1,000원</span></div>
+        <details className="rounded-2xl overflow-hidden bg-white border border-black/10">
+          <summary className="px-4 py-4 text-sm font-semibold cursor-pointer text-black/60">
+            입출금 안내
+          </summary>
+          <div className="px-4 pb-4 pt-0 space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-black/55">입금 수수료</span>
+              <span>무료</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-black/55">출금 수수료</span>
+              <span>1건당 1,000원</span>
+            </div>
           </div>
         </details>
       </div>

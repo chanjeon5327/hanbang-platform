@@ -6,16 +6,20 @@
  * - 단위 명시 (₩ 또는 KRW)
  */
 
+function safeNum(n: number): number {
+  return Number.isFinite(n) ? n : 0;
+}
+
 export function formatKrw(n: number): string {
-  return `₩${Math.round(n).toLocaleString('ko-KR')}`;
+  return `₩${Math.round(safeNum(n)).toLocaleString('ko-KR')}`;
 }
 
 export function formatKrwWithUnit(n: number): string {
-  return `${Math.round(n).toLocaleString('ko-KR')}원`;
+  return `${Math.round(safeNum(n)).toLocaleString('ko-KR')}원`;
 }
 
 export function formatRate(rate: number): string {
-  return `${(Math.round(rate * 100) / 100).toFixed(2)}%`;
+  return `${(Math.round(safeNum(rate) * 100) / 100).toFixed(2)}%`;
 }
 
 export function formatQty(qty: number): string {

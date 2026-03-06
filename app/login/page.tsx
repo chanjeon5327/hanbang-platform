@@ -6,6 +6,7 @@ import styles from './login.module.css';
 import { getBrowserSupabase } from '@/utils/supabase/client';
 
 type Tab = 'investor' | 'creator';
+type AuthMode = 'login' | 'signup';
 
 function LoginContent() {
   const router = useRouter();
@@ -13,13 +14,19 @@ function LoginContent() {
   const supabase = useMemo(() => getBrowserSupabase(), []);
 
   const [tab, setTab] = useState<Tab>('investor');
-  const [email, setEmail] = useState('test@hanbang.com');
+  const [mode, setMode] = useState<AuthMode>('login');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
 
   const redirectTo = searchParams.get('redirect') || searchParams.get('redirectTo') || searchParams.get('next') || '/';
+
+  useEffect(() => {
+    const m = (searchParams.get('mode') === 'signup' ? 'signup' : 'login') as AuthMode;
+    setMode(m);
+  }, [searchParams]);
 
   useEffect(() => {
     let cancelled = false;
@@ -42,15 +49,15 @@ function LoginContent() {
     setBusy(true);
     setError(null);
     try {
-      const redirectTo = `${window.location.origin}/auth/callback`;
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: provider as any,
-        options: { redirectTo },
+      const cb = new URL('/auth/callback', window.location.origin);
+      cb.searchParams.set('next', redirectTo);
+      const { error: err } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: cb.toString() },
       });
-      if (error) throw error;
-      // redirect는 supabase가 처리
+      if (err) throw err;
     } catch (e: any) {
-      setError(e?.message || 'OAuth 로그인에 실패했습니다.');
+      setError(e?.message || `${provider === 'google' ? '구글' : '카카오'} 로그인에 실패했습니다.`);
       setBusy(false);
     }
   }
@@ -76,6 +83,10 @@ function LoginContent() {
 
   async function signInEmail(e: React.FormEvent) {
     e.preventDefault();
+    if (!email.trim() || !password) {
+      setError('이메일과 비밀번호를 입력해 주세요.');
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -91,20 +102,31 @@ function LoginContent() {
     }
   }
 
-  async function signUpEmail() {
+  async function signUpEmail(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!email.trim() || !password || password.length < 6) {
+      setError('이메일과 비밀번호(6자 이상)를 입력해 주세요.');
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
+      const cb = new URL('/auth/callback', window.location.origin);
+      cb.searchParams.set('next', redirectTo);
+      const { data, error: err } = await supabase.auth.signUp({
+        email: email.trim(),
         password,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+        options: { emailRedirectTo: cb.toString() },
       });
-      if (error) throw error;
+      if (err) throw err;
+      if (data.session) {
+        router.replace(redirectTo);
+        return;
+      }
       setError('가입 메일을 확인해 주세요.');
-      setBusy(false);
     } catch (e: any) {
       setError(e?.message || '회원가입에 실패했습니다.');
+    } finally {
       setBusy(false);
     }
   }
@@ -178,7 +200,26 @@ function LoginContent() {
             <div className={styles.dividerLine} />
           </div>
 
-          <form onSubmit={signInEmail} className={styles.form}>
+          <div className={styles.tabRow} style={{ marginBottom: '12px' }}>
+            <button
+              type="button"
+              className={`${styles.tab} ${mode === 'login' ? styles.tabActive : ''}`}
+              onClick={() => { setMode('login'); setError(null); }}
+              disabled={busy}
+            >
+              로그인
+            </button>
+            <button
+              type="button"
+              className={`${styles.tab} ${mode === 'signup' ? styles.tabActive : ''}`}
+              onClick={() => { setMode('signup'); setError(null); }}
+              disabled={busy}
+            >
+              회원가입
+            </button>
+          </div>
+
+          <form onSubmit={mode === 'signup' ? signUpEmail : signInEmail} className={styles.form}>
             <input
               className={styles.input}
               placeholder="이메일"
@@ -198,24 +239,34 @@ function LoginContent() {
             />
 
             <button className={styles.emailLoginBtn} type="submit" disabled={busy}>
-              이메일로 로그인
+              {mode === 'signup' ? '회원가입하기' : '이메일로 로그인'}
             </button>
           </form>
 
           {error ? <div className={styles.error}>{error}</div> : null}
 
           <div className={styles.links}>
+            {mode === 'login' && (
+              <>
+                <button
+                  type="button"
+                  className={styles.linkBtn}
+                  onClick={() => router.push('/login')}
+                  disabled={busy}
+                >
+                  비밀번호 찾기
+                </button>
+                <span className={styles.dot}>·</span>
+              </>
+            )}
             <button
               type="button"
               className={styles.linkBtn}
-              onClick={() => router.push('/login')}
+              onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(null); }}
               disabled={busy}
+              style={{ color: '#2563EB' }}
             >
-              비밀번호 찾기
-            </button>
-            <span className={styles.dot}>·</span>
-            <button type="button" className={styles.linkBtn} onClick={signUpEmail} disabled={busy} style={{ color: '#2563EB' }}>
-              회원가입
+              {mode === 'login' ? '회원가입' : '로그인'}
             </button>
           </div>
 
