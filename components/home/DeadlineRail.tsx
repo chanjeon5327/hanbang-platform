@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { HbBadge } from '@/components/ui/HbBadge';
 import { marketItems } from '@/lib/mock/marketItems';
 
 export default function DeadlineRail() {
@@ -37,8 +38,10 @@ export default function DeadlineRail() {
               style={{ backgroundImage: `url('${it.thumbnail}')` }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/0" />
-            <div className="absolute top-3 left-3 text-[11px] px-2 py-1 rounded-full bg-amber-300/15 border border-amber-200/20 text-amber-100">
-              마감 임박
+            <div className="absolute top-3 left-3">
+              <HbBadge variant="warning" className="!bg-amber-300/15 !border-amber-200/20 !text-amber-100">
+                마감 임박
+              </HbBadge>
             </div>
 
             <div className="relative h-full p-4 flex flex-col justify-end">

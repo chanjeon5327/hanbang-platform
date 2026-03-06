@@ -1,8 +1,5 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import Header from '@/components/Header';
-import BottomNavigation from '@/components/home/BottomNavigation';
-import DemoRouteBar from '@/components/DemoRouteBar';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -11,13 +8,11 @@ const inter = Inter({
 });
 import BuildStamp from '@/components/dev/BuildStamp';
 import FloatingSupportBubble from '@/components/common/FloatingSupportBubble';
-import AppContainer from '@/components/layout/AppContainer';
+import AppShell from '@/components/layout/AppShell';
 import LegacyWrapper from '@/components/layout/LegacyWrapper';
 
 import Providers from './providers';
 import './globals.css';
-
-const SHOW_DEMO_BAR = process.env.NEXT_PUBLIC_DEMO_BAR === 'true';
 
 export const metadata: Metadata = {
   title: 'HANBANG',
@@ -35,14 +30,7 @@ export default function RootLayout({
         <Providers>
           <LegacyWrapper>
             <div className="min-h-screen flex flex-col">
-              <Header />
-              <div className="flex-1 overflow-y-auto main-with-bottom-nav" style={{ paddingTop: 64 }}>
-                {SHOW_DEMO_BAR && <DemoRouteBar />}
-                <AppContainer>
-                  {children}
-                </AppContainer>
-              </div>
-              <BottomNavigation />
+              <AppShell>{children}</AppShell>
             </div>
           </LegacyWrapper>
         </Providers>

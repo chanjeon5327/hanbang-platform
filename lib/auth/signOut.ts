@@ -1,5 +1,10 @@
 import { getBrowserSupabase } from '@/utils/supabase/client';
+import { clearAuthStorage } from './clearStorage';
 
+/**
+ * Supabase session 종료 + localStorage 정리 + 리다이렉트
+ * - 모든 로그아웃 진입점에서 이 함수 사용
+ */
 export async function signOutAndCleanup(redirectTo: string = '/') {
   try {
     const supabase = getBrowserSupabase();
@@ -8,8 +13,9 @@ export async function signOutAndCleanup(redirectTo: string = '/') {
     console.warn('Supabase signOut error (ignored):', err);
   }
 
-  try { localStorage.removeItem('hb_user'); } catch {}
-  try { localStorage.removeItem('supabase.auth.token'); } catch {}
+  try {
+    clearAuthStorage();
+  } catch {}
   try { sessionStorage.clear(); } catch {}
 
   if (typeof window !== 'undefined') {

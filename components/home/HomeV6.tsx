@@ -68,10 +68,6 @@ export default function HomeV6() {
 
       {/* 7) 뉴스(고객용) */}
       <NewsSection />
-
-      <footer className="px-6 py-10 text-center text-xs text-black/45">
-        © HANBANG. All rights reserved.
-      </footer>
     </div>
   );
 }

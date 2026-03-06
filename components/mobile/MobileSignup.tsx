@@ -35,26 +35,26 @@ export function MobileSignup() {
       <div style={{ padding: "60px 24px 40px", textAlign: "center" }}>
         {step === 1 && (
           <>
-            <h1 style={{ fontSize: "28px", fontWeight: "bold", color: "var(--text-primary)", marginBottom: "12px" }}>
+            <h1 style={{ fontSize: "28px", fontWeight: "bold", color: "#111827", marginBottom: "12px" }}>
               이름을 알려주세요
             </h1>
-            <p style={{ fontSize: "16px", color: "var(--text-secondary)" }}>HANBANG에서 사용할 이름을 입력해주세요</p>
+            <p style={{ fontSize: "16px", color: "#6B7280" }}>HANBANG에서 사용할 이름을 입력해주세요</p>
           </>
         )}
         {step === 2 && (
           <>
-            <h1 style={{ fontSize: "28px", fontWeight: "bold", color: "var(--text-primary)", marginBottom: "12px" }}>
+            <h1 style={{ fontSize: "28px", fontWeight: "bold", color: "#111827", marginBottom: "12px" }}>
               연락처를 입력하세요
             </h1>
-            <p style={{ fontSize: "16px", color: "var(--text-secondary)" }}>인증을 위해 휴대폰 번호가 필요합니다</p>
+            <p style={{ fontSize: "16px", color: "#6B7280" }}>인증을 위해 휴대폰 번호가 필요합니다</p>
           </>
         )}
         {step === 3 && (
           <>
-            <h1 style={{ fontSize: "28px", fontWeight: "bold", color: "var(--text-primary)", marginBottom: "12px" }}>
+            <h1 style={{ fontSize: "28px", fontWeight: "bold", color: "#111827", marginBottom: "12px" }}>
               인증번호를 입력하세요
             </h1>
-            <p style={{ fontSize: "16px", color: "var(--text-secondary)" }}>{phone}로 전송된 6자리 번호를 입력해주세요</p>
+            <p style={{ fontSize: "16px", color: "#6B7280" }}>{phone}로 전송된 6자리 번호를 입력해주세요</p>
           </>
         )}
       </div>
@@ -71,11 +71,12 @@ export function MobileSignup() {
               width: "100%",
               padding: "20px",
               borderRadius: "16px",
-              border: "none",
+              border: "1px solid #E5E7EB",
               backgroundColor: "#F9FAFB",
               fontSize: "18px",
               outline: "none",
               fontWeight: 500,
+              color: "#111827",
             }}
             autoFocus
           />
@@ -90,11 +91,12 @@ export function MobileSignup() {
               width: "100%",
               padding: "20px",
               borderRadius: "16px",
-              border: "none",
+              border: "1px solid #E5E7EB",
               backgroundColor: "#F9FAFB",
               fontSize: "18px",
               outline: "none",
               fontWeight: 500,
+              color: "#111827",
             }}
             autoFocus
           />
@@ -111,13 +113,14 @@ export function MobileSignup() {
                 width: "100%",
                 padding: "20px",
                 borderRadius: "16px",
-                border: "none",
+                border: "1px solid #E5E7EB",
                 backgroundColor: "#F9FAFB",
                 fontSize: "24px",
                 textAlign: "center",
                 letterSpacing: "8px",
                 outline: "none",
                 fontWeight: 600,
+                color: "#111827",
               }}
               autoFocus
             />

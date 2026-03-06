@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react';
 import { AuthProvider } from '@/components/auth/AuthProvider';
-import { StatusGuard } from '@/components/auth/StatusGuard';
+import { OnboardingRedirectGuard } from '@/components/onboarding/OnboardingRedirectGuard';
 import { StoreProvider } from '@/context/StoreContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { DataThemeProvider } from '@/context/DataThemeContext';
@@ -17,13 +17,13 @@ export default function Providers({ children }: { children: ReactNode }) {
       <ThemeProvider>
         <TokenProvider>
           <AuthProvider>
-            <StatusGuard>
+            <OnboardingRedirectGuard>
               <StoreProvider>
                 <ToastProvider>
                   {children}
                 </ToastProvider>
               </StoreProvider>
-            </StatusGuard>
+            </OnboardingRedirectGuard>
           </AuthProvider>
         </TokenProvider>
       </ThemeProvider>

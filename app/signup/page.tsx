@@ -12,11 +12,11 @@ export default function Signup() {
         <MobileSignup />
       </div>
       {/* PC 버전 */}
-      <div className="hidden md:flex" style={{ height: '100vh', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <h2>회원가입</h2>
-        <p>이메일 가입 절차 (생략)</p>
-        <button onClick={() => router.push('/login')} style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: 'var(--accent-color)', color: 'white', border: 'none', borderRadius: '8px' }}>
-          가입 완료 (로그인하러 가기)
+      <div className="hidden md:flex" style={{ height: '100vh', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#111827' }}>
+        <h2 style={{ color: '#111827', marginBottom: '8px' }}>회원가입</h2>
+        <p style={{ color: '#6B7280' }}>이메일 가입은 로그인 페이지에서 진행해 주세요.</p>
+        <button type="button" onClick={() => router.push('/login')} style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: '#6D28D9', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
+          로그인 페이지로 이동
         </button>
       </div>
     </>

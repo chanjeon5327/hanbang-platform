@@ -100,9 +100,14 @@ export async function updateSession(request: NextRequest) {
 
   // ─────────────────────────────────────────────────
   // 🔒 [압도 긴급수리] 열람 공개 / 거래만 KYC
+  // /login은 항상 통과 (비로그인에서도 로그인 페이지 접근 허용)
   // 보호 라우트가 아니면 즉시 통과 (/, /market, /feature 등 열람 허용)
   // ─────────────────────────────────────────────────
   const pathname = request.nextUrl.pathname
+  if (pathname === '/login' || pathname.startsWith('/login/')) {
+    return supabaseResponse
+  }
+
   const protectedPrefixes = ['/wallet', '/order', '/dashboard', '/mypage', '/admin', '/creator/upload', '/invest', '/active-invest']
   const isProtectedPath = protectedPrefixes.some((p) => pathname.startsWith(p))
 
@@ -118,21 +123,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // 보호 라우트: 로그인 + KYC 미승인 → /kyc (admin은 별도 가드)
-  if (!pathname.startsWith('/admin')) {
-    if (!profileData || profileData.kyc_status !== 'approved') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/kyc'
-      url.searchParams.set('next', pathname)
-      return NextResponse.redirect(url)
-    }
-    if (!profileData.onboarding_completed) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/onboarding'
-      url.searchParams.set('next', pathname)
-      return NextResponse.redirect(url)
-    }
-  }
+  // KYC 자동 리다이렉트 제거 - 로그인 후 홈 유지, KYC는 마이페이지 등에서 명시 진입 시에만
+  // 보호 라우트(/mypage, /wallet 등)는 로그인만 확인, KYC 미승인 시에도 접근 허용
 
   return supabaseResponse
 }

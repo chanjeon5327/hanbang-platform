@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
-type HBCardVariant = 'default' | 'ghost' | 'elevated' | 'royal';
+type HBCardVariant = 'default' | 'ghost' | 'elevated' | 'subtle' | 'royal';
 
 interface HBCardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: HBCardVariant;
@@ -26,6 +26,11 @@ const variantStyles: Record<HBCardVariant, React.CSSProperties> = {
     background: 'var(--card-elevated)',
     border: '1px solid var(--border)',
     boxShadow: 'var(--shadow-md)',
+  },
+  subtle: {
+    background: 'var(--bg-secondary)',
+    border: '1px solid var(--border)',
+    boxShadow: 'none',
   },
   royal: {
     background: 'linear-gradient(135deg, var(--royal-blue), var(--royal-blue-dark))',

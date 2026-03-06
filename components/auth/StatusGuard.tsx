@@ -5,6 +5,12 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from './AuthProvider';
 import { getRedirectPath } from '@/lib/auth/userStatus';
 
+/** /login, /signup 등에서 전역 리다이렉트 절대 금지 */
+const NO_REDIRECT_PATHS = ['/login', '/signup'];
+function isNoRedirectPath(pathname: string): boolean {
+  return NO_REDIRECT_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));
+}
+
 /** ACTIVE가 아닐 때 KYC/온보딩으로 리다이렉트 (읽기 허용 경로 제외) */
 const READ_ONLY_PATHS = [
   '/',
@@ -43,6 +49,12 @@ export function StatusGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (loading || !user) return;
+    if (isNoRedirectPath(pathname)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.info('[login-guard-check] StatusGuard skipped redirect pathname=', pathname);
+      }
+      return;
+    }
 
     const check = async () => {
       const res = await fetch('/api/user/status', { cache: 'no-store' });
@@ -60,6 +72,9 @@ export function StatusGuard({ children }: { children: React.ReactNode }) {
 
       // 핵심 액션 경로에서 ACTIVE 아님 → 리다이렉트
       if (isActionPath(pathname)) {
+        if (process.env.NODE_ENV === 'development') {
+          console.info('[LOGIN-REDIRECT-SOURCE] StatusGuard', { pathname, user: !!user, session: !!user, isAuthed: !!user });
+        }
         router.replace(redirect);
         return;
       }

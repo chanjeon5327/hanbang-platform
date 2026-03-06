@@ -129,6 +129,11 @@
   font-size: 14px;
   font-weight: 700;
   outline: none;
+  color: #111827;
+  background-color: #ffffff;
+}
+.input::placeholder{
+  color: #9CA3AF;
 }
 
 .input:focus{
