@@ -1,9 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSupabase } from "@/utils/supabase/server";
+import { getAdminSupabase } from "@/utils/supabase/admin";
 import { getYtThumb } from "@/lib/thumbnails";
 import { extractYoutubeId } from "@/lib/youtube";
 
 export const revalidate = 60;
+
+function getItemId(x: unknown): string {
+  const o = x as Record<string, unknown>;
+  return String(o?.id ?? o?.slug ?? o?.asset_id ?? o?.assetId ?? o?.market_id ?? o?.item_id ?? "");
+}
+
+function reorderByIds<T>(items: T[], ids: string[], getId: (x: T) => string): T[] {
+  if (!ids?.length) return items;
+  const map = new Map(items.map((x) => [getId(x), x] as const));
+  const out: T[] = [];
+  for (const id of ids) {
+    const v = map.get(id);
+    if (v) {
+      out.push(v);
+      map.delete(id);
+    }
+  }
+  for (const v of map.values()) out.push(v);
+  return out;
+}
 
 const CATEGORIES = ['여행', '게임', '음악', '웹툰', '웹소설', '드라마', '먹방', '일상', '팟캐스트', 'OTT', '유튜브', '음원'] as const;
 
@@ -18,6 +39,25 @@ export async function GET(req: NextRequest) {
     const sort = searchParams.get("sort") ?? "created_at";
 
     const supabase = await getServerSupabase();
+
+    // 개인화 ids (로그인 유저)
+    let personalizedIds: string[] = [];
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id) {
+        const admin = getAdminSupabase();
+        const { data: rows } = await admin
+          .from("user_taste_score")
+          .select("item_id")
+          .eq("user_id", user.id)
+          .order("taste_score", { ascending: false })
+          .order("updated_at", { ascending: false })
+          .limit(50);
+        personalizedIds = (rows ?? []).map((r: { item_id?: string }) => String(r.item_id ?? "")).filter(Boolean);
+      }
+    } catch {
+      // 무소음: 개인화 실패 시 기존 정렬 유지
+    }
 
     let query = supabase
       .from("content_items")
@@ -81,7 +121,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const items = (data ?? []).map((r: Record<string, unknown>, idx: number) => {
+    let items = (data ?? []).map((r: Record<string, unknown>, idx: number) => {
       const cid = String(r.id);
       const thumb = r.thumbnail_url ?? getYtThumb(idx);
       return {
@@ -103,10 +143,17 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    return NextResponse.json({
-      items,
-      next_cursor: items.length >= limit ? offset + limit : null,
-    });
+    if (personalizedIds.length > 0) {
+      items = reorderByIds(items, personalizedIds, getItemId);
+    }
+
+    return NextResponse.json(
+      {
+        items,
+        next_cursor: items.length >= limit ? offset + limit : null,
+      },
+      { headers: { "Cache-Control": "no-store" } }
+    );
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });

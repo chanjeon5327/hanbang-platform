@@ -18,6 +18,24 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({}));
     const skipped = Boolean(body.skipped);
+    const picked = body.picked as Record<string, number> | undefined;
+
+    // user_interest_ratings upsert (picked: { item_id: score })
+    if (picked && typeof picked === 'object') {
+      const entries = Object.entries(picked)
+        .filter(([, s]) => typeof s === 'number' && s >= 1 && s <= 5)
+        .map(([itemId, score]) => ({
+          user_id: user.id,
+          item_id: String(itemId),
+          score: Math.round(score),
+          updated_at: new Date().toISOString(),
+        }));
+      if (entries.length > 0) {
+        await (supabase as any)
+          .from('user_interest_ratings')
+          .upsert(entries, { onConflict: 'user_id,item_id' });
+      }
+    }
 
     // user_onboarding_status upsert
     const { error: statusError } = await (supabase as any)
@@ -46,7 +64,7 @@ export async function POST(req: NextRequest) {
       })
       .eq('id', user.id);
 
-    return NextResponse.json({ ok: true, status: 'ACTIVE' });
+    return NextResponse.json({ ok: true, status: 'ACTIVE' }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown error';
     return NextResponse.json({ error: msg }, { status: 500 });
