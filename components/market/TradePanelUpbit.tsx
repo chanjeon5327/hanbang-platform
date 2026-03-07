@@ -9,6 +9,106 @@ import { formatKRW } from '@/lib/mock/marketItems';
 import { hashSeed, mulberry32 } from '@/lib/mock/series';
 import OrderBookMiniUpbit from '@/components/market/OrderBookMiniUpbit';
 
+function UiCard({
+  title,
+  hint,
+  children,
+  className = '',
+}: {
+  title?: string
+  hint?: string
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <section
+      className={[
+        'rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,#121722_0%,#0d1219_100%)] shadow-[0_14px_40px_rgba(0,0,0,0.24)]',
+        className,
+      ].join(' ')}
+    >
+      {(title || hint) && (
+        <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+          <div className="text-[15px] font-semibold text-white">{title}</div>
+          {hint ? <div className="text-[11px] text-zinc-400">{hint}</div> : null}
+        </div>
+      )}
+      <div className="p-4">{children}</div>
+    </section>
+  )
+}
+
+function SegButton({
+  active,
+  children,
+  onClick,
+  tone = 'default',
+}: {
+  active: boolean
+  children: React.ReactNode
+  onClick?: () => void
+  tone?: 'default' | 'buy' | 'sell'
+}) {
+  const activeClass =
+    tone === 'buy'
+      ? 'border-emerald-400/30 bg-emerald-400/14 text-emerald-200'
+      : tone === 'sell'
+        ? 'border-rose-400/30 bg-rose-400/14 text-rose-200'
+        : 'border-sky-400/30 bg-sky-400/14 text-sky-200'
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        'flex-1 rounded-2xl border px-4 py-3 text-[14px] font-semibold transition',
+        active
+          ? activeClass
+          : 'border-white/10 bg-white/[0.04] text-zinc-300 hover:bg-white/[0.07]',
+      ].join(' ')}
+    >
+      {children}
+    </button>
+  )
+}
+
+function InfoMetric({
+  label,
+  value,
+  valueClassName = 'text-white',
+}: {
+  label: string
+  value: React.ReactNode
+  valueClassName?: string
+}) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-3">
+      <div className="text-[11px] text-zinc-400">{label}</div>
+      <div className={`mt-1 text-[14px] font-semibold leading-5 ${valueClassName}`}>{value}</div>
+    </div>
+  )
+}
+
+function FieldShell({
+  label,
+  right,
+  children,
+}: {
+  label: string
+  right?: React.ReactNode
+  children: React.ReactNode
+}) {
+  return (
+    <div className="rounded-[24px] border border-white/10 bg-black/20 px-4 py-3">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <div className="text-[12px] font-medium text-zinc-300">{label}</div>
+        {right ? <div className="text-[11px] text-zinc-400">{right}</div> : null}
+      </div>
+      {children}
+    </div>
+  )
+}
+
 type Sub = 'buy' | 'sell' | 'edit' | 'fills';
 type OrderType = 'limit' | 'market';
 
@@ -155,34 +255,16 @@ export default function TradePanelUpbit({
   return (
     <div className="grid lg:grid-cols-2 gap-5">
       {/* 좌: 주문 패널 */}
-      <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
-        <div className="inline-flex w-full rounded-2xl border border-slate-200 bg-slate-100 p-1">
-          {[
-            { key: 'buy' as const, label: '매수' },
-            { key: 'sell' as const, label: '매도' },
-            { key: 'edit' as const, label: '주문수정' },
-            { key: 'fills' as const, label: '체결내역' },
-          ].map((it) => (
-            <button
-              key={it.key}
-              onClick={() => setSub(it.key)}
-              className={`flex-1 h-11 rounded-2xl text-sm font-extrabold transition ${
-                sub === it.key
-                  ? it.key === 'buy'
-                    ? 'bg-blue-600 text-white'
-                    : it.key === 'sell'
-                      ? 'bg-rose-600 text-white'
-                      : 'bg-slate-700 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {it.label}
-            </button>
-          ))}
+      <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,#121722_0%,#0d1219_100%)] shadow-[0_14px_40px_rgba(0,0,0,0.24)] p-5">
+        <div className="flex gap-2">
+          <SegButton active={sub === 'buy'} onClick={() => setSub('buy')} tone="buy">매수</SegButton>
+          <SegButton active={sub === 'sell'} onClick={() => setSub('sell')} tone="sell">매도</SegButton>
+          <SegButton active={sub === 'edit'} onClick={() => setSub('edit')}>주문수정</SegButton>
+          <SegButton active={sub === 'fills'} onClick={() => setSub('fills')}>체결내역</SegButton>
         </div>
 
         {needKyc && (
-          <div className="mt-4 rounded-xl border border-amber-300/50 bg-amber-100 px-4 py-3 text-amber-900 text-sm">
+          <div className="mt-4 rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-amber-200 text-sm">
             판매/주문수정은 KYC가 필요합니다.{' '}
             <Link href="/kyc" className="underline font-bold">
               KYC 하러가기 →
@@ -192,20 +274,20 @@ export default function TradePanelUpbit({
 
         {sub === 'fills' ? (
           <div className="mt-5">
-            <div className="text-sm font-extrabold">최근 체결</div>
-            <div className="mt-3 rounded-xl border border-black/10 overflow-hidden">
-              <div className="grid grid-cols-4 bg-black/5 text-xs font-bold text-black/60 px-3 py-2">
+            <div className="text-[15px] font-semibold text-white">최근 체결</div>
+            <div className="mt-3 rounded-2xl border border-white/10 overflow-hidden bg-white/[0.04]">
+              <div className="grid grid-cols-4 text-xs font-semibold text-zinc-400 px-3 py-2 border-b border-white/10">
                 <div>시간</div>
                 <div className="text-right">가격</div>
                 <div className="text-right">수량</div>
                 <div className="text-right">구분</div>
               </div>
               {fills.map((r, i) => (
-                <div key={i} className="grid grid-cols-4 px-3 py-2 text-sm border-t border-black/10">
-                  <div className="tabular-nums text-black/70">{r.t}</div>
-                  <div className="text-right tabular-nums font-extrabold">{formatKRW(r.price)}</div>
-                  <div className="text-right tabular-nums text-black/70">{r.qty}</div>
-                  <div className={`text-right font-extrabold ${r.side === '매수' ? 'text-blue-700' : 'text-red-600'}`}>
+                <div key={i} className="grid grid-cols-4 px-3 py-2 text-sm border-t border-white/10">
+                  <div className="tabular-nums text-zinc-300">{r.t}</div>
+                  <div className="text-right tabular-nums font-semibold text-white">{formatKRW(r.price)}</div>
+                  <div className="text-right tabular-nums text-zinc-300">{r.qty}</div>
+                  <div className={`text-right font-semibold ${r.side === '매수' ? 'text-emerald-300' : 'text-rose-300'}`}>
                     {r.side}
                   </div>
                 </div>
@@ -214,8 +296,8 @@ export default function TradePanelUpbit({
           </div>
         ) : sub === 'edit' ? (
           <div className="mt-5">
-            <div className="text-sm font-extrabold">대기 주문</div>
-            <div className="mt-3 rounded-xl border border-black/10 bg-black/5 p-4 text-sm text-black/70">
+            <div className="text-[15px] font-semibold text-white">대기 주문</div>
+            <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-zinc-400">
               현재 수정 가능한 주문이 없습니다. (데모)
             </div>
           </div>
@@ -223,64 +305,42 @@ export default function TradePanelUpbit({
           <>
             {/* 지정가/시장가 */}
             <div className="mt-5 flex items-center justify-between gap-3">
-              <div className="text-sm font-extrabold">주문 방식</div>
-              <div className="inline-flex rounded-xl border border-slate-200 bg-slate-100 p-1">
-                {[
-                  { key: 'limit' as const, label: '지정가' },
-                  { key: 'market' as const, label: '시장가' },
-                ].map((k) => (
-                  <button
-                    key={k.key}
-                    onClick={() => setOrderType(k.key)}
-                    className={`h-10 px-4 rounded-xl text-sm font-extrabold transition ${
-                      orderType === k.key ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500'
-                    }`}
-                  >
-                    {k.label}
-                  </button>
-                ))}
+              <div className="text-[14px] font-semibold text-white">주문 방식</div>
+              <div className="flex gap-2 flex-1 max-w-[240px] ml-auto">
+                <SegButton active={orderType === 'limit'} onClick={() => setOrderType('limit')}>지정가</SegButton>
+                <SegButton active={orderType === 'market'} onClick={() => setOrderType('market')}>시장가</SegButton>
               </div>
             </div>
 
             {/* 가용 */}
-            <div className="mt-4 rounded-xl border border-black/10 bg-black/5 p-4 text-sm">
+            <div className="mt-4">
               {sub === 'buy' ? (
-                <div className="flex items-center justify-between">
-                  <span className="text-black/60">가용 KRW</span>
-                  <span className="font-extrabold tabular-nums">{formatKRW(cashKRW)}</span>
-                </div>
+                <InfoMetric label="가용 KRW" value={formatKRW(cashKRW)} />
               ) : (
-                <div className="flex items-center justify-between">
-                  <span className="text-black/60">보유 수량</span>
-                  <span className="font-extrabold tabular-nums">{holding}</span>
-                </div>
+                <InfoMetric label="보유 수량" value={holding} />
               )}
             </div>
 
             {/* 입력 */}
             <div className="mt-4 space-y-3">
-              <div className="rounded-xl border border-black/10 bg-white p-4">
-                <div className="text-xs text-black/55">가격</div>
-                <div className="mt-2">
-                  {orderType === 'market' ? (
-                    <div className="text-lg font-extrabold tabular-nums">
-                      {formatKRW(basePrice)} <span className="text-sm text-black/50">(시장가)</span>
-                    </div>
-                  ) : (
-                    <input
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                      className="w-full text-lg font-extrabold tabular-nums outline-none"
-                      inputMode="numeric"
-                      placeholder="가격"
-                    />
-                  )}
-                </div>
-              </div>
+              <FieldShell label="가격" right={orderType === 'market' ? '(시장가)' : undefined}>
+                {orderType === 'market' ? (
+                  <div className="text-[16px] font-semibold tabular-nums text-white">
+                    {formatKRW(basePrice)}
+                  </div>
+                ) : (
+                  <input
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-full text-[16px] font-semibold tabular-nums text-white bg-transparent outline-none placeholder:text-zinc-500"
+                    inputMode="numeric"
+                    placeholder="가격"
+                  />
+                )}
+              </FieldShell>
 
-              <div className="rounded-xl border border-black/10 bg-white p-4">
-                <div className="text-xs text-black/55">수량</div>
-                <div className="mt-2 flex items-center gap-2">
+              <FieldShell label="수량" right="* 0.5 단위(데모)">
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => {
@@ -288,7 +348,7 @@ export default function TradePanelUpbit({
                       const next = Math.max(0, Number((cur - 0.5).toFixed(3)));
                       setQty(String(next));
                     }}
-                    className="w-12 h-12 rounded-xl border border-black/10 bg-black/5 hover:bg-black/10 text-lg font-extrabold"
+                    className="w-12 h-12 rounded-2xl border border-white/10 bg-white/[0.06] hover:bg-white/[0.1] text-lg font-semibold text-white transition"
                     aria-label="수량 감소"
                   >
                     −
@@ -297,7 +357,7 @@ export default function TradePanelUpbit({
                   <input
                     value={qty}
                     onChange={(e) => setQty(e.target.value)}
-                    className="flex-1 text-lg font-extrabold tabular-nums outline-none text-center"
+                    className="flex-1 text-[16px] font-semibold tabular-nums text-white bg-transparent outline-none text-center placeholder:text-zinc-500"
                     inputMode="decimal"
                     placeholder="수량"
                   />
@@ -309,58 +369,52 @@ export default function TradePanelUpbit({
                       const next = Number((cur + 0.5).toFixed(3));
                       setQty(String(next));
                     }}
-                    className="w-12 h-12 rounded-xl border border-black/10 bg-black/5 hover:bg-black/10 text-lg font-extrabold"
+                    className="w-12 h-12 rounded-2xl border border-white/10 bg-white/[0.06] hover:bg-white/[0.1] text-lg font-semibold text-white transition"
                     aria-label="수량 증가"
                   >
                     +
                   </button>
                 </div>
-                <div className="mt-2 text-[11px] text-black/45">* 0.5 단위(데모)</div>
-              </div>
+              </FieldShell>
 
-              <div className="rounded-xl border border-black/10 bg-black/5 p-4 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-black/60">예상 금액</span>
-                  <span className="font-extrabold tabular-nums">{formatKRW(Math.round(gross))}</span>
-                </div>
-                <div className="mt-1 flex items-center justify-between">
-                  <span className="text-black/60">수수료(예시)</span>
-                  <span className="font-extrabold tabular-nums">{formatKRW(Math.round(fee))}</span>
-                </div>
-                <div className="mt-1 flex items-center justify-between">
-                  <span className="text-black/60">{sub === 'buy' ? '총 결제' : '예상 정산'}</span>
-                  <span className="font-extrabold tabular-nums">{formatKRW(Math.round(total))}</span>
-                </div>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <InfoMetric label="예상 금액" value={formatKRW(Math.round(gross))} />
+                <InfoMetric label="수수료(예시)" value={formatKRW(Math.round(fee))} />
+                <InfoMetric
+                  label={sub === 'buy' ? '총 결제' : '예상 정산'}
+                  value={formatKRW(Math.round(total))}
+                  valueClassName={sub === 'buy' ? 'text-emerald-200' : 'text-rose-200'}
+                />
               </div>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <div className="mb-3">
-                <div className="text-[13px] font-extrabold text-slate-900">{isBuyTab ? '주문 요약' : '판매 요약'}</div>
-                <div className="mt-1 text-[12px] text-slate-500">{helperText}</div>
-              </div>
+            <UiCard
+              className="mt-4"
+              title={isBuyTab ? '주문 요약' : '판매 요약'}
+            >
+              <p className="text-[12px] text-zinc-400 mb-3">{helperText}</p>
               <div className="space-y-2 text-[13px]">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">주문 방식</span>
-                  <span className="font-bold text-slate-900">{isMarketMode ? '시장가' : '지정가'}</span>
+                  <span className="text-zinc-400">주문 방식</span>
+                  <span className="font-semibold text-white">{isMarketMode ? '시장가' : '지정가'}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">수량</span>
-                  <span className="font-bold text-slate-900">{formatPanelNumber(qtyValue)}</span>
+                  <span className="text-zinc-400">수량</span>
+                  <span className="font-semibold text-white">{formatPanelNumber(qtyValue)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">예상 금액</span>
-                  <span className="font-bold text-slate-900">{formatPanelNumber(estimatedTotal)}원</span>
+                  <span className="text-zinc-400">예상 금액</span>
+                  <span className="font-semibold text-white">{formatPanelNumber(estimatedTotal)}원</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">{isBuyTab ? '사용 가능 잔고' : '보유 가능 수량/잔고'}</span>
-                  <span className="font-bold text-slate-900">{formatPanelNumber(balanceValue)}</span>
+                  <span className="text-zinc-400">{isBuyTab ? '사용 가능 잔고' : '보유 가능 수량/잔고'}</span>
+                  <span className="font-semibold text-white">{formatPanelNumber(balanceValue)}</span>
                 </div>
               </div>
-              <div className="mt-3 rounded-xl bg-white px-3 py-2 text-[12px] text-slate-600">
+              <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-[12px] text-zinc-400">
                 {policyText}
               </div>
-            </div>
+            </UiCard>
 
             <button
               type="button"
@@ -383,22 +437,22 @@ export default function TradePanelUpbit({
                 }
                 // 기존 주문 실행 로직 (판매)
               }}
-              className={`mt-4 h-12 w-full rounded-2xl text-sm font-extrabold transition ${
+              className={`mt-5 h-14 w-full rounded-2xl text-[15px] font-bold transition shadow-lg ${
                 sub === 'buy'
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-rose-600 text-white hover:bg-rose-700'
+                  ? 'bg-emerald-500 text-white hover:bg-emerald-400 active:scale-[0.98]'
+                  : 'bg-rose-500 text-white hover:bg-rose-400 active:scale-[0.98]'
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {primaryButtonLabel}
             </button>
 
-            <p className="mt-2 text-center text-[12px] text-slate-500">
+            <p className="mt-3 text-center text-[12px] text-zinc-400">
               {isBuyTab
                 ? '구매는 로그인 후 진행 가능합니다.'
                 : '판매·정산은 본인확인 완료 후 진행 가능합니다.'}
             </p>
 
-            <div className="mt-4 pb-8 text-xs text-black/50">
+            <div className="mt-4 pb-8 text-xs text-zinc-500">
               * 데모 화면입니다. 실제 체결/주문/정산은 엔진 연결 후 활성화됩니다.
             </div>
           </>
