@@ -8,6 +8,7 @@ import LiveTradesLite from '@/components/market/LiveTradesLite';
 import OrderBookMiniUpbit from '@/components/market/OrderBookMiniUpbit';
 import TradePanelUpbit from '@/components/market/TradePanelUpbit';
 import MarketDetailMobileScaffold from '@/components/market/MarketDetailMobileScaffold';
+import type { MarketDetailLike } from '@/lib/market/detailTemplates';
 import { marketItems, formatKRW } from '@/lib/mock/marketItems';
 import { makeRealisticSeries } from '@/lib/mock/series';
 
@@ -281,7 +282,7 @@ export default function MarketDetailPage() {
               trades={<>{liveTradesSection}</>}
               orderBook={<>{orderBookSection}</>}
               orderPanel={<>{orderPanelSection}</>}
-              thesis={<>{tabContentSection}</>}
+              item={item as MarketDetailLike}
             />
           )}
         </main>

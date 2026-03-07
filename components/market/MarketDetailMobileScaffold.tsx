@@ -1,6 +1,8 @@
 'use client';
 
 import { useRef, useState, useEffect, type ReactNode } from 'react';
+import CategoryInfoSection from '@/components/market/detail/CategoryInfoSection';
+import type { MarketDetailLike } from '@/lib/market/detailTemplates';
 
 type Props = {
   summary: ReactNode;
@@ -9,7 +11,7 @@ type Props = {
   trades: ReactNode;
   orderBook: ReactNode;
   orderPanel: ReactNode;
-  thesis: ReactNode;
+  item: MarketDetailLike | null;
 };
 
 export default function MarketDetailMobileScaffold({
@@ -19,7 +21,7 @@ export default function MarketDetailMobileScaffold({
   trades,
   orderBook,
   orderPanel,
-  thesis,
+  item,
 }: Props) {
   const orderPanelRef = useRef<HTMLDivElement>(null);
   const [orderPanelInView, setOrderPanelInView] = useState(true);
@@ -72,9 +74,9 @@ export default function MarketDetailMobileScaffold({
         <CardBlock title="실시간 체결">{trades}</CardBlock>
       </section>
 
-      {/* 5순위: 정보/소개/기타 */}
-      <section className="px-4 pb-6 pt-2">
-        <CardBlock title="살까말까 / 지금얼마 / 거래하기">{thesis}</CardBlock>
+      {/* 5순위: 정보/소개 (카테고리별 상품 정보) */}
+      <section id="detail-info" className="px-4 py-4">
+        {item ? <CategoryInfoSection item={item} /> : null}
       </section>
 
       {/* 하단 고정 CTA: 주문 패널이 화면 밖일 때만 표시 (sticky 하나만) */}
