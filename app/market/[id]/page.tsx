@@ -168,13 +168,58 @@ export default function MarketDetailPage() {
   );
 
   const chartSection = (
-    <>
-      <div className="flex items-end justify-between gap-3 mb-4">
-        <div className="text-xs text-black/55">기본 60틱 (가장 즉각적인 움직임)</div>
-        <TimeTabs value={tf} onChange={setTf} />
+    <div className="overflow-hidden rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,#131722_0%,#0f131b_48%,#0a0d13_100%)] shadow-[0_18px_50px_rgba(0,0,0,0.32)]">
+      <div className="border-b border-white/10 px-4 py-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="inline-flex rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1 text-[11px] font-medium tracking-[0.02em] text-sky-200">
+              가격 차트
+            </div>
+            <h3 className="mt-3 text-[18px] font-semibold tracking-[-0.02em] text-white">
+              지금 이 자산의 시세 흐름
+            </h3>
+            <p className="mt-2 text-[12px] leading-5 text-zinc-400">
+              단순 가격만 보지 말고, 최근 흐름과 거래 분위기를 함께 확인해 보세요.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-2 text-right">
+            <div className="text-[11px] text-zinc-400">기준 가격</div>
+            <div className="mt-1 text-[15px] font-semibold text-white">
+              {new Intl.NumberFormat('ko-KR').format(Math.round(price || 0))}원
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-3">
+            <div className="text-[11px] text-zinc-400">자산명</div>
+            <div className="mt-1 line-clamp-1 text-[13px] font-semibold text-white">
+              {title}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-3">
+            <div className="text-[11px] text-zinc-400">카테고리</div>
+            <div className="mt-1 line-clamp-1 text-[13px] font-semibold text-white">
+              {category}
+            </div>
+          </div>
+        </div>
       </div>
-      <UpbitLineBarsChart values={series} theme="light" mode={mode} />
-    </>
+
+      <div className="px-4 pt-4">
+        <div className="rounded-[22px] border border-white/10 bg-black/20 p-2">
+          <TimeTabs value={tf} onChange={setTf} />
+        </div>
+      </div>
+
+      <div className="px-4 pb-4 pt-4">
+        <div className="overflow-hidden rounded-[24px] border border-white/10 bg-[#0b0f16] p-3">
+          <UpbitLineBarsChart values={series} theme="light" mode={mode} />
+        </div>
+      </div>
+    </div>
   );
 
   const liveTradesSection = <LiveTradesLite symbolId={id} basePrice={price} />;
