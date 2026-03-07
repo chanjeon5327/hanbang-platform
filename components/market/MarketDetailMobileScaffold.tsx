@@ -1,12 +1,21 @@
 'use client';
 
 import { useRef, useState, useEffect, type ReactNode } from 'react';
+import DetailTopTabPanel from '@/components/market/detail/DetailTopTabPanel';
 import CategoryInfoSection from '@/components/market/detail/CategoryInfoSection';
 import type { MarketDetailLike } from '@/lib/market/detailTemplates';
 
+const detailTabs = [
+  { key: 'thesis', label: '살까말까' },
+  { key: 'price', label: '지금얼마' },
+  { key: 'trade', label: '거래하기' },
+  { key: 'info', label: '정보' },
+] as const;
+
+type DetailTabKey = (typeof detailTabs)[number]['key'];
+
 type Props = {
   summary: ReactNode;
-  tabs: ReactNode;
   chart: ReactNode;
   trades: ReactNode;
   orderBook: ReactNode;
@@ -16,7 +25,6 @@ type Props = {
 
 export default function MarketDetailMobileScaffold({
   summary,
-  tabs,
   chart,
   trades,
   orderBook,
@@ -25,6 +33,15 @@ export default function MarketDetailMobileScaffold({
 }: Props) {
   const orderPanelRef = useRef<HTMLDivElement>(null);
   const [orderPanelInView, setOrderPanelInView] = useState(true);
+  const [activeTab, setActiveTab] = useState<DetailTabKey>('thesis');
+
+  const scrollToOrderPanel = () => {
+    const el = document.getElementById('order-panel');
+    if (!el) return;
+    const headerOffset = 96;
+    const top = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+    window.scrollTo({ top, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     const el = orderPanelRef.current;
@@ -40,10 +57,6 @@ export default function MarketDetailMobileScaffold({
     return () => io.disconnect();
   }, []);
 
-  const scrollToOrderPanel = () => {
-    orderPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
   return (
     <div className="w-full pb-28">
       <section className="px-4 pt-4">
@@ -52,34 +65,65 @@ export default function MarketDetailMobileScaffold({
         </div>
       </section>
 
-      <section className="sticky top-[56px] z-20 mt-4 border-y border-black/5 bg-[#F4F6FA]/90 backdrop-blur">
-        <div className="px-4 py-2">{tabs}</div>
+      <div className="sticky top-[56px] z-20 border-b border-white/10 bg-[#0b0d12]/95 backdrop-blur mt-4">
+        <div className="scrollbar-none flex items-center gap-2 overflow-x-auto px-4 py-3">
+          {detailTabs.map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => {
+                  if (tab.key === 'trade') {
+                    setActiveTab('trade');
+                    scrollToOrderPanel();
+                    return;
+                  }
+                  setActiveTab(tab.key);
+                }}
+                className={[
+                  'shrink-0 rounded-full px-4 py-2 text-[13px] font-medium transition',
+                  isActive
+                    ? 'bg-white text-black'
+                    : 'border border-white/10 bg-white/[0.05] text-zinc-300',
+                ].join(' ')}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {activeTab !== 'trade' ? (
+        <DetailTopTabPanel
+          tab={activeTab as 'thesis' | 'price' | 'info'}
+          item={item}
+        />
+      ) : null}
+
+      <section id="order-panel" ref={orderPanelRef} className="px-4 pt-4 scroll-mt-24">
+        <CardBlock title="주문하기" className="pb-6">
+          {orderPanel}
+        </CardBlock>
       </section>
 
       <section className="px-4 pt-4 space-y-4">
-        {/* 1순위: 주문/거래하기 패널 */}
-        <div ref={orderPanelRef} id="order-panel" className="scroll-mt-4">
-          <CardBlock title="주문하기" className="pb-6">
-            {orderPanel}
-          </CardBlock>
-        </div>
-
-        {/* 2순위: 호가 */}
         <CardBlock title="호가">{orderBook}</CardBlock>
-
-        {/* 3순위: 가격 차트 */}
         <CardBlock title="가격 차트">{chart}</CardBlock>
-
-        {/* 4순위: 실시간 체결 */}
         <CardBlock title="실시간 체결">{trades}</CardBlock>
       </section>
 
-      {/* 5순위: 정보/소개 (카테고리별 상품 정보) */}
       <section id="detail-info" className="px-4 py-4">
+        <div className="mb-3">
+          <h3 className="text-[16px] font-semibold text-white">상세 정보 더보기</h3>
+          <p className="mt-1 text-[12px] text-zinc-400">
+            위 요약 패널에서 핵심을 보고, 아래에서 전체 정보를 이어서 확인합니다.
+          </p>
+        </div>
         {item ? <CategoryInfoSection item={item} /> : null}
       </section>
 
-      {/* 하단 고정 CTA: 주문 패널이 화면 밖일 때만 표시 (sticky 하나만) */}
       {!orderPanelInView && (
         <div
           className="fixed left-0 right-0 bottom-0 z-30 border-t border-black/5 bg-white/95 backdrop-blur px-4 py-3 safe-area-pb"
