@@ -2,6 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { useKycStatus } from '@/hooks/useKycStatus';
 import { formatKRW } from '@/lib/mock/marketItems';
 import { hashSeed, mulberry32 } from '@/lib/mock/series';
 import OrderBookMiniUpbit from '@/components/market/OrderBookMiniUpbit';
@@ -90,10 +93,15 @@ export default function TradePanelUpbit({
   assetId: string;
   basePrice: number;
 }) {
+  const router = useRouter();
+  const { user } = useAuth();
+  const { isApproved: isKycVerified } = useKycStatus();
+
   const [sub, setSub] = useState<Sub>('buy');
   const [orderType, setOrderType] = useState<OrderType>('limit');
   const [price, setPrice] = useState<string>(String(basePrice));
   const [qty, setQty] = useState<string>('1');
+  const [showKycPrompt, setShowKycPrompt] = useState(false);
 
   // 가용 자산(샘플)
   const cashKRW = 1250000;
@@ -126,6 +134,7 @@ export default function TradePanelUpbit({
 
   const loading = false;
   const isBuyTab = sub === 'buy';
+  const isLoggedIn = Boolean(user);
   const isMarketMode = orderType === 'market';
   const qtyValue = safeCalc(qty);
   const priceValue = orderType === 'market' ? basePrice : safeCalc(price);
@@ -138,7 +147,7 @@ export default function TradePanelUpbit({
       : '매도 주문';
   const policyText = isBuyTab
     ? '구매는 로그인 후 진행 가능합니다.'
-    : '판매·정산은 본인확인이 필요합니다.';
+    : '판매·정산은 본인확인 완료 후 진행 가능합니다.';
   const helperText = isBuyTab
     ? '수량과 예상 금액을 확인한 뒤 주문하세요.'
     : '판매 전 수량과 본인확인 상태를 확인하세요.';
@@ -354,6 +363,26 @@ export default function TradePanelUpbit({
             </div>
 
             <button
+              type="button"
+              onClick={() => {
+                if (isBuyTab) {
+                  if (!isLoggedIn) {
+                    router.push('/login');
+                    return;
+                  }
+                  // 기존 주문 실행 로직 (구매)
+                  return;
+                }
+                if (!isLoggedIn) {
+                  router.push('/login');
+                  return;
+                }
+                if (!isKycVerified) {
+                  setShowKycPrompt(true);
+                  return;
+                }
+                // 기존 주문 실행 로직 (판매)
+              }}
               className={`mt-4 h-12 w-full rounded-2xl text-sm font-extrabold transition ${
                 sub === 'buy'
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
@@ -362,6 +391,12 @@ export default function TradePanelUpbit({
             >
               {primaryButtonLabel}
             </button>
+
+            <p className="mt-2 text-center text-[12px] text-slate-500">
+              {isBuyTab
+                ? '구매는 로그인 후 진행 가능합니다.'
+                : '판매·정산은 본인확인 완료 후 진행 가능합니다.'}
+            </p>
 
             <p className="mt-3 text-center text-[11px] text-slate-500">
               주문 전 가격, 수량, 본인확인 상태를 다시 확인해 주세요.
@@ -399,6 +434,43 @@ export default function TradePanelUpbit({
           </div>
         </div>
       </div>
+
+      {showKycPrompt ? (
+        <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/45 px-4 pb-4 pt-10 md:items-center">
+          <div className="w-full max-w-sm overflow-hidden rounded-[24px] bg-white shadow-[0_18px_60px_rgba(0,0,0,0.22)]">
+            <div className="px-5 pb-3 pt-5">
+              <div className="text-[16px] font-extrabold text-slate-900">
+                판매 등록 전 본인확인이 필요합니다
+              </div>
+              <p className="mt-2 text-[13px] leading-6 text-slate-600">
+                판매와 정산을 진행하려면 본인확인을 먼저 완료해야 합니다.
+              </p>
+            </div>
+            <div className="bg-slate-50 px-5 py-3 text-[12px] text-slate-500">
+              구매는 로그인 후 가능하며, 판매·정산은 본인확인 완료 후 진행됩니다.
+            </div>
+            <div className="grid grid-cols-2 gap-2 px-4 py-4">
+              <button
+                type="button"
+                onClick={() => setShowKycPrompt(false)}
+                className="h-11 rounded-2xl bg-slate-100 text-sm font-extrabold text-slate-700"
+              >
+                닫기
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowKycPrompt(false);
+                  router.push('/kyc');
+                }}
+                className="h-11 rounded-2xl bg-blue-600 text-sm font-extrabold text-white hover:bg-blue-700"
+              >
+                본인확인 하러 가기
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
