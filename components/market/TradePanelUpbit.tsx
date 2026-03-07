@@ -70,6 +70,17 @@ function num(v: string) {
   return Number.isFinite(x) ? x : 0;
 }
 
+function formatPanelNumber(value: number | string | null | undefined) {
+  const n = Number(value ?? 0);
+  if (!Number.isFinite(n)) return '0';
+  return new Intl.NumberFormat('ko-KR').format(n);
+}
+
+function safeCalc(value: number | string | null | undefined) {
+  const n = Number(value ?? 0);
+  return Number.isFinite(n) ? n : 0;
+}
+
 type FillRow = { t: string; side: '매수' | '매도'; price: number; qty: number };
 
 export default function TradePanelUpbit({
@@ -113,20 +124,53 @@ export default function TradePanelUpbit({
 
   const needKyc = sub === 'sell' || sub === 'edit';
 
+  const loading = false;
+  const isBuyTab = sub === 'buy';
+  const isMarketMode = orderType === 'market';
+  const qtyValue = safeCalc(qty);
+  const priceValue = orderType === 'market' ? basePrice : safeCalc(price);
+  const balanceValue = safeCalc(isBuyTab ? cashKRW : holding);
+  const estimatedTotal = qtyValue * priceValue;
+  const primaryButtonLabel = loading
+    ? '처리 중…'
+    : isBuyTab
+      ? '매수 주문'
+      : '매도 주문';
+  const policyText = isBuyTab
+    ? '구매는 로그인 후 진행 가능합니다.'
+    : '판매·정산은 본인확인이 필요합니다.';
+  const helperText = isBuyTab
+    ? '수량과 예상 금액을 확인한 뒤 주문하세요.'
+    : '판매 전 수량과 본인확인 상태를 확인하세요.';
+
   return (
     <div className="grid lg:grid-cols-2 gap-5">
       {/* 좌: 주문 패널 */}
       <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
-        <Seg<Sub>
-          value={sub}
-          onChange={setSub}
-          items={[
-            { key: 'buy', label: '구매' },
-            { key: 'sell', label: '판매' },
-            { key: 'edit', label: '주문수정' },
-            { key: 'fills', label: '체결내역' },
-          ]}
-        />
+        <div className="inline-flex w-full rounded-2xl border border-slate-200 bg-slate-100 p-1">
+          {[
+            { key: 'buy' as const, label: '매수' },
+            { key: 'sell' as const, label: '매도' },
+            { key: 'edit' as const, label: '주문수정' },
+            { key: 'fills' as const, label: '체결내역' },
+          ].map((it) => (
+            <button
+              key={it.key}
+              onClick={() => setSub(it.key)}
+              className={`flex-1 h-11 rounded-2xl text-sm font-extrabold transition ${
+                sub === it.key
+                  ? it.key === 'buy'
+                    ? 'bg-blue-600 text-white'
+                    : it.key === 'sell'
+                      ? 'bg-rose-600 text-white'
+                      : 'bg-slate-700 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              {it.label}
+            </button>
+          ))}
+        </div>
 
         {needKyc && (
           <div className="mt-4 rounded-xl border border-amber-300/50 bg-amber-100 px-4 py-3 text-amber-900 text-sm">
@@ -168,17 +212,25 @@ export default function TradePanelUpbit({
           </div>
         ) : (
           <>
-            {/* 지정가/시장가 크게 */}
+            {/* 지정가/시장가 */}
             <div className="mt-5 flex items-center justify-between gap-3">
               <div className="text-sm font-extrabold">주문 방식</div>
-              <SmallSeg<OrderType>
-                value={orderType}
-                onChange={setOrderType}
-                items={[
-                  { key: 'limit', label: '지정가' },
-                  { key: 'market', label: '시장가' },
-                ]}
-              />
+              <div className="inline-flex rounded-xl border border-slate-200 bg-slate-100 p-1">
+                {[
+                  { key: 'limit' as const, label: '지정가' },
+                  { key: 'market' as const, label: '시장가' },
+                ].map((k) => (
+                  <button
+                    key={k.key}
+                    onClick={() => setOrderType(k.key)}
+                    className={`h-10 px-4 rounded-xl text-sm font-extrabold transition ${
+                      orderType === k.key ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500'
+                    }`}
+                  >
+                    {k.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* 가용 */}
@@ -273,16 +325,47 @@ export default function TradePanelUpbit({
               </div>
             </div>
 
-            {/* CTA 버튼 (모바일 크게) */}
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="mb-3">
+                <div className="text-[13px] font-extrabold text-slate-900">{isBuyTab ? '주문 요약' : '판매 요약'}</div>
+                <div className="mt-1 text-[12px] text-slate-500">{helperText}</div>
+              </div>
+              <div className="space-y-2 text-[13px]">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">주문 방식</span>
+                  <span className="font-bold text-slate-900">{isMarketMode ? '시장가' : '지정가'}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">수량</span>
+                  <span className="font-bold text-slate-900">{formatPanelNumber(qtyValue)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">예상 금액</span>
+                  <span className="font-bold text-slate-900">{formatPanelNumber(estimatedTotal)}원</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">{isBuyTab ? '사용 가능 잔고' : '보유 가능 수량/잔고'}</span>
+                  <span className="font-bold text-slate-900">{formatPanelNumber(balanceValue)}</span>
+                </div>
+              </div>
+              <div className="mt-3 rounded-xl bg-white px-3 py-2 text-[12px] text-slate-600">
+                {policyText}
+              </div>
+            </div>
+
             <button
-              className={`mt-4 w-full py-4 rounded-2xl text-base font-extrabold transition ${
+              className={`mt-4 h-12 w-full rounded-2xl text-sm font-extrabold transition ${
                 sub === 'buy'
-                  ? 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white'
-                  : 'bg-red-600 hover:bg-red-700 text-white'
-              }`}
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-rose-600 text-white hover:bg-rose-700'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              {sub === 'buy' ? '구매하기' : '판매하기'}
+              {primaryButtonLabel}
             </button>
+
+            <p className="mt-3 text-center text-[11px] text-slate-500">
+              주문 전 가격, 수량, 본인확인 상태를 다시 확인해 주세요.
+            </p>
 
             <div className="mt-3 text-xs text-black/50">
               * 데모 화면입니다. 실제 체결/주문/정산은 엔진 연결 후 활성화됩니다.
