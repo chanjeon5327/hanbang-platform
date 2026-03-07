@@ -57,12 +57,7 @@ export default function Header() {
                 ⋯
               </span>
             ) : user ? (
-              <div
-                ref={dropdownRef}
-                className="relative"
-                onMouseEnter={() => setDropdownOpen(true)}
-                onMouseLeave={() => setDropdownOpen(false)}
-              >
+              <div ref={dropdownRef} className="relative">
                 <button
                   type="button"
                   onClick={() => setDropdownOpen((v) => !v)}
@@ -173,13 +168,42 @@ export default function Header() {
           {loading ? (
             <span className="p-2.5 text-[var(--toss-text-secondary)] animate-pulse" aria-hidden>⋯</span>
           ) : user ? (
-            <Link
-              href="/mypage"
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-[var(--toss-text)] hover:bg-[var(--toss-bg)] transition"
-            >
-              <User size={20} strokeWidth={2} />
-              <span className="text-sm font-medium truncate max-w-[120px]">{displayName}</span>
-            </Link>
+            <div ref={dropdownRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setDropdownOpen((v) => !v)}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-[var(--toss-text)] hover:bg-[var(--toss-bg)] transition"
+                aria-expanded={dropdownOpen}
+                aria-haspopup="true"
+                aria-label="유저 메뉴"
+              >
+                <User size={20} strokeWidth={2} />
+                <span className="text-sm font-medium truncate max-w-[120px]">{displayName}</span>
+                <ChevronDown size={16} strokeWidth={2} className="text-[var(--toss-text-secondary)]" />
+              </button>
+              {dropdownOpen && (
+                <div
+                  className="absolute right-0 top-full mt-1 py-1.5 min-w-[160px] rounded-xl shadow-xl z-[60] border border-black/5 bg-[var(--toss-card)]"
+                  role="menu"
+                >
+                  <Link
+                    href="/mypage"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-[var(--toss-text)] hover:bg-[var(--toss-bg)] transition"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <User size={18} strokeWidth={2} />
+                    마이페이지
+                  </Link>
+                  <LogoutButton
+                    className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm font-medium text-left text-[var(--toss-text)] hover:bg-[var(--toss-bg)] transition"
+                    redirectTo="/"
+                  >
+                    <LogOut size={18} strokeWidth={2} />
+                    로그아웃
+                  </LogoutButton>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <button

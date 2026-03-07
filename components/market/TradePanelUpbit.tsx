@@ -398,11 +398,7 @@ export default function TradePanelUpbit({
                 : '판매·정산은 본인확인 완료 후 진행 가능합니다.'}
             </p>
 
-            <p className="mt-3 text-center text-[11px] text-slate-500">
-              주문 전 가격, 수량, 본인확인 상태를 다시 확인해 주세요.
-            </p>
-
-            <div className="mt-3 text-xs text-black/50">
+            <div className="mt-4 pb-8 text-xs text-black/50">
               * 데모 화면입니다. 실제 체결/주문/정산은 엔진 연결 후 활성화됩니다.
             </div>
           </>
