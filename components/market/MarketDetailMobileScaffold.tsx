@@ -1,30 +1,18 @@
 'use client';
 
 import { useRef, useState, useEffect, type ReactNode } from 'react';
-import DetailTopTabPanel from '@/components/market/detail/DetailTopTabPanel';
-import CategoryInfoSection from '@/components/market/detail/CategoryInfoSection';
+import MarketDetailMobileV2 from '@/components/market/detail-v2/MarketDetailMobileV2';
 import type { MarketDetailLike } from '@/lib/market/detailTemplates';
 
-const detailTabs = [
-  { key: 'thesis', label: '살까말까' },
-  { key: 'price', label: '지금얼마' },
-  { key: 'trade', label: '거래하기' },
-  { key: 'info', label: '정보' },
-] as const;
-
-type DetailTabKey = (typeof detailTabs)[number]['key'];
-
 type Props = {
-  summary: ReactNode;
   chart: ReactNode;
   trades: ReactNode;
-  orderBook: ReactNode;
+  orderBook: ReactNode | null;
   orderPanel: ReactNode;
   item: MarketDetailLike | null;
 };
 
 export default function MarketDetailMobileScaffold({
-  summary,
   chart,
   trades,
   orderBook,
@@ -33,7 +21,6 @@ export default function MarketDetailMobileScaffold({
 }: Props) {
   const orderPanelRef = useRef<HTMLDivElement>(null);
   const [orderPanelInView, setOrderPanelInView] = useState(true);
-  const [activeTab, setActiveTab] = useState<DetailTabKey>('thesis');
 
   const scrollToOrderPanel = () => {
     const el = document.getElementById('order-panel');
@@ -59,48 +46,11 @@ export default function MarketDetailMobileScaffold({
 
   return (
     <div className="w-full pb-28">
-      <section className="px-4 pt-4">
-        <div className="overflow-hidden rounded-[24px] border border-white/8 bg-[#0B1020] shadow-[0_10px_40px_rgba(0,0,0,0.28)]">
-          {summary}
-        </div>
+      <MarketDetailMobileV2 item={item} />
+
+      <section className="px-4 pt-4 space-y-4">
+        {chart}
       </section>
-
-      <div className="sticky top-[56px] z-20 border-b border-white/10 bg-[#0b0d12]/95 backdrop-blur mt-4">
-        <div className="scrollbar-none flex items-center gap-2 overflow-x-auto px-4 py-3">
-          {detailTabs.map((tab) => {
-            const isActive = activeTab === tab.key;
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => {
-                  if (tab.key === 'trade') {
-                    setActiveTab('trade');
-                    scrollToOrderPanel();
-                    return;
-                  }
-                  setActiveTab(tab.key);
-                }}
-                className={[
-                  'shrink-0 rounded-full px-4 py-2 text-[13px] font-medium transition',
-                  isActive
-                    ? 'bg-white text-black'
-                    : 'border border-white/10 bg-white/[0.05] text-zinc-300',
-                ].join(' ')}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {activeTab !== 'trade' ? (
-        <DetailTopTabPanel
-          tab={activeTab as 'thesis' | 'price' | 'info'}
-          item={item}
-        />
-      ) : null}
 
       <section id="order-panel" ref={orderPanelRef} className="px-4 pt-4 scroll-mt-24">
         <CardBlock title="주문하기" className="pb-6">
@@ -108,25 +58,19 @@ export default function MarketDetailMobileScaffold({
         </CardBlock>
       </section>
 
-      <section className="px-4 pt-4 space-y-4">
-        <CardBlock title="호가">{orderBook}</CardBlock>
-        <CardBlock title="가격 차트">{chart}</CardBlock>
-        <CardBlock title="실시간 체결">{trades}</CardBlock>
-      </section>
+      {orderBook ? (
+        <section className="px-4 pt-4 space-y-4">
+          {orderBook}
+        </section>
+      ) : null}
 
-      <section id="detail-info" className="px-4 py-4">
-        <div className="mb-3">
-          <h3 className="text-[16px] font-semibold text-white">상세 정보 더보기</h3>
-          <p className="mt-1 text-[12px] text-zinc-400">
-            위 요약 패널에서 핵심을 보고, 아래에서 전체 정보를 이어서 확인합니다.
-          </p>
-        </div>
-        {item ? <CategoryInfoSection item={item} /> : null}
+      <section className="px-4 pt-4 pb-12 space-y-4">
+        {trades}
       </section>
 
       {!orderPanelInView && (
         <div
-          className="fixed left-0 right-0 bottom-0 z-30 border-t border-black/5 bg-white/95 backdrop-blur px-4 py-3 safe-area-pb"
+          className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#0b0d12] shadow-[0_-8px_24px_rgba(0,0,0,0.28)] px-4 py-3 safe-area-pb"
           style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
         >
           <button

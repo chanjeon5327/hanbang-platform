@@ -276,10 +276,9 @@ export default function MarketDetailPage() {
             </div>
           ) : (
             <MarketDetailMobileScaffold
-              summary={<>{summarySection}</>}
               chart={<>{chartSection}</>}
               trades={<>{liveTradesSection}</>}
-              orderBook={<>{orderBookSection}</>}
+              orderBook={null}
               orderPanel={<>{orderPanelSection}</>}
               item={item as MarketDetailLike}
             />
