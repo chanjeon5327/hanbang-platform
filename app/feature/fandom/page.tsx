@@ -41,14 +41,14 @@ export default function FandomPage() {
             <Users size={48} style={{ color: 'var(--accent-color)', marginBottom: '20px' }} />
             <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '15px' }}>1억 명의 글로벌 팬</h3>
             <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-              BTS, 세븐틴, 블랙핑크 등 K-POP 아티스트들의 전 세계 팬덤이 유튜브, 스포티파이에서 콘텐츠를 소비할 때마다 수익이 발생합니다.
+              아티스트의 전 세계 팬덤이 유튜브, 스트리밍에서 콘텐츠를 소비할 때마다 수익이 발생합니다.
             </p>
           </div>
           <div style={{ backgroundColor: 'var(--card-bg)', padding: '30px', borderRadius: '20px', border: '1px solid var(--border-color)' }}>
             <TrendingUp size={48} style={{ color: 'var(--up-color)', marginBottom: '20px' }} />
             <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '15px' }}>검증된 히트작</h3>
             <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-              오징어게임, 기생충, 파라사이트 등 넷플릭스 역대 최고 시청 기록을 세운 작품들의 IP를 직접 소유하고 수익을 분배받으세요.
+              글로벌 OTT에서 검증된 히트 시리즈·영화 IP를 직접 소유하고 수익을 분배받으세요.
             </p>
           </div>
           <div style={{ backgroundColor: 'var(--card-bg)', padding: '30px', borderRadius: '20px', border: '1px solid var(--border-color)' }}>
@@ -65,16 +65,16 @@ export default function FandomPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ padding: '20px', backgroundColor: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '18px' }}>오징어게임 시즌1</span>
+                <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '18px' }}>드라마 시리즈 A</span>
                 <span style={{ color: 'var(--up-color)', fontWeight: 'bold', fontSize: '18px' }}>+450% 수익률</span>
               </div>
               <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
-                100만원 투자 → 현재 평가액 550만원. 넷플릭스 전 세계 1억 1,100만 시간 시청 기록 달성으로 지속적인 수익 발생 중.
+                100만원 투자 → 현재 평가액 550만원. 글로벌 OTT 시청 기록 달성으로 지속적인 수익 발생 중.
               </p>
             </div>
             <div style={{ padding: '20px', backgroundColor: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '18px' }}>BTS 뮤직비디오 IP</span>
+                <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '18px' }}>아티스트 뮤직비디오 IP</span>
                 <span style={{ color: 'var(--up-color)', fontWeight: 'bold', fontSize: '18px' }}>+280% 수익률</span>
               </div>
               <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>

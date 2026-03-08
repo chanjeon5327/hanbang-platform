@@ -11,7 +11,7 @@ export default function MyInvestList() {
             className="bg-white rounded-[16px] p-4 flex justify-between items-center shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-[var(--toss-border)]"
           >
             <div>
-              <div className="font-semibold text-[var(--toss-text)]">여행가 제이</div>
+              <div className="font-semibold text-[var(--toss-text)]">블루웨이 시즌3</div>
               <div className="caption text-[var(--toss-text-secondary)] mt-1">
                 보유 수량 10주 · 평균가 ₩11,800
               </div>

@@ -114,7 +114,7 @@ export default function BottomNav() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ padding: '10px', backgroundColor: 'var(--bg-secondary)', borderRadius: '12px', maxWidth: '80%', fontSize: '14px', color: 'var(--text-primary)' }}>
-                네, 어떤 상품이 궁금하신가요? 오징어게임2 펀드, 세븐틴 투어 등 다양한 상품이 있습니다.
+                네, 어떤 상품이 궁금하신가요? 드라마 펀드, 음악 투어 등 다양한 상품이 있습니다.
               </div>
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', paddingLeft: '8px' }}>방금 전</div>
             </div>

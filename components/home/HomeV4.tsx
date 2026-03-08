@@ -84,7 +84,7 @@ async function fetchPopular6(): Promise<RailItem[]> {
 
 /** 임시 fallback */
 const FALLBACK_RAIL_ITEMS: RailItem[] = [
-  { id: 'fallback-1', title: '영화 블록버스터', category: 'movie', price_krw: 12300, change_pct: 4.2, thumbnail_url: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=60' },
+  { id: 'fallback-1', title: '필름 하우스', category: 'movie', price_krw: 12300, change_pct: 4.2, thumbnail_url: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=60' },
   { id: 'fallback-2', title: '유튜브 크리에이터 일상', category: 'youtube', price_krw: 12300, change_pct: 4.2, thumbnail_url: 'https://images.unsplash.com/photo-1520975916090-3105956dac38?auto=format&fit=crop&w=1200&q=60' },
   { id: 'fallback-3', title: '웹소설 달빛 아래 그대', category: 'webnovel', price_krw: 12300, change_pct: 4.2, thumbnail_url: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=60' },
   { id: 'fallback-4', title: '게임 스트리머 라이브', category: 'game', price_krw: 12300, change_pct: 4.2, thumbnail_url: 'https://images.unsplash.com/photo-1504270997636-07ddfbd48945?auto=format&fit=crop&w=1200&q=60' },

@@ -61,7 +61,7 @@ export default function MyPage() {
             type="text"
             value={fandom}
             onChange={(e) => setFandom(e.target.value)}
-            placeholder="예: 여행가 제이, BTS..."
+            placeholder="예: 블루웨이 시즌3, 사운드 플로어..."
             className="w-full px-4 py-3 rounded-xl border body"
             style={{
               borderColor: 'var(--border)',

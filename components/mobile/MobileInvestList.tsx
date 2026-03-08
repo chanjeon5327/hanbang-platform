@@ -10,7 +10,7 @@ export default function MobileInvestList() {
   // 더미 데이터 생성 (20개)
   const products = Array.from({ length: 20 }).map((_, i) => ({
     id: i,
-    title: i % 2 === 0 ? '전지적 독자 시점 웹툰 지분 투자' : '유튜브 채널 <여행가 제이> 수익권',
+    title: i % 2 === 0 ? '달빛 아래 웹드라마 지분 투자' : '블루웨이 시즌3 수익권',
     summary: i % 2 === 0 ? '글로벌 3억 뷰 달성 예정 대작' : '구독자 50만 달성 임박 채널',
     investors: 1200 + i * 15,
     investee: i % 2 === 0 ? '박태준 만화회사' : '크리에이터 제이',

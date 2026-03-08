@@ -1,8 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import CreatorPlanFormSection from "@/components/creator/CreatorPlanFormSection";
+import CreatorPlanPreviewCard from "@/components/creator/CreatorPlanPreviewCard";
+import {
+  buildCreatorPlanPayload,
+  creatorPlanInitialValues,
+  creatorPlanPayloadToFormValues,
+  type CreatorPlanFormValues,
+} from "@/lib/creator/creatorPlanFields";
 
 interface FormData {
   // 기본 정보
@@ -31,49 +39,102 @@ interface FormData {
 }
 
 const COUNTRIES = ["대한민국", "미국", "일본", "중국", "기타"];
-const CATEGORIES = ["웹툰", "드라마", "영화", "유튜브", "K-POP", "기타"];
+const CATEGORIES = ["웹툰", "드라마", "영화", "유튜브", "음악", "기타"];
 const CHANNELS = ["유튜브", "인스타그램", "네이버 라이브", "웨이툰", "틱톡", "기타"];
 
-export default function CreatorRegister() {
+const INITIAL_FORM_DATA: FormData = {
+  name: "",
+  country: "",
+  phone: "",
+  email: "",
+  projectUrl: "",
+  targetAmount: "",
+  platformEquity: 10,
+  investorEquity: "",
+  creatorEquity: "",
+  bankName: "",
+  accountNumber: "",
+  walletAddress: "",
+  title: "",
+  category: "",
+  description: "",
+  episodeCount: "",
+  channels: [],
+  thumbnail: null,
+};
+
+function CreatorRegisterInner() {
   const router = useRouter();
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    country: "",
-    phone: "",
-    email: "",
-    projectUrl: "",
-    targetAmount: "",
-    platformEquity: 10,
-    investorEquity: "",
-    creatorEquity: "",
-    bankName: "",
-    accountNumber: "",
-    walletAddress: "",
-    title: "",
-    category: "",
-    description: "",
-    episodeCount: "",
-    channels: [],
-    thumbnail: null,
-  });
+  const searchParams = useSearchParams();
+  const [formData, setFormData] = useState<FormData>({ ...INITIAL_FORM_DATA });
 
   const [equityTotal, setEquityTotal] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [creatorPlanValues, setCreatorPlanValues] =
+    useState<CreatorPlanFormValues>(creatorPlanInitialValues);
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
 
-  // localStorage에서 저장된 데이터 불러오기
+  const updateCreatorPlanValue = (
+    key: keyof CreatorPlanFormValues,
+    value: string
+  ) => {
+    setCreatorPlanValues((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  // 재진입: edit=id 이면 제출된 프로젝트 복원, 없으면 draft 복원
   useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (editId && typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("creator_submitted_projects");
+        const projects: Array<{ id: string; formData?: Partial<FormData>; creatorPlanValues?: Partial<CreatorPlanFormValues>; creator_plan?: unknown }> = raw ? JSON.parse(raw) : [];
+        const project = projects.find((p) => p.id === editId);
+        if (project) {
+          setEditingProjectId(editId);
+          if (project.formData && typeof project.formData === "object") {
+            setFormData({ ...INITIAL_FORM_DATA, ...project.formData } as FormData);
+          }
+          setCreatorPlanValues(
+            project.creatorPlanValues && typeof project.creatorPlanValues === "object"
+              ? { ...creatorPlanInitialValues, ...project.creatorPlanValues } as CreatorPlanFormValues
+              : creatorPlanPayloadToFormValues(project.creator_plan as Parameters<typeof creatorPlanPayloadToFormValues>[0])
+          );
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to load edit project:", e);
+      }
+    }
     const saved = localStorage.getItem("creator_form_draft");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        setFormData(parsed);
+        if (parsed && typeof parsed === "object") {
+          if (parsed.formData && typeof parsed.formData === "object") {
+            setFormData({ ...INITIAL_FORM_DATA, ...parsed.formData } as FormData);
+          } else if (parsed.name !== undefined || parsed.title !== undefined) {
+            setFormData({ ...INITIAL_FORM_DATA, ...parsed } as FormData);
+          }
+          if (parsed.creatorPlanValues && typeof parsed.creatorPlanValues === "object") {
+            setCreatorPlanValues({ ...creatorPlanInitialValues, ...parsed.creatorPlanValues } as CreatorPlanFormValues);
+          } else if (parsed.creator_plan) {
+            setCreatorPlanValues(creatorPlanPayloadToFormValues(parsed.creator_plan));
+          }
+          if (parsed.savedAt && typeof parsed.savedAt === "string") {
+            setDraftSavedAt(parsed.savedAt);
+          }
+        }
       } catch (e) {
         console.error("Failed to load draft:", e);
       }
     }
-  }, []);
+  }, [searchParams]);
 
   // 지분 합계 계산
   useEffect(() => {
@@ -149,7 +210,13 @@ export default function CreatorRegister() {
   };
 
   const handleSaveDraft = () => {
-    localStorage.setItem("creator_form_draft", JSON.stringify(formData));
+    const payload = {
+      formData,
+      creatorPlanValues,
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem("creator_form_draft", JSON.stringify(payload));
+    setDraftSavedAt(payload.savedAt);
     setToastMessage("임시 저장되었습니다.");
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
@@ -163,26 +230,58 @@ export default function CreatorRegister() {
       return;
     }
 
-    // 대시보드에 프로젝트 추가
-    const newProject = {
-      id: `project_${Date.now()}`,
-      title: formData.title,
-      submitDate: new Date().toLocaleDateString("ko-KR"),
-      status: "심사중" as const,
-      progress: 0,
-      targetAmount: parseInt(formData.targetAmount.replace(/,/g, "")) || 0,
-      currentAmount: 0,
-    };
-    
-    const existingProjects = localStorage.getItem("creator_submitted_projects");
-    const projects = existingProjects ? JSON.parse(existingProjects) : [];
-    projects.push(newProject);
+    const creatorPlanPayload = buildCreatorPlanPayload(creatorPlanValues);
+
+    const existingRaw = localStorage.getItem("creator_submitted_projects");
+    const projects: Array<Record<string, unknown>> = existingRaw ? JSON.parse(existingRaw) : [];
+
+    if (editingProjectId) {
+      const idx = projects.findIndex((p) => p.id === editingProjectId);
+      if (idx >= 0) {
+        const existing = projects[idx] as Record<string, unknown>;
+        projects[idx] = {
+          ...existing,
+          title: formData.title,
+          submitDate: new Date().toLocaleDateString("ko-KR"),
+          targetAmount: parseInt(formData.targetAmount.replace(/,/g, "")) || 0,
+          creator_plan: creatorPlanPayload,
+          formData,
+          creatorPlanValues,
+        };
+      } else {
+        projects.push({
+          id: editingProjectId,
+          title: formData.title,
+          submitDate: new Date().toLocaleDateString("ko-KR"),
+          status: "심사중",
+          progress: 0,
+          targetAmount: parseInt(formData.targetAmount.replace(/,/g, "")) || 0,
+          currentAmount: 0,
+          creator_plan: creatorPlanPayload,
+          formData,
+          creatorPlanValues,
+        });
+      }
+    } else {
+      projects.push({
+        id: `project_${Date.now()}`,
+        title: formData.title,
+        submitDate: new Date().toLocaleDateString("ko-KR"),
+        status: "심사중",
+        progress: 0,
+        targetAmount: parseInt(formData.targetAmount.replace(/,/g, "")) || 0,
+        currentAmount: 0,
+        creator_plan: creatorPlanPayload,
+        formData,
+        creatorPlanValues,
+      });
+    }
     localStorage.setItem("creator_submitted_projects", JSON.stringify(projects));
-    
-    // localStorage에서 초안 삭제
     localStorage.removeItem("creator_form_draft");
-    
-    setToastMessage("심사 요청이 완료되었습니다.");
+    setDraftSavedAt(null);
+    setEditingProjectId(null);
+
+    setToastMessage(editingProjectId ? "수정 내용이 반영되었습니다." : "심사 요청이 완료되었습니다.");
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
@@ -215,9 +314,21 @@ export default function CreatorRegister() {
       )}
 
       <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "20px" }}>
-        <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "var(--text-primary)", marginBottom: "30px" }}>
-          프로젝트 출품 신청
-        </h1>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "12px", marginBottom: "30px" }}>
+          <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "var(--text-primary)", margin: 0 }}>
+            {editingProjectId ? "프로젝트 수정" : "프로젝트 출품 신청"}
+          </h1>
+          {editingProjectId && (
+            <span style={{ padding: "6px 12px", borderRadius: "8px", backgroundColor: "var(--bg-secondary)", color: "var(--text-secondary)", fontSize: "13px" }}>
+              기존 제출본 수정
+            </span>
+          )}
+          {draftSavedAt && (
+            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+              마지막 저장: {new Date(draftSavedAt).toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" })}
+            </span>
+          )}
+        </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 400px", gap: "30px" }}>
           {/* 좌측: 입력 폼 */}
@@ -682,6 +793,13 @@ export default function CreatorRegister() {
               </div>
             </div>
 
+            <div className="mt-6 space-y-6">
+              <CreatorPlanFormSection
+                values={creatorPlanValues}
+                onChange={updateCreatorPlanValue}
+              />
+            </div>
+
             {/* 섹션 4: 액션 버튼 */}
             <div style={{ display: "flex", gap: "12px", marginTop: "20px" }}>
               <button
@@ -790,10 +908,21 @@ export default function CreatorRegister() {
                 </div>
               </div>
             </div>
+            <div style={{ marginTop: "16px" }}>
+              <CreatorPlanPreviewCard values={creatorPlanValues} />
+            </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CreatorRegisterPage() {
+  return (
+    <Suspense fallback={<div style={{ paddingTop: "80px", padding: "20px", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)" }}>로딩 중...</div>}>
+      <CreatorRegisterInner />
+    </Suspense>
   );
 }
 

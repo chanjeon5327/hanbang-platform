@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 export default function NewListingPage() {
   const newListings = [
-    { id: 1, name: "신인 걸그룹 <Luna> 데뷔", days: 1, target: "80%", category: "K-POP" },
+    { id: 1, name: "사운드 플로어 시즌2", days: 1, target: "80%", category: "음악" },
     { id: 2, name: "웹툰 <마법사의 귀환>", days: 3, target: "65%", category: "웹툰" },
     { id: 3, name: "드라마 <서울의 밤>", days: 5, target: "45%", category: "드라마" },
     { id: 4, name: "유튜브 <요리왕> 채널", days: 7, target: "30%", category: "유튜브" },

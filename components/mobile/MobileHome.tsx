@@ -153,7 +153,7 @@ export default function MobileHome() {
                     {item?.name || `가상의 상품 ${i+1}`}
                   </div>
                   <div className="flex justify-between items-center mt-2">
-                    <span className="text-xs text-gray-500">{item?.category || 'K-POP'}</span>
+                    <span className="text-xs text-gray-500">{item?.category || '음악'}</span>
                     <span className="text-[#ef4444] font-bold text-sm">
                         {item ? '+15.5%' : `+${(12 + i * 1.2).toFixed(1)}%`}
                     </span>

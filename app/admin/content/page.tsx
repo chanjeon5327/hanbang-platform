@@ -20,7 +20,7 @@ type ContentItem = {
 const MOCK_CONTENTS: ContentItem[] = [
   { id: '1', title: '웹툰 <나 혼자 만렙> 지분', creator: '김창작자', category: '웹툰', targetAmount: 100000000, submitDate: '2024-01-15', status: 'pending' },
   { id: '2', title: '드라마 <한방의 추억> OST', creator: '이드라마', category: '드라마', targetAmount: 50000000, submitDate: '2024-01-14', status: 'pending' },
-  { id: '3', title: 'K-POP <Sparkle> 데뷔', creator: '박케이팝', category: 'K-POP', targetAmount: 200000000, submitDate: '2024-01-13', status: 'approved' },
+  { id: '3', title: '사운드 플로어 시즌2', creator: '사운드플로어', category: '음악', targetAmount: 200000000, submitDate: '2024-01-13', status: 'approved' },
 ];
 
 export default function AdminContentPage() {

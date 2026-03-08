@@ -13,7 +13,7 @@ export const NEWS_PLACEHOLDER = '/placeholders/news-placeholder.png';
 export const PRODUCT_PLACEHOLDER = '/placeholders/product-placeholder.png';
 
 export const YT_THUMBS = [
-  "9bZkp7q19f0", // BTS
+  "9bZkp7q19f0", // 샘플 MV
   "3tmd-ClpJxA", // Blackpink
   "eDuCxyhyx7g", // 현재 스폰서 영상
   "L_jWHffIx5E", // Smash Mouth

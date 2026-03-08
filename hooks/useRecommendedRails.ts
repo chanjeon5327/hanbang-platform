@@ -26,7 +26,7 @@ const FALLBACK_RAILS: Rail[] = [
     { id: FALLBACK_IDS.SAMPLE_5, title: '도서 시즌 B', creator_name: '도서', thumbnail_url: getYtThumb(4) },
   ]},
   { key: 'fallback-hot', title: '최근 인기', items: [
-    { id: FALLBACK_IDS.SAMPLE_6, title: '영화 블록버스터', creator_name: '영화', thumbnail_url: getYtThumb(5) },
+    { id: FALLBACK_IDS.SAMPLE_6, title: '필름 하우스', creator_name: '영화', thumbnail_url: getYtThumb(5) },
     { id: FALLBACK_IDS.SAMPLE_7, title: '웹소설 드라마', creator_name: 'OTT', thumbnail_url: getYtThumb(6) },
     { id: FALLBACK_IDS.SAMPLE_8, title: '팟캐스트 시즌2', creator_name: '인기', thumbnail_url: getYtThumb(7) },
   ]},

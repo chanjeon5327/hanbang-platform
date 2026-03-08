@@ -34,7 +34,7 @@ const SORTS: { key: SortKey; label: string }[] = [
 ];
 
 const FALLBACK_ITEMS: MarketItem[] = [
-  { id: 'fb-1', title: '영화 블록버스터', category: 'movie', priceKrw: 12300, changePct: 4.2, thumb: 'https://images.unsplash.com/photo-1527430253228-e93688616381?auto=format&fit=crop&w=1200&q=80', tags: ['추천'], statusText: '상장 종목' },
+  { id: 'fb-1', title: '필름 하우스', category: 'movie', priceKrw: 12300, changePct: 4.2, thumb: 'https://images.unsplash.com/photo-1527430253228-e93688616381?auto=format&fit=crop&w=1200&q=80', tags: ['추천'], statusText: '상장 종목' },
   { id: 'fb-2', title: '유튜브 크리에이터 일상', category: 'youtube', priceKrw: 12300, changePct: 4.2, thumb: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1200&q=80', tags: ['추천'], statusText: '상장 종목' },
   { id: 'fb-3', title: '웹소설 달빛 아래 그대', category: 'webnovel', priceKrw: 12300, changePct: 4.2, thumb: 'https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?auto=format&fit=crop&w=1200&q=80', tags: ['추천'], statusText: '상장 종목' },
   { id: 'fb-4', title: '게임 스트리머 라이브', category: 'game', priceKrw: 12300, changePct: 4.2, thumb: 'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1200&q=80', tags: ['추천'], statusText: '상장 종목' },

@@ -8,13 +8,13 @@ import OnboardingSummary from '@/components/onboarding/OnboardingSummary';
 import { getYtThumb } from '@/lib/thumbnails';
 
 const MOCK_CHANNELS: Channel[] = [
-  { id: 'm1', name: '여행가 제이', category: '여행', thumbnail_url: getYtThumb(0) },
+  { id: 'm1', name: '블루웨이 시즌3', category: '여행', thumbnail_url: getYtThumb(0) },
   { id: 'm2', name: '음악의 시', category: '음악', thumbnail_url: getYtThumb(1) },
   { id: 'm3', name: '패션 로드', category: '패션', thumbnail_url: getYtThumb(2) },
   { id: 'm4', name: '뷰티 이미지', category: '뷰티', thumbnail_url: getYtThumb(3) },
   { id: 'm5', name: '스포츠 시즌', category: '스포츠', thumbnail_url: getYtThumb(4) },
   { id: 'm6', name: '도서 리뷰', category: '도서', thumbnail_url: getYtThumb(5) },
-  { id: 'm7', name: '영화 블록버스터', category: '영화', thumbnail_url: getYtThumb(0) },
+  { id: 'm7', name: '필름 하우스', category: '영화', thumbnail_url: getYtThumb(0) },
   { id: 'm8', name: '웹소설 드라마', category: '웹소설', thumbnail_url: getYtThumb(1) },
   { id: 'm9', name: '팟캐스트 라이브', category: '팟캐스트', thumbnail_url: getYtThumb(2) },
   { id: 'm10', name: '게임 플레이', category: '게임', thumbnail_url: getYtThumb(3) },
@@ -41,7 +41,7 @@ const MOCK_CHANNELS: Channel[] = [
   { id: 'm31', name: '힙합 랩', category: '힙합', thumbnail_url: getYtThumb(0) },
   { id: 'm32', name: '인디 음악', category: '인디', thumbnail_url: getYtThumb(1) },
   { id: 'm33', name: '클래식 음악', category: '클래식', thumbnail_url: getYtThumb(2) },
-  { id: 'm34', name: 'K-POP 커버', category: 'K-POP', thumbnail_url: getYtThumb(3) },
+  { id: 'm34', name: '사운드 플로어', category: '음악', thumbnail_url: getYtThumb(3) },
   { id: 'm35', name: '재즈 라이브', category: '재즈', thumbnail_url: getYtThumb(4) },
   { id: 'm36', name: '일본 드라마', category: '일드', thumbnail_url: getYtThumb(5) },
   { id: 'm37', name: '애니 리뷰', category: '애니', thumbnail_url: getYtThumb(0) },

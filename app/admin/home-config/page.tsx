@@ -11,7 +11,7 @@ type Item = {
 
 const allItems: Item[] = Array.from({ length: 12 }).map((_, i) => ({
   id: String(i),
-  title: i % 2 ? '전지적 독자 시점 웹툰' : '유튜브 <여행가 제이>',
+  title: i % 2 ? '달빛 아래 웹드라마' : '블루웨이 시즌3',
 }));
 
 export default function AdminHomeConfigPage() {

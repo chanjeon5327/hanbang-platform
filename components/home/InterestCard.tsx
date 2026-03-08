@@ -17,7 +17,7 @@ type Props = {
   isInterested?: boolean;
 };
 
-export default function InterestCard({ id, thumbUrl, title = '여행가 제이', index, isInterested = false }: Props) {
+export default function InterestCard({ id, thumbUrl, title = '블루웨이 시즌3', index, isInterested = false }: Props) {
   const { user } = useAuth();
   const { isInterested: interested, toggle, loading } = useInterestToggle(id, isInterested);
   const src = thumbUrl ?? (index != null ? getYtThumb(index) : getYtThumb(0));

@@ -16,7 +16,7 @@ const MOCK_MESSAGES: Message[] = [
   { id: '3', text: '청약 마감이 얼마 안 남았네요', isMe: false, time: '14:35', initials: '이' },
   { id: '4', text: '네, 4월 30일까지입니다.', isMe: true, time: '14:36', initials: '나' },
   { id: '5', text: '2차 시장 거래량이 많이 늘었어요', isMe: false, time: '14:38', initials: '박' },
-  { id: '6', text: 'K-POP 투자 열기 때문인 것 같아요', isMe: false, time: '14:39', initials: '박' },
+  { id: '6', text: '음악 투자 열기 때문인 것 같아요', isMe: false, time: '14:39', initials: '박' },
 ];
 
 export default function LiveChatMock() {

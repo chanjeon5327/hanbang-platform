@@ -3,7 +3,7 @@ import { getYtThumb } from '@/lib/thumbnails';
 
 const items = Array.from({ length: 10 }).map((_, i) => ({
   id: String(i),
-  title: i % 2 ? '유튜브 <여행가 제이> 수익권' : '전지적 독자 시점 웹툰 지분',
+  title: i % 2 ? '블루웨이 시즌3 수익권' : '달빛 아래 웹드라마 지분',
   subtitle: i % 2 ? '구독자 50만 · 여행' : '글로벌 IP 확장',
   thumbUrl: getYtThumb(i),
   tags: i % 2 ? ['여행', '유튜브'] : ['웹툰', 'IP'],

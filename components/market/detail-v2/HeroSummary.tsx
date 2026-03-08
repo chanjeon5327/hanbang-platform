@@ -13,6 +13,11 @@ function pickText(...values: Array<unknown>) {
   return ''
 }
 
+function safeStr(v: unknown): string {
+  if (typeof v === 'string') return v.trim()
+  return ''
+}
+
 export default function HeroSummary({ item }: Props) {
   const safeItem = item ?? {}
   const template = buildDetailTemplate(safeItem)
@@ -28,13 +33,10 @@ export default function HeroSummary({ item }: Props) {
     '운영팀'
   )
   const thumbnail = pickText((safeItem as Record<string, unknown>).thumbnail_url)
-  const spotlight = template.spotlightItems.slice(0, 4)
-  const points = template.investmentPoints.slice(0, 2)
-  const summary = pickText(
-    (safeItem as Record<string, unknown>).summary,
-    (safeItem as Record<string, unknown>).tagline,
-    template.oneLiner
-  )
+  const spotlight = template.spotlightItems.filter((m) => safeStr(m.value).length > 0).slice(0, 4)
+  const points = template.investmentPoints.filter(Boolean).slice(0, 2)
+  const summary = template.oneLiner
+  const overview = safeStr(safeItem.creator_plan?.overview) || safeStr(safeItem.overview)
 
   return (
     <section className="px-4 pt-4">
@@ -89,6 +91,14 @@ export default function HeroSummary({ item }: Props) {
             </div>
           </div>
 
+          {overview.length > 0 && (
+            <div className="mt-5 rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
+              <h3 className="text-[14px] font-semibold text-white">프로젝트 개요</h3>
+              <p className="mt-2 text-[13px] leading-6 text-zinc-200 whitespace-pre-line">{overview}</p>
+            </div>
+          )}
+
+          {spotlight.length > 0 && (
           <div className="mt-5 rounded-[24px] border border-white/10 bg-black/20 p-4">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-[14px] font-semibold text-white">핵심 요약</h3>
@@ -111,7 +121,9 @@ export default function HeroSummary({ item }: Props) {
               ))}
             </div>
           </div>
+          )}
 
+          {points.length > 0 && (
           <div className="mt-5 rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-[14px] font-semibold text-white">지금 이 자산을 보는 이유</h3>
@@ -130,6 +142,7 @@ export default function HeroSummary({ item }: Props) {
               ))}
             </div>
           </div>
+          )}
         </div>
       </div>
     </section>

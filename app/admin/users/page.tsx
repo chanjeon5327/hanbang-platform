@@ -275,7 +275,7 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
                 {[
                   { project: "웹툰 <나 혼자 만렙>", amount: 500000, date: "2024-01-12" },
                   { project: "드라마 <한방의 추억>", amount: 1000000, date: "2024-01-08" },
-                  { project: "K-POP <Sparkle>", amount: 300000, date: "2024-01-05" },
+                  { project: "사운드 플로어 시즌2", amount: 300000, date: "2024-01-05" },
                 ].map((investment, index) => (
                   <div
                     key={index}

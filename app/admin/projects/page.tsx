@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
 
+interface CreatorPlanStub {
+  summary?: string;
+  target_audience?: string;
+  investment_points?: string[];
+}
+
 interface Project {
   id: string;
   title: string;
@@ -11,6 +17,7 @@ interface Project {
   targetAmount: number;
   submitDate: string;
   status: "pending" | "approved" | "rejected";
+  creator_plan?: CreatorPlanStub;
 }
 
 export default function AdminProjects() {
@@ -35,9 +42,9 @@ export default function AdminProjects() {
     },
     {
       id: "3",
-      title: "K-POP <Sparkle> 데뷔",
-      creator: "박케이팝",
-      category: "K-POP",
+      title: "사운드 플로어 시즌2",
+      creator: "사운드플로어",
+      category: "음악",
       targetAmount: 200000000,
       submitDate: "2024-01-13",
       status: "approved",
@@ -146,8 +153,33 @@ export default function AdminProjects() {
                   <span>목표액: {project.targetAmount.toLocaleString()}원</span>
                   <span>제출일: {project.submitDate}</span>
                 </div>
+                {project.creator_plan && (
+                  <div style={{ marginTop: "12px", padding: "12px", borderRadius: "8px", backgroundColor: "var(--bg-secondary)", fontSize: "13px", color: "var(--text-secondary)" }}>
+                    {project.creator_plan.summary && <div style={{ marginBottom: "6px" }}><strong>한 줄 소개:</strong> {project.creator_plan.summary}</div>}
+                    {project.creator_plan.target_audience && <div style={{ marginBottom: "6px" }}><strong>타깃 팬층:</strong> {project.creator_plan.target_audience}</div>}
+                    {project.creator_plan.investment_points && project.creator_plan.investment_points.length > 0 && (
+                      <div><strong>투자 포인트:</strong> {project.creator_plan.investment_points.slice(0, 3).join(" · ")}</div>
+                    )}
+                  </div>
+                )}
               </div>
-              {getStatusBadge(project.status)}
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                {project.creator_plan && (project.creator_plan.summary || (project.creator_plan.investment_points && project.creator_plan.investment_points.length > 0)) && (
+                  <span
+                    style={{
+                      padding: "4px 10px",
+                      borderRadius: "6px",
+                      backgroundColor: "rgba(34, 197, 94, 0.1)",
+                      color: "rgb(34, 197, 94)",
+                      fontSize: "11px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    설득정보 작성완료
+                  </span>
+                )}
+                {getStatusBadge(project.status)}
+              </div>
             </div>
 
             {project.status === "pending" && (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import UpbitLineBarsChart from '@/components/charts/UpbitLineBarsChart';
@@ -11,6 +11,8 @@ import MarketDetailMobileScaffold from '@/components/market/MarketDetailMobileSc
 import type { MarketDetailLike } from '@/lib/market/detailTemplates';
 import { marketItems, formatKRW } from '@/lib/mock/marketItems';
 import { makeRealisticSeries } from '@/lib/mock/series';
+
+type SubmittedProject = { id?: string; title?: string; creator_plan?: MarketDetailLike['creator_plan'] };
 
 type Tab = 'decide' | 'price' | 'trade';
 type TF = 'tick60' | 's30' | 'm1' | 'h1' | 'd1' | 'w1';
@@ -80,7 +82,27 @@ function Chip({ children }: { children: React.ReactNode }) {
 export default function MarketDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
-  const item = useMemo(() => marketItems.find((x) => x.id === id), [id]);
+  const baseItem = useMemo(() => marketItems.find((x) => x.id === id), [id]);
+  const [item, setItem] = useState<typeof baseItem>(baseItem);
+
+  useEffect(() => {
+    if (!baseItem) {
+      setItem(baseItem);
+      return;
+    }
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem('creator_submitted_projects') : null;
+      const list: SubmittedProject[] = raw ? JSON.parse(raw) : [];
+      const match = list.find((p) => p.title === baseItem.title);
+      if (match?.creator_plan) {
+        setItem({ ...baseItem, creator_plan: match.creator_plan } as typeof baseItem);
+      } else {
+        setItem(baseItem);
+      }
+    } catch {
+      setItem(baseItem);
+    }
+  }, [baseItem]);
 
   const [tab, setTab] = useState<Tab>('decide');
   const [tf, setTf] = useState<TF>('tick60');

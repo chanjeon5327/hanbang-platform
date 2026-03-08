@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useStore } from '@/context/StoreContext';
 import { formatKrw, formatRate } from '@/lib/utils/format';
 
-const CATEGORIES = ['ALL', '유튜브', '전시', 'K-POP', '드라마', '영화', '웹툰', '웹소설', '공연', '굿즈', '스타트업'];
+const CATEGORIES = ['ALL', '유튜브', '전시', '음악', '드라마', '영화', '웹툰', '웹소설', '공연', '굿즈', '스타트업'];
 
 export default function ActiveInvestHome() {
   const { products } = useStore();

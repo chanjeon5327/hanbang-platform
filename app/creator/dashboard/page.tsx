@@ -4,6 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+interface CreatorPlanStub {
+  summary?: string;
+  target_audience?: string;
+  investment_points?: string[];
+}
+
 interface Project {
   id: string;
   title: string;
@@ -12,6 +18,7 @@ interface Project {
   progress: number; // 모금 달성률 (0-100)
   targetAmount: number;
   currentAmount: number;
+  creator_plan?: CreatorPlanStub;
 }
 
 export default function CreatorDashboard() {
@@ -117,6 +124,18 @@ export default function CreatorDashboard() {
                         {project.title}
                       </h3>
                       <p style={{ fontSize: "14px", color: "var(--text-secondary)" }}>제출일: {project.submitDate}</p>
+                      {project.creator_plan?.summary && (
+                        <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "8px", lineHeight: 1.5 }}>
+                          {project.creator_plan.summary}
+                        </p>
+                      )}
+                      {project.creator_plan?.investment_points && project.creator_plan.investment_points.length > 0 && (
+                        <ul style={{ marginTop: "8px", paddingLeft: "18px", fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                          {project.creator_plan.investment_points.slice(0, 2).map((point, i) => (
+                            <li key={i}>{point}</li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                     <div
                       style={{
@@ -166,7 +185,7 @@ export default function CreatorDashboard() {
                     </div>
                   )}
 
-                  <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "8px" }}>
                     <button
                       onClick={() => router.push(`/creator/projects/${project.id}`)}
                       style={{
@@ -182,6 +201,21 @@ export default function CreatorDashboard() {
                     >
                       상세보기
                     </button>
+                    <button
+                      onClick={() => router.push(`/creator/register?edit=${project.id}`)}
+                      style={{
+                        padding: "8px 16px",
+                        borderRadius: "8px",
+                        border: "1px solid var(--border-color)",
+                        backgroundColor: "var(--bg-secondary)",
+                        color: "var(--text-primary)",
+                        fontWeight: "bold",
+                        fontSize: "14px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      설득 정보 수정
+                    </button>
                     {project.status === "반려" && (
                       <button
                         onClick={() => router.push(`/creator/register?edit=${project.id}`)}
@@ -196,7 +230,7 @@ export default function CreatorDashboard() {
                           cursor: "pointer",
                         }}
                       >
-                        수정하기
+                        수정 후 재제출
                       </button>
                     )}
                   </div>

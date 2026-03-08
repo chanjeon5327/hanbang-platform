@@ -8,8 +8,8 @@
 
 ## 2. Page: Main (Home) `app/page.tsx`
 1.  **News Ticker (Top):** Purple background (#7c3aed, opacity 0.9). Rolling text (News/Notice).
-2.  **Hero Section:** - Full-screen height. Background: Video iframe (Seventeen Concert) with `pointer-events: none`.
-    - Content: Title "SEVENTEEN Stadium Tour", Sub "Ticket Revenue Share Open", Button "Invest Now".
+2.  **Hero Section:** - Full-screen height. Background: Video iframe (아티스트 콘서트 예시) with `pointer-events: none`.
+    - Content: Title "Stadium Tour", Sub "Ticket Revenue Share Open", Button "Invest Now".
     - Animation: Slide transition every 4 seconds.
 3.  **Quick Menu Bar (Crucial):** - Located below Hero. 4 Cards Row: [Real-time Ranking], [New Listing], [Closing Soon], [Notice].
     - This section was missing in previous builds. MUST be included.
@@ -18,7 +18,7 @@
     - Content must match the video text exactly.
 
 ## 3. Page: Market List `app/active-invest/page.tsx`
-- **Filter:** Buttons (TRENDS, ALL, K-POP, DRAMA, MOVIE).
+- **Filter:** Buttons (TRENDS, ALL, MUSIC, DRAMA, MOVIE).
 - **Grid Layout:** - Mobile: 1 Column (Full width cards).
   - PC: 3 Columns.
 - **Card Item:** 16:9 Thumbnail. Title, Category, Returns(%), Price.

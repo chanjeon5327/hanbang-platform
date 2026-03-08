@@ -12,7 +12,7 @@ export default function Notice() {
           <h3 style={{ marginBottom: '10px' }}>📘 초보 투자자 가이드</h3>
           <ul style={{ lineHeight: '1.8', fontSize: '14px', color: 'var(--text-secondary)' }}>
             <li>1. 회원가입 후 [내 자산]에서 가상 계좌를 발급받으세요.</li>
-            <li>2. 원하는 콘텐츠(K-POP, 드라마 등)를 선택해 상세 정보를 확인하세요.</li>
+            <li>2. 원하는 콘텐츠(음악, 드라마 등)를 선택해 상세 정보를 확인하세요.</li>
             <li>3. [매수] 버튼을 눌러 원하는 수량만큼 지분을 구매하세요.</li>
             <li>4. 매수 가격은 500원 단위로 설정 가능합니다.</li>
             <li>5. 거래 체결 시 알림톡이 발송됩니다.</li>

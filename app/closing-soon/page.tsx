@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 export default function ClosingSoonPage() {
   const closingProjects = [
     { id: 1, name: "웹툰 <황녀의 귀환>", hours: 2, progress: "98%", category: "웹툰" },
-    { id: 2, name: "K-POP <Midnight> 앨범", hours: 5, progress: "95%", category: "K-POP" },
+    { id: 2, name: "사운드 플로어 시즌2", hours: 5, progress: "95%", category: "음악" },
     { id: 3, name: "드라마 <서울 로맨스>", hours: 12, progress: "92%", category: "드라마" },
     { id: 4, name: "유튜브 <Tech Review>", hours: 18, progress: "88%", category: "유튜브" },
     { id: 5, name: "영화 <도시의 별>", hours: 24, progress: "85%", category: "영화" },

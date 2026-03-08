@@ -9,8 +9,8 @@ export default function PriceSnapshotPanel({ item }: Props) {
   const safeItem = item ?? {}
   const template = buildDetailTemplate(safeItem)
   const tone = getDetailTone(safeItem)
-  const spotlight = template.spotlightItems.slice(0, 4)
-  const recent = template.recentPerformance.slice(0, 3)
+  const spotlight = template.spotlightItems.filter((m) => (m.value ?? '').toString().trim().length > 0).slice(0, 4)
+  const recent = template.recentPerformance.filter(Boolean).slice(0, 3)
 
   return (
     <section className="px-4 pt-4">
@@ -32,6 +32,7 @@ export default function PriceSnapshotPanel({ item }: Props) {
             기준 가격, 운영 주체, 플랫폼, 최근 성과를 함께 보면서 판단할 수 있도록 정리했습니다.
           </p>
 
+          {spotlight.length > 0 && (
           <div className="mt-5 grid grid-cols-2 gap-3">
             {spotlight.map((metric) => (
               <div
@@ -47,6 +48,7 @@ export default function PriceSnapshotPanel({ item }: Props) {
               </div>
             ))}
           </div>
+          )}
 
           <div className="mt-5 grid gap-3 md:grid-cols-[1.1fr,0.9fr]">
             <div className="rounded-[26px] border border-white/10 bg-black/20 p-4">
@@ -56,11 +58,11 @@ export default function PriceSnapshotPanel({ item }: Props) {
               </div>
 
               <ul className="mt-3 space-y-2">
-                {recent.map((point, idx) => (
+                {recent.length > 0 ? recent.map((point, idx) => (
                   <li key={idx} className="text-[13px] leading-6 text-zinc-300">
                     {point}
                   </li>
-                ))}
+                )) : null}
               </ul>
             </div>
 
