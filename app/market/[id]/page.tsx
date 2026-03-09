@@ -74,6 +74,146 @@ function Chip({ children }: { children: React.ReactNode }) {
   );
 }
 
+type SectionCardProps = {
+  title: string;
+  subtitle?: string;
+  tone?: 'default' | 'blue' | 'sky' | 'slate' | 'amber';
+  children: React.ReactNode;
+};
+
+function SectionCard({ title, subtitle, tone = 'default', children }: SectionCardProps) {
+  const toneMap = {
+    default: {
+      wrap: 'border-black/10 bg-white shadow-[0_8px_32px_rgba(0,0,0,0.08)]',
+      head: 'border-black/5 bg-black/[0.02]',
+      title: 'text-black',
+      sub: 'text-black/55',
+    },
+    blue: {
+      wrap: 'border-blue-200/60 bg-blue-50/40 shadow-[0_8px_32px_rgba(37,99,235,0.08)]',
+      head: 'border-blue-200/50 bg-white/70',
+      title: 'text-blue-950',
+      sub: 'text-blue-950/60',
+    },
+    sky: {
+      wrap: 'border-sky-200/60 bg-sky-50/50 shadow-[0_8px_32px_rgba(14,165,233,0.08)]',
+      head: 'border-sky-200/50 bg-white/70',
+      title: 'text-sky-950',
+      sub: 'text-sky-950/60',
+    },
+    slate: {
+      wrap: 'border-slate-200/70 bg-slate-50/80 shadow-[0_8px_32px_rgba(15,23,42,0.08)]',
+      head: 'border-slate-200/60 bg-white/80',
+      title: 'text-slate-950',
+      sub: 'text-slate-950/60',
+    },
+    amber: {
+      wrap: 'border-amber-200/70 bg-amber-50/70 shadow-[0_8px_32px_rgba(245,158,11,0.10)]',
+      head: 'border-amber-200/60 bg-white/80',
+      title: 'text-amber-950',
+      sub: 'text-amber-950/60',
+    },
+  } as const;
+
+  const ui = toneMap[tone];
+
+  return (
+    <section className={`overflow-hidden rounded-3xl border ${ui.wrap}`}>
+      <div className={`border-b px-5 py-4 ${ui.head}`}>
+        <h3 className={`text-[15px] font-extrabold tracking-[-0.02em] ${ui.title}`}>{title}</h3>
+        {subtitle ? <p className={`mt-1 text-[12px] ${ui.sub}`}>{subtitle}</p> : null}
+      </div>
+      <div className="px-5 py-5">{children}</div>
+    </section>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value?: React.ReactNode }) {
+  if (!value) return null;
+  return (
+    <div className="grid grid-cols-[84px_1fr] gap-3 py-2">
+      <div className="text-[12px] font-bold text-black/45">{label}</div>
+      <div className="text-[14px] leading-6 text-black/80">{value}</div>
+    </div>
+  );
+}
+
+function BulletList({
+  items,
+  tone = 'default',
+}: {
+  items?: string[];
+  tone?: 'default' | 'good' | 'warn' | 'roadmap';
+}) {
+  const safeItems = (items ?? []).filter(Boolean);
+  if (!safeItems.length) return null;
+
+  const toneClass =
+    tone === 'good'
+      ? 'border-blue-200/60 bg-blue-50/60 text-blue-950'
+      : tone === 'warn'
+      ? 'border-amber-200/70 bg-amber-50/70 text-amber-950'
+      : tone === 'roadmap'
+      ? 'border-slate-200/70 bg-slate-50/80 text-slate-950'
+      : 'border-black/10 bg-white text-black';
+
+  return (
+    <div className="space-y-2">
+      {safeItems.map((item, idx) => (
+        <div
+          key={`${item}-${idx}`}
+          className={`rounded-2xl border px-4 py-3 text-[13px] leading-6 ${toneClass}`}
+        >
+          {tone === 'roadmap' ? (
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-black/85 text-[11px] font-bold text-white">
+                {idx + 1}
+              </div>
+              <div>{item}</div>
+            </div>
+          ) : (
+            <div className="flex items-start gap-3">
+              <div className="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-70" />
+              <div>{item}</div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+type DetailTemplate = {
+  oneLiner: string;
+  revenueDescription: string;
+  investmentPoints: string[];
+  riskPoints: string[];
+  roadmap: string[];
+};
+
+const DEFAULT_DETAIL_TEMPLATE: DetailTemplate = {
+  oneLiner: '핵심 팬층이 이미 형성된 한류 콘텐츠 자산입니다.',
+  revenueDescription: '콘텐츠에서 발생하는 수익을 정기적으로 모아 투자자와 나눕니다.',
+  investmentPoints: [
+    '초기 팬덤이 탄탄해 신규 유입 없이도 일정 수준의 수요가 유지됩니다.',
+    '콘텐츠 특성상 시즌·에피소드 단위로 반복 소비가 발생합니다.',
+  ],
+  riskPoints: [
+    '조회수·매출이 외부 플랫폼 알고리즘과 시장 상황에 따라 변동될 수 있습니다.',
+    '초기 가정과 다른 성장 속도를 보일 수 있습니다.',
+  ],
+  roadmap: ['런칭 이후 6~12개월 동안 어떤 방식으로 확장·고도화할지에 대한 계획을 단계별로 제시합니다.'],
+};
+
+function resolveList(...candidates: unknown[]): string[] {
+  for (const cand of candidates) {
+    if (Array.isArray(cand) && cand.length) {
+      return (cand as unknown[]).map((v) => String(v)).filter(Boolean);
+    }
+  }
+  return [];
+}
+
 export default function MarketDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
@@ -87,6 +227,23 @@ export default function MarketDetailPage() {
   const price = item?.price ?? 12300;
   const chgPct = item?.chgPct ?? 0.0;
   const up = chgPct >= 0;
+
+  const template = DEFAULT_DETAIL_TEMPLATE;
+  const raw: any = item ?? {};
+  const plan: any = raw.creator_plan ?? {};
+
+  const overview: string | undefined = plan.overview ?? raw.overview;
+  const targetAudience: string | undefined = plan.targetAudience ?? raw.target_audience;
+  const revenueModel: string | undefined =
+    plan.revenueModel ?? raw.revenue_model ?? template.revenueDescription;
+
+  const investmentPoints = resolveList(
+    plan.investment_points,
+    raw.investment_points,
+    template.investmentPoints,
+  );
+  const riskPoints = resolveList(plan.risk_points, raw.risk_points, template.riskPoints);
+  const roadmapItems = resolveList(plan.roadmap_items, raw.roadmap_items, template.roadmap);
 
   const { series, mode } = useMemo(() => {
     if (tf === 'tick60') {
@@ -124,6 +281,129 @@ export default function MarketDetailPage() {
       series: makeRealisticSeries({ seed: `w1:${id}`, points: 26, start: 80, drift: up ? 0.08 : -0.05, vol: 1.1, spikeEvery: 6 }).map((v) => Math.round(v)),
     };
   }, [tf, id, up]);
+
+  const infoIntroBlock = (
+    <SectionCard title="정보/소개" subtitle="프로젝트 개요와 핵심 정보" tone="default">
+      <div className="space-y-5">
+        {raw.thumbnail ? (
+          <div
+            className="h-[180px] rounded-2xl bg-cover bg-center"
+            style={{ backgroundImage: `url('${raw.thumbnail}')` }}
+          />
+        ) : null}
+
+        {template.oneLiner ? (
+          <div className="rounded-2xl border border-black/10 bg-black/[0.02] px-4 py-4">
+            <div className="text-[12px] font-bold text-black/45">한 줄 소개</div>
+            <div className="mt-2 text-[15px] font-bold leading-6 tracking-[-0.02em] text-black">
+              {template.oneLiner}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="rounded-2xl border border-black/10 bg-white px-4 py-4">
+          <div className="space-y-1 divide-y divide-black/5">
+            <InfoRow label="프로젝트 개요" value={overview} />
+            <InfoRow label="타깃 팬층" value={targetAudience} />
+            <InfoRow label="수익 구조" value={revenueModel} />
+          </div>
+        </div>
+      </div>
+    </SectionCard>
+  );
+
+  const decideBlock = (
+    <SectionCard
+      title="살까말까"
+      subtitle="투자 포인트와 리스크를 한눈에 정리"
+      tone="blue"
+    >
+      <div className="space-y-5">
+        {!!investmentPoints.length && (
+          <div className="space-y-2">
+            <div className="text-[13px] font-extrabold text-blue-950">투자 포인트</div>
+            <BulletList items={investmentPoints} tone="good" />
+          </div>
+        )}
+
+        {!!riskPoints.length && (
+          <div className="space-y-2">
+            <div className="text-[13px] font-extrabold text-amber-950">리스크</div>
+            <BulletList items={riskPoints} tone="warn" />
+          </div>
+        )}
+
+        {!!roadmapItems.length && (
+          <div className="space-y-2">
+            <div className="text-[13px] font-extrabold text-slate-950">로드맵</div>
+            <BulletList items={roadmapItems} tone="roadmap" />
+          </div>
+        )}
+      </div>
+    </SectionCard>
+  );
+
+  const priceBlock = (
+    <SectionCard title="지금얼마" subtitle="가격 · 시세 · 체결 흐름" tone="sky">
+      <div className="space-y-5">
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-2xl border border-sky-200/60 bg-white/80 px-4 py-4">
+            <div className="text-[11px] font-bold text-sky-900/45">현재가</div>
+            <div className="mt-2 text-[18px] font-extrabold tracking-[-0.02em] text-sky-950">
+              {formatKRW(price)}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-sky-200/60 bg-white/80 px-4 py-4">
+            <div className="text-[11px] font-bold text-sky-900/45">변동</div>
+            <div className="mt-2 text-[18px] font-extrabold tracking-[-0.02em] text-sky-950">
+              {up ? '+' : ''}
+              {chgPct.toFixed(1)}%
+            </div>
+          </div>
+          <div className="rounded-2xl border border-sky-200/60 bg-white/80 px-4 py-4">
+            <div className="text-[11px] font-bold text-sky-900/45">체결 흐름</div>
+            <div className="mt-2 text-[13px] font-extrabold tracking-[-0.02em] text-sky-950">
+              실시간 체결 데이터
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+            <div className="mb-4 flex items-end justify-between gap-3">
+              <div>
+                <div className="text-sm font-extrabold">가격 차트</div>
+                <div className="mt-1 text-xs text-black/55">기본 60틱 (가장 즉각적인 움직임)</div>
+              </div>
+              <TimeTabs value={tf} onChange={setTf} />
+            </div>
+            <UpbitLineBarsChart values={series} theme="light" mode={mode} />
+          </div>
+
+          <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+            <LiveTradesLite symbolId={id} basePrice={price} />
+          </div>
+        </div>
+      </div>
+    </SectionCard>
+  );
+
+  const tradeBlock = (
+    <SectionCard title="거래하기" subtitle="매수 · 매도 주문 입력" tone="slate">
+      <div className="space-y-5">
+        <div className="rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-4">
+          <div className="text-[12px] font-bold text-slate-900/45">주문 안내</div>
+          <div className="mt-2 text-[13px] leading-6 text-slate-900/70">
+            수량과 가격을 입력한 뒤 주문 버튼을 눌러 진행합니다.
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200/70 bg-slate-50/70 px-4 py-4">
+          <TradePanelUpbit assetId={id} basePrice={price} />
+        </div>
+      </div>
+    </SectionCard>
+  );
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] text-[#0B1120]">
@@ -177,8 +457,8 @@ export default function MarketDetailPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-5 sm:px-6 pb-14">
-        {/* 스티키 탭: 말풍선 위치 계산용 id */}
-        <div id="market-sticky-tabs" className="sticky top-3 z-40 mb-5">
+        {/* 스티키 탭: 데스크톱 전용 */}
+        <div id="market-sticky-tabs" className="hidden lg:block sticky top-3 z-40 mb-6">
           <div className="inline-block rounded-2xl bg-[#F7F8FA]/90 backdrop-blur border border-black/10 p-2 shadow-[0_10px_24px_rgba(0,0,0,0.08)]">
             <SegTabs<Tab>
               value={tab}
@@ -202,79 +482,69 @@ export default function MarketDetailPage() {
           </div>
         )}
 
-        {/* 살까말까: 공란 제거(2컬럼 풀) */}
-        {tab === 'decide' && (
-          <div className="grid lg:grid-cols-2 gap-5">
-            <div className="rounded-2xl border border-black/10 bg-white overflow-hidden shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
-              <div className="h-[240px] bg-cover bg-center" style={{ backgroundImage: `url('${item?.thumbnail ?? ''}')` }} />
-              <div className="p-5">
-                <div className="text-sm font-extrabold">소개</div>
-                <div className="mt-2 text-black/65 leading-relaxed">
-                  청약 참여 → 보유 → 수익 배분 → (가능하면) 2차 거래까지, 한 번에 이해되는 구조입니다.
-                </div>
-
-                <div className="mt-4 rounded-xl border border-black/10 bg-black/5 p-4">
-                  <div className="text-sm font-extrabold">핵심 요약(샘플)</div>
-                  <ul className="mt-2 space-y-1 text-sm text-black/65">
-                    <li>• 보유 기간: (예) 최소 30일</li>
-                    <li>• 수익 배분: (예) 월 1회 정산</li>
-                    <li>• 출구: (예) 거래하기에서 매도 가능</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-5">
-              <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
-                <div className="text-sm font-extrabold">자료</div>
-                <div className="mt-2 text-sm text-black/65">사업설명서/운영지표/계약 요약을 PDF로 제공합니다.</div>
-                <a
-                  href={`/api/market/${id}/prospectus`}
-                  className="mt-4 inline-flex px-4 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-extrabold transition"
+        {item && (
+          <>
+            {/* 모바일: 버튼형 탭 + 단일 카드 노출 */}
+            <div className="lg:hidden space-y-6 pb-[calc(88px+env(safe-area-inset-bottom,0px))]">
+              <div className="flex gap-2 rounded-2xl border border-black/10 bg-white p-1">
+                <button
+                  type="button"
+                  onClick={() => setTab('decide')}
+                  className={`flex-1 rounded-2xl py-3 text-sm font-extrabold transition border border-black/10 ${
+                    tab === 'decide'
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-black/70 hover:text-black'
+                  }`}
                 >
-                  자료 PDF 다운로드
-                </a>
+                  살까말까
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTab('price')}
+                  className={`flex-1 rounded-2xl py-3 text-sm font-extrabold transition border border-black/10 ${
+                    tab === 'price'
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-black/70 hover:text-black'
+                  }`}
+                >
+                  지금얼마
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTab('trade')}
+                  className={`flex-1 rounded-2xl py-3 text-sm font-extrabold transition border border-black/10 ${
+                    tab === 'trade'
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-black/70 hover:text-black'
+                  }`}
+                >
+                  거래하기
+                </button>
               </div>
 
-              <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
-                <div className="text-sm font-extrabold">예상(샘플)</div>
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  <div className="rounded-xl border border-black/10 bg-black/5 p-4">
-                    <div className="text-xs text-black/55">예상 월 매출</div>
-                    <div className="mt-1 font-extrabold tabular-nums">₩ 12,500,000</div>
-                  </div>
-                  <div className="rounded-xl border border-black/10 bg-black/5 p-4">
-                    <div className="text-xs text-black/55">예상 배분율</div>
-                    <div className="mt-1 font-extrabold tabular-nums">3.2%</div>
-                  </div>
-                  <div className="rounded-xl border border-black/10 bg-black/5 p-4 col-span-2">
-                    <div className="text-xs text-black/55">예상 수익(샘플)</div>
-                    <div className="mt-1 font-extrabold tabular-nums">₩ 400,000 / 월</div>
-                  </div>
+              {tab === 'decide' && (
+                <div className="space-y-6">
+                  {infoIntroBlock}
+                  {decideBlock}
                 </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {tab === 'price' && (
-          <div className="grid lg:grid-cols-2 gap-5">
-            <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
-              <div className="flex items-end justify-between gap-3 mb-4">
-                <div>
-                  <div className="text-sm font-extrabold">가격 차트</div>
-                  <div className="text-xs text-black/55 mt-1">기본 60틱 (가장 즉각적인 움직임)</div>
-                </div>
-                <TimeTabs value={tf} onChange={setTf} />
-              </div>
-              <UpbitLineBarsChart values={series} theme="light" mode={mode} />
+              )}
+              {tab === 'price' && priceBlock}
+              {tab === 'trade' && tradeBlock}
             </div>
 
-            <LiveTradesLite symbolId={id} basePrice={price} />
-          </div>
+            {/* 데스크톱: 탭별 세로 스택 */}
+            <div className="hidden lg:block">
+              {tab === 'decide' && (
+                <div className="space-y-8">
+                  {infoIntroBlock}
+                  {decideBlock}
+                </div>
+              )}
+              {tab === 'price' && <div className="space-y-8">{priceBlock}</div>}
+              {tab === 'trade' && <div className="space-y-8">{tradeBlock}</div>}
+            </div>
+          </>
         )}
-
-        {tab === 'trade' && <TradePanelUpbit assetId={id} basePrice={price} />}
       </main>
     </div>
   );
