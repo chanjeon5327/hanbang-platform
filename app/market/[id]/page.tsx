@@ -85,31 +85,31 @@ type SectionCardProps = {
 function SectionCard({ title, subtitle, tone = 'default', children }: SectionCardProps) {
   const toneMap = {
     default: {
-      wrap: 'border-black/10 bg-white shadow-[0_8px_32px_rgba(0,0,0,0.08)]',
+      wrap: 'border-black/10 bg-white shadow-[0_4px_16px_rgba(0,0,0,0.06)]',
       head: 'border-black/5 bg-black/[0.02]',
       title: 'text-black',
       sub: 'text-black/55',
     },
     blue: {
-      wrap: 'border-blue-200/60 bg-blue-50/40 shadow-[0_8px_32px_rgba(37,99,235,0.08)]',
+      wrap: 'border-blue-200/60 bg-blue-50/40 shadow-[0_4px_16px_rgba(37,99,235,0.06)]',
       head: 'border-blue-200/50 bg-white/70',
       title: 'text-blue-950',
       sub: 'text-blue-950/60',
     },
     sky: {
-      wrap: 'border-sky-200/60 bg-sky-50/50 shadow-[0_8px_32px_rgba(14,165,233,0.08)]',
+      wrap: 'border-sky-200/60 bg-sky-50/50 shadow-[0_4px_16px_rgba(14,165,233,0.06)]',
       head: 'border-sky-200/50 bg-white/70',
       title: 'text-sky-950',
       sub: 'text-sky-950/60',
     },
     slate: {
-      wrap: 'border-slate-200/70 bg-slate-50/80 shadow-[0_8px_32px_rgba(15,23,42,0.08)]',
+      wrap: 'border-slate-200/70 bg-slate-50/80 shadow-[0_4px_16px_rgba(15,23,42,0.06)]',
       head: 'border-slate-200/60 bg-white/80',
       title: 'text-slate-950',
       sub: 'text-slate-950/60',
     },
     amber: {
-      wrap: 'border-amber-200/70 bg-amber-50/70 shadow-[0_8px_32px_rgba(245,158,11,0.10)]',
+      wrap: 'border-amber-200/70 bg-amber-50/70 shadow-[0_4px_16px_rgba(245,158,11,0.08)]',
       head: 'border-amber-200/60 bg-white/80',
       title: 'text-amber-950',
       sub: 'text-amber-950/60',
@@ -119,12 +119,12 @@ function SectionCard({ title, subtitle, tone = 'default', children }: SectionCar
   const ui = toneMap[tone];
 
   return (
-    <section className={`overflow-hidden rounded-3xl border ${ui.wrap}`}>
-      <div className={`border-b px-5 py-4 ${ui.head}`}>
-        <h3 className={`text-[15px] font-extrabold tracking-[-0.02em] ${ui.title}`}>{title}</h3>
-        {subtitle ? <p className={`mt-1 text-[12px] ${ui.sub}`}>{subtitle}</p> : null}
+    <section className={`overflow-hidden rounded-2xl border ${ui.wrap}`}>
+      <div className={`border-b px-4 py-3 ${ui.head}`}>
+        <h3 className={`text-[14px] font-extrabold tracking-[-0.02em] ${ui.title}`}>{title}</h3>
+        {subtitle ? <p className={`mt-0.5 text-[11px] ${ui.sub}`}>{subtitle}</p> : null}
       </div>
-      <div className="px-5 py-5">{children}</div>
+      <div className="px-4 py-4">{children}</div>
     </section>
   );
 }
@@ -285,25 +285,25 @@ export default function MarketDetailPage() {
 
   const infoIntroBlock = (
     <SectionCard title="정보/소개" subtitle="프로젝트 개요와 핵심 정보" tone="default">
-      <div className="space-y-5">
+      <div className="space-y-3">
         {raw.thumbnail ? (
           <div
-            className="h-[180px] rounded-2xl bg-cover bg-center"
+            className="h-[160px] rounded-xl bg-cover bg-center"
             style={{ backgroundImage: `url('${raw.thumbnail}')` }}
           />
         ) : null}
 
         {template.oneLiner ? (
-          <div className="rounded-2xl border border-black/10 bg-black/[0.02] px-4 py-4">
-            <div className="text-[12px] font-bold text-black/45">한 줄 소개</div>
-            <div className="mt-2 text-[15px] font-bold leading-6 tracking-[-0.02em] text-black">
+          <div className="rounded-xl border border-black/10 bg-black/[0.02] px-3 py-3">
+            <div className="text-[11px] font-bold text-black/45">한 줄 소개</div>
+            <div className="mt-1 text-[14px] font-bold leading-5 tracking-[-0.02em] text-black">
               {template.oneLiner}
             </div>
           </div>
         ) : null}
 
-        <div className="rounded-2xl border border-black/10 bg-white px-4 py-4">
-          <div className="space-y-1 divide-y divide-black/5">
+        <div className="rounded-xl border border-black/10 bg-white px-3 py-3">
+          <div className="space-y-0.5 divide-y divide-black/5">
             <InfoRow label="프로젝트 개요" value={overview} />
             <InfoRow label="타깃 팬층" value={targetAudience} />
             <InfoRow label="수익 구조" value={revenueModel} />
@@ -319,24 +319,24 @@ export default function MarketDetailPage() {
       subtitle="투자 포인트와 리스크를 한눈에 정리"
       tone="blue"
     >
-      <div className="space-y-5">
+      <div className="space-y-3">
         {!!investmentPoints.length && (
-          <div className="space-y-2">
-            <div className="text-[13px] font-extrabold text-blue-950">투자 포인트</div>
+          <div className="space-y-1.5">
+            <div className="text-[12px] font-extrabold text-blue-950">투자 포인트</div>
             <BulletList items={investmentPoints} tone="good" />
           </div>
         )}
 
         {!!riskPoints.length && (
-          <div className="space-y-2">
-            <div className="text-[13px] font-extrabold text-amber-950">리스크</div>
+          <div className="space-y-1.5">
+            <div className="text-[12px] font-extrabold text-amber-950">리스크</div>
             <BulletList items={riskPoints} tone="warn" />
           </div>
         )}
 
         {!!roadmapItems.length && (
-          <div className="space-y-2">
-            <div className="text-[13px] font-extrabold text-slate-950">로드맵</div>
+          <div className="space-y-1.5">
+            <div className="text-[12px] font-extrabold text-slate-950">로드맵</div>
             <BulletList items={roadmapItems} tone="roadmap" />
           </div>
         )}
@@ -346,42 +346,42 @@ export default function MarketDetailPage() {
 
   const priceBlock = (
     <SectionCard title="지금얼마" subtitle="가격 · 시세 · 체결 흐름" tone="sky">
-      <div className="space-y-5">
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-2xl border border-sky-200/60 bg-white/80 px-4 py-4">
-            <div className="text-[11px] font-bold text-sky-900/45">현재가</div>
-            <div className="mt-2 text-[18px] font-extrabold tracking-[-0.02em] text-sky-950">
+      <div className="space-y-3">
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-xl border border-sky-200/60 bg-white/80 px-3 py-3">
+            <div className="text-[10px] font-bold text-sky-900/45">현재가</div>
+            <div className="mt-1 text-[16px] font-extrabold tracking-[-0.02em] text-sky-950">
               {formatKRW(price)}
             </div>
           </div>
-          <div className="rounded-2xl border border-sky-200/60 bg-white/80 px-4 py-4">
-            <div className="text-[11px] font-bold text-sky-900/45">변동</div>
-            <div className="mt-2 text-[18px] font-extrabold tracking-[-0.02em] text-sky-950">
+          <div className="rounded-xl border border-sky-200/60 bg-white/80 px-3 py-3">
+            <div className="text-[10px] font-bold text-sky-900/45">변동</div>
+            <div className="mt-1 text-[16px] font-extrabold tracking-[-0.02em] text-sky-950">
               {up ? '+' : ''}
               {chgPct.toFixed(1)}%
             </div>
           </div>
-          <div className="rounded-2xl border border-sky-200/60 bg-white/80 px-4 py-4">
-            <div className="text-[11px] font-bold text-sky-900/45">체결 흐름</div>
-            <div className="mt-2 text-[13px] font-extrabold tracking-[-0.02em] text-sky-950">
-              실시간 체결 데이터
+          <div className="rounded-xl border border-sky-200/60 bg-white/80 px-3 py-3">
+            <div className="text-[10px] font-bold text-sky-900/45">체결 흐름</div>
+            <div className="mt-1 text-[12px] font-extrabold tracking-[-0.02em] text-sky-950">
+              실시간
             </div>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex items-end justify-between gap-3">
+        <div className="space-y-3">
+          <div className="rounded-xl border border-black/10 bg-white p-4 shadow-sm">
+            <div className="mb-3 flex items-center justify-between gap-3">
               <div>
-                <div className="text-sm font-extrabold">가격 차트</div>
-                <div className="mt-1 text-xs text-black/55">기본 60틱 (가장 즉각적인 움직임)</div>
+                <div className="text-[13px] font-extrabold">가격 차트</div>
+                <div className="text-[11px] text-black/55">기본 60틱</div>
               </div>
               <TimeTabs value={tf} onChange={setTf} />
             </div>
             <UpbitLineBarsChart values={series} theme="light" mode={mode} />
           </div>
 
-          <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-black/10 bg-white p-4 shadow-sm">
             <LiveTradesLite symbolId={id} basePrice={price} />
           </div>
         </div>
@@ -391,15 +391,15 @@ export default function MarketDetailPage() {
 
   const tradeBlock = (
     <SectionCard title="거래하기" subtitle="매수 · 매도 주문 입력" tone="slate">
-      <div className="space-y-5">
-        <div className="rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-4">
-          <div className="text-[12px] font-bold text-slate-900/45">주문 안내</div>
-          <div className="mt-2 text-[13px] leading-6 text-slate-900/70">
+      <div className="space-y-3">
+        <div className="rounded-xl border border-slate-200/70 bg-white/80 px-3 py-2.5 flex items-center gap-2">
+          <div className="text-[11px] font-bold text-slate-900/45 shrink-0">주문 안내</div>
+          <div className="text-[12px] leading-5 text-slate-900/60">
             수량과 가격을 입력한 뒤 주문 버튼을 눌러 진행합니다.
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200/70 bg-slate-50/70 px-4 py-4">
+        <div className="rounded-xl border border-slate-200/70 bg-slate-50/70 px-3 py-3">
           <TradePanelUpbit assetId={id} basePrice={price} />
         </div>
       </div>
@@ -408,46 +408,47 @@ export default function MarketDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] text-[#0B1120]">
-      <header className="max-w-7xl mx-auto px-5 sm:px-6 pt-8 pb-4">
+      <header className="max-w-7xl mx-auto px-5 sm:px-6 pt-6 pb-3">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="text-xs text-black/55">{category} · 콘텐츠 자산</div>
-            <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-[-0.4px]">{title}</h1>
+            <div className="text-[11px] text-black/55">{category} · 콘텐츠 자산</div>
+            <h1 className="mt-0.5 text-xl sm:text-2xl font-extrabold tracking-[-0.4px]">{title}</h1>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <a
               href={`/api/market/${id}/prospectus`}
-              className="px-4 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-extrabold transition"
+              className="px-3 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-extrabold transition"
             >
-              자료 PDF 다운로드
+              PDF
             </a>
             <Link
               href="/market"
-              className="px-4 py-3 rounded-xl bg-white hover:bg-black/5 border border-black/10 text-sm font-bold transition"
+              className="px-3 py-2 rounded-xl bg-white hover:bg-black/5 border border-black/10 text-xs font-bold transition"
             >
-              마켓으로 →
+              마켓 →
             </Link>
           </div>
         </div>
 
-        {/* 현재가 카드: 말풍선 위치 계산용 id */}
-        <div id="market-price-card" className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-            <div>
-              <div className="text-xs text-black/50">현재가</div>
-              <div className="mt-1 text-3xl font-extrabold tabular-nums">{formatKRW(price)}</div>
-              <div className={`mt-1 text-sm font-extrabold tabular-nums ${up ? 'text-emerald-600' : 'text-red-500'}`}>
+        {/* 현재가 카드 */}
+        <div id="market-price-card" className="mt-3 rounded-2xl border border-black/10 bg-white px-4 py-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div className="flex items-baseline gap-3">
+              <div>
+                <div className="text-[10px] text-black/50">현재가</div>
+                <div className="mt-0.5 text-2xl font-extrabold tabular-nums">{formatKRW(price)}</div>
+              </div>
+              <div className={`text-[15px] font-extrabold tabular-nums ${up ? 'text-emerald-600' : 'text-red-500'}`}>
                 {up ? '+' : ''}{chgPct.toFixed(1)}%
               </div>
             </div>
 
-            <div className="flex-1">
-              <div className="text-sm font-extrabold">이 자산은 무엇인가요?</div>
-              <div className="mt-1 text-sm text-black/65 leading-relaxed">
-                청약으로 참여한 뒤, <span className="font-bold">2차 거래</span>가 가능하며, 콘텐츠 수익을 <span className="font-bold">정기적으로 배분</span>받는 구조입니다.
+            <div className="flex-1 lg:text-right">
+              <div className="text-[12px] text-black/65 leading-5">
+                청약 후 <span className="font-bold">2차 거래</span> 가능 · 콘텐츠 수익 <span className="font-bold">정기 배분</span>
               </div>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-1.5 flex flex-wrap gap-1.5 lg:justify-end">
                 <Chip>청약 + 거래형</Chip>
                 <Chip>수익 배분형</Chip>
                 <Chip>거래소 UI</Chip>
@@ -457,9 +458,9 @@ export default function MarketDetailPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-5 sm:px-6 pb-14">
+      <main className="max-w-7xl mx-auto px-5 sm:px-6 pb-10">
         {/* 스티키 탭: 데스크톱 전용 */}
-        <div id="market-sticky-tabs" className="hidden lg:block sticky top-3 z-40 mb-6">
+        <div id="market-sticky-tabs" className="hidden lg:block sticky top-3 z-40 mb-4">
           <div className="inline-block rounded-2xl bg-[#F7F8FA]/90 backdrop-blur border border-black/10 p-2 shadow-[0_10px_24px_rgba(0,0,0,0.08)]">
             <SegTabs<Tab>
               value={tab}

@@ -36,25 +36,25 @@ export default function KycStatusCard({ status, reason }: Props) {
 
   return (
     <div
-      className="rounded-2xl p-4"
+      className="rounded-2xl px-4 py-3 flex items-start gap-3"
       style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
     >
-      <div className="flex items-center gap-3 mb-2">
-        <span
-          className="px-2.5 py-1 rounded-full caption font-semibold"
-          style={{ backgroundColor: badgeBg, color: badgeColor }}
-        >
-          {LABELS[status]}
-        </span>
-      </div>
-      <p className="body-sm" style={{ color: 'var(--text)' }}>
-        {DESCRIPTIONS[status]}
-      </p>
-      {isRejected && (
-        <p className="body-sm mt-2" style={{ color: 'var(--accent-loss)' }}>
-          {reason?.trim() || '제출된 정보를 확인할 수 없습니다. 다시 시도해주세요.'}
+      <span
+        className="mt-0.5 shrink-0 px-2.5 py-1 rounded-full caption font-semibold"
+        style={{ backgroundColor: badgeBg, color: badgeColor }}
+      >
+        {LABELS[status]}
+      </span>
+      <div className="min-w-0">
+        <p className="body-sm" style={{ color: 'var(--text)' }}>
+          {DESCRIPTIONS[status]}
         </p>
-      )}
+        {isRejected && (
+          <p className="body-sm mt-1" style={{ color: 'var(--accent-loss)' }}>
+            {reason?.trim() || '제출된 정보를 확인할 수 없습니다. 다시 시도해주세요.'}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

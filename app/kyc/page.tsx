@@ -70,7 +70,7 @@ export default function KycPage() {
   };
 
   return (
-    <div className="pb-24" style={{ backgroundColor: 'var(--bg)' }}>
+    <div className="pb-16" style={{ backgroundColor: 'var(--bg)' }}>
       <header
         className="sticky top-0 z-50 border-b px-4 py-3"
         style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
@@ -86,32 +86,42 @@ export default function KycPage() {
         </div>
       </header>
 
-      <div className="px-4 py-6 mx-auto max-w-[480px]">
+      <div className="px-4 pt-4 pb-4 mx-auto max-w-[480px] space-y-4">
         {loading ? (
           <div
-            className="rounded-2xl p-4 h-24 animate-pulse"
+            className="rounded-2xl p-4 h-16 animate-pulse"
             style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
           />
         ) : (
           <KycStatusCard status={status} reason={reason} />
         )}
 
-        <div className="mt-6 mb-6">
-          <h3 className="font-semibold mb-3" style={{ fontSize: 14, color: 'var(--text)' }}>
-            진행 단계
-          </h3>
-          <ul className="space-y-2">
-            {STEPS.map((s) => (
-              <li key={s} className="body-sm" style={{ color: 'var(--text-secondary)' }}>
-                {s}
-              </li>
-            ))}
-          </ul>
+        {/* 진행 단계: 인라인 pill 형태로 compact */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {STEPS.map((s, i) => (
+            <span
+              key={s}
+              className="inline-flex items-center gap-1 rounded-full px-3 py-1 caption font-medium"
+              style={{
+                backgroundColor: 'var(--card)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              <span
+                className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                style={{ backgroundColor: 'var(--royal-blue)' }}
+              >
+                {i + 1}
+              </span>
+              {s.replace(/^\d+\)\s*/, '')}
+            </span>
+          ))}
         </div>
 
         {status !== 'APPROVED' && !loading && <KycForm onSubmitted={handleSubmitted} />}
 
-        <p className="mt-6 caption text-center" style={{ color: 'var(--text-secondary)' }}>
+        <p className="caption text-center" style={{ color: 'var(--text-secondary)' }}>
           승인 후 출금/고액거래 한도 상향
         </p>
       </div>

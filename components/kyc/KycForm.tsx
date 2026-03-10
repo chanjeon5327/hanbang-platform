@@ -76,13 +76,13 @@ export default function KycForm({ onSubmitted }: Props) {
       className="rounded-2xl p-4"
       style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
     >
-      <h3 className="font-semibold mb-4" style={{ fontSize: 15, color: 'var(--text)' }}>
+      <h3 className="font-semibold mb-3" style={{ fontSize: 14, color: 'var(--text)' }}>
         본인 정보 입력
       </h3>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div>
-          <label className="block body-sm mb-1" style={{ color: 'var(--text-secondary)' }}>
+          <label className="block caption mb-1" style={{ color: 'var(--text-secondary)' }}>
             이름 *
           </label>
           <input
@@ -90,13 +90,13 @@ export default function KycForm({ onSubmitted }: Props) {
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             placeholder="홍길동"
-            className="w-full px-4 py-3 rounded-xl border body-sm"
+            className="w-full px-3 py-2.5 rounded-xl border body-sm"
             style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
           />
         </div>
 
         <div>
-          <label className="block body-sm mb-1" style={{ color: 'var(--text-secondary)' }}>
+          <label className="block caption mb-1" style={{ color: 'var(--text-secondary)' }}>
             휴대폰 *
           </label>
           <input
@@ -104,26 +104,26 @@ export default function KycForm({ onSubmitted }: Props) {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="010-1234-5678"
-            className="w-full px-4 py-3 rounded-xl border body-sm"
+            className="w-full px-3 py-2.5 rounded-xl border body-sm"
             style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
           />
         </div>
 
         <div>
-          <label className="block body-sm mb-1" style={{ color: 'var(--text-secondary)' }}>
+          <label className="block caption mb-1" style={{ color: 'var(--text-secondary)' }}>
             생년월일 *
           </label>
           <input
             type="date"
             value={birthDate}
             onChange={(e) => setBirthDate(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border body-sm"
+            className="w-full px-3 py-2.5 rounded-xl border body-sm"
             style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
           />
         </div>
 
         <div>
-          <label className="block body-sm mb-1" style={{ color: 'var(--text-secondary)' }}>
+          <label className="block caption mb-1" style={{ color: 'var(--text-secondary)' }}>
             신분증 종류
           </label>
           <div className="flex gap-2">
@@ -132,7 +132,7 @@ export default function KycForm({ onSubmitted }: Props) {
                 key={d.value}
                 type="button"
                 onClick={() => setDocType(d.value)}
-                className="flex-1 py-2.5 rounded-xl caption font-semibold transition"
+                className="flex-1 py-2 rounded-xl caption font-semibold transition"
                 style={{
                   backgroundColor: docType === d.value ? 'var(--royal-blue)' : 'var(--bg)',
                   color: docType === d.value ? '#fff' : 'var(--text-secondary)',
@@ -146,7 +146,7 @@ export default function KycForm({ onSubmitted }: Props) {
         </div>
 
         <div>
-          <label className="block body-sm mb-1" style={{ color: 'var(--text-secondary)' }}>
+          <label className="block caption mb-1" style={{ color: 'var(--text-secondary)' }}>
             주소
           </label>
           <input
@@ -154,12 +154,12 @@ export default function KycForm({ onSubmitted }: Props) {
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder="서울시 강남구..."
-            className="w-full px-4 py-3 rounded-xl border body-sm"
+            className="w-full px-3 py-2.5 rounded-xl border body-sm"
             style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
           />
         </div>
 
-        <div className="space-y-3 pt-2">
+        <div className="space-y-2 pt-1">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
@@ -167,7 +167,7 @@ export default function KycForm({ onSubmitted }: Props) {
               onChange={(e) => setPrivacy(e.target.checked)}
               className="rounded"
             />
-            <span className="body-sm" style={{ color: 'var(--text)' }}>
+            <span className="caption" style={{ color: 'var(--text)' }}>
               개인정보 수집/이용 동의 (필수)
             </span>
           </label>
@@ -178,7 +178,7 @@ export default function KycForm({ onSubmitted }: Props) {
               onChange={(e) => setPii(e.target.checked)}
               className="rounded"
             />
-            <span className="body-sm" style={{ color: 'var(--text)' }}>
+            <span className="caption" style={{ color: 'var(--text)' }}>
               고유식별정보 처리 동의 (필수)
             </span>
           </label>
@@ -186,7 +186,7 @@ export default function KycForm({ onSubmitted }: Props) {
       </div>
 
       {demoMessage && (
-        <p className="body-sm mt-3" style={{ color: 'var(--royal-blue)' }}>
+        <p className="caption mt-2" style={{ color: 'var(--royal-blue)' }}>
           {demoMessage}
         </p>
       )}
@@ -195,8 +195,8 @@ export default function KycForm({ onSubmitted }: Props) {
         type="button"
         onClick={handleSubmit}
         disabled={!canSubmit || submitting}
-        className="w-full mt-6 py-3.5 rounded-2xl font-semibold text-white transition active:opacity-90 disabled:opacity-60"
-        style={{ backgroundColor: 'var(--royal-blue)', fontSize: 15 }}
+        className="w-full mt-4 py-3 rounded-2xl font-semibold text-white transition active:opacity-90 disabled:opacity-60"
+        style={{ backgroundColor: 'var(--royal-blue)', fontSize: 14 }}
       >
         {submitting ? '제출 중…' : '제출하기'}
       </button>
