@@ -182,27 +182,27 @@ export default function Wallet() {
 
   return (
     <div className="pb-24 min-h-screen bg-[#F7F8FA] text-[#0B1120]">
-      <header className="sticky top-0 z-50 px-4 py-3 flex items-center bg-[#F7F8FA] border-b border-black/5">
-        <Link href="/" className="text-sm font-medium text-black/60 hover:text-black">
+      <header className="sticky top-0 z-50 px-4 py-2.5 flex items-center bg-[#F7F8FA] border-b border-black/5">
+        <Link href="/" className="text-[13px] font-medium text-black/60 hover:text-black">
           ‹ 뒤로
         </Link>
-        <h1 className="flex-1 text-center text-lg font-bold">보유 자산</h1>
+        <h1 className="flex-1 text-center text-[16px] font-bold">보유 자산</h1>
         <span className="w-10" />
       </header>
 
-      <div className="pt-4 pb-8 px-4 max-w-2xl mx-auto">
+      <div className="pt-3 pb-6 px-4 max-w-2xl mx-auto">
         {/* 자산 요약 카드 4개 */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-          <div className="rounded-2xl p-4 bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
-            <div className="text-xs text-black/55 mb-1">총자산</div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+          <div className="rounded-xl px-3 py-3 bg-white border border-black/10 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
+            <div className="text-[10px] text-black/55 mb-0.5">총자산</div>
             {isLoading ? (
               <Skeleton className="h-5 w-20" />
             ) : (
               <div className="text-sm font-extrabold tabular-nums">{formatKrw(totalDisplay)}</div>
             )}
           </div>
-          <div className="rounded-2xl p-4 bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
-            <div className="text-xs text-black/55 mb-1">미실현손익</div>
+          <div className="rounded-xl px-3 py-3 bg-white border border-black/10 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
+            <div className="text-[10px] text-black/55 mb-0.5">미실현손익</div>
             {isLoading ? (
               <Skeleton className="h-5 w-16" />
             ) : (
@@ -220,8 +220,8 @@ export default function Wallet() {
               </div>
             )}
           </div>
-          <div className="rounded-2xl p-4 bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
-            <div className="text-xs text-black/55 mb-1">수익률</div>
+          <div className="rounded-xl px-3 py-3 bg-white border border-black/10 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
+            <div className="text-[10px] text-black/55 mb-0.5">수익률</div>
             {isLoading ? (
               <Skeleton className="h-5 w-14" />
             ) : displayReturn ? (
@@ -235,8 +235,8 @@ export default function Wallet() {
               <div className="text-sm font-extrabold tabular-nums text-black/50">—</div>
             )}
           </div>
-          <div className="rounded-2xl p-4 bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
-            <div className="text-xs text-black/55 mb-1">보유종목</div>
+          <div className="rounded-xl px-3 py-3 bg-white border border-black/10 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
+            <div className="text-[10px] text-black/55 mb-0.5">보유종목</div>
             {isLoading ? (
               <Skeleton className="h-5 w-8" />
             ) : (
@@ -246,8 +246,8 @@ export default function Wallet() {
         </div>
 
         {/* 총 평가 자산 */}
-        <div className="rounded-2xl p-6 mb-6 bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.05)]">
-          <div className="text-sm font-medium text-black/55 mb-1">총 평가 자산</div>
+        <div className="rounded-2xl px-4 py-4 mb-4 bg-white border border-black/10 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
+          <div className="text-[11px] font-medium text-black/55 mb-0.5">총 평가 자산</div>
           {isLoading ? (
             <Skeleton className="h-8 w-40 mb-2" />
           ) : error ? (
@@ -259,24 +259,24 @@ export default function Wallet() {
             </div>
           ) : (
             <>
-              <div className="text-2xl font-extrabold tracking-tight tabular-nums">{formatKrw(totalDisplay)}</div>
+              <div className="text-[22px] font-extrabold tracking-tight tabular-nums">{formatKrw(totalDisplay)}</div>
               {displayReturn && (
                 <div
-                  className="text-sm font-semibold mt-1 tabular-nums"
+                  className="text-[13px] font-semibold mt-0.5 tabular-nums"
                   style={{ color: displayReturn.amount >= 0 ? ROYAL.positive : ROYAL.negative }}
                 >
                   {displayReturn.amount >= 0 ? '+' : ''}{formatRate(displayReturn.rate)}
-                  <span className="text-xs ml-1 font-normal opacity-90">
+                  <span className="text-[11px] ml-1 font-normal opacity-90">
                     ({displayReturn.amount >= 0 ? '+' : ''}{formatKrw(displayReturn.amount)})
                   </span>
                 </div>
               )}
               {summary.fetchedAt && (
-                <p className="text-xs mt-1 text-black/50">
-                  집계 기준 {new Date(summary.fetchedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                <p className="text-[10px] mt-0.5 text-black/40">
+                  기준 {new Date(summary.fetchedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                 </p>
               )}
-              <div className="mt-4 pt-4 flex gap-6 text-sm border-t border-black/10">
+              <div className="mt-3 pt-3 flex gap-5 text-[13px] border-t border-black/10">
                 <div>
                   <span className="text-black/55">예수금 </span>
                   <span className="font-semibold tabular-nums">{formatKrw(summary.cashBalance)}</span>
@@ -291,49 +291,49 @@ export default function Wallet() {
         </div>
 
         {/* CTA */}
-        <div className="grid grid-cols-3 gap-2 mb-6">
+        <div className="grid grid-cols-3 gap-2 mb-4">
           <Link
             href="/wallet/deposit"
-            className="rounded-2xl p-4 flex flex-col gap-1 bg-[#2563EB] text-white shadow-[0_6px_20px_rgba(37,99,235,0.25)] hover:bg-[#1D4ED8] transition"
+            className="rounded-xl px-3 py-3 flex flex-col gap-0.5 bg-[#2563EB] text-white shadow-[0_4px_12px_rgba(37,99,235,0.25)] hover:bg-[#1D4ED8] transition"
           >
-            <Download size={24} strokeWidth={2} />
-            <span className="text-sm font-bold">입금</span>
-            <span className="text-xs opacity-90">KRW 충전</span>
+            <Download size={20} strokeWidth={2} />
+            <span className="text-[13px] font-bold mt-0.5">입금</span>
+            <span className="text-[11px] opacity-90">KRW 충전</span>
           </Link>
           <Link
             href="/wallet/swap"
-            className="rounded-2xl p-4 flex flex-col gap-1 bg-white border border-black/10 hover:bg-black/5 transition"
+            className="rounded-xl px-3 py-3 flex flex-col gap-0.5 bg-white border border-black/10 hover:bg-black/5 transition"
           >
-            <ArrowLeftRight size={24} strokeWidth={2} />
-            <span className="text-sm font-bold">교환</span>
-            <span className="text-xs text-black/55">토큰 스왑</span>
+            <ArrowLeftRight size={20} strokeWidth={2} />
+            <span className="text-[13px] font-bold mt-0.5">교환</span>
+            <span className="text-[11px] text-black/55">토큰 스왑</span>
           </Link>
           <Link
             href="/wallet/withdraw"
-            className="rounded-2xl p-4 flex flex-col gap-1 bg-white border border-black/10 hover:bg-black/5 transition"
+            className="rounded-xl px-3 py-3 flex flex-col gap-0.5 bg-white border border-black/10 hover:bg-black/5 transition"
           >
-            <Upload size={24} strokeWidth={2} />
-            <span className="text-sm font-bold">출금</span>
-            <span className="text-xs text-black/55">계좌 이체</span>
+            <Upload size={20} strokeWidth={2} />
+            <span className="text-[13px] font-bold mt-0.5">출금</span>
+            <span className="text-[11px] text-black/55">계좌 이체</span>
           </Link>
         </div>
 
         {/* 보유 종목 */}
-        <div className="mb-6">
-          <h3 className="text-base font-bold mb-3">보유 종목</h3>
-          <div className="rounded-2xl overflow-hidden bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
+        <div className="mb-4">
+          <h3 className="text-[14px] font-extrabold mb-2">보유 종목</h3>
+          <div className="rounded-2xl overflow-hidden bg-white border border-black/10 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
             {portfolioLoading ? (
-              <div className="py-8 px-4 space-y-3">
+              <div className="py-6 px-4 space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-14 w-full" />
+                  <Skeleton key={i} className="h-12 w-full" />
                 ))}
               </div>
             ) : portfolioError ? (
-              <div className="py-12 text-center">
-                <p className="text-sm text-black/55 mb-3">보유 종목을 불러올 수 없습니다.</p>
+              <div className="py-8 text-center">
+                <p className="text-[13px] text-black/55 mb-3">보유 종목을 불러올 수 없습니다.</p>
                 <button
                   onClick={fetchPortfolio}
-                  className="px-4 py-2 rounded-xl text-sm font-semibold bg-[#2563EB] text-white"
+                  className="px-4 py-2 rounded-xl text-[13px] font-semibold bg-[#2563EB] text-white"
                 >
                   다시 시도
                 </button>
@@ -350,7 +350,7 @@ export default function Wallet() {
                   <Link
                     key={p.asset_id}
                     href={`/market/${p.asset_id}`}
-                    className="flex justify-between items-center px-4 py-4 hover:bg-black/5 transition"
+                    className="flex justify-between items-center px-4 py-3 hover:bg-black/5 transition"
                   >
                     <div>
                       <div className="font-semibold text-sm">{p.title}</div>
@@ -375,11 +375,11 @@ export default function Wallet() {
         </div>
 
         {/* 최근 배당 */}
-        <div className="mb-6">
-          <h3 className="text-base font-bold mb-3">최근 배당</h3>
-          <div className="rounded-2xl overflow-hidden bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
+        <div className="mb-4">
+          <h3 className="text-[14px] font-extrabold mb-2">최근 배당</h3>
+          <div className="rounded-2xl overflow-hidden bg-white border border-black/10 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
             {isLoading ? (
-              <div className="py-8 px-4 space-y-2">
+              <div className="py-6 px-4 space-y-2">
                 {[1, 2, 3].map((i) => (
                   <Skeleton key={i} className="h-10 w-full" />
                 ))}
@@ -390,7 +390,7 @@ export default function Wallet() {
               walletSummary.recentDividends.map((d) => (
                 <div
                   key={d.id}
-                  className="flex justify-between items-center px-4 py-3 border-b border-black/10 last:border-0"
+                  className="flex justify-between items-center px-4 py-2.5 border-b border-black/10 last:border-0"
                 >
                   <div>
                     <div className="font-semibold text-sm">배당</div>
@@ -404,20 +404,22 @@ export default function Wallet() {
         </div>
 
         {/* 거래 기록 */}
-        <div className="mb-6">
-          <h3 className="text-base font-bold mb-3">거래 기록</h3>
-          <p className="text-xs text-black/55 mb-2">정산·원장 기반</p>
-          <div className="rounded-2xl overflow-hidden bg-white border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
+        <div className="mb-4">
+          <div className="flex items-baseline gap-2 mb-2">
+            <h3 className="text-[14px] font-extrabold">거래 기록</h3>
+            <span className="text-[11px] text-black/45">정산·원장 기반</span>
+          </div>
+          <div className="rounded-2xl overflow-hidden bg-white border border-black/10 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
             {loading ? (
-              <div className="py-12 px-4 space-y-3">
+              <div className="py-6 px-4 space-y-3">
                 {[1, 2, 3].map((i) => (
                   <Skeleton key={i} className="h-12 w-full" />
                 ))}
               </div>
             ) : error ? (
-              <div className="py-12 text-center">
-                <p className="text-sm mb-3 text-black/55">내역을 불러올 수 없습니다.</p>
-                <button onClick={refetch} className="px-4 py-2 rounded-xl text-sm font-semibold bg-[#2563EB] text-white">
+              <div className="py-8 text-center">
+                <p className="text-[13px] mb-3 text-black/55">내역을 불러올 수 없습니다.</p>
+                <button onClick={refetch} className="px-4 py-2 rounded-xl text-[13px] font-semibold bg-[#2563EB] text-white">
                   다시 시도
                 </button>
               </div>
@@ -429,7 +431,7 @@ export default function Wallet() {
               />
             ) : (
               summary.entries.slice(0, 15).map((l: LedgerEntry) => (
-                <div key={l.id} className="flex justify-between items-center px-4 py-4 border-b border-black/10 last:border-0">
+                <div key={l.id} className="flex justify-between items-center px-4 py-3 border-b border-black/10 last:border-0">
                   <div>
                     <div className="font-semibold text-sm">
                       {l.entry_type === 'CASH_DEBIT' ? '투자' : l.entry_type === 'ASSET_CREDIT' ? '지분' : '입금'}

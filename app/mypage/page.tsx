@@ -30,7 +30,8 @@ export default function MyPage() {
 
   return (
     <MyPageLayout>
-      <div className="px-4 flex justify-end mb-2">
+      <div className="px-4 flex items-center justify-between">
+        <span className="text-[13px] font-extrabold" style={{ color: 'var(--text)' }}>나의 팬심</span>
         <Link
           href="/onboarding"
           className="px-3 py-1.5 rounded-xl caption font-semibold"
@@ -39,44 +40,43 @@ export default function MyPage() {
             color: '#fff',
           }}
         >
-          나의 취향 등록
+          취향 등록
         </Link>
       </div>
       <section className="px-4">
         <div
-          className="rounded-2xl p-4 border"
+          className="rounded-2xl px-4 py-3 border"
           style={{
             backgroundColor: 'var(--card)',
             borderColor: 'var(--border)',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
           }}
         >
-          <h3 className="body font-bold mb-3" style={{ color: 'var(--text)' }}>
-            나의 팬심
-          </h3>
-          <p className="caption mb-3" style={{ color: 'var(--text-secondary)' }}>
-            내가 응원하는 아티스트/채널
+          <p className="caption mb-2" style={{ color: 'var(--text-secondary)' }}>
+            응원하는 아티스트/채널
           </p>
-          <input
-            type="text"
-            value={fandom}
-            onChange={(e) => setFandom(e.target.value)}
-            placeholder="예: 여행가 제이, BTS..."
-            className="w-full px-4 py-3 rounded-xl border body"
-            style={{
-              borderColor: 'var(--border)',
-              backgroundColor: 'var(--bg)',
-              color: 'var(--text)',
-            }}
-          />
-          <button
-            type="button"
-            onClick={handleSave}
-            className="mt-3 w-full py-3 rounded-xl body font-semibold text-white transition hover:opacity-90"
-            style={{ backgroundColor: 'var(--royal-blue)' }}
-          >
-            {saved ? '저장됨 ✓' : '저장'}
-          </button>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={fandom}
+              onChange={(e) => setFandom(e.target.value)}
+              placeholder="예: 여행가 제이, BTS..."
+              className="flex-1 px-3 py-2 rounded-xl border caption"
+              style={{
+                borderColor: 'var(--border)',
+                backgroundColor: 'var(--bg)',
+                color: 'var(--text)',
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleSave}
+              className="px-4 py-2 rounded-xl caption font-semibold text-white transition hover:opacity-90 shrink-0"
+              style={{ backgroundColor: 'var(--royal-blue)' }}
+            >
+              {saved ? '✓' : '저장'}
+            </button>
+          </div>
         </div>
       </section>
       <MyAssetSummary />

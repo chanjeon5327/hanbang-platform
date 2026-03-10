@@ -1,16 +1,13 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-import TopHeader from '../../../components/TopHeader';
 import { ArrowLeft, Share2, TrendingUp, Users, Zap } from 'lucide-react';
 import { getYtThumb } from '@/lib/thumbnails';
 
 export default function AssetsPage() {
   return (
     <div style={{ paddingBottom: '120px', minHeight: '100vh' }}>
-      <TopHeader />
-      
-      <div style={{ marginTop: '80px', position: 'relative', height: '400px', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', height: '360px', overflow: 'hidden' }}>
         <img 
           src={getYtThumb(0)} 
           style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}

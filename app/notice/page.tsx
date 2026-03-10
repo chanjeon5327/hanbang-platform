@@ -1,11 +1,9 @@
 "use client";
 import React from 'react';
-import TopHeader from '../../components/TopHeader';
 export default function Notice() {
   return (
     <div style={{ paddingBottom: '100px' }}>
-      <TopHeader />
-      <div style={{ marginTop: '80px', padding: '20px', maxWidth: '800px', margin: '80px auto' }}>
+      <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '30px' }}>공지사항 & 가이드</h1>
         
         <div style={{ marginBottom: '40px', padding: '20px', backgroundColor: 'var(--bg-secondary)', borderRadius: '12px' }}>
