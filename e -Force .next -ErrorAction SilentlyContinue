@@ -1,0 +1,26 @@
+  backup-before-rollback-20260305              [m 2c3ec3f feat: 개인화추천 1차(온보딩→reco→홈/마켓 reorder) 2026-03-03 13:33
+  backup/before-last-chat-try                  [m 1396b9b Revert "fix(ui): 1:1 채팅 정석 말풍선·하단 sheet·KYC 게이트 정상화"
+  backup/before-reset-27b9d23                  [m 27b9d23 fix(ui): 정석 말풍선 적용우측 고정 / 살까말까 공란 제거 / 체결호가 플래시 색상 정정(매수=파랑, 매도=빨강) 2026-03-02 18:40
+  backup/before-rollback-27b9d23-2026-03-09    [m 2e8a82f Merge pull request #1 from chanjeon5327/restore-hospital-hero2
+  backup/chat-before-restore                   [m 1396b9b Revert "fix(ui): 1:1 채팅 정석 말풍선·하단 sheet·KYC 게이트 정상화"
+  backup/ui-freeze-2026-03-08                  [m 2e8a82f Merge pull request #1 from chanjeon5327/restore-hospital-hero2
+  backup/utf8-broken-state                     [m 9404451 backup: utf8-broken state before rollback
+  claude/auth-phase2                           [m e113a25 [[34morigin/claude/auth-phase2[m: ahead 18] UI Freeze - 상세/주문/시세 1차 안정 고정 2026-03-01 06:34
+  feat/1day-exchange-dashboard-hardening       [m 990084f feat: exchange complete + dashboard + financial hardening 2026-02-15 22:30
+  feat/3day-exchange-portfolio-investor-grade  [m 27b713f feat: 3day real exchange + portfolio return + investor grade system 2026-02-17 23:59
+  feat/dividend-history-wallet-seal            [m 4a06d9f feat: dividend history API + wallet PNL + admin confirm seal 2026-02-15 19:15
+  feat/engine-v1_5-allin                       [m ecee059 feat: UI V3 exchange 상세/API 안정화 및 폰트 추가 2026-02-17 22:20
+  feat/exchange-v2-dividend-stocks             [m 8276a9e [[34morigin/feat/exchange-v2-dividend-stocks[m: ahead 2] fix: allow /design public access in middleware
+  feat/step1-financial-stabilize-kyc-foundation[m 5b84293 [[34morigin/feat/step1-financial-stabilize-kyc-foundation[m] chore: exclude e2e tests from typecheck 2026-02-17 00:05
+  feat/ui-v3-exchange-first-safe               [m ecee059 [[34morigin/feat/ui-v3-exchange-first-safe[m] feat: UI V3 exchange 상세/API 안정화 및 폰트 추가 2026-02-17 22:20
+  feature/next-step-ui                         [m 5a29486 fix: ExchangeSection assetId 전달 누락 수정 2026-03-02 00:30
+  fix/bubble-only                              [m ddfdec5 플로팅 말풍선 복구 및 상세 구조 안정화 2026-03-09 01:20
+  fix/detail-mobile-only                       [m 2e8a82f Merge pull request #1 from chanjeon5327/restore-hospital-hero2
+  fix/detail-separate-blocks                   [m 2e8a82f Merge pull request #1 from chanjeon5327/restore-hospital-hero2
+  fix/home-bottom-bubble-cleanup               [m 2e8a82f Merge pull request #1 from chanjeon5327/restore-hospital-hero2
+  fix/home-bubble-dummy-only                   [m 2e8a82f Merge pull request #1 from chanjeon5327/restore-hospital-hero2
+* [32mfix/home-copy-card-finish                    [m 4157a7c [[34morigin/fix/home-copy-card-finish[m] 컴백홈6
+  fix/ui-salvage-2026-03-08                    [m 2e8a82f Merge pull request #1 from chanjeon5327/restore-hospital-hero2
+  inspect-ad26f12                              [m 0450a8a [[34morigin/inspect-ad26f12[m] 컴백홈5
+  main                                         [m 6315866 [[34morigin/main[m] UI 안정 기준점 병합 2026-03-09 01:30
+  restore-hospital-hero2                       [m 27b9d23 [[34morigin/restore-hospital-hero2[m] fix(ui): 정석 말풍선 적용우측 고정 / 살까말까 공란 제거 / 체결호가 플래시 색상 정정(매수=파랑, 매도=빨강) 2026-03-02 18:40
