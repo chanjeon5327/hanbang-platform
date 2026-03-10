@@ -55,10 +55,10 @@ export default function MyAssetCard() {
             <div>
               <div className="text-xs text-black/50">내 자산</div>
               <div className="mt-2 text-xl sm:text-2xl font-extrabold tracking-[-0.3px]">
-                환영합니다. 자산을 불러오는 중입니다.
+                보유 자산과 수익을 한눈에 확인하세요.
               </div>
               <div className="mt-2 text-sm text-black/55">
-                (로그인: <span className="font-bold">{email}</span>) · 곧 보유 종목/등급/수익률이 표시됩니다.
+                보유 종목 · 수익률 · 배당 내역을 지갑에서 확인할 수 있습니다.
               </div>
             </div>
 
@@ -66,8 +66,8 @@ export default function MyAssetCard() {
               <Link href="/wallet" className="px-5 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-extrabold transition">
                 지갑 보기
               </Link>
-              <Link href="/support" className="px-5 py-3 rounded-xl bg-black/5 hover:bg-black/10 border border-black/10 text-sm font-bold transition">
-                1:1 문의
+              <Link href="/market" className="px-5 py-3 rounded-xl bg-black/5 hover:bg-black/10 border border-black/10 text-sm font-bold transition">
+                마켓 보기
               </Link>
             </div>
           </div>

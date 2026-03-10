@@ -81,7 +81,7 @@ export default function HallyuIndexSection() {
         <div className="flex items-end justify-between gap-3 mb-4">
           <div>
             <div className="text-xl sm:text-2xl font-extrabold tracking-[-0.3px]">한류지수</div>
-            <div className="text-sm text-black/55 mt-1">TIP: 30초는 빠른 변동 확인용</div>
+            <div className="text-sm text-black/55 mt-1">업비트형 차트로 한류 콘텐츠 시장 흐름을 살펴봅니다.</div>
           </div>
           <TimeTabs value={tf} onChange={setTf} />
         </div>

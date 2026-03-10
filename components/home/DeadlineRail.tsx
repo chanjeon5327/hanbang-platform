@@ -22,7 +22,7 @@ export default function DeadlineRail() {
       <div className="flex items-end justify-between gap-4 mb-5">
         <div>
           <h2 className="text-xl sm:text-2xl font-extrabold tracking-[-0.3px]">마감 임박</h2>
-          <p className="text-sm text-black/55 mt-1">카드 뒤 썸네일 + 오버레이 + 즉시 진입</p>
+          <p className="text-sm text-black/55 mt-1">관심이 몰리는 종목부터 빠르게 확인하세요.</p>
         </div>
         <Link href="/market" className="text-sm text-black/60 hover:text-black transition">전체보기 →</Link>
       </div>

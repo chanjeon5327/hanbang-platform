@@ -27,7 +27,7 @@ export default function NewsSection() {
       <div className="flex items-end justify-between gap-4 mb-5">
         <div>
           <h2 className="text-xl sm:text-2xl font-extrabold tracking-[-0.3px]">뉴스 & 업계동향</h2>
-          <p className="text-sm text-black/55 mt-1">보고서 말투 금지 — &apos;보고 싶게&apos;</p>
+          <p className="text-sm text-black/55 mt-1">투자 판단에 도움이 되는 소식을 짧게 정리했습니다.</p>
         </div>
         <button className="text-sm text-black/60 hover:text-black transition">더보기 →</button>
       </div>
