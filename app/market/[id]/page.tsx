@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import ConditionalTabPanel from '@/components/common/ConditionalTabPanel';
 import UpbitLineBarsChart from '@/components/charts/UpbitLineBarsChart';
 import LiveTradesLite from '@/components/market/LiveTradesLite';
 import TradePanelUpbit from '@/components/market/TradePanelUpbit';
@@ -484,8 +485,8 @@ export default function MarketDetailPage() {
 
         {item && (
           <>
-            {/* 모바일: 버튼형 탭 + 단일 카드 노출 */}
-            <div className="lg:hidden space-y-6 pb-[calc(88px+env(safe-area-inset-bottom,0px))]">
+            {/* 모바일: 버튼형 탭 + 조건부 패널(비활성 시 공간 0) */}
+            <div className="lg:hidden space-y-4 pb-[calc(88px+env(safe-area-inset-bottom,0px))]">
               <div className="flex gap-2 rounded-2xl border border-black/10 bg-white p-1">
                 <button
                   type="button"
@@ -522,26 +523,22 @@ export default function MarketDetailPage() {
                 </button>
               </div>
 
-              {tab === 'decide' && (
-                <div className="space-y-6">
-                  {infoIntroBlock}
-                  {decideBlock}
-                </div>
-              )}
-              {tab === 'price' && priceBlock}
-              {tab === 'trade' && tradeBlock}
+              <ConditionalTabPanel active={tab === 'decide'} className="space-y-4">
+                {infoIntroBlock}
+                {decideBlock}
+              </ConditionalTabPanel>
+              <ConditionalTabPanel active={tab === 'price'}>{priceBlock}</ConditionalTabPanel>
+              <ConditionalTabPanel active={tab === 'trade'}>{tradeBlock}</ConditionalTabPanel>
             </div>
 
-            {/* 데스크톱: 탭별 세로 스택 */}
-            <div className="hidden lg:block">
-              {tab === 'decide' && (
-                <div className="space-y-8">
-                  {infoIntroBlock}
-                  {decideBlock}
-                </div>
-              )}
-              {tab === 'price' && <div className="space-y-8">{priceBlock}</div>}
-              {tab === 'trade' && <div className="space-y-8">{tradeBlock}</div>}
+            {/* 데스크톱: 탭별 조건부 패널(비활성 시 공간 0) */}
+            <div className="hidden lg:block space-y-4">
+              <ConditionalTabPanel active={tab === 'decide'} className="space-y-4">
+                {infoIntroBlock}
+                {decideBlock}
+              </ConditionalTabPanel>
+              <ConditionalTabPanel active={tab === 'price'}>{priceBlock}</ConditionalTabPanel>
+              <ConditionalTabPanel active={tab === 'trade'}>{tradeBlock}</ConditionalTabPanel>
             </div>
           </>
         )}

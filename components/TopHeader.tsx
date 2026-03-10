@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import HeaderAuthSlot from "@/components/layout/HeaderAuthSlot";
 
 export default function TopHeader() {
   const [visible, setVisible] = useState(true);
@@ -128,6 +129,7 @@ export default function TopHeader() {
             </span>
           </div>
         </div>
+        <HeaderAuthSlot variant="light" />
       </div>
 
       {showPhotoCard && (

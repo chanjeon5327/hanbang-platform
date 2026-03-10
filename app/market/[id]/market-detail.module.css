@@ -25,13 +25,13 @@
 .page {
   min-height: 100vh;
   background: #f8f9fb;
-  padding-bottom: 92px;
+  padding-bottom: 48px;
 }
 
 .container {
   max-width: 404px;
   margin: 0 auto;
-  padding: 14px 16px;
+  padding: 12px 14px;
 }
 
 /* ----- 에러 ----- */
@@ -54,7 +54,7 @@
 
 /* ----- 배너 썸네일 ----- */
 .bannerSection {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .bannerWrap {
@@ -118,7 +118,7 @@
 
 /* ----- 헤더 (종목 헤더 영상형 촘촘) ----- */
 .headerSection {
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .heroTitleRow {
@@ -238,7 +238,7 @@
   padding: 3px;
   background: #e5e7eb;
   border-radius: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .tabBar button {
@@ -262,9 +262,9 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-/* ----- 탭 콘텐츠 ----- */
+/* ----- 탭 콘텐츠 (inactive 패널 높이 0은 ConditionalTabPanel로 처리) ----- */
 .tabContent {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .card {
@@ -272,7 +272,7 @@
   border: 1px solid rgba(17, 24, 39, 0.06);
   border-radius: 14px;
   padding: 14px 16px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
@@ -294,7 +294,7 @@
   border: 1px solid rgba(17, 24, 39, 0.06);
   border-radius: 14px;
   padding: 14px 16px;
-  margin-top: 10px;
+  margin-top: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
@@ -457,7 +457,7 @@
   border: 1px solid rgba(17, 24, 39, 0.06);
   border-radius: 14px;
   padding: 14px 16px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
@@ -488,7 +488,7 @@
 
 /* ----- 시세 탭 (차트 + 실시간 체결) ----- */
 .chartSection {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .tradeSection {
@@ -816,14 +816,14 @@
 
 /* ===== Terminal Layout (압도 모드) ===== */
 .terminalSection {
-  margin-top: 14px;
+  margin-top: 12px;
   position: relative;
 }
 
 .terminalGrid {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 @media (min-width: 768px) {
@@ -862,7 +862,7 @@
   border: 1px solid rgba(17, 24, 39, 0.06);
   border-radius: 14px;
   padding: 14px 16px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
