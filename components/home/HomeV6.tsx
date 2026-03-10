@@ -98,8 +98,7 @@ export default function HomeV6() {
           <HeroCinematic
             headline={
               <>
-                내가 좋아하는 콘텐츠 사고 팔고.
-                <br />
+                내가 좋아하는 콘텐츠 사고 팔고,
                 <br />
                 매달 수익을 받습니다.
               </>

@@ -195,7 +195,7 @@ export default function KycForm({ onSubmitted }: Props) {
         type="button"
         onClick={handleSubmit}
         disabled={!canSubmit || submitting}
-        className="w-full mt-4 py-3 rounded-2xl font-semibold text-white transition active:opacity-90 disabled:opacity-60"
+        className="w-full mt-4 py-2.5 rounded-xl font-semibold text-white transition active:opacity-90 disabled:opacity-60"
         style={{ backgroundColor: 'var(--royal-blue)', fontSize: 14 }}
       >
         {submitting ? '제출 중…' : '제출하기'}

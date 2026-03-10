@@ -181,7 +181,7 @@ export default function Wallet() {
   }
 
   return (
-    <div className="pb-24 min-h-screen bg-[#F7F8FA] text-[#0B1120]">
+    <div className="pb-16 bg-[#F7F8FA] text-[#0B1120]">
       <header className="sticky top-0 z-50 px-4 py-2.5 flex items-center bg-[#F7F8FA] border-b border-black/5">
         <Link href="/" className="text-[13px] font-medium text-black/60 hover:text-black">
           ‹ 뒤로

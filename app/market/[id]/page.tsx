@@ -32,12 +32,12 @@ function SegTabs<T extends string>({
   items: { key: T; label: string }[];
 }) {
   return (
-    <div className="inline-flex rounded-2xl border border-black/10 bg-white p-1 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
+    <div className="inline-flex rounded-xl border border-black/10 bg-white p-1 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
       {items.map((it) => (
         <button
           key={it.key}
           onClick={() => onChange(it.key)}
-          className={`px-5 py-3 rounded-xl text-sm font-extrabold transition ${
+          className={`px-4 py-2 rounded-lg text-[13px] font-extrabold transition ${
             value === it.key ? 'bg-[#2563EB] text-white' : 'text-black/60 hover:text-black'
           }`}
         >
@@ -488,14 +488,14 @@ export default function MarketDetailPage() {
           <>
             {/* 모바일: 버튼형 탭 + 조건부 패널(비활성 시 공간 0) */}
             <div className="lg:hidden space-y-4 pb-[calc(88px+env(safe-area-inset-bottom,0px))]">
-              <div className="flex gap-2 rounded-2xl border border-black/10 bg-white p-1">
+              <div className="flex gap-1.5 rounded-xl border border-black/10 bg-white p-1">
                 <button
                   type="button"
                   onClick={() => setTab('decide')}
-                  className={`flex-1 rounded-2xl py-3 text-sm font-extrabold transition border border-black/10 ${
+                  className={`flex-1 rounded-lg py-2 text-[13px] font-extrabold transition ${
                     tab === 'decide'
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-black/70 hover:text-black'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-black/60 hover:text-black'
                   }`}
                 >
                   살까말까
@@ -503,10 +503,10 @@ export default function MarketDetailPage() {
                 <button
                   type="button"
                   onClick={() => setTab('price')}
-                  className={`flex-1 rounded-2xl py-3 text-sm font-extrabold transition border border-black/10 ${
+                  className={`flex-1 rounded-lg py-2 text-[13px] font-extrabold transition ${
                     tab === 'price'
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-black/70 hover:text-black'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-black/60 hover:text-black'
                   }`}
                 >
                   지금얼마
@@ -514,10 +514,10 @@ export default function MarketDetailPage() {
                 <button
                   type="button"
                   onClick={() => setTab('trade')}
-                  className={`flex-1 rounded-2xl py-3 text-sm font-extrabold transition border border-black/10 ${
+                  className={`flex-1 rounded-lg py-2 text-[13px] font-extrabold transition ${
                     tab === 'trade'
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-black/70 hover:text-black'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-black/60 hover:text-black'
                   }`}
                 >
                   거래하기
