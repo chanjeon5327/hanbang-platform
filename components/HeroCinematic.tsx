@@ -105,7 +105,7 @@ export default function HeroCinematic({
         <div className="relative px-6 py-10 sm:px-10 sm:py-14">
           <div className="max-w-[720px] mx-auto flex flex-col items-center text-center">
             <h1
-              className="text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-white sm:text-[40px] text-center"
+              className="text-[22px] font-extrabold leading-snug tracking-[-0.02em] text-white sm:text-[36px] text-center"
               style={{ textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}
             >
               {headline}

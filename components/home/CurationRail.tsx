@@ -12,10 +12,10 @@ export default function CurationRail() {
       <div className="flex items-end justify-between gap-4 mb-5">
         <div>
           <h2 className="text-xl sm:text-2xl font-extrabold tracking-[-0.3px]">
-            이제 이 콘텐츠는 당신의 것입니다.
+            내가 좋아하는 콘텐츠를 소유해보세요.
           </h2>
           <p className="text-sm text-black/55 mt-1">
-            오늘 가장 뜨는 콘텐츠 자산을 &quot;소유&quot;해보는 경험
+            오늘 가장 뜨는 콘텐츠 자산을 직접 소유하는 경험
           </p>
         </div>
         <Link href="/market" className="text-sm text-black/55 hover:text-black transition">

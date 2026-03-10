@@ -98,14 +98,15 @@ export default function HomeV6() {
           <HeroCinematic
             headline={
               <>
-                내가 좋아하는 콘텐츠 사고 팔고,
+                내가 좋아하는 크리에이터와 동업자가 되고.
+                <br />
                 <br />
                 매달 수익을 받습니다.
               </>
             }
-            sublineTop="내가 좋아하는 크리에이터와 동업자가 됩니다."
-            primaryCta={{ label: '지금 투자 시작', href: '/invest/start' }}
-            secondaryCta={{ label: '마켓 둘러보기', href: '/market' }}
+            sublineTop="내가 좋아하는 콘텐츠를 사고팔고."
+            primaryCta={{ label: '투자 시작', href: '/invest/start' }}
+            secondaryCta={{ label: '둘러보기', href: '/market' }}
           />
         </section>
         <MarketTickerBar />

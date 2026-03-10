@@ -62,7 +62,7 @@ export default function MarketMoodStrip() {
         {tiles.map((t, i) => (
           <div
             key={i}
-            className="rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)]"
+            className="mood-card rounded-2xl border border-black/10 bg-white p-5 shadow-[0_6px_20px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
           >
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
@@ -78,14 +78,46 @@ export default function MarketMoodStrip() {
       </div>
 
       <style jsx global>{`
-        .mood-anim-bob { animation: mood-bob 2.4s ease-in-out infinite; }
-        .mood-anim-pop { animation: mood-pop 1.6s ease-in-out infinite; }
-        .mood-anim-wave { animation: mood-wave 2.2s ease-in-out infinite; }
-        .mood-anim-pulse { animation: mood-pulse 1.8s ease-in-out infinite; }
-        @keyframes mood-bob { 0%,100%{transform: translateY(0)} 50%{transform: translateY(-4px)} }
-        @keyframes mood-pop { 0%,100%{transform: scale(1)} 50%{transform: scale(1.08)} }
-        @keyframes mood-wave { 0%,100%{transform: rotate(0deg)} 50%{transform: rotate(-4deg)} }
-        @keyframes mood-pulse { 0%,100%{opacity: 0.9} 50%{opacity: 1} }
+        /* hot: 번개 — 2.4s 약한 pulse scale */
+        .mood-anim-pop {
+          animation: mood-pop 2.4s ease-in-out infinite;
+          transform-origin: center bottom;
+        }
+        /* calm: 물결 — 3.2s 약한 float */
+        .mood-anim-wave {
+          animation: mood-wave 3.2s ease-in-out infinite;
+        }
+        /* watch: 눈 — 2.8s 약한 breathe scale */
+        .mood-anim-bob {
+          animation: mood-bob 2.8s ease-in-out infinite;
+          transform-origin: center;
+        }
+        /* warn: 경고 — 3.0s 약한 opacity breathe */
+        .mood-anim-pulse {
+          animation: mood-pulse 3.0s ease-in-out infinite;
+        }
+        @keyframes mood-pop {
+          0%,100% { transform: scale(1); }
+          45%     { transform: scale(1.10); }
+          55%     { transform: scale(1.10); }
+        }
+        @keyframes mood-wave {
+          0%,100% { transform: translateY(0px); }
+          50%     { transform: translateY(-3px); }
+        }
+        @keyframes mood-bob {
+          0%,100% { transform: scale(1); }
+          50%     { transform: scale(1.06); }
+        }
+        @keyframes mood-pulse {
+          0%,100% { opacity: 0.75; }
+          50%     { opacity: 1; }
+        }
+        /* hover 반응 */
+        .mood-card:hover .mood-anim-pop  { animation-duration: 0.9s; }
+        .mood-card:hover .mood-anim-wave { animation-duration: 1.2s; }
+        .mood-card:hover .mood-anim-bob  { animation-duration: 1.0s; }
+        .mood-card:hover .mood-anim-pulse{ animation-duration: 1.1s; }
       `}</style>
     </section>
   );
