@@ -340,8 +340,8 @@ export default function Wallet() {
               </div>
             ) : !portfolio?.positions?.length ? (
               <EmptyState
-                title="아직 보유 자산이 없습니다"
-                description="마켓에서 수익권을 매수하면 여기에 표시됩니다"
+                title="첫 번째 콘텐츠 자산을 소유해보세요"
+                description="마켓에서 수익권을 매수하면 보유 종목이 여기에 표시됩니다"
                 cta={{ label: '마켓 둘러보기', onClick: () => router.push('/market') }}
               />
             ) : (
@@ -385,7 +385,7 @@ export default function Wallet() {
                 ))}
               </div>
             ) : !walletSummary?.recentDividends?.length ? (
-              <EmptyState title="아직 배당 내역이 없습니다" description="배당 지급 시 여기에 표시됩니다" />
+              <EmptyState title="배당 내역이 아직 없습니다" description="보유 종목의 수익 정산 후 매월 25일 지급됩니다" />
             ) : (
               walletSummary.recentDividends.map((d) => (
                 <div
@@ -425,8 +425,8 @@ export default function Wallet() {
               </div>
             ) : summary.entries.length === 0 ? (
               <EmptyState
-                title="아직 체결 내역이 없습니다"
-                description="매수하면 여기에 내역이 표시됩니다"
+                title="거래 내역이 아직 없습니다"
+                description="매수·매도 체결 시 여기에 기록됩니다"
                 cta={{ label: '마켓 둘러보기', onClick: () => router.push('/market') }}
               />
             ) : (
