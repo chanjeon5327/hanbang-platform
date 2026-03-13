@@ -87,14 +87,14 @@ export default function HomeV6() {
         <MyAssetCard />
       </div>
 
-      {/* ⑥ 시장 동향 ─ gray */}
-      <div className="bg-[#F7F8FA] border-t border-black/[0.06]">
-        <MarketMoodStrip />
-      </div>
-
-      {/* ⑦ 한류지수 ─ white */}
+      {/* ⑥ 한류지수 ─ white (순서 올림: 기존 ⑦ → ⑥) */}
       <div className="bg-white border-t border-black/[0.06]">
         <HallyuIndexSection />
+      </div>
+
+      {/* ⑦ 시장 동향 ─ gray (순서 내림: 기존 ⑥ → ⑦) */}
+      <div className="bg-[#F7F8FA] border-t border-black/[0.06]">
+        <MarketMoodStrip />
       </div>
 
       {/* ⑧ 마감 임박 ─ blue-tinted */}
