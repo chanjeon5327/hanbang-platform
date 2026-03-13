@@ -4,23 +4,12 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import ConditionalTabPanel from '@/components/common/ConditionalTabPanel';
-import UpbitLineBarsChart from '@/components/charts/UpbitLineBarsChart';
+import MarketCandleChart from '@/components/charts/MarketCandleChart';
 import LiveTradesLite from '@/components/market/LiveTradesLite';
 import TradePanelUpbit from '@/components/market/TradePanelUpbit';
 import { marketItems, formatKRW } from '@/lib/mock/marketItems';
-import { makeRealisticSeries } from '@/lib/mock/series';
 
 type Tab = 'decide' | 'price' | 'trade';
-type TF = 'tick60' | 's30' | 'm1' | 'h1' | 'd1' | 'w1';
-
-const TF_LABEL: Record<TF, string> = {
-  tick60: '60틱',
-  s30: '30초',
-  m1: '1분',
-  h1: '1시간',
-  d1: '1일',
-  w1: '1주',
-};
 
 function SegTabs<T extends string>({
   value,
@@ -43,26 +32,6 @@ function SegTabs<T extends string>({
           }`}
         >
           {it.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function TimeTabs({ value, onChange }: { value: TF; onChange: (v: TF) => void }) {
-  const items: TF[] = ['tick60', 's30', 'm1', 'h1', 'd1', 'w1'];
-  return (
-    <div className="inline-flex rounded-xl border border-black/10 bg-white p-0.5">
-      {items.map((k) => (
-        <button
-          key={k}
-          type="button"
-          onClick={() => onChange(k)}
-          className={`px-2.5 py-1.5 rounded-lg text-[12px] font-extrabold transition ${
-            value === k ? 'bg-[#2563EB] text-white' : 'text-black/55 hover:text-black'
-          }`}
-        >
-          {TF_LABEL[k]}
         </button>
       ))}
     </div>
@@ -223,7 +192,6 @@ export default function MarketDetailPage() {
   const item = useMemo(() => marketItems.find((x) => x.id === id), [id]);
 
   const [tab, setTab] = useState<Tab>('decide');
-  const [tf, setTf] = useState<TF>('tick60');
 
   const title = item?.title ?? `알 수 없는 종목 (${id})`;
   const category = item?.category ?? '카테고리';
@@ -247,15 +215,6 @@ export default function MarketDetailPage() {
   );
   const riskPoints = resolveList(plan.risk_points, raw.risk_points, template.riskPoints);
   const roadmapItems = resolveList(plan.roadmap_items, raw.roadmap_items, template.roadmap);
-
-  const { series, mode } = useMemo(() => {
-    if (tf === 'tick60') return { mode: 'tick' as const, series: makeRealisticSeries({ seed: `tick60:${id}`, points: 60, start: 80, drift: up ? 0.02 : -0.02, vol: 1.1, spikeEvery: 11 }).map((v) => Math.round(v)) };
-    if (tf === 's30')   return { mode: 'sec' as const,  series: makeRealisticSeries({ seed: `s30:${id}`,   points: 30, start: 80, drift: up ? 0.04 : -0.03, vol: 1.2, spikeEvery: 7  }).map((v) => Math.round(v)) };
-    if (tf === 'm1')    return { mode: 'minute' as const, series: makeRealisticSeries({ seed: `m1:${id}`,  points: 60, start: 80, drift: up ? 0.03 : -0.02, vol: 1.0, spikeEvery: 13 }).map((v) => Math.round(v)) };
-    if (tf === 'h1')    return { mode: 'hour' as const,  series: makeRealisticSeries({ seed: `h1:${id}`,  points: 60, start: 80, drift: up ? 0.01 : -0.01, vol: 0.9, spikeEvery: 17 }).map((v) => Math.round(v)) };
-    if (tf === 'd1')    return { mode: 'day' as const,   series: makeRealisticSeries({ seed: `d1:${id}`,  points: 30, start: 80, drift: up ? 0.05 : -0.03, vol: 1.0, spikeEvery: 9  }).map((v) => Math.round(v)) };
-    return { mode: 'week' as const, series: makeRealisticSeries({ seed: `w1:${id}`, points: 26, start: 80, drift: up ? 0.08 : -0.05, vol: 1.1, spikeEvery: 6 }).map((v) => Math.round(v)) };
-  }, [tf, id, up]);
 
   const infoIntroBlock = (
     <SectionCard title="정보/소개" subtitle="프로젝트 개요와 핵심 정보" tone="default">
@@ -388,46 +347,45 @@ export default function MarketDetailPage() {
   );
 
   const priceBlock = (
-    <SectionCard title="지금얼마" subtitle="가격 · 시세 · 체결 흐름" tone="sky">
+    <SectionCard title="지금얼마" subtitle="가격 · 캔들차트 · 실시간 체결" tone="sky">
       <div className="space-y-3">
+        {/* 가격 요약 3칸 */}
         <div className="grid grid-cols-3 gap-2">
           <div className="rounded-xl border border-sky-200/60 bg-white/80 px-3 py-3">
             <div className="text-[10px] font-bold text-sky-900/45 uppercase tracking-wide">현재가</div>
-            <div className="mt-1.5 text-[15px] sm:text-[16px] font-extrabold tracking-[-0.02em] text-sky-950 tabular-nums">
+            <div className="mt-1.5 text-[14px] sm:text-[15px] font-extrabold tracking-[-0.02em] text-sky-950 tabular-nums">
               {formatKRW(price)}
             </div>
           </div>
           <div className="rounded-xl border border-sky-200/60 bg-white/80 px-3 py-3">
             <div className="text-[10px] font-bold text-sky-900/45 uppercase tracking-wide">등락률</div>
-            <div className={`mt-1.5 text-[15px] sm:text-[16px] font-extrabold tracking-[-0.02em] tabular-nums ${up ? 'text-emerald-700' : 'text-red-600'}`}>
-              {up ? '▲' : '▼'} {Math.abs(chgPct).toFixed(1)}%
+            <div className={`mt-1.5 text-[14px] sm:text-[15px] font-extrabold tracking-[-0.02em] tabular-nums ${up ? 'text-[#1565C0]' : 'text-[#C62828]'}`}>
+              {up ? '▲' : '▼'} {Math.abs(chgPct).toFixed(2)}%
             </div>
           </div>
           <div className="rounded-xl border border-sky-200/60 bg-white/80 px-3 py-3">
             <div className="text-[10px] font-bold text-sky-900/45 uppercase tracking-wide">
-              {item?.annualReturn ? '예상 수익' : '거래 상태'}
+              {item?.annualReturn ? '예상 수익률' : '24h 거래량'}
             </div>
-            <div className="mt-1.5 text-[15px] sm:text-[16px] font-extrabold tracking-[-0.02em] text-emerald-700">
-              {item?.annualReturn ? `연 +${item.annualReturn}%` : '정상'}
+            <div className="mt-1.5 text-[14px] sm:text-[15px] font-extrabold tracking-[-0.02em] text-emerald-700">
+              {item?.annualReturn ? `+${item.annualReturn}%` : formatKRW(Math.round(price * 184.7))}
             </div>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <div className="rounded-xl border border-black/10 bg-white p-4 shadow-sm">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div>
-                <div className="text-[13px] font-extrabold">가격 차트</div>
-                <div className="text-[11px] text-black/45">실시간 체결 기반</div>
-              </div>
-              <TimeTabs value={tf} onChange={setTf} />
-            </div>
-            <UpbitLineBarsChart values={series} theme="light" mode={mode} />
-          </div>
+        {/* 메인 캔들차트 */}
+        <div className="rounded-xl border border-black/10 bg-white overflow-hidden shadow-sm">
+          <MarketCandleChart
+            seed={id}
+            basePrice={price}
+            chgPct={chgPct}
+            height={380}
+          />
+        </div>
 
-          <div className="rounded-xl border border-black/10 bg-white p-4 shadow-sm">
-            <LiveTradesLite symbolId={id} basePrice={price} />
-          </div>
+        {/* 실시간 체결 */}
+        <div className="rounded-xl border border-black/10 bg-white p-4 shadow-sm">
+          <LiveTradesLite symbolId={id} basePrice={price} />
         </div>
       </div>
     </SectionCard>

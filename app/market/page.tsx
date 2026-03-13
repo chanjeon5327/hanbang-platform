@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Search, LayoutGrid, List } from 'lucide-react';
 import { marketItems, formatKRW, type MarketItem } from '@/lib/mock/marketItems';
+import MarketMiniChart from '@/components/charts/MarketMiniChart';
 
 const CATS = ['전체', '여행', '먹방', '시사/토크', '스포츠', '드라마', '음악', '영화', '코미디', '게임', '교양', '키즈', '뷰티', '다큐', '토크'];
 
@@ -35,7 +36,7 @@ function MarketCard({ it, view }: { it: MarketItem; view: 'grid' | 'list' }) {
         }`}
         style={{ backgroundImage: `url('${it.thumbnail}')` }}
       />
-      <div className={view === 'grid' ? 'p-4' : 'p-3 flex-1 min-w-0'}>
+        <div className={view === 'grid' ? 'p-4' : 'p-3 flex-1 min-w-0'}>
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <span className="text-[11px] px-2 py-1 rounded-full bg-black/5 border border-black/10 shrink-0">
             {it.tagMain}
@@ -50,10 +51,16 @@ function MarketCard({ it, view }: { it: MarketItem; view: 'grid' | 'list' }) {
           {it.creator} · {it.category}
         </div>
         <div className={`${view === 'grid' ? 'mt-1' : 'mt-0.5'} text-base font-extrabold truncate`}>{it.title}</div>
-        <div className={`${view === 'grid' ? 'mt-3' : 'mt-2'} flex items-center justify-between gap-2`}>
+        {/* 미니 스파크라인 (그리드뷰 전용) */}
+        {view === 'grid' && (
+          <div className="mt-2 -mx-1">
+            <MarketMiniChart seed={it.id} basePrice={it.price} up={up} height={36} />
+          </div>
+        )}
+        <div className={`${view === 'grid' ? 'mt-1.5' : 'mt-2'} flex items-center justify-between gap-2`}>
           <div className="font-extrabold tabular-nums">{formatKRW(it.price)}</div>
-          <div className={`text-sm font-extrabold tabular-nums shrink-0 ${up ? 'text-emerald-600' : 'text-red-500'}`}>
-            {up ? '+' : ''}{it.chgPct.toFixed(1)}%
+          <div className={`text-sm font-extrabold tabular-nums shrink-0 ${up ? 'text-[#1565C0]' : 'text-[#C62828]'}`}>
+            {up ? '▲' : '▼'} {Math.abs(it.chgPct).toFixed(2)}%
           </div>
         </div>
       </div>
