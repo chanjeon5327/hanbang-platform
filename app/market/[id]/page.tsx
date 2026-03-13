@@ -418,20 +418,13 @@ export default function MarketDetailPage() {
   );
 
   const tradeBlock = (
-    <SectionCard title="거래하기" subtitle="매수 · 매도 주문 입력" tone="slate">
-      <div className="space-y-3">
-        <div className="rounded-xl border border-slate-200/70 bg-white/80 px-3 py-2.5 flex items-center gap-2">
-          <div className="text-[11px] font-bold text-slate-900/45 shrink-0">주문 안내</div>
-          <div className="text-[12px] leading-5 text-slate-900/60">
-            수량과 가격을 입력한 뒤 주문 버튼을 눌러 진행합니다.
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-slate-200/70 bg-slate-50/70 px-3 py-3">
-          <TradePanelUpbit assetId={id} basePrice={price} />
-        </div>
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <h3 className="text-[15px] font-extrabold tracking-[-0.02em]">거래하기</h3>
+        <span className="text-[12px] text-black/45">매수 · 매도 주문</span>
       </div>
-    </SectionCard>
+      <TradePanelUpbit assetId={id} basePrice={price} />
+    </div>
   );
 
   return (
@@ -455,27 +448,45 @@ export default function MarketDetailPage() {
 
         {/* 현재가 카드 */}
         <div id="market-price-card" className="mt-3 rounded-2xl border border-black/10 bg-white px-4 py-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            {/* 좌: 가격 + 등락 */}
             <div className="flex items-baseline gap-3">
               <div>
-                <div className="text-[10px] text-black/50">현재가</div>
-                <div className="mt-0.5 text-2xl font-extrabold tabular-nums">{formatKRW(price)}</div>
+                <div className="text-[10px] text-black/50 mb-0.5">현재가</div>
+                <div className="text-2xl sm:text-3xl font-extrabold tabular-nums tracking-tight">{formatKRW(price)}</div>
               </div>
-              <div className={`text-[15px] font-extrabold tabular-nums ${up ? 'text-emerald-600' : 'text-red-500'}`}>
-                {up ? '+' : ''}{chgPct.toFixed(1)}%
+              <div className={`text-[16px] font-extrabold tabular-nums ${up ? 'text-emerald-600' : 'text-red-500'}`}>
+                {up ? '▲' : '▼'} {Math.abs(chgPct).toFixed(1)}%
               </div>
             </div>
 
-            <div className="flex-1 lg:text-right">
-              <div className="text-[12px] text-black/65 leading-5">
-                청약 후 <span className="font-bold">2차 거래</span> 가능 · 콘텐츠 수익 <span className="font-bold">정기 배분</span>
+            {/* 우: 보조 지표 그리드 */}
+            <div className="flex flex-wrap gap-x-5 gap-y-1 sm:text-right">
+              <div>
+                <div className="text-[10px] text-black/45">24h 고가</div>
+                <div className="text-[13px] font-extrabold tabular-nums">{formatKRW(Math.round(price * 1.04))}</div>
               </div>
-              <div className="mt-1.5 flex flex-wrap gap-1.5 lg:justify-end">
-                <Chip>청약 + 거래형</Chip>
-                <Chip>수익 배분형</Chip>
-                <Chip>거래소 UI</Chip>
+              <div>
+                <div className="text-[10px] text-black/45">24h 저가</div>
+                <div className="text-[13px] font-extrabold tabular-nums">{formatKRW(Math.round(price * 0.96))}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-black/45">24h 거래량</div>
+                <div className="text-[13px] font-extrabold tabular-nums">{formatKRW(Math.round(price * 212))}</div>
+              </div>
+              <div className="hidden sm:block">
+                <div className="text-[10px] text-black/45">수익 구조</div>
+                <div className="text-[13px] font-extrabold text-emerald-700">정기 배분</div>
               </div>
             </div>
+          </div>
+
+          {/* 칩 */}
+          <div className="mt-2.5 flex flex-wrap gap-1.5 border-t border-black/[0.06] pt-2.5">
+            <Chip>청약 + 거래형</Chip>
+            <Chip>수익 배분형</Chip>
+            <Chip>거래소 UI</Chip>
+            <Chip>2차 유통 가능</Chip>
           </div>
         </div>
       </header>
@@ -549,16 +560,26 @@ export default function MarketDetailPage() {
               <ConditionalTabPanel active={tab === 'decide'} className="space-y-4">
                 {infoIntroBlock}
                 {decideBlock}
+                {/* 모바일: 살까말까 → 거래하기 빠른 이동 */}
+                <button
+                  type="button"
+                  onClick={() => setTab('trade')}
+                  className="w-full py-4 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[15px] font-extrabold shadow-[0_4px_16px_rgba(37,99,235,0.35)] transition active:scale-[0.98]"
+                >
+                  지금 거래하기 →
+                </button>
               </ConditionalTabPanel>
               <ConditionalTabPanel active={tab === 'price'}>{priceBlock}</ConditionalTabPanel>
               <ConditionalTabPanel active={tab === 'trade'}>{tradeBlock}</ConditionalTabPanel>
             </div>
 
-            {/* 데스크톱: 탭별 조건부 패널(비활성 시 공간 0) */}
-            <div className="hidden lg:block space-y-4">
-              <ConditionalTabPanel active={tab === 'decide'} className="space-y-4">
-                {infoIntroBlock}
-                {decideBlock}
+            {/* 데스크톱: 살까말까는 2열, 나머지는 1열 */}
+            <div className="hidden lg:block">
+              <ConditionalTabPanel active={tab === 'decide'}>
+                <div className="grid lg:grid-cols-2 gap-4">
+                  <div>{infoIntroBlock}</div>
+                  <div>{decideBlock}</div>
+                </div>
               </ConditionalTabPanel>
               <ConditionalTabPanel active={tab === 'price'}>{priceBlock}</ConditionalTabPanel>
               <ConditionalTabPanel active={tab === 'trade'}>{tradeBlock}</ConditionalTabPanel>

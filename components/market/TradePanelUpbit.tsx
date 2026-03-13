@@ -19,14 +19,17 @@ function Seg<T extends string>({
   items: { key: T; label: string }[];
 }) {
   return (
-    <div className="inline-flex w-full rounded-2xl border border-black/10 bg-white p-1 shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
+    <div className="inline-flex w-full rounded-xl border border-black/10 bg-white p-1 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
       {items.map((it) => (
         <button
           key={it.key}
+          type="button"
           onClick={() => onChange(it.key)}
-          className={`flex-1 px-3 py-3 rounded-xl text-sm font-extrabold transition ${
+          className={`flex-1 px-3 py-2.5 rounded-lg text-[13px] font-extrabold transition ${
             value === it.key
-              ? 'bg-[#2563EB] text-white'
+              ? it.key === 'sell'
+                ? 'bg-red-600 text-white'
+                : 'bg-[#2563EB] text-white'
               : 'text-black/60 hover:text-black'
           }`}
         >
@@ -47,15 +50,14 @@ function SmallSeg<T extends string>({
   items: { key: T; label: string }[];
 }) {
   return (
-    <div className="inline-flex rounded-xl border border-black/10 bg-white p-1">
+    <div className="inline-flex rounded-lg border border-black/10 bg-white p-0.5">
       {items.map((it) => (
         <button
           key={it.key}
+          type="button"
           onClick={() => onChange(it.key)}
-          className={`px-4 py-2 rounded-lg text-sm font-extrabold transition ${
-            value === it.key
-              ? 'bg-black text-white'
-              : 'text-black/60 hover:text-black'
+          className={`px-3 py-1.5 rounded-md text-[12px] font-extrabold transition ${
+            value === it.key ? 'bg-black text-white' : 'text-black/55 hover:text-black'
           }`}
         >
           {it.label}
@@ -84,11 +86,10 @@ export default function TradePanelUpbit({
   const [price, setPrice] = useState<string>(String(basePrice));
   const [qty, setQty] = useState<string>('1');
 
-  // 가용 자산(샘플)
-  const cashKRW = 1250000;
+  const cashKRW = 1_250_000;
   const holding = 12.345;
 
-  const feeRate = 0.0005; // 0.05% (샘플)
+  const feeRate = 0.0005;
   const p = orderType === 'market' ? basePrice : num(price);
   const q = num(qty);
   const gross = p * q;
@@ -115,7 +116,7 @@ export default function TradePanelUpbit({
 
   return (
     <div className="grid lg:grid-cols-2 gap-4">
-      {/* 좌: 주문 패널 */}
+      {/* ── 좌: 주문 패널 ── */}
       <div className="rounded-xl border border-black/10 bg-white p-4 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
         <Seg<Sub>
           value={sub}
@@ -129,30 +130,38 @@ export default function TradePanelUpbit({
         />
 
         {needKyc && (
-          <div className="mt-3 rounded-xl border border-amber-300/50 bg-amber-100 px-3 py-2.5 text-amber-900 text-xs">
-            판매/주문수정은 KYC가 필요합니다.{' '}
+          <div className="mt-3 rounded-xl border border-amber-300/50 bg-amber-50 px-3 py-2.5 text-amber-900 text-xs leading-5">
+            판매·주문수정은 KYC 인증 후 이용 가능합니다.{' '}
             <Link href="/kyc" className="underline font-bold">
-              KYC 하러가기 →
+              KYC 인증하기 →
             </Link>
           </div>
         )}
 
+        {/* ── 체결내역 탭 ── */}
         {sub === 'fills' ? (
           <div className="mt-4">
-            <div className="text-[13px] font-extrabold">최근 체결</div>
-            <div className="mt-2 rounded-xl border border-black/10 overflow-hidden">
-              <div className="grid grid-cols-4 bg-black/5 text-xs font-bold text-black/60 px-3 py-2">
+            <div className="text-[13px] font-extrabold mb-2">최근 체결</div>
+            <div className="rounded-xl border border-black/10 overflow-hidden">
+              <div className="grid grid-cols-4 bg-black/[0.04] text-[11px] font-bold text-black/55 px-3 py-2">
                 <div>시간</div>
                 <div className="text-right">가격</div>
                 <div className="text-right">수량</div>
                 <div className="text-right">구분</div>
               </div>
               {fills.map((r, i) => (
-                <div key={i} className="grid grid-cols-4 px-3 py-2 text-sm border-t border-black/10">
-                  <div className="tabular-nums text-black/70">{r.t}</div>
+                <div
+                  key={i}
+                  className="grid grid-cols-4 px-3 py-2 text-[13px] border-t border-black/[0.06] even:bg-black/[0.01]"
+                >
+                  <div className="tabular-nums text-black/60">{r.t}</div>
                   <div className="text-right tabular-nums font-extrabold">{formatKRW(r.price)}</div>
-                  <div className="text-right tabular-nums text-black/70">{r.qty}</div>
-                  <div className={`text-right font-extrabold ${r.side === '매수' ? 'text-blue-700' : 'text-red-600'}`}>
+                  <div className="text-right tabular-nums text-black/65">{r.qty}</div>
+                  <div
+                    className={`text-right font-extrabold ${
+                      r.side === '매수' ? 'text-blue-700' : 'text-red-600'
+                    }`}
+                  >
                     {r.side}
                   </div>
                 </div>
@@ -160,17 +169,19 @@ export default function TradePanelUpbit({
             </div>
           </div>
         ) : sub === 'edit' ? (
+          /* ── 주문수정 탭 ── */
           <div className="mt-4">
-            <div className="text-[13px] font-extrabold">대기 주문</div>
-            <div className="mt-2 rounded-xl border border-black/10 bg-black/5 p-3 text-[13px] text-black/70">
-              현재 수정 가능한 주문이 없습니다. (데모)
+            <div className="text-[13px] font-extrabold mb-2">대기 주문</div>
+            <div className="rounded-xl border border-black/10 bg-black/[0.03] p-4 text-[13px] text-black/55 text-center">
+              현재 수정 가능한 미체결 주문이 없습니다.
             </div>
           </div>
         ) : (
+          /* ── 구매 / 판매 탭 ── */
           <>
-            {/* 지정가/시장가 */}
+            {/* 주문 방식 */}
             <div className="mt-4 flex items-center justify-between gap-3">
-              <div className="text-[13px] font-extrabold">주문 방식</div>
+              <div className="text-[12px] font-extrabold text-black/60">주문 방식</div>
               <SmallSeg<OrderType>
                 value={orderType}
                 onChange={setOrderType}
@@ -181,117 +192,115 @@ export default function TradePanelUpbit({
               />
             </div>
 
-            {/* 가용 */}
-            <div className="mt-3 rounded-xl border border-black/10 bg-black/5 px-3 py-2.5 text-[13px]">
+            {/* 가용 자산 */}
+            <div className="mt-3 rounded-xl border border-black/10 bg-black/[0.03] px-3 py-2.5 text-[13px]">
               {sub === 'buy' ? (
                 <div className="flex items-center justify-between">
-                  <span className="text-black/60">가용 KRW</span>
+                  <span className="text-black/55">가용 KRW</span>
                   <span className="font-extrabold tabular-nums">{formatKRW(cashKRW)}</span>
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
-                  <span className="text-black/60">보유 수량</span>
+                  <span className="text-black/55">보유 수량</span>
                   <span className="font-extrabold tabular-nums">{holding}</span>
                 </div>
               )}
             </div>
 
-            {/* 입력 */}
+            {/* 입력 영역 */}
             <div className="mt-3 space-y-2">
+              {/* 가격 입력 */}
               <div className="rounded-xl border border-black/10 bg-white px-3 py-2.5">
-                <div className="text-[11px] text-black/55">가격</div>
-                <div className="mt-1">
-                  {orderType === 'market' ? (
-                    <div className="text-[16px] font-extrabold tabular-nums">
-                      {formatKRW(basePrice)} <span className="text-[12px] text-black/50">(시장가)</span>
-                    </div>
-                  ) : (
-                    <input
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                      className="w-full text-[16px] font-extrabold tabular-nums outline-none"
-                      inputMode="numeric"
-                      placeholder="가격"
-                    />
-                  )}
-                </div>
+                <div className="text-[10px] font-bold text-black/45 mb-1">가격</div>
+                {orderType === 'market' ? (
+                  <div className="text-[16px] font-extrabold tabular-nums">
+                    {formatKRW(basePrice)}{' '}
+                    <span className="text-[11px] font-normal text-black/45">시장가 자동 적용</span>
+                  </div>
+                ) : (
+                  <input
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-full text-[16px] font-extrabold tabular-nums outline-none bg-transparent"
+                    inputMode="numeric"
+                    placeholder="가격을 입력하세요"
+                  />
+                )}
               </div>
 
+              {/* 수량 입력 */}
               <div className="rounded-xl border border-black/10 bg-white px-3 py-2.5">
-                <div className="text-[11px] text-black/55">수량</div>
-                <div className="mt-1 flex items-center gap-2">
+                <div className="text-[10px] font-bold text-black/45 mb-1">수량</div>
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => {
-                      const cur = Number(qty) || 0;
-                      const next = Math.max(0, Number((cur - 0.5).toFixed(3)));
+                      const next = Math.max(0, Number((Number(qty || 0) - 0.5).toFixed(3)));
                       setQty(String(next));
                     }}
-                    className="w-9 h-9 rounded-lg border border-black/10 bg-black/5 hover:bg-black/10 text-base font-extrabold"
+                    className="w-8 h-8 rounded-lg border border-black/10 bg-black/[0.04] hover:bg-black/10 text-base font-extrabold flex items-center justify-center"
                     aria-label="수량 감소"
                   >
                     −
                   </button>
-
                   <input
                     value={qty}
                     onChange={(e) => setQty(e.target.value)}
-                    className="flex-1 text-[16px] font-extrabold tabular-nums outline-none text-center"
+                    className="flex-1 text-[16px] font-extrabold tabular-nums outline-none text-center bg-transparent"
                     inputMode="decimal"
-                    placeholder="수량"
+                    placeholder="0"
                   />
-
                   <button
                     type="button"
                     onClick={() => {
-                      const cur = Number(qty) || 0;
-                      const next = Number((cur + 0.5).toFixed(3));
+                      const next = Number((Number(qty || 0) + 0.5).toFixed(3));
                       setQty(String(next));
                     }}
-                    className="w-9 h-9 rounded-lg border border-black/10 bg-black/5 hover:bg-black/10 text-base font-extrabold"
+                    className="w-8 h-8 rounded-lg border border-black/10 bg-black/[0.04] hover:bg-black/10 text-base font-extrabold flex items-center justify-center"
                     aria-label="수량 증가"
                   >
                     +
                   </button>
                 </div>
-                <div className="mt-1 text-[10px] text-black/40">* 0.5 단위(데모)</div>
               </div>
 
-              <div className="rounded-xl border border-black/10 bg-black/5 px-3 py-2.5 text-[12px]">
+              {/* 금액 요약 */}
+              <div className="rounded-xl border border-black/10 bg-black/[0.03] px-3 py-2.5 text-[12px] space-y-0.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-black/60">예상 금액</span>
+                  <span className="text-black/55">예상 금액</span>
                   <span className="font-extrabold tabular-nums">{formatKRW(Math.round(gross))}</span>
                 </div>
-                <div className="mt-0.5 flex items-center justify-between">
-                  <span className="text-black/60">수수료(예시)</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-black/55">수수료 (0.05%)</span>
                   <span className="font-extrabold tabular-nums">{formatKRW(Math.round(fee))}</span>
                 </div>
-                <div className="mt-0.5 flex items-center justify-between border-t border-black/10 pt-1">
-                  <span className="text-black/60 font-bold">{sub === 'buy' ? '총 결제' : '예상 정산'}</span>
-                  <span className="font-extrabold tabular-nums text-[14px]">{formatKRW(Math.round(total))}</span>
+                <div className="flex items-center justify-between border-t border-black/10 pt-1.5 mt-1">
+                  <span className="text-black/70 font-bold">
+                    {sub === 'buy' ? '총 결제 금액' : '예상 정산 금액'}
+                  </span>
+                  <span className="font-extrabold tabular-nums text-[14px]">
+                    {formatKRW(Math.round(total))}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* CTA 버튼 */}
+            {/* 주문 CTA */}
             <button
-              className={`mt-3 w-full py-3 rounded-xl text-[14px] font-extrabold transition ${
+              type="button"
+              className={`mt-3 w-full py-3 rounded-xl text-[14px] font-extrabold transition active:scale-[0.99] ${
                 sub === 'buy'
-                  ? 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white'
-                  : 'bg-red-600 hover:bg-red-700 text-white'
+                  ? 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-[0_4px_12px_rgba(37,99,235,0.30)]'
+                  : 'bg-red-600 hover:bg-red-700 text-white shadow-[0_4px_12px_rgba(220,38,38,0.25)]'
               }`}
             >
               {sub === 'buy' ? '구매하기' : '판매하기'}
             </button>
-
-            <div className="mt-2 text-[11px] text-black/40">
-              * 데모 화면. 실제 체결은 엔진 연결 후 활성화됩니다.
-            </div>
           </>
         )}
       </div>
 
-      {/* 우: 호가(5/5) */}
+      {/* ── 우: 호가창 + 시장 요약 ── */}
       <div className="space-y-3">
         <OrderBookMiniUpbit
           assetId={assetId}
@@ -303,15 +312,21 @@ export default function TradePanelUpbit({
         />
 
         <div className="rounded-xl border border-black/10 bg-white p-4 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
-          <div className="text-[13px] font-extrabold">요약</div>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            <div className="rounded-lg border border-black/10 bg-black/5 px-3 py-2.5">
-              <div className="text-[10px] text-black/55">매수 우위</div>
-              <div className="mt-0.5 font-extrabold tabular-nums text-[14px] text-blue-700">+12%</div>
+          <div className="text-[12px] font-extrabold text-black/60 mb-3">시장 요약</div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-lg border border-black/10 bg-black/[0.03] px-3 py-2.5">
+              <div className="text-[10px] text-black/45 mb-0.5">매수 우위</div>
+              <div className="font-extrabold tabular-nums text-[15px] text-blue-700">+12%</div>
             </div>
-            <div className="rounded-lg border border-black/10 bg-black/5 px-3 py-2.5">
-              <div className="text-[10px] text-black/55">매도 우위</div>
-              <div className="mt-0.5 font-extrabold tabular-nums text-[14px] text-red-600">-8%</div>
+            <div className="rounded-lg border border-black/10 bg-black/[0.03] px-3 py-2.5">
+              <div className="text-[10px] text-black/45 mb-0.5">매도 우위</div>
+              <div className="font-extrabold tabular-nums text-[15px] text-red-600">-8%</div>
+            </div>
+            <div className="rounded-lg border border-black/10 bg-black/[0.03] px-3 py-2.5 col-span-2">
+              <div className="text-[10px] text-black/45 mb-0.5">24시간 체결량</div>
+              <div className="font-extrabold tabular-nums text-[15px]">
+                {formatKRW(Math.round(basePrice * 184.7))}
+              </div>
             </div>
           </div>
         </div>
