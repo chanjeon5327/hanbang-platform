@@ -24,6 +24,10 @@ const csp = [
 const nextConfig = {
   reactStrictMode: true,
 
+  // metadata를 head에 blocking으로 출력 (streaming metadata 비활성화)
+  // 링크 썸네일/og:image 등이 프로덕션 HTML head에 포함되도록 함
+  htmlLimitedBots: /.*/,
+
   headers: async () => [
     {
       source: '/(.*)',

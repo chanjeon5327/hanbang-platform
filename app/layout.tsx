@@ -26,10 +26,10 @@ export const metadata: Metadata = {
     siteName: 'HANBANG',
     title: 'HANBANG',
     description: '내가 좋아하는 크리에이터와 동업자가 되고, 매달 수익을 받습니다.',
-    url: METADATA_BASE,
+    url: '/',
     images: [
       {
-        url: '/opengraph-image',
+        url: `${METADATA_BASE}/opengraph-image`,
         width: 1200,
         height: 630,
         alt: 'HANBANG - 크리에이터 IP 투자 플랫폼',
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     description: '내가 좋아하는 크리에이터와 동업자가 되고, 매달 수익을 받습니다.',
     images: [
       {
-        url: '/twitter-image',
+        url: `${METADATA_BASE}/twitter-image`,
         width: 1200,
         height: 630,
         alt: 'HANBANG - 크리에이터 IP 투자 플랫폼',
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     ],
   },
   icons: {
-    icon: '/icon',
+    icon: `${METADATA_BASE}/icon`,
   },
 };
 
