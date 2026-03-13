@@ -3,8 +3,22 @@
 import Link from 'next/link';
 import { marketItems, formatKRW } from '@/lib/mock/marketItems';
 
+const CURATED_ORDER = [
+  'city-walk',   // travel-j <-> city-walk
+  'kpop-stage',  // chim <-> kpop-stage
+  'chim',
+  'sports-pick', // muklab <-> sports-pick
+  'muklab',
+  'k-drama',
+  'chong',
+  'food-trip',
+  'travel-j',
+  'talk-issue',
+];
+
 export default function CurationRail() {
-  const curated = marketItems.slice(0, 10);
+  const byId = Object.fromEntries(marketItems.map((it) => [it.id, it]));
+  const curated = CURATED_ORDER.map((id) => byId[id]).filter(Boolean);
 
   return (
     <section id="home-ownership-anchor" className="px-5 sm:px-6 pt-10 sm:pt-12 pb-10 sm:pb-12 max-w-7xl mx-auto">
@@ -29,7 +43,7 @@ export default function CurationRail() {
             <Link
               key={it.id}
               href={`/market/${it.id}`}
-              className="group relative min-w-[280px] sm:min-w-[340px] h-[220px] sm:h-[250px] overflow-hidden rounded-2xl border border-black/10 hover:border-[#2563EB]/25 bg-[#0B1224] shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.14)] transition duration-300"
+              className="group relative min-w-[280px] sm:min-w-[340px] h-[220px] sm:h-[250px] overflow-hidden rounded-2xl hover:border-[#2563EB]/25 bg-[#0B1224] shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.14)] transition duration-300"
             >
               {/* 썸네일 배경 */}
               <div
