@@ -47,16 +47,16 @@ export default function HeroCinematic({
     <section
       className="relative overflow-hidden rounded-3xl border"
       style={{
-        borderColor: 'rgba(99,102,241,0.28)',
-        background: 'linear-gradient(135deg, #0f0c29 0%, #1a1040 40%, #0d1b3e 100%)',
-        boxShadow:
-          '0 32px 72px rgba(37,99,235,0.20), 0 4px 16px rgba(0,0,0,0.35)',
+        borderColor: 'rgba(99,102,241,0.32)',
+        /* 배경 베이스를 12~15% 밝게: 순수 검정에서 mid-dark 인디고/네이비로 */
+        background: 'linear-gradient(135deg, #161238 0%, #1e154a 40%, #122244 100%)',
+        boxShadow: '0 32px 72px rgba(37,99,235,0.22), 0 4px 16px rgba(0,0,0,0.30)',
       }}
     >
       {/* 영상 배경 */}
       <video
         ref={videoRef}
-        className="absolute inset-0 h-full w-full object-cover opacity-[0.22]"
+        className="absolute inset-0 h-full w-full object-cover opacity-[0.28]"
         autoPlay
         muted
         playsInline
@@ -66,23 +66,36 @@ export default function HeroCinematic({
         <source src="/hero/hero.mp4" type="video/mp4" />
       </video>
 
-      {/* 오버레이 레이어들 */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/85 via-blue-950/55 to-purple-950/72" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/8" />
+      {/* 오버레이 1: 방향성 그라디언트 — 전체 불투명도 완화 */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/70 via-blue-950/42 to-purple-950/58" />
+
+      {/* 오버레이 2: 상하 암전 — 하단을 덜 어둡게 */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/52 via-transparent to-black/5" />
+
+      {/* 중앙 ambient radial glow — 콘텐츠 영역을 자연스럽게 들어 올림 */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 72% 58% at 50% 46%, rgba(99,102,241,0.20) 0%, transparent 70%)',
+        }}
+      />
+
       {/* 미세 질감 shimmer */}
       <div
         className="absolute inset-0 rounded-3xl"
         style={{
           background:
-            'linear-gradient(135deg, rgba(255,255,255,0.025) 0%, transparent 48%, rgba(99,102,241,0.06) 100%)',
+            'linear-gradient(135deg, rgba(255,255,255,0.035) 0%, transparent 48%, rgba(99,102,241,0.08) 100%)',
         }}
       />
+
       {/* 하단 보더 하이라이트 */}
       <div
         className="absolute bottom-0 left-0 right-0 h-px"
         style={{
           background:
-            'linear-gradient(90deg, transparent 0%, rgba(99,102,241,0.50) 30%, rgba(37,99,235,0.50) 70%, transparent 100%)',
+            'linear-gradient(90deg, transparent 0%, rgba(99,102,241,0.55) 30%, rgba(37,99,235,0.55) 70%, transparent 100%)',
         }}
       />
 
@@ -90,27 +103,27 @@ export default function HeroCinematic({
       <div className="relative min-h-[460px] sm:min-h-[500px] lg:min-h-[540px] flex flex-col justify-center px-6 py-12 sm:px-10 sm:py-14 lg:px-14 lg:py-16">
         <div className="max-w-[800px] mx-auto flex flex-col items-center text-center">
 
-          {/* 브랜드 식별 필 */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/22 bg-white/[0.08] px-4 py-1.5 backdrop-blur-sm">
+          {/* 브랜드 식별 필 — 배경/텍스트 밝기 보정 */}
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/[0.12] px-4 py-1.5 backdrop-blur-sm">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[12px] font-bold text-white/80 tracking-[0.04em] uppercase">
+            <span className="text-[12px] font-bold text-white/92 tracking-[0.04em] uppercase">
               Hanbang · 크리에이터 IP 투자 플랫폼
             </span>
           </div>
 
-          {/* 헤드라인 */}
+          {/* 헤드라인 — textShadow를 약간 더 넓게 */}
           <h1
             className="text-[26px] sm:text-[40px] lg:text-[50px] font-extrabold leading-[1.22] tracking-[-0.025em] text-white"
-            style={{ textShadow: '0 2px 20px rgba(0,0,0,0.65)' }}
+            style={{ textShadow: '0 2px 24px rgba(0,0,0,0.55), 0 0 60px rgba(99,102,241,0.18)' }}
           >
             {headline}
           </h1>
 
-          {/* 서브라인 */}
+          {/* 서브라인 — white/65 → white/80 */}
           {sublineText && (
             <p
-              className="mt-4 sm:mt-5 text-[14px] sm:text-[17px] text-white/65 leading-relaxed whitespace-pre-line font-medium"
-              style={{ textShadow: '0 1px 10px rgba(0,0,0,0.5)' }}
+              className="mt-4 sm:mt-5 text-[14px] sm:text-[17px] text-white/80 leading-relaxed whitespace-pre-line font-medium"
+              style={{ textShadow: '0 1px 10px rgba(0,0,0,0.40)' }}
             >
               {sublineText}
             </p>
@@ -125,7 +138,7 @@ export default function HeroCinematic({
                   className="rounded-2xl px-7 py-3.5 text-[15px] font-extrabold text-white transition active:scale-[0.97] hover:brightness-110"
                   style={{
                     background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
-                    boxShadow: '0 10px 28px rgba(37,99,235,0.50)',
+                    boxShadow: '0 10px 28px rgba(37,99,235,0.55)',
                   }}
                 >
                   {primaryCta.label}
@@ -134,7 +147,7 @@ export default function HeroCinematic({
               {secondaryCta && (
                 <Link
                   href={secondaryCta.href}
-                  className="rounded-2xl border border-white/28 bg-white/[0.09] px-7 py-3.5 text-[15px] font-extrabold text-white backdrop-blur-sm transition active:scale-[0.97] hover:bg-white/[0.14]"
+                  className="rounded-2xl border border-white/32 bg-white/[0.11] px-7 py-3.5 text-[15px] font-extrabold text-white backdrop-blur-sm transition active:scale-[0.97] hover:bg-white/[0.17]"
                 >
                   {secondaryCta.label}
                 </Link>
@@ -142,22 +155,22 @@ export default function HeroCinematic({
             </div>
           )}
 
-          {/* 신뢰 지표 바 — 수직 구분선 */}
-          <div className="mt-10 pt-6 border-t border-white/10 w-full flex items-center justify-center">
+          {/* 신뢰 지표 바 — 라벨 white/50 → white/65, 수치 glow 추가 */}
+          <div className="mt-10 pt-6 border-t border-white/12 w-full flex items-center justify-center">
             {TRUST_STATS.map((stat, i) => (
               <div
                 key={stat.label}
                 className={`flex flex-col items-center px-6 sm:px-10 ${
-                  i < TRUST_STATS.length - 1 ? 'border-r border-white/15' : ''
+                  i < TRUST_STATS.length - 1 ? 'border-r border-white/18' : ''
                 }`}
               >
                 <div
                   className="text-[20px] sm:text-[24px] font-extrabold text-white tabular-nums"
-                  style={{ textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}
+                  style={{ textShadow: '0 1px 12px rgba(99,102,241,0.35)' }}
                 >
                   {stat.value}
                 </div>
-                <div className="mt-0.5 text-[11px] sm:text-[12px] text-white/50 tracking-wide">
+                <div className="mt-0.5 text-[11px] sm:text-[12px] text-white/65 tracking-wide">
                   {stat.label}
                 </div>
               </div>

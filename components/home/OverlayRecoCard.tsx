@@ -17,16 +17,20 @@ export default function OverlayRecoCard({ item }: { item: MarketItem }) {
         className="absolute inset-0 bg-cover bg-center scale-[1.03] group-hover:scale-[1.08] transition duration-500"
         style={{ backgroundImage: `url('${item.thumbnail}')` }}
       />
-      {/* 그라디언트 오버레이 – 하단 강조 */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
 
-      {/* 상단: 태그 배지들 */}
+      {/* 그라디언트 오버레이 — 하단 opacity 완화: /90 → /78, via /25 → /15 */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/15 to-transparent" />
+
+      {/* 하단 텍스트 보호층 — 글자 직상위에만 얇은 스크림 추가 */}
+      <div className="absolute bottom-0 left-0 right-0 h-[110px] bg-gradient-to-t from-black/55 to-transparent" />
+
+      {/* 상단: 태그 배지들 — bg/border 밝기 보정 */}
       <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
-        <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-white/14 border border-white/18 text-white/90 tracking-wide">
+        <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-white/22 border border-white/30 text-white tracking-wide">
           {item.tagMain}
         </span>
         {item.annualReturn && (
-          <span className="text-[10px] font-extrabold px-2 py-1 rounded-full bg-emerald-500/22 border border-emerald-400/28 text-emerald-200">
+          <span className="text-[10px] font-extrabold px-2 py-1 rounded-full bg-emerald-500/32 border border-emerald-400/42 text-emerald-100">
             연 {item.annualReturn}%
           </span>
         )}
@@ -34,7 +38,8 @@ export default function OverlayRecoCard({ item }: { item: MarketItem }) {
 
       {/* 하단: 콘텐츠 정보 */}
       <div className="absolute bottom-0 left-0 right-0 p-4">
-        <div className="text-[10px] text-white/55 leading-none mb-1">
+        {/* creator — white/55 → white/75 */}
+        <div className="text-[10px] text-white/75 leading-none mb-1">
           {item.creator} · {item.category}
         </div>
         <div className="text-[14px] sm:text-[15px] font-extrabold text-white leading-tight tracking-[-0.01em]">
@@ -52,14 +57,15 @@ export default function OverlayRecoCard({ item }: { item: MarketItem }) {
             {up ? '▲' : '▼'} {Math.abs(item.chgPct).toFixed(1)}%
           </div>
         </div>
-        {/* 판매 진행률 바 */}
+
+        {/* 판매 진행률 바 — 라벨/퍼센트 밝기 보정 */}
         {item.soldPct !== undefined && (
           <div className="mt-2.5">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] text-white/45">판매</span>
-              <span className="text-[10px] font-bold text-white/65">{item.soldPct}%</span>
+              <span className="text-[10px] text-white/62">판매</span>
+              <span className="text-[10px] font-bold text-white/80">{item.soldPct}%</span>
             </div>
-            <div className="w-full h-[3px] rounded-full bg-white/15 overflow-hidden">
+            <div className="w-full h-[3px] rounded-full bg-white/25 overflow-hidden">
               <div
                 className="h-full rounded-full bg-[#2563EB]"
                 style={{ width: `${item.soldPct}%` }}

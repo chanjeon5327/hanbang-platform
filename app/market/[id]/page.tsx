@@ -104,8 +104,8 @@ function InfoRow({ label, value }: { label: string; value?: React.ReactNode }) {
   if (!value) return null;
   return (
     <div className="grid grid-cols-[96px_1fr] gap-3 py-2.5">
-      <div className="text-[11px] font-bold text-black/40 pt-[1px]">{label}</div>
-      <div className="text-[13px] leading-[1.6] text-black/75">{value}</div>
+      <div className="text-[11px] font-bold text-black/52 pt-[1px]">{label}</div>
+      <div className="text-[13px] leading-[1.6] text-black/80">{value}</div>
     </div>
   );
 }
@@ -228,8 +228,8 @@ export default function MarketDetailPage() {
 
         {/* 한 줄 소개 */}
         <div className="rounded-xl border border-black/[0.08] bg-black/[0.02] px-3.5 py-3">
-          <div className="text-[10px] font-bold text-black/40 tracking-wide uppercase mb-1">한 줄 소개</div>
-          <div className="text-[14px] font-bold leading-[1.55] tracking-[-0.01em] text-black/85">
+          <div className="text-[10px] font-bold text-black/52 tracking-wide uppercase mb-1">한 줄 소개</div>
+          <div className="text-[14px] font-bold leading-[1.55] tracking-[-0.01em] text-black/88">
             {raw.overview
               ? raw.overview.split('. ')[0] + '.'
               : template.oneLiner}
@@ -248,16 +248,16 @@ export default function MarketDetailPage() {
         {(item?.annualReturn || item?.soldPct !== undefined) && (
           <div className="grid grid-cols-2 gap-2">
             {item?.annualReturn && (
-              <div className="rounded-xl border border-emerald-200/60 bg-emerald-50/60 px-3.5 py-3">
-                <div className="text-[10px] font-bold text-emerald-900/50 uppercase tracking-wide">예상 연수익률</div>
+              <div className="rounded-xl border border-emerald-200/70 bg-emerald-50/70 px-3.5 py-3">
+                <div className="text-[10px] font-bold text-emerald-900/62 uppercase tracking-wide">예상 연수익률</div>
                 <div className="mt-1 text-[20px] font-extrabold text-emerald-700 tabular-nums">
                   +{item.annualReturn}%
                 </div>
               </div>
             )}
             {item?.soldPct !== undefined && (
-              <div className="rounded-xl border border-black/10 bg-black/[0.02] px-3.5 py-3">
-                <div className="text-[10px] font-bold text-black/40 uppercase tracking-wide">판매 진행률</div>
+              <div className="rounded-xl border border-black/10 bg-black/[0.025] px-3.5 py-3">
+                <div className="text-[10px] font-bold text-black/52 uppercase tracking-wide">판매 진행률</div>
                 <div className="mt-1 text-[20px] font-extrabold tabular-nums">{item.soldPct}%</div>
                 <div className="mt-1.5 w-full h-[3px] rounded-full bg-black/10 overflow-hidden">
                   <div className="h-full rounded-full bg-[#2563EB]" style={{ width: `${item.soldPct}%` }} />
@@ -351,20 +351,20 @@ export default function MarketDetailPage() {
       <div className="space-y-3">
         {/* 가격 요약 3칸 */}
         <div className="grid grid-cols-3 gap-2">
-          <div className="rounded-xl border border-sky-200/60 bg-white/80 px-3 py-3">
-            <div className="text-[10px] font-bold text-sky-900/45 uppercase tracking-wide">현재가</div>
+          <div className="rounded-xl border border-sky-200/70 bg-white px-3 py-3">
+            <div className="text-[10px] font-bold text-sky-900/58 uppercase tracking-wide">현재가</div>
             <div className="mt-1.5 text-[14px] sm:text-[15px] font-extrabold tracking-[-0.02em] text-sky-950 tabular-nums">
               {formatKRW(price)}
             </div>
           </div>
-          <div className="rounded-xl border border-sky-200/60 bg-white/80 px-3 py-3">
-            <div className="text-[10px] font-bold text-sky-900/45 uppercase tracking-wide">등락률</div>
+          <div className="rounded-xl border border-sky-200/70 bg-white px-3 py-3">
+            <div className="text-[10px] font-bold text-sky-900/58 uppercase tracking-wide">등락률</div>
             <div className={`mt-1.5 text-[14px] sm:text-[15px] font-extrabold tracking-[-0.02em] tabular-nums ${up ? 'text-[#1565C0]' : 'text-[#C62828]'}`}>
               {up ? '▲' : '▼'} {Math.abs(chgPct).toFixed(2)}%
             </div>
           </div>
-          <div className="rounded-xl border border-sky-200/60 bg-white/80 px-3 py-3">
-            <div className="text-[10px] font-bold text-sky-900/45 uppercase tracking-wide">
+          <div className="rounded-xl border border-sky-200/70 bg-white px-3 py-3">
+            <div className="text-[10px] font-bold text-sky-900/58 uppercase tracking-wide">
               {item?.annualReturn ? '예상 수익률' : '24h 거래량'}
             </div>
             <div className="mt-1.5 text-[14px] sm:text-[15px] font-extrabold tracking-[-0.02em] text-emerald-700">
@@ -415,7 +415,7 @@ export default function MarketDetailPage() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] text-black/45">{category} · 콘텐츠 자산</span>
+              <span className="text-[11px] text-black/55">{category} · 콘텐츠 자산</span>
               {item?.tagMain && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#2563EB]/8 border border-[#2563EB]/15 text-[#2563EB]">
                   {item.tagMain}
@@ -423,7 +423,7 @@ export default function MarketDetailPage() {
               )}
             </div>
             <h1 className="mt-1 text-[20px] sm:text-[26px] font-extrabold tracking-[-0.4px]">{title}</h1>
-            <div className="mt-0.5 text-[13px] text-black/50 font-medium">{item?.creator}</div>
+            <div className="mt-0.5 text-[13px] text-black/60 font-medium">{item?.creator}</div>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -442,7 +442,7 @@ export default function MarketDetailPage() {
             {/* 좌: 가격 + 등락 */}
             <div className="flex items-baseline gap-3">
               <div>
-                <div className="text-[10px] text-black/45 mb-0.5 tracking-wide uppercase">현재가</div>
+                <div className="text-[10px] text-black/55 mb-0.5 tracking-wide uppercase">현재가</div>
                 <div className="text-[26px] sm:text-[32px] font-extrabold tabular-nums tracking-tight">{formatKRW(price)}</div>
               </div>
               <div className={`text-[16px] font-extrabold tabular-nums ${up ? 'text-emerald-600' : 'text-red-500'}`}>
@@ -453,20 +453,20 @@ export default function MarketDetailPage() {
             {/* 우: 보조 지표 */}
             <div className="flex flex-wrap gap-x-5 gap-y-2">
               <div>
-                <div className="text-[10px] text-black/40 uppercase tracking-wide">24h 고가</div>
+                <div className="text-[10px] text-black/52 uppercase tracking-wide">24h 고가</div>
                 <div className="text-[13px] font-extrabold tabular-nums">{formatKRW(Math.round(price * 1.04))}</div>
               </div>
               <div>
-                <div className="text-[10px] text-black/40 uppercase tracking-wide">24h 저가</div>
+                <div className="text-[10px] text-black/52 uppercase tracking-wide">24h 저가</div>
                 <div className="text-[13px] font-extrabold tabular-nums">{formatKRW(Math.round(price * 0.96))}</div>
               </div>
               <div>
-                <div className="text-[10px] text-black/40 uppercase tracking-wide">24h 거래량</div>
+                <div className="text-[10px] text-black/52 uppercase tracking-wide">24h 거래량</div>
                 <div className="text-[13px] font-extrabold tabular-nums">{formatKRW(Math.round(price * 212))}</div>
               </div>
               {item?.annualReturn && (
                 <div className="hidden sm:block">
-                  <div className="text-[10px] text-black/40 uppercase tracking-wide">예상 연수익률</div>
+                  <div className="text-[10px] text-black/52 uppercase tracking-wide">예상 연수익률</div>
                   <div className="text-[13px] font-extrabold text-emerald-700">+{item.annualReturn}%</div>
                 </div>
               )}

@@ -17,7 +17,6 @@ export default function DeadlineRail() {
     return `${d}일 ${hh}시간`;
   };
 
-  // 마감까지 남은 시간 → 진행바 퍼센트 (100시간 기준)
   const urgencyPct = (h: number) => Math.max(5, Math.min(100, Math.round((1 - h / 100) * 100)));
 
   return (
@@ -45,40 +44,48 @@ export default function DeadlineRail() {
               className="absolute inset-0 bg-cover bg-center group-hover:scale-[1.05] transition duration-500"
               style={{ backgroundImage: `url('${it.thumbnail}')` }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/0" />
 
-            {/* 마감 임박 배지 */}
+            {/* 오버레이 — via-black/40 → /25, from-black/90 → /78 */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/25 to-black/0" />
+
+            {/* 텍스트 보호층 */}
+            <div className="absolute bottom-0 left-0 right-0 h-[90px] bg-gradient-to-t from-black/50 to-transparent" />
+
+            {/* 마감 임박 배지 — 밝기 보정 */}
             <div className="absolute top-3 left-3">
-              <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-400/20 border border-amber-300/30 text-amber-100">
+              <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-400/28 border border-amber-300/45 text-amber-50">
                 마감 임박
               </span>
             </div>
 
-            {/* 수익률 배지 */}
+            {/* 수익률 배지 — 밝기 보정 */}
             {it.annualReturn && (
               <div className="absolute top-3 right-3">
-                <span className="inline-block text-[11px] font-bold px-2 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/25 text-emerald-200">
+                <span className="inline-block text-[11px] font-bold px-2 py-1 rounded-full bg-emerald-500/30 border border-emerald-400/42 text-emerald-100">
                   연 {it.annualReturn}%
                 </span>
               </div>
             )}
 
             <div className="relative h-full p-4 flex flex-col justify-end">
-              <div className="text-[12px] text-white/60">{it.category}</div>
+              {/* category — white/60 → white/78 */}
+              <div className="text-[12px] text-white/78">{it.category}</div>
               <div className="text-[16px] font-extrabold text-white leading-tight">{it.title}</div>
-              <div className="text-[13px] font-extrabold tabular-nums text-white/80 mt-1">
+              <div className="text-[13px] font-extrabold tabular-nums text-white/88 mt-1">
                 {formatKRW(it.price)}
               </div>
 
               {/* 잔여 시간 진행바 */}
               <div className="mt-2.5">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] text-white/50">잔여</span>
+                  {/* 잔여 라벨 — white/50 → white/68 */}
+                  <span className="text-[10px] text-white/68">잔여</span>
                   <span className="text-[12px] font-extrabold text-amber-200 tabular-nums">
                     {fmtLeft(it.deadlineHours ?? 0)}
                   </span>
                 </div>
-                <div className="w-full h-1 rounded-full bg-white/15 overflow-hidden">
+                {/* 바 배경 — bg-white/15 → bg-white/22 */}
+                <div className="w-full h-1 rounded-full bg-white/22 overflow-hidden">
                   <div
                     className="h-full rounded-full bg-amber-400 transition-all"
                     style={{ width: `${urgencyPct(it.deadlineHours ?? 0)}%` }}

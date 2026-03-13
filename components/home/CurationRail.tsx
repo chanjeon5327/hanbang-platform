@@ -36,18 +36,22 @@ export default function CurationRail() {
                 className="absolute inset-0 bg-cover bg-center group-hover:scale-[1.05] transition duration-500"
                 style={{ backgroundImage: `url('${it.thumbnail}')` }}
               />
-              {/* 오버레이 */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/22 to-black/0" />
 
-              {/* 상단 배지 */}
+              {/* 오버레이 — from-black/90 → /78, via-black/22 → /10 */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/10 to-black/0" />
+
+              {/* 하단 텍스트 보호층 */}
+              <div className="absolute bottom-0 left-0 right-0 h-[100px] bg-gradient-to-t from-black/50 to-transparent" />
+
+              {/* 상단 배지 — bg/border 밝기 보정 */}
               <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-white/14 border border-white/18 text-white/90 tracking-wide">
+                  <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-white/22 border border-white/30 text-white tracking-wide">
                     {it.tagMain}
                   </span>
                 </div>
                 {it.annualReturn && (
-                  <span className="text-[10px] font-extrabold px-2 py-1 rounded-full bg-emerald-500/22 border border-emerald-400/28 text-emerald-200">
+                  <span className="text-[10px] font-extrabold px-2 py-1 rounded-full bg-emerald-500/32 border border-emerald-400/42 text-emerald-100">
                     연 {it.annualReturn}%
                   </span>
                 )}
@@ -55,7 +59,8 @@ export default function CurationRail() {
 
               {/* 하단 콘텐츠 */}
               <div className="absolute bottom-0 left-0 right-0 p-4">
-                <div className="text-[11px] text-white/55">{it.creator} · {it.category}</div>
+                {/* creator — white/55 → white/75 */}
+                <div className="text-[11px] text-white/75">{it.creator} · {it.category}</div>
                 <div className="mt-0.5 text-[17px] font-extrabold text-white leading-tight">{it.title}</div>
                 <div className="mt-2 flex items-center justify-between">
                   <div className="text-[14px] font-extrabold text-white tabular-nums">{formatKRW(it.price)}</div>
@@ -63,16 +68,18 @@ export default function CurationRail() {
                     {up ? '▲' : '▼'} {Math.abs(it.chgPct).toFixed(1)}%
                   </div>
                 </div>
-                {/* 판매 진행률 */}
+
+                {/* 판매 진행률 — 라벨/바 밝기 보정 */}
                 {it.soldPct !== undefined && (
                   <div className="mt-2">
-                    <div className="w-full h-[3px] rounded-full bg-white/12 overflow-hidden">
+                    <div className="w-full h-[3px] rounded-full bg-white/22 overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-[#2563EB]/80"
+                        className="h-full rounded-full bg-[#2563EB]/90"
                         style={{ width: `${it.soldPct}%` }}
                       />
                     </div>
-                    <div className="mt-1 text-[10px] text-white/40 text-right">{it.soldPct}% 판매됨</div>
+                    {/* white/40 → white/60 */}
+                    <div className="mt-1 text-[10px] text-white/60 text-right">{it.soldPct}% 판매됨</div>
                   </div>
                 )}
               </div>
