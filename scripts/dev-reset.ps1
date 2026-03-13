@@ -86,18 +86,25 @@ if ($killedAll.Count -gt 0) {
 # repo root
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 
-# lock path (PS5.1 safe — no multi-arg Join-Path)
-$lockPath = [System.IO.Path]::Combine($repoRoot.Path, ".next", "dev", "lock")
+# lock paths (PS5.1 safe — no multi-arg Join-Path)
+# .next/dev/lock — Next.js dev server lock
+# .next/lock — some Next versions use root-level lock
+$lockPaths = @(
+  [System.IO.Path]::Combine($repoRoot.Path, ".next", "dev", "lock"),
+  [System.IO.Path]::Combine($repoRoot.Path, ".next", "lock")
+)
 
-if (Test-Path $lockPath) {
-  try {
-    Remove-Item $lockPath -Force -ErrorAction Stop
-    Write-Host ("Removed lock: " + $lockPath) -ForegroundColor Green
-  } catch {
-    Write-Host ("WARN: Failed to remove lock: " + $lockPath) -ForegroundColor Yellow
+foreach ($lockPath in $lockPaths) {
+  if (Test-Path $lockPath) {
+    try {
+      Remove-Item $lockPath -Force -ErrorAction Stop
+      Write-Host ("Removed lock: " + $lockPath) -ForegroundColor Green
+    } catch {
+      Write-Host ("WARN: Failed to remove lock: " + $lockPath) -ForegroundColor Yellow
+    }
+  } else {
+    Write-Host ("No lock at: " + $lockPath) -ForegroundColor DarkGray
   }
-} else {
-  Write-Host "No dev lock found." -ForegroundColor DarkGray
 }
 
 # After-kill check (prints remaining listener if any)
@@ -114,5 +121,6 @@ if ($env:HB_DB_PUSH -eq "1") {
 
 Write-Host ""
 Write-Host "Next:" -ForegroundColor Cyan
-Write-Host "  1) `$env:PORT=3000; pnpm dev" -ForegroundColor White
-Write-Host "  2) Open http://localhost:3000/api/debug/build to confirm build stamp" -ForegroundColor White
+Write-Host "  1) pnpm dev" -ForegroundColor White
+Write-Host "  2) Wait for 'Ready in X.Xs' before opening browser" -ForegroundColor White
+Write-Host "  3) Verify: / /opengraph-image /twitter-image /icon" -ForegroundColor White
