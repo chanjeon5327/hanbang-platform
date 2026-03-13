@@ -1,24 +1,25 @@
 'use client';
 
 import { useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from './AuthProvider';
 
 /**
  * /wallet 클라이언트 사이드 인증 가드
- * - 로그인 안 된 상태에서 접근 시 /login으로 리다이렉트
+ * - 로그인 안 된 상태에서 접근 시 /login?redirect=현재경로로 리다이렉트
  * - 서버 가드와 이중 방어
  */
 export function WalletGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname() ?? '/';
   const { user, loading } = useAuth();
 
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      router.replace('/login');
+      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, pathname]);
 
   if (loading) {
     return (

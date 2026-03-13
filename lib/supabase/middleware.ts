@@ -108,18 +108,33 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse
   }
 
-  const protectedPrefixes = ['/wallet', '/order', '/dashboard', '/mypage', '/admin', '/creator/upload', '/invest', '/active-invest']
+  const protectedPrefixes = ['/wallet', '/order', '/dashboard', '/mypage', '/admin', '/creator/upload', '/invest', '/active-invest', '/onboarding']
   const isProtectedPath = protectedPrefixes.some((p) => pathname.startsWith(p))
 
   if (!isProtectedPath) {
     return supabaseResponse
   }
 
-  // 보호 라우트: 미로그인 → /login
+  // 보호 라우트: 미로그인 → /login?redirect=현재경로
   if (!user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    url.searchParams.set('next', pathname)
+    url.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(url)
+  }
+
+  // 로그인됐지만 온보딩 미완료 → /onboarding?redirect=원래경로
+  // /onboarding 자체는 제외 (무한 리다이렉트 방지)
+  const onboardingRequiredPaths = ['/wallet', '/order', '/dashboard', '/mypage', '/admin', '/creator/upload', '/invest', '/active-invest']
+  if (
+    pathname !== '/onboarding' &&
+    !pathname.startsWith('/onboarding/') &&
+    profileData?.onboarding_completed === false &&
+    onboardingRequiredPaths.some((p) => pathname.startsWith(p))
+  ) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/onboarding'
+    url.searchParams.set('redirect', pathname)
     return NextResponse.redirect(url)
   }
 

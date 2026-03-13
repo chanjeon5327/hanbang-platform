@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { login } from '@/lib/auth/client';
 import { getBrowserSupabase } from '@/utils/supabase/client';
 import { useToast } from '@/context/ToastContext';
@@ -19,6 +20,7 @@ type LoginPanelProps = {
 
 export default function LoginPanel({ onSuccess, onClose, showCloseButton = false }: LoginPanelProps) {
   const { toast } = useToast();
+  const pathname = usePathname() ?? '/';
   const [tab, setTab] = useState<TabId>('investor');
   const [showWallet, setShowWallet] = useState(false);
   const [email, setEmail] = useState('');
@@ -234,7 +236,7 @@ export default function LoginPanel({ onSuccess, onClose, showCloseButton = false
         <p className="text-center text-sm" style={{ color: 'var(--legacy-text-muted)' }}>
           계정이 없으신가요?{' '}
           <Link
-            href="/signup"
+            href={`/login?mode=signup&redirect=${encodeURIComponent(pathname)}`}
             onClick={() => onClose?.()}
             className="font-semibold"
             style={{ color: 'var(--legacy-point)' }}

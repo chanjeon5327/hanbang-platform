@@ -15,7 +15,7 @@ export default async function MyPageLayout({
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/login');
+    redirect('/login?redirect=/mypage');
   }
 
   return <WalletGuard>{children}</WalletGuard>;

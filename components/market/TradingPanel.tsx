@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useToken } from '@/context/TokenContext';
 import { useToast } from '@/context/ToastContext';
 
@@ -20,6 +20,7 @@ type Props = {
 
 export default function TradingPanel({ mode: initialMode, price, productId, isLoggedIn, isMobilization = false, sticky = false }: Props) {
   const router = useRouter();
+  const pathname = usePathname() ?? '/';
   const { toast } = useToast();
   const { formatPrice } = useToken();
   const [activeTab, setActiveTab] = useState<'청약' | '매수'>(initialMode);
@@ -34,7 +35,7 @@ export default function TradingPanel({ mode: initialMode, price, productId, isLo
 
   const handleCta = async () => {
     if (!isLoggedIn) {
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
       return;
     }
     setLoading(true);

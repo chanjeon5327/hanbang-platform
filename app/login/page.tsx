@@ -4,6 +4,7 @@ import { Suspense, useMemo, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './login.module.css';
 import { getBrowserSupabase } from '@/utils/supabase/client';
+import { getPostLoginRoute } from '@/lib/auth/getPostLoginRoute';
 
 type Tab = 'investor' | 'creator';
 type AuthMode = 'login' | 'signup';
@@ -21,7 +22,7 @@ function LoginContent() {
   const [error, setError] = useState<string | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
 
-  const redirectTo = searchParams.get('redirect') || searchParams.get('redirectTo') || searchParams.get('next') || '/';
+  const redirectParam = searchParams.get('redirect') || searchParams.get('redirectTo') || searchParams.get('next') || '/';
 
   useEffect(() => {
     const m = (searchParams.get('mode') === 'signup' ? 'signup' : 'login') as AuthMode;
@@ -50,7 +51,7 @@ function LoginContent() {
     setError(null);
     try {
       const cb = new URL('/auth/callback', window.location.origin);
-      cb.searchParams.set('next', redirectTo);
+      cb.searchParams.set('redirect', redirectParam);
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider,
         options: { redirectTo: cb.toString() },
@@ -73,8 +74,8 @@ function LoginContent() {
         return;
       }
       await eth.request({ method: 'eth_requestAccounts' });
-      // 지갑 로그인/연동은 이후 단계(지금은 UI 먼저 완성)
-      router.push(redirectTo);
+      const path = await getPostLoginRoute(supabase, redirectParam);
+      router.push(path);
     } catch (e: any) {
       setError(e?.message || '지갑 연결에 실패했습니다.');
       setBusy(false);
@@ -95,7 +96,8 @@ function LoginContent() {
         password,
       });
       if (error) throw error;
-      router.replace(redirectTo);
+      const path = await getPostLoginRoute(supabase, redirectParam);
+      router.replace(path);
     } catch (e: any) {
       setError(e?.message || '이메일 로그인에 실패했습니다.');
       setBusy(false);
@@ -112,7 +114,7 @@ function LoginContent() {
     setError(null);
     try {
       const cb = new URL('/auth/callback', window.location.origin);
-      cb.searchParams.set('next', redirectTo);
+      cb.searchParams.set('redirect', redirectParam);
       const { data, error: err } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -120,7 +122,8 @@ function LoginContent() {
       });
       if (err) throw err;
       if (data.session) {
-        router.replace(redirectTo);
+        const path = await getPostLoginRoute(supabase, redirectParam);
+        router.replace(path);
         return;
       }
       setError('가입 메일을 확인해 주세요.');

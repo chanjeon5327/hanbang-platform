@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import MarketDetailHeaderV3 from './MarketDetailHeaderV3';
 import MarketDetailTabsV3, { type TabKey } from './MarketDetailTabsV3';
 import MarketDetailCTAV3 from './MarketDetailCTAV3';
@@ -28,6 +28,8 @@ export default function MarketDetailV3({ marketId }: Props) {
   const hasSession = !!user;
   const { isApproved } = useKycStatus();
   const router = useRouter();
+  const pathname = usePathname() ?? '/';
+  const loginHref = `/login?redirect=${encodeURIComponent(pathname)}`;
   const { item, loading, error, refetch } = useMarketItem(marketId);
 
   const title = item?.title ?? '—';
@@ -77,11 +79,11 @@ export default function MarketDetailV3({ marketId }: Props) {
     }
     setToastMessage('매수 기능 준비 중입니다.');
     setToastVisible(true);
-  }, [hasSession, isApproved, router]);
+  }, [hasSession, isApproved, router, loginHref]);
 
   const handleSellClick = useCallback(() => {
     if (!hasSession) {
-      window.location.href = '/login';
+      window.location.href = loginHref;
       return;
     }
     if (!isApproved) {
@@ -92,7 +94,7 @@ export default function MarketDetailV3({ marketId }: Props) {
     }
     setToastMessage('매도 기능 준비 중입니다.');
     setToastVisible(true);
-  }, [hasSession, isApproved, router]);
+  }, [hasSession, isApproved, router, loginHref]);
 
   if (error && !item) {
     return (

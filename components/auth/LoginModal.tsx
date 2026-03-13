@@ -1,17 +1,20 @@
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import styles from './login-modal.module.css';
 import { getBrowserSupabase } from '@/utils/supabase/client';
+import { getPostLoginRoute } from '@/lib/auth/getPostLoginRoute';
 
 type Tab = 'investor' | 'creator';
 
 export default function LoginModal(props: any) {
   const router = useRouter();
+  const pathname = usePathname() ?? '/';
   const supabase = useMemo(() => getBrowserSupabase(), []);
 
   // ---- tolerant props (call sites differ) ----
+  const redirectParam = props?.redirect ?? pathname;
   const open: boolean = !!(props?.open ?? props?.isOpen ?? props?.visible);
   const onOpenChange =
     props?.onOpenChange ??
@@ -25,7 +28,7 @@ export default function LoginModal(props: any) {
   const refreshSession = props?.refreshSession;
 
   const [tab, setTab] = useState<Tab>('investor');
-  const [email, setEmail] = useState<string>('test@hanbang.com');
+  const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [busy, setBusy] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,10 +53,11 @@ export default function LoginModal(props: any) {
     setBusy(true);
     setError(null);
     try {
-      const redirectTo = `${window.location.origin}/auth/callback`;
+      const cb = new URL('/auth/callback', window.location.origin);
+      cb.searchParams.set('redirect', redirectParam);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: provider as any,
-        options: { redirectTo },
+        options: { redirectTo: cb.toString() },
       });
       if (error) throw error;
       // redirect handled by supabase
@@ -74,11 +78,11 @@ export default function LoginModal(props: any) {
         return;
       }
       await eth.request({ method: 'eth_requestAccounts' });
-      // UI 우선: 지갑 연동은 이후 고도화
+      const path = await getPostLoginRoute(supabase, redirectParam);
       if (typeof refreshSession === 'function') await refreshSession();
       if (typeof onSuccess === 'function') await onSuccess();
       onOpenChange?.(false);
-      router.refresh?.();
+      router.push(path);
     } catch (e: any) {
       setError(e?.message || '지갑 연결에 실패했습니다.');
       setBusy(false);
@@ -93,10 +97,11 @@ export default function LoginModal(props: any) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
+      const path = await getPostLoginRoute(supabase, redirectParam);
       if (typeof refreshSession === 'function') await refreshSession();
       if (typeof onSuccess === 'function') await onSuccess();
       onOpenChange?.(false);
-      router.refresh?.();
+      router.push(path);
     } catch (e: any) {
       setError(e?.message || '이메일 로그인에 실패했습니다.');
       setBusy(false);
@@ -104,19 +109,33 @@ export default function LoginModal(props: any) {
   }
 
   async function signUpEmail() {
+    if (!email.trim() || !password || password.length < 6) {
+      setError('이메일과 비밀번호(6자 이상)를 입력해 주세요.');
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
+      const cb = new URL('/auth/callback', window.location.origin);
+      cb.searchParams.set('redirect', redirectParam);
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
         password,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+        options: { emailRedirectTo: cb.toString() },
       });
       if (error) throw error;
+      if (data.session) {
+        const path = await getPostLoginRoute(supabase, redirectParam);
+        if (typeof refreshSession === 'function') await refreshSession();
+        if (typeof onSuccess === 'function') await onSuccess();
+        onOpenChange?.(false);
+        router.push(path);
+        return;
+      }
       setError('가입 메일을 확인해 주세요.');
-      setBusy(false);
     } catch (e: any) {
       setError(e?.message || '회원가입에 실패했습니다.');
+    } finally {
       setBusy(false);
     }
   }

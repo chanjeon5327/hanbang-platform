@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ChannelCard, { type Channel, type RatingType } from '@/components/onboarding/ChannelCard';
 import OnboardingSummary from '@/components/onboarding/OnboardingSummary';
@@ -69,7 +69,7 @@ function shuffle<T>(arr: T[]): T[] {
   return out;
 }
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [ratings, setRatings] = useState<Record<string, RatingType>>({});
   const [loading, setLoading] = useState(true);
@@ -77,6 +77,8 @@ export default function OnboardingPage() {
   const [showSummary, setShowSummary] = useState(false);
   const [completedSkipped, setCompletedSkipped] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams.get('redirect') || '/';
 
   const displayChannels = useMemo(() => {
     const need = Math.max(0, 50 - channels.length);
@@ -120,16 +122,18 @@ export default function OnboardingPage() {
           summary: Object.keys(ratings).length > 0 ? { rated_count: Object.keys(ratings).length } : {},
         }),
       });
+      const target = redirectParam.startsWith('/') ? redirectParam : '/';
       if (res.ok) {
         setShowSummary(true);
-        setTimeout(() => router.replace('/'), 2000);
+        setTimeout(() => router.replace(target), 2000);
       } else {
         setShowSummary(true);
-        setTimeout(() => router.replace('/'), 2000);
+        setTimeout(() => router.replace(target), 2000);
       }
     } catch {
       setShowSummary(true);
-      setTimeout(() => router.replace('/'), 2000);
+      const target = redirectParam.startsWith('/') ? redirectParam : '/';
+      setTimeout(() => router.replace(target), 2000);
     } finally {
       setCompleting(false);
     }
@@ -226,5 +230,17 @@ export default function OnboardingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center pb-24" style={{ backgroundColor: 'var(--bg)' }}>
+        <p className="body-sm" style={{ color: 'var(--text-secondary)' }}>로딩 중…</p>
+      </div>
+    }>
+      <OnboardingContent />
+    </Suspense>
   );
 }

@@ -42,10 +42,10 @@ export default function MyAssetCard() {
             </div>
 
             <div className="flex gap-3">
-              <Link href="/signup" className="px-5 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-extrabold transition">
+              <Link href="/login?mode=signup&redirect=/" className="px-5 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-extrabold transition">
                 가입하기
               </Link>
-              <Link href="/login" className="px-5 py-3 rounded-xl bg-black/5 hover:bg-black/10 border border-black/10 text-sm font-bold transition">
+              <Link href="/login?redirect=/" className="px-5 py-3 rounded-xl bg-black/5 hover:bg-black/10 border border-black/10 text-sm font-bold transition">
                 로그인
               </Link>
             </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { MessageCircle, Send, User } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useToast } from '@/context/ToastContext';
@@ -58,6 +59,8 @@ export default function ProductChat({ productId }: Props) {
   }
 
   const { user } = useAuth();
+  const pathname = usePathname() ?? '/';
+  const loginHref = `/login?redirect=${encodeURIComponent(pathname)}`;
   const { toast } = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -255,7 +258,7 @@ export default function ProductChat({ productId }: Props) {
           </>
         ) : (
           <Link
-            href="/login"
+            href={loginHref}
             className="flex-1 py-2.5 rounded-lg text-center body-sm font-medium"
             style={{ backgroundColor: 'var(--upbit-border)', color: 'var(--upbit-text-dim)' }}
           >

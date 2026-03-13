@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { formatKRW } from '@/lib/mock/marketItems';
 
@@ -27,6 +28,8 @@ export default function OrderPanelSimple({
   onOrderSuccess?: () => void;
 }) {
   const { user } = useAuth();
+  const pathname = usePathname() ?? '/';
+  const loginHref = `/login?redirect=${encodeURIComponent(pathname)}`;
   const [side, setSide] = useState<Side>('buy');
   const [orderType, setOrderType] = useState<OrderType>('limit');
   const [internalPrice, setInternalPrice] = useState<string>(String(basePrice));
@@ -122,7 +125,7 @@ export default function OrderPanelSimple({
       <div className="p-4 space-y-4">
         {!user && (
           <div className="rounded-xl border border-amber-300/50 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            주문하려면 <Link href="/login" className="underline font-bold">로그인</Link>이 필요합니다.
+            주문하려면 <Link href={loginHref} className="underline font-bold">로그인</Link>이 필요합니다.
           </div>
         )}
 

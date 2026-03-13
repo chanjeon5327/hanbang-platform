@@ -20,31 +20,41 @@ export type MarketItem = {
   roadmap_items?: string[];
 };
 
-function svgThumb(label: string, a: string, b: string) {
-  const svg = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800">
-    <defs>
-      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="${a}"/>
-        <stop offset="1" stop-color="${b}"/>
-      </linearGradient>
-      <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-        <feGaussianBlur stdDeviation="18" result="b"/>
-        <feMerge>
-          <feMergeNode in="b"/>
-          <feMergeNode in="SourceGraphic"/>
-        </feMerge>
-      </filter>
-    </defs>
-    <rect width="1200" height="800" fill="url(#g)"/>
-    <circle cx="980" cy="160" r="120" fill="rgba(255,255,255,0.10)"/>
-    <circle cx="1040" cy="240" r="160" fill="rgba(255,255,255,0.06)"/>
-    <circle cx="200" cy="600" r="90" fill="rgba(255,255,255,0.05)"/>
-    <text x="60" y="650" font-size="64" fill="rgba(255,255,255,0.92)" font-family="Inter, Noto Sans KR, sans-serif" filter="url(#glow)">${label}</text>
-    <text x="60" y="720" font-size="28" fill="rgba(255,255,255,0.60)" font-family="Inter, Noto Sans KR, sans-serif">HANBANG · IP Market</text>
-  </svg>`;
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+/**
+ * 유튜브 영상 썸네일 URL 헬퍼
+ * maxresdefault 가 없는 영상도 있으므로 hqdefault 를 기본으로 사용.
+ * 추후 실제 이미지 에셋으로 교체 시 이 함수를 제거하면 됨.
+ */
+function ytThumb(videoId: string) {
+  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 }
+
+/**
+ * 아이템 slug → 유튜브 대표 영상 ID 매핑
+ * 각 채널의 인기/대표 영상에서 추출한 ID.
+ */
+const YT_VIDEO_MAP: Record<string, string> = {
+  'travel-j':      'RCApmj8sj1c', // 빠니보틀 — 몰디브 여행
+  'chim':          'FSPwreQ-3yg', // 침착맨 — 브랜드 로고 재건축
+  'chong':         '5CM__BSlKXU', // 장삐쭈 — Horror Story
+  'muklab':        'dMjQ3hA9mEA', // 쯔양 — 150kg 참치 해체
+  'sports-pick':   '9gNmmjgcIBM', // 이스타TV — 비빔면 먹방
+  'k-drama':       'WDOGovyu-C4', // tvN DRAMA — 감자연구소
+  'kpop-stage':    'o7mx1j6AK0Q', // 딩고뮤직 — STAYC 킬링보이스
+  'food-trip':     '6RQ-bBdASvk', // 성시경 — 킬링보이스
+  'city-walk':     '_ycZgDAKe6Q', // 곽튜브 — 여행 가면
+  'talk-issue':    'WJPuOuVbFEQ', // 슈카월드 — 외로움은 흡연보다
+  'game-lab':      'NgAvdXPfvfo', // G식백과 — 인기 게임 분석
+  'docu-now':      'eXviZ7rhozA', // KBS 다큐 — 대표 다큐
+  'comedy-cut':    'tVaLKUQtgq4', // 숏박스 — 집 보러 왔습니다
+  'beauty-talk':   '07KggGt5P3M', // 이사배 — 이사배가 궁금하신가요
+  'kids-world':    'GGtHMuu2kGY', // 캐리와장난감친구들 — 칼라젤 아트박스
+  'history-lab':   'i7hILjPRBYo', // 조승연 탐구생활 — 책 안 읽으면
+  'cinema-buster': 'bWaAB7ju7Mk', // 거의없다 — 영화 리뷰
+  'sports-live':   '2mHo90QiJ4U', // 쿠팡플레이 스포츠 — 토트넘
+  'travel-asia':   'q0V0fIkPKQQ', // 희철리즘 — 김희철의 하루
+  'muk-star':      'MH__ruXBK_E', // 입짧은햇님 — 닭다리탕 먹방
+};
 
 export const marketItems: MarketItem[] = [
   {
@@ -56,7 +66,7 @@ export const marketItems: MarketItem[] = [
     chgPct: 2.4,
     tagMain: '한정판매형',
     momentum: '급상승',
-    thumbnail: svgThumb('블루웨이 시즌3', '#0B1224', '#2563EB'),
+    thumbnail: ytThumb(YT_VIDEO_MAP['travel-j']!),
     deadlineHours: 2.2,
     annualReturn: 14.2,
     soldPct: 78,
@@ -90,7 +100,7 @@ export const marketItems: MarketItem[] = [
     chgPct: -1.1,
     tagMain: '일반형',
     momentum: '하락',
-    thumbnail: svgThumb('라운지 나인', '#0B1224', '#7C3AED'),
+    thumbnail: ytThumb(YT_VIDEO_MAP['chim']!),
     deadlineHours: 10.5,
     annualReturn: 9.8,
     soldPct: 92,
@@ -123,7 +133,7 @@ export const marketItems: MarketItem[] = [
     chgPct: 0.8,
     tagMain: '보장형',
     momentum: '상승',
-    thumbnail: svgThumb('총몇명', '#071021', '#22C55E'),
+    thumbnail: ytThumb(YT_VIDEO_MAP['chong']!),
     deadlineHours: 6.0,
     annualReturn: 11.5,
     soldPct: 61,
@@ -156,7 +166,7 @@ export const marketItems: MarketItem[] = [
     chgPct: 3.2,
     tagMain: '한정판매형',
     momentum: '급상승',
-    thumbnail: svgThumb('테이블 로그', '#071021', '#F59E0B'),
+    thumbnail: ytThumb(YT_VIDEO_MAP['muklab']!),
     deadlineHours: 27.2,
     annualReturn: 16.3,
     soldPct: 55,
@@ -191,7 +201,7 @@ export const marketItems: MarketItem[] = [
     chgPct: -0.4,
     tagMain: '일반형',
     momentum: '보합',
-    thumbnail: svgThumb('스포츠픽', '#071021', '#06B6D4'),
+    thumbnail: ytThumb(YT_VIDEO_MAP['sports-pick']!),
     annualReturn: 8.4,
     soldPct: 44,
     overview: '국내 주요 스포츠 경기 하이라이트 및 분석 콘텐츠. 프로야구·축구·농구 시즌에 맞춰 편성이 증가합니다.',
@@ -220,7 +230,7 @@ export const marketItems: MarketItem[] = [
     chgPct: 1.7,
     tagMain: '보장형',
     momentum: '상승',
-    thumbnail: svgThumb('K드라마', '#0B1224', '#EC4899'),
+    thumbnail: ytThumb(YT_VIDEO_MAP['k-drama']!),
     annualReturn: 10.2,
     soldPct: 69,
     overview: '국내외 OTT 히트 드라마의 공식 하이라이트·비하인드 콘텐츠. OTT 제작사와 라이선스 계약 하에 제작됩니다.',
@@ -250,7 +260,7 @@ export const marketItems: MarketItem[] = [
     chgPct: 2.1,
     tagMain: '한정판매형',
     momentum: '상승',
-    thumbnail: svgThumb('사운드 플로어', '#071021', '#A855F7'),
+    thumbnail: ytThumb(YT_VIDEO_MAP['kpop-stage']!),
     annualReturn: 13.7,
     soldPct: 82,
     overview: 'K-POP 아이돌 퍼포먼스 영상 및 음원 IP. 팬덤 수요와 스트리밍 수익 모두를 포괄하는 이중 수익 구조입니다.',
@@ -280,7 +290,7 @@ export const marketItems: MarketItem[] = [
     chgPct: -2.9,
     tagMain: '일반형',
     momentum: '급락주의',
-    thumbnail: svgThumb('푸드트립', '#071021', '#EF4444'),
+    thumbnail: ytThumb(YT_VIDEO_MAP['food-trip']!),
     annualReturn: 6.1,
     soldPct: 38,
     overview: '지역 맛집 기행 및 로드푸드 전문 채널. 국내 지방 소도시를 중심으로 숨겨진 맛집을 발굴하는 콘텐츠입니다.',
@@ -301,15 +311,15 @@ export const marketItems: MarketItem[] = [
     ],
   },
 
-  { id: 'city-walk', title: '도시산책', creator: '어반워크', category: '여행', price: 14200, chgPct: 0.2, tagMain: '일반형', momentum: '보합', thumbnail: svgThumb('도시산책', '#0B1224', '#3B82F6'), annualReturn: 7.5, soldPct: 32, overview: '국내외 도시를 조용히 걷는 힐링 브이로그 채널. ASMR 감성과 여행 정보를 결합한 슬로우 콘텐츠입니다.', target_audience: '20~40세 힐링 콘텐츠 선호층, 명상·ASMR 수요자', revenue_model: '광고 수익 + 구독 멤버십 수익을 분기별 배분합니다.', investment_points: ['힐링·ASMR 카테고리가 꾸준히 성장하며 장기적 수요가 안정적입니다.'], risk_points: ['슬로우 콘텐츠 특성상 알고리즘 추천 빈도가 낮을 수 있습니다.'], roadmap_items: ['1분기: 유럽 도시 편 제작', '2분기: 멤버십 론칭 + 정산'] },
-  { id: 'talk-issue', title: '이슈토크', creator: '토크포인트', category: '시사/토크', price: 39800, chgPct: 1.0, tagMain: '보장형', momentum: '상승', thumbnail: svgThumb('이슈토크', '#0B1224', '#10B981'), annualReturn: 9.2, soldPct: 57, overview: '사회 이슈와 경제 트렌드를 쉽게 풀어주는 토크 채널. 보장형 구조로 안정적인 수익을 제공합니다.', target_audience: '25~45세 뉴스 관심층, 경제·사회 이슈 소비자', revenue_model: '광고 수익 + 유료 뉴스레터 수익을 분기별 배분합니다.', investment_points: ['보장형 구조로 최소 수익이 보장됩니다.', '시사 콘텐츠 특성상 이슈 발생 시 트래픽이 급증합니다.'], risk_points: ['정치적 민감 이슈 다루는 경우 광고주 이탈 가능성이 있습니다.'], roadmap_items: ['1분기: 뉴스레터 구독자 1만 목표', '2분기: 정산 및 플랫폼 확장'] },
-  { id: 'game-lab', title: '게임연구실', creator: '게임로직', category: '게임', price: 41200, chgPct: 4.4, tagMain: '한정판매형', momentum: '급상승', thumbnail: svgThumb('게임연구실', '#071021', '#2563EB'), deadlineHours: 47.5, annualReturn: 17.8, soldPct: 88, overview: '게임 공략·리뷰·이스터에그 전문 채널. 게임 출시 사이클에 맞춘 콘텐츠 집중 편성으로 조회수가 급증합니다.', target_audience: '15~30세 게이머, 게임 정보 콘텐츠 수요자', revenue_model: '광고 수익 + 게임사 협찬 수익 + 라이브 슈퍼챗 수익을 분기별 배분합니다.', investment_points: ['신작 출시 기간 집중 편성으로 조회수가 최대 8배 급증합니다.', '게임사 공식 협찬 채널로 선정되어 독점 콘텐츠를 확보하고 있습니다.'], risk_points: ['게임 흥행 실패 시 관련 콘텐츠 조회수가 크게 줄어들 수 있습니다.'], roadmap_items: ['1분기: 신작 게임 2편 협찬 계약', '2분기: 공략 유료 구독 론칭', '3분기: e스포츠 관련 편성 확대'] },
-  { id: 'docu-now', title: '다큐NOW', creator: '스튜디오 리얼', category: '다큐', price: 26500, chgPct: -0.7, tagMain: '일반형', momentum: '하락', thumbnail: svgThumb('다큐NOW', '#071021', '#64748B'), annualReturn: 6.9, soldPct: 28, overview: '사회·환경·인물을 조명하는 미니 다큐멘터리 채널. 편당 15~25분 분량으로 꾸준히 제작됩니다.', target_audience: '30~55세 다큐 선호층, 사회 이슈 관심 시청자', revenue_model: '광고 수익 + 공공기관 협찬 수익을 반기별 배분합니다.', investment_points: ['공공기관 협찬이 안정적인 수익 기반을 형성합니다.'], risk_points: ['다큐멘터리 특성상 알고리즘 노출이 제한적입니다.'], roadmap_items: ['1분기: 환경 특집 시리즈 제작', '2분기: 공공기관 협찬 계약 갱신'] },
+  { id: 'city-walk', title: '도시산책', creator: '어반워크', category: '여행', price: 14200, chgPct: 0.2, tagMain: '일반형', momentum: '보합', thumbnail: ytThumb(YT_VIDEO_MAP['city-walk']!), annualReturn: 7.5, soldPct: 32, overview: '국내외 도시를 조용히 걷는 힐링 브이로그 채널. ASMR 감성과 여행 정보를 결합한 슬로우 콘텐츠입니다.', target_audience: '20~40세 힐링 콘텐츠 선호층, 명상·ASMR 수요자', revenue_model: '광고 수익 + 구독 멤버십 수익을 분기별 배분합니다.', investment_points: ['힐링·ASMR 카테고리가 꾸준히 성장하며 장기적 수요가 안정적입니다.'], risk_points: ['슬로우 콘텐츠 특성상 알고리즘 추천 빈도가 낮을 수 있습니다.'], roadmap_items: ['1분기: 유럽 도시 편 제작', '2분기: 멤버십 론칭 + 정산'] },
+  { id: 'talk-issue', title: '이슈토크', creator: '토크포인트', category: '시사/토크', price: 39800, chgPct: 1.0, tagMain: '보장형', momentum: '상승', thumbnail: ytThumb(YT_VIDEO_MAP['talk-issue']!), annualReturn: 9.2, soldPct: 57, overview: '사회 이슈와 경제 트렌드를 쉽게 풀어주는 토크 채널. 보장형 구조로 안정적인 수익을 제공합니다.', target_audience: '25~45세 뉴스 관심층, 경제·사회 이슈 소비자', revenue_model: '광고 수익 + 유료 뉴스레터 수익을 분기별 배분합니다.', investment_points: ['보장형 구조로 최소 수익이 보장됩니다.', '시사 콘텐츠 특성상 이슈 발생 시 트래픽이 급증합니다.'], risk_points: ['정치적 민감 이슈 다루는 경우 광고주 이탈 가능성이 있습니다.'], roadmap_items: ['1분기: 뉴스레터 구독자 1만 목표', '2분기: 정산 및 플랫폼 확장'] },
+  { id: 'game-lab', title: '게임연구실', creator: '게임로직', category: '게임', price: 41200, chgPct: 4.4, tagMain: '한정판매형', momentum: '급상승', thumbnail: ytThumb(YT_VIDEO_MAP['game-lab']!), deadlineHours: 47.5, annualReturn: 17.8, soldPct: 88, overview: '게임 공략·리뷰·이스터에그 전문 채널. 게임 출시 사이클에 맞춘 콘텐츠 집중 편성으로 조회수가 급증합니다.', target_audience: '15~30세 게이머, 게임 정보 콘텐츠 수요자', revenue_model: '광고 수익 + 게임사 협찬 수익 + 라이브 슈퍼챗 수익을 분기별 배분합니다.', investment_points: ['신작 출시 기간 집중 편성으로 조회수가 최대 8배 급증합니다.', '게임사 공식 협찬 채널로 선정되어 독점 콘텐츠를 확보하고 있습니다.'], risk_points: ['게임 흥행 실패 시 관련 콘텐츠 조회수가 크게 줄어들 수 있습니다.'], roadmap_items: ['1분기: 신작 게임 2편 협찬 계약', '2분기: 공략 유료 구독 론칭', '3분기: e스포츠 관련 편성 확대'] },
+  { id: 'docu-now', title: '다큐NOW', creator: '스튜디오 리얼', category: '다큐', price: 26500, chgPct: -0.7, tagMain: '일반형', momentum: '하락', thumbnail: ytThumb(YT_VIDEO_MAP['docu-now']!), annualReturn: 6.9, soldPct: 28, overview: '사회·환경·인물을 조명하는 미니 다큐멘터리 채널. 편당 15~25분 분량으로 꾸준히 제작됩니다.', target_audience: '30~55세 다큐 선호층, 사회 이슈 관심 시청자', revenue_model: '광고 수익 + 공공기관 협찬 수익을 반기별 배분합니다.', investment_points: ['공공기관 협찬이 안정적인 수익 기반을 형성합니다.'], risk_points: ['다큐멘터리 특성상 알고리즘 노출이 제한적입니다.'], roadmap_items: ['1분기: 환경 특집 시리즈 제작', '2분기: 공공기관 협찬 계약 갱신'] },
 
-  { id: 'comedy-cut', title: '코미디컷', creator: '개그스튜디오', category: '코미디', price: 22900, chgPct: 2.9, tagMain: '보장형', momentum: '상승', thumbnail: svgThumb('코미디컷', '#071021', '#F97316'), deadlineHours: 72.0, annualReturn: 12.1, soldPct: 64, overview: '국내 인기 코미디언들이 참여하는 숏 스케치 코미디 채널. 주 3편 정기 업로드로 구독자 충성도가 높습니다.', target_audience: '10~35세 가벼운 오락 콘텐츠 선호층', revenue_model: '광고 수익 + 유료 스트리밍 수익 배분.', investment_points: ['주 3편 정기편성으로 수익이 꾸준히 발생합니다.', '보장형 구조로 최소 수익률이 보장됩니다.'], risk_points: ['코미디언 스케줄 변경 시 편성 지연이 생길 수 있습니다.'], roadmap_items: ['1분기: 신규 코미디언 영입', '2분기: 시즌 정산 + 확장편 기획'] },
-  { id: 'beauty-talk', title: '뷰티톡', creator: '뷰티랩 크루', category: '뷰티', price: 17700, chgPct: 1.3, tagMain: '일반형', momentum: '상승', thumbnail: svgThumb('뷰티톡', '#071021', '#EC4899'), annualReturn: 10.6, soldPct: 51, overview: '국내외 뷰티 브랜드 리뷰 및 뷰티 트렌드 분석 채널. 뷰티 시장 성장과 함께 광고 단가가 꾸준히 상승 중입니다.', target_audience: '20~40세 뷰티 관심층, 제품 구매 전 리뷰 소비자', revenue_model: '뷰티 브랜드 협찬 수익 + 광고 수익을 분기별 배분합니다.', investment_points: ['K-뷰티 글로벌 수요 확대로 해외 협찬 단가가 오르고 있습니다.'], risk_points: ['특정 브랜드 이슈 발생 시 협찬 계약이 취소될 수 있습니다.'], roadmap_items: ['1분기: 해외 뷰티 브랜드 협찬 2건 계약', '2분기: 정산 + 뷰티 클래스 수익 편입'] },
-  { id: 'kids-world', title: '키즈월드', creator: '스튜디오 키즈', category: '키즈', price: 30200, chgPct: 0.6, tagMain: '보장형', momentum: '보합', thumbnail: svgThumb('키즈월드', '#071021', '#22C55E'), annualReturn: 8.8, soldPct: 46, overview: '3~10세 아동 대상 교육·놀이 콘텐츠 전문 채널. 학부모 신뢰가 높고 반복 시청률이 높아 광고 단가가 안정적입니다.', target_audience: '3~10세 아동 및 그 부모, 교육 콘텐츠 구매자', revenue_model: '광고 수익 + 교육 콘텐츠 유료 판매 수익을 분기별 배분합니다.', investment_points: ['보장형 구조로 최소 수익이 보장됩니다.', '반복 시청 비율이 높아 광고 수익이 안정적으로 발생합니다.'], risk_points: ['아동 대상 콘텐츠 규제 강화 시 광고 수익에 영향을 줄 수 있습니다.'], roadmap_items: ['1분기: 교육 콘텐츠 신규 라인업 제작', '2분기: 유료 클래스 론칭 + 정산'] },
-  { id: 'history-lab', title: '역사연구소', creator: '역사미디어', category: '교양', price: 31800, chgPct: -1.8, tagMain: '일반형', momentum: '하락', thumbnail: svgThumb('역사연구소', '#071021', '#A3A3A3'), annualReturn: 5.9, soldPct: 22, overview: '국내외 역사와 문화유산을 쉽게 풀어주는 교양 채널. 교육기관 협찬 수익이 주요 수입원입니다.', target_audience: '30~60세 역사·교양 콘텐츠 선호층', revenue_model: '광고 수익 + 교육기관 협찬 수익을 반기별 배분합니다.', investment_points: ['교육기관 협찬이 안정적인 수익 기반을 형성합니다.'], risk_points: ['현재 조회수 하락 추세로 수익 회복에 시간이 걸릴 수 있습니다.'], roadmap_items: ['1분기: 포맷 리뉴얼', '2분기: 교육기관 협찬 갱신 + 정산'] },
+  { id: 'comedy-cut', title: '코미디컷', creator: '개그스튜디오', category: '코미디', price: 22900, chgPct: 2.9, tagMain: '보장형', momentum: '상승', thumbnail: ytThumb(YT_VIDEO_MAP['comedy-cut']!), deadlineHours: 72.0, annualReturn: 12.1, soldPct: 64, overview: '국내 인기 코미디언들이 참여하는 숏 스케치 코미디 채널. 주 3편 정기 업로드로 구독자 충성도가 높습니다.', target_audience: '10~35세 가벼운 오락 콘텐츠 선호층', revenue_model: '광고 수익 + 유료 스트리밍 수익 배분.', investment_points: ['주 3편 정기편성으로 수익이 꾸준히 발생합니다.', '보장형 구조로 최소 수익률이 보장됩니다.'], risk_points: ['코미디언 스케줄 변경 시 편성 지연이 생길 수 있습니다.'], roadmap_items: ['1분기: 신규 코미디언 영입', '2분기: 시즌 정산 + 확장편 기획'] },
+  { id: 'beauty-talk', title: '뷰티톡', creator: '뷰티랩 크루', category: '뷰티', price: 17700, chgPct: 1.3, tagMain: '일반형', momentum: '상승', thumbnail: ytThumb(YT_VIDEO_MAP['beauty-talk']!), annualReturn: 10.6, soldPct: 51, overview: '국내외 뷰티 브랜드 리뷰 및 뷰티 트렌드 분석 채널. 뷰티 시장 성장과 함께 광고 단가가 꾸준히 상승 중입니다.', target_audience: '20~40세 뷰티 관심층, 제품 구매 전 리뷰 소비자', revenue_model: '뷰티 브랜드 협찬 수익 + 광고 수익을 분기별 배분합니다.', investment_points: ['K-뷰티 글로벌 수요 확대로 해외 협찬 단가가 오르고 있습니다.'], risk_points: ['특정 브랜드 이슈 발생 시 협찬 계약이 취소될 수 있습니다.'], roadmap_items: ['1분기: 해외 뷰티 브랜드 협찬 2건 계약', '2분기: 정산 + 뷰티 클래스 수익 편입'] },
+  { id: 'kids-world', title: '키즈월드', creator: '스튜디오 키즈', category: '키즈', price: 30200, chgPct: 0.6, tagMain: '보장형', momentum: '보합', thumbnail: ytThumb(YT_VIDEO_MAP['kids-world']!), annualReturn: 8.8, soldPct: 46, overview: '3~10세 아동 대상 교육·놀이 콘텐츠 전문 채널. 학부모 신뢰가 높고 반복 시청률이 높아 광고 단가가 안정적입니다.', target_audience: '3~10세 아동 및 그 부모, 교육 콘텐츠 구매자', revenue_model: '광고 수익 + 교육 콘텐츠 유료 판매 수익을 분기별 배분합니다.', investment_points: ['보장형 구조로 최소 수익이 보장됩니다.', '반복 시청 비율이 높아 광고 수익이 안정적으로 발생합니다.'], risk_points: ['아동 대상 콘텐츠 규제 강화 시 광고 수익에 영향을 줄 수 있습니다.'], roadmap_items: ['1분기: 교육 콘텐츠 신규 라인업 제작', '2분기: 유료 클래스 론칭 + 정산'] },
+  { id: 'history-lab', title: '역사연구소', creator: '역사미디어', category: '교양', price: 31800, chgPct: -1.8, tagMain: '일반형', momentum: '하락', thumbnail: ytThumb(YT_VIDEO_MAP['history-lab']!), annualReturn: 5.9, soldPct: 22, overview: '국내외 역사와 문화유산을 쉽게 풀어주는 교양 채널. 교육기관 협찬 수익이 주요 수입원입니다.', target_audience: '30~60세 역사·교양 콘텐츠 선호층', revenue_model: '광고 수익 + 교육기관 협찬 수익을 반기별 배분합니다.', investment_points: ['교육기관 협찬이 안정적인 수익 기반을 형성합니다.'], risk_points: ['현재 조회수 하락 추세로 수익 회복에 시간이 걸릴 수 있습니다.'], roadmap_items: ['1분기: 포맷 리뉴얼', '2분기: 교육기관 협찬 갱신 + 정산'] },
 
   {
     id: 'cinema-buster',
@@ -320,7 +330,7 @@ export const marketItems: MarketItem[] = [
     chgPct: 3.5,
     tagMain: '한정판매형',
     momentum: '급상승',
-    thumbnail: svgThumb('필름 하우스', '#0B1224', '#F59E0B'),
+    thumbnail: ytThumb(YT_VIDEO_MAP['cinema-buster']!),
     deadlineHours: 15.8,
     annualReturn: 15.6,
     soldPct: 91,
@@ -342,9 +352,9 @@ export const marketItems: MarketItem[] = [
       '4분기: 연말 시즌 특집 + 연간 정산',
     ],
   },
-  { id: 'sports-live', title: '스포츠 LIVE', creator: '스포츠컴퍼니', category: '스포츠', price: 60500, chgPct: 1.2, tagMain: '보장형', momentum: '상승', thumbnail: svgThumb('스포츠 LIVE', '#0B1224', '#06B6D4'), annualReturn: 9.5, soldPct: 58, overview: '실시간 스포츠 경기 리뷰 및 하이라이트 채널. 주요 리그 시즌에 맞춰 집중 편성합니다.', target_audience: '20~45세 스포츠 팬', revenue_model: '광고 수익 + 스포츠 브랜드 협찬 수익 분기별 배분.', investment_points: ['보장형 구조로 최소 수익 보장.'], risk_points: ['비시즌 기간 수익 감소 가능.'], roadmap_items: ['1분기: 시즌 개막 특집', '2분기: 정산'] },
-  { id: 'travel-asia', title: '아시아여행', creator: '아시아로', category: '여행', price: 15800, chgPct: -0.2, tagMain: '일반형', momentum: '보합', thumbnail: svgThumb('아시아여행', '#0B1224', '#3B82F6'), annualReturn: 7.2, soldPct: 34, overview: '동남아·동북아 중심의 여행 브이로그. 항공·호텔 협찬 수익이 주요 수입원입니다.', target_audience: '20~40세 여행 관심층', revenue_model: '여행사·호텔 협찬 수익 + 광고 수익 분기별 배분.', investment_points: ['여행 수요 회복과 함께 협찬 단가가 상승 중입니다.'], risk_points: ['특정 지역 이슈(자연재해·정세 불안) 발생 시 제작이 중단될 수 있습니다.'], roadmap_items: ['1분기: 동남아 편 제작', '2분기: 정산'] },
-  { id: 'muk-star', title: '먹스타', creator: '먹킹', category: '먹방', price: 24800, chgPct: 2.0, tagMain: '보장형', momentum: '상승', thumbnail: svgThumb('먹스타', '#0B1224', '#F59E0B'), deadlineHours: 38.0, annualReturn: 11.3, soldPct: 63, overview: '대용량·도전 먹방 전문 채널. 극한 먹방 포맷으로 알고리즘 추천을 지속적으로 받고 있습니다.', target_audience: '15~30세 먹방 콘텐츠 소비자', revenue_model: '광고 수익 + 식품 브랜드 협찬 수익 분기별 배분.', investment_points: ['보장형 구조로 최소 수익 보장.', '식품 협찬 단가가 꾸준히 상승 중입니다.'], risk_points: ['크리에이터 개인 이슈 발생 시 채널 이미지에 영향이 생길 수 있습니다.'], roadmap_items: ['1분기: 신규 도전 먹방 포맷 시리즈', '2분기: 정산'] },
+  { id: 'sports-live', title: '스포츠 LIVE', creator: '스포츠컴퍼니', category: '스포츠', price: 60500, chgPct: 1.2, tagMain: '보장형', momentum: '상승', thumbnail: ytThumb(YT_VIDEO_MAP['sports-live']!), annualReturn: 9.5, soldPct: 58, overview: '실시간 스포츠 경기 리뷰 및 하이라이트 채널. 주요 리그 시즌에 맞춰 집중 편성합니다.', target_audience: '20~45세 스포츠 팬', revenue_model: '광고 수익 + 스포츠 브랜드 협찬 수익 분기별 배분.', investment_points: ['보장형 구조로 최소 수익 보장.'], risk_points: ['비시즌 기간 수익 감소 가능.'], roadmap_items: ['1분기: 시즌 개막 특집', '2분기: 정산'] },
+  { id: 'travel-asia', title: '아시아여행', creator: '아시아로', category: '여행', price: 15800, chgPct: -0.2, tagMain: '일반형', momentum: '보합', thumbnail: ytThumb(YT_VIDEO_MAP['travel-asia']!), annualReturn: 7.2, soldPct: 34, overview: '동남아·동북아 중심의 여행 브이로그. 항공·호텔 협찬 수익이 주요 수입원입니다.', target_audience: '20~40세 여행 관심층', revenue_model: '여행사·호텔 협찬 수익 + 광고 수익 분기별 배분.', investment_points: ['여행 수요 회복과 함께 협찬 단가가 상승 중입니다.'], risk_points: ['특정 지역 이슈(자연재해·정세 불안) 발생 시 제작이 중단될 수 있습니다.'], roadmap_items: ['1분기: 동남아 편 제작', '2분기: 정산'] },
+  { id: 'muk-star', title: '먹스타', creator: '먹킹', category: '먹방', price: 24800, chgPct: 2.0, tagMain: '보장형', momentum: '상승', thumbnail: ytThumb(YT_VIDEO_MAP['muk-star']!), deadlineHours: 38.0, annualReturn: 11.3, soldPct: 63, overview: '대용량·도전 먹방 전문 채널. 극한 먹방 포맷으로 알고리즘 추천을 지속적으로 받고 있습니다.', target_audience: '15~30세 먹방 콘텐츠 소비자', revenue_model: '광고 수익 + 식품 브랜드 협찬 수익 분기별 배분.', investment_points: ['보장형 구조로 최소 수익 보장.', '식품 협찬 단가가 꾸준히 상승 중입니다.'], risk_points: ['크리에이터 개인 이슈 발생 시 채널 이미지에 영향이 생길 수 있습니다.'], roadmap_items: ['1분기: 신규 도전 먹방 포맷 시리즈', '2분기: 정산'] },
 ];
 
 export function formatKRW(n: number) {

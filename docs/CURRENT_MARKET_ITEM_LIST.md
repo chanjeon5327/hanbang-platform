@@ -53,7 +53,8 @@
 
 ## 썸네일 현황
 
-- **현재 방식**: `svgThumb(label, colorA, colorB)` 함수로 생성한 SVG 인라인 data URI
+- **현재 방식**: 유튜브 대표 영상 썸네일 (`i.ytimg.com/vi/{VIDEO_ID}/hqdefault.jpg`)
+- **매핑 문서**: `docs/YOUTUBE_THUMBNAIL_SOURCE_MAP.md` 참조
 - **실제 이미지 교체 방법**: `marketItems.ts` 각 항목의 `thumbnail` 필드를 실제 이미지 경로로 교체
   ```ts
   thumbnail: '/images/market/travel-j.jpg',  // 예시

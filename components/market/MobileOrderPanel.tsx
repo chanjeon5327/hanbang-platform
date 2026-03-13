@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useToken } from '@/context/TokenContext';
 import { useToast } from '@/context/ToastContext';
 
@@ -23,6 +23,7 @@ export default function MobileOrderPanel({
   requireLogin?: boolean;
 }) {
   const router = useRouter();
+  const pathname = usePathname() ?? '/';
   const [qty, setQty] = useState<number>(1);
   const [orderType, setOrderType] = useState<'limit' | 'market'>('market');
   const [limitPrice, setLimitPrice] = useState(price);
@@ -39,7 +40,7 @@ export default function MobileOrderPanel({
   const placeOrder = async () => {
     if (requireLogin) {
       onClose();
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
       return;
     }
     if (!qty || qty <= 0) {

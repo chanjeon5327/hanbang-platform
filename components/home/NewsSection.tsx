@@ -2,28 +2,25 @@
 
 const NEWS = [
   {
-    category: '업계동향',
-    time: '1시간 전',
-    title: '크리에이터 수익 다각화, 조각 투자 모델이 주목받는 이유',
-    gradFrom: '#0f1c3e',
-    gradVia: '#1e3a6e',
-    gradTo: '#2563eb',
+    source: '뉴시스',
+    title:
+      '"BTS 단독 굿즈 어디서?" 신세계면세점 명동점, 방탄 신상 굿즈 판매',
+    url: 'https://www.newsis.com/view/NISX20260311_0003543114',
+    thumbnail: '/news/2026-03/bts-goods-shinsegae.jpg',
   },
   {
-    category: '트렌드',
-    time: '4시간 전',
-    title: '팬덤 굿즈 수요 폭증: 지금 주목해야 할 K-콘텐츠 카테고리 3가지',
-    gradFrom: '#1a1040',
-    gradVia: '#2d1b69',
-    gradTo: '#7c3aed',
+    source: 'Industry News',
+    title:
+      '한류 타고 번지는 중국산 \'짝퉁 K-브랜드\' 점입가경…"외국 소비자 혼란 우려"',
+    url: 'https://www.industrynews.co.kr/news/articleView.html?idxno=78973',
+    thumbnail: '/news/2026-03/kbrand-counterfeit.jpg',
   },
   {
-    category: '시장분석',
-    time: '오늘',
-    title: '이번 주 마감 임박 종목 흐름: 관심 집중과 체결 변화 정리',
-    gradFrom: '#0c1a2e',
-    gradVia: '#133a5e',
-    gradTo: '#0ea5e9',
+    source: '서울신문',
+    title:
+      '허훈 서울시의원 "서울시 차원의 한류산업 지원 및 육성 위한 \'한류산업진흥 조례\' 본회의 통과"',
+    url: 'https://go.seoul.co.kr/news/newsView.php?id=20260313500202&wlog_tag3=naver',
+    thumbnail: '/news/2026-03/seoul-hallyu-ordinance.jpg',
   },
 ];
 
@@ -49,43 +46,37 @@ export default function NewsSection() {
 
       <div className="grid md:grid-cols-3 gap-4 sm:gap-5">
         {NEWS.map((n, idx) => (
-          <article
+          <a
             key={idx}
-            className="rounded-2xl border border-black/10 bg-white overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] transition cursor-pointer group"
+            href={n.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block rounded-2xl border border-black/10 bg-white overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] transition cursor-pointer group"
           >
-            {/* 썸네일 – CSS 그라디언트 */}
-            <div
-              className="h-[140px] relative overflow-hidden"
-              style={{
-                background: `linear-gradient(135deg, ${n.gradFrom} 0%, ${n.gradVia} 55%, ${n.gradTo} 100%)`,
-              }}
-            >
-              {/* 미세 격자 질감 */}
-              <div
-                className="absolute inset-0 opacity-[0.08]"
-                style={{
-                  backgroundImage:
-                    'repeating-linear-gradient(45deg, rgba(255,255,255,0.15) 0px, rgba(255,255,255,0.15) 1px, transparent 1px, transparent 9px)',
-                }}
+            {/* 썸네일 — 로컬 이미지 16:9 */}
+            <div className="h-[140px] sm:h-[160px] relative overflow-hidden bg-black/5">
+              <img
+                src={n.thumbnail}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
               />
-              {/* 하단 카테고리 배지 */}
+              {/* 하단 출처 배지 */}
               <div className="absolute bottom-3 left-4">
-                <span className="inline-block text-[10px] font-bold text-white/70 bg-white/10 border border-white/15 rounded-full px-2.5 py-0.5 tracking-wide">
-                  {n.category}
+                <span className="inline-block text-[10px] font-bold text-white/90 bg-black/50 backdrop-blur-sm border border-white/20 rounded-full px-2.5 py-0.5 tracking-wide">
+                  {n.source}
                 </span>
               </div>
             </div>
 
             <div className="p-4 sm:p-5">
-              <div className="text-[11px] text-black/40 tabular-nums">{n.time}</div>
-              <h3 className="mt-2 text-[14px] font-extrabold leading-snug text-black/85 group-hover:text-black transition line-clamp-2">
+              <h3 className="text-[14px] font-extrabold leading-snug text-black/85 group-hover:text-black transition line-clamp-2">
                 {n.title}
               </h3>
               <div className="mt-4 text-[12px] font-bold text-[#2563EB] group-hover:text-[#1D4ED8] transition">
                 자세히 보기 →
               </div>
             </div>
-          </article>
+          </a>
         ))}
       </div>
     </section>

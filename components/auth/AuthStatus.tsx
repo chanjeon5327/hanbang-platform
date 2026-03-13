@@ -1,10 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from './AuthProvider';
 
 export function AuthStatus() {
   const router = useRouter();
+  const pathname = usePathname() ?? '/';
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -54,7 +55,7 @@ export function AuthStatus() {
         로그아웃 상태
       </span>
       <button
-        onClick={() => router.push('/login')}
+        onClick={() => router.push(`/login?redirect=${encodeURIComponent(pathname)}`)}
         style={{
           padding: '4px 8px',
           fontSize: '11px',

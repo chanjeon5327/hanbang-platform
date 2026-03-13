@@ -38,6 +38,7 @@ export function InvestmentButton({ projectId }: InvestmentButtonProps) {
       <LoginModal
         open={isLoginModalOpen}
         onOpenChange={setIsLoginModalOpen}
+        redirect={`/projects/${projectId}/invest/confirm`}
       />
     </>
   )

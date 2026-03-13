@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Plus, Minus } from 'lucide-react';
 import { formatKrw } from '@/lib/utils/format';
 import { spacing, radius } from '@/lib/design/tokens';
@@ -30,6 +30,7 @@ export default function OrderPanel({
   onToast,
 }: Props) {
   const router = useRouter();
+  const pathname = usePathname() ?? '/';
   const [orderType, setOrderType] = useState<OrderType>('limit');
   const [condition, setCondition] = useState<OrderCondition>('normal');
   const [orderSide, setOrderSide] = useState<'bid' | 'ask'>('bid');
@@ -59,7 +60,7 @@ export default function OrderPanel({
   const handlePlaceOrder = useCallback(async () => {
     if (disabled) return;
     if (!isLoggedIn) {
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
       return;
     }
     if (belowMin) {

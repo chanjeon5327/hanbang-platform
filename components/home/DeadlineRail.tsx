@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import { marketItems, formatKRW } from '@/lib/mock/marketItems';
 
+const DEADLINE_SLUGS = ['cinema-buster', 'sports-pick', 'k-drama', 'game-lab'] as const;
+
 export default function DeadlineRail() {
-  const items = [...marketItems]
-    .filter((x) => typeof x.deadlineHours === 'number')
-    .sort((a, b) => (a.deadlineHours ?? 999) - (b.deadlineHours ?? 999))
-    .slice(0, 10);
+  const byId = Object.fromEntries(marketItems.map((it) => [it.id, it]));
+  const items = DEADLINE_SLUGS.map((id) => byId[id]).filter(Boolean);
 
   const fmtLeft = (h: number) => {
     if (h < 1) return `${Math.floor(h * 60)}분`;

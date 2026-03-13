@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useUnifiedAuthState } from '@/hooks/useUnifiedAuthState';
 import { getSupabaseBrowserClient } from '@/lib/supabase/browser';
 
@@ -12,7 +12,9 @@ type HeaderAuthSlotProps = {
 
 export default function HeaderAuthSlot({ variant = 'dark' }: HeaderAuthSlotProps) {
   const router = useRouter();
+  const pathname = usePathname() ?? '/';
   const { loading, isAuthenticated, displayName } = useUnifiedAuthState();
+  const redirect = encodeURIComponent(pathname);
 
   async function handleLogout() {
     const supabase = getSupabaseBrowserClient();
@@ -39,11 +41,11 @@ export default function HeaderAuthSlot({ variant = 'dark' }: HeaderAuthSlotProps
   if (!isAuthenticated) {
     return (
       <div className="flex items-center gap-2">
-        <Link href="/login" className={linkBase}>
+        <Link href={`/login?redirect=${redirect}`} className={linkBase}>
           로그인
         </Link>
         <Link
-          href="/login?mode=signup"
+          href={`/login?mode=signup&redirect=${redirect}`}
           className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white"
         >
           회원가입

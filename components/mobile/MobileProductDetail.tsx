@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { getBrowserSupabase } from '@/utils/supabase/client';
 import { getYtThumb } from '@/lib/thumbnails';
@@ -21,6 +21,7 @@ type Product = {
 export default function MobileProductDetail({ productId }: { productId: string }) {
   const supabase = getBrowserSupabase();
   const router = useRouter();
+  const pathname = usePathname() ?? '/';
   const { toast } = useToast();
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -51,7 +52,7 @@ export default function MobileProductDetail({ productId }: { productId: string }
     } = await supabase.auth.getUser();
 
     if (!user) {
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
       return;
     }
 

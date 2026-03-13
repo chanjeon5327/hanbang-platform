@@ -21,8 +21,11 @@ const TITLE_MAP: Record<string, string> = {
   '영화 블록버스터': '필름 하우스',
 };
 
+const TRENDING_SLUGS = ['beauty-talk', 'comedy-cut', 'kids-world', 'history-lab'] as const;
+
 export default function HomeV6() {
-  const trending4 = marketItems.slice(0, 4);
+  const byId = Object.fromEntries(marketItems.map((it) => [it.id, it]));
+  const trending4 = TRENDING_SLUGS.map((id) => byId[id]).filter(Boolean);
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] text-[#0B1120]">

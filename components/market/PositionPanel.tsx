@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { formatKrw, formatQty, formatRate } from '@/lib/utils/format';
 
 type Position = {
@@ -21,6 +22,8 @@ type Props = {
 };
 
 export default function PositionPanel({ assetId, sharePriceUsd, fxRate, isLoggedIn }: Props) {
+  const pathname = usePathname() ?? '/';
+  const loginHref = `/login?redirect=${encodeURIComponent(pathname)}`;
   const [position, setPosition] = useState<Position | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -74,7 +77,7 @@ export default function PositionPanel({ assetId, sharePriceUsd, fxRate, isLogged
     return (
       <div className="p-4 rounded-xl border" style={{ borderColor: 'var(--upbit-border)', backgroundColor: 'var(--upbit-bg)' }}>
         <p className="body-sm text-center" style={{ color: 'var(--upbit-text-dim)' }}>
-          <Link href="/login" className="font-semibold" style={{ color: 'var(--upbit-bid)' }}>
+          <Link href={loginHref} className="font-semibold" style={{ color: 'var(--upbit-bid)' }}>
             로그인
           </Link>
           후 포지션을 확인하세요
