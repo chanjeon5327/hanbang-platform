@@ -13,50 +13,68 @@ export default function CurationRail() {
           <h2 className="text-xl sm:text-2xl font-extrabold tracking-[-0.3px]">
             내가 좋아하는 콘텐츠를 소유해보세요.
           </h2>
-          <p className="text-sm text-black/55 mt-1">
+          <p className="text-sm text-black/50 mt-1">
             오늘 가장 주목받는 콘텐츠 자산을 직접 소유하는 경험
           </p>
         </div>
-        <Link href="/market" className="text-sm text-black/55 hover:text-black transition shrink-0">
+        <Link href="/market" className="text-sm text-black/50 hover:text-black transition shrink-0 font-medium">
           마켓 전체 →
         </Link>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex gap-3.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {curated.map((it) => {
           const up = it.chgPct >= 0;
           return (
             <Link
               key={it.id}
               href={`/market/${it.id}`}
-              className="group relative min-w-[280px] sm:min-w-[340px] h-[200px] sm:h-[220px] overflow-hidden rounded-2xl border border-black/10 hover:border-black/20 transition"
+              className="group relative min-w-[280px] sm:min-w-[340px] h-[220px] sm:h-[250px] overflow-hidden rounded-2xl border border-black/10 hover:border-[#2563EB]/25 bg-[#0B1224] shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.14)] transition duration-300"
             >
+              {/* 썸네일 배경 */}
               <div
                 className="absolute inset-0 bg-cover bg-center group-hover:scale-[1.05] transition duration-500"
                 style={{ backgroundImage: `url('${it.thumbnail}')` }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/28 to-black/0" />
+              {/* 오버레이 */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/22 to-black/0" />
 
-              <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                <span className="text-[11px] px-2 py-1 rounded-full bg-white/16 border border-white/18 text-white font-medium">
-                  {it.tagMain}
-                </span>
+              {/* 상단 배지 */}
+              <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-white/14 border border-white/18 text-white/90 tracking-wide">
+                    {it.tagMain}
+                  </span>
+                </div>
                 {it.annualReturn && (
-                  <span className="text-[11px] px-2 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/25 text-emerald-200 font-bold">
+                  <span className="text-[10px] font-extrabold px-2 py-1 rounded-full bg-emerald-500/22 border border-emerald-400/28 text-emerald-200">
                     연 {it.annualReturn}%
                   </span>
                 )}
               </div>
 
-              <div className="relative h-full p-4 flex flex-col justify-end text-white">
-                <div className="text-[12px] text-white/60">{it.creator} · {it.category}</div>
-                <div className="text-[17px] font-extrabold leading-tight mt-0.5">{it.title}</div>
+              {/* 하단 콘텐츠 */}
+              <div className="absolute bottom-0 left-0 right-0 p-4">
+                <div className="text-[11px] text-white/55">{it.creator} · {it.category}</div>
+                <div className="mt-0.5 text-[17px] font-extrabold text-white leading-tight">{it.title}</div>
                 <div className="mt-2 flex items-center justify-between">
-                  <div className="text-[14px] font-extrabold tabular-nums">{formatKRW(it.price)}</div>
+                  <div className="text-[14px] font-extrabold text-white tabular-nums">{formatKRW(it.price)}</div>
                   <div className={`text-[13px] font-extrabold tabular-nums ${up ? 'text-emerald-300' : 'text-red-300'}`}>
                     {up ? '▲' : '▼'} {Math.abs(it.chgPct).toFixed(1)}%
                   </div>
                 </div>
+                {/* 판매 진행률 */}
+                {it.soldPct !== undefined && (
+                  <div className="mt-2">
+                    <div className="w-full h-[3px] rounded-full bg-white/12 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-[#2563EB]/80"
+                        style={{ width: `${it.soldPct}%` }}
+                      />
+                    </div>
+                    <div className="mt-1 text-[10px] text-white/40 text-right">{it.soldPct}% 판매됨</div>
+                  </div>
+                )}
               </div>
             </Link>
           );
