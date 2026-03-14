@@ -6,12 +6,22 @@ import MyPageLayout from '@/components/mypage/MyPageLayout';
 import MyAssetSummary from '@/components/mypage/MyAssetSummary';
 import MyInvestList from '@/components/mypage/MyInvestList';
 import RecordsList from '@/components/mypage/RecordsList';
+import KycStatusCard, { type KycStatus } from '@/components/kyc/KycStatusCard';
+import { useKycStatus } from '@/hooks/useKycStatus';
 
 const HB_FANDOM_KEY = 'hb_fandom';
 
 export default function MyPage() {
   const [fandom, setFandom] = useState('');
   const [saved, setSaved] = useState(false);
+  const [kycStatus, setKycStatus] = useState<KycStatus>('NOT_STARTED');
+  const [kycReason, setKycReason] = useState<string | undefined>();
+  const { status: hookStatus, reason: hookReason } = useKycStatus();
+
+  useEffect(() => {
+    setKycStatus(hookStatus);
+    setKycReason(hookReason);
+  }, [hookStatus, hookReason]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -30,20 +40,34 @@ export default function MyPage() {
 
   return (
     <MyPageLayout>
-      <div className="px-4 flex items-center justify-between">
-        <span className="text-[13px] font-extrabold" style={{ color: 'var(--text)' }}>나의 팬심</span>
-        <Link
-          href="/onboarding"
-          className="px-3 py-1.5 rounded-xl caption font-semibold"
-          style={{
-            backgroundColor: 'var(--royal-blue)',
-            color: '#fff',
-          }}
-        >
-          취향 등록
-        </Link>
-      </div>
+      {/* 1. 자산 요약 (총자산/상품/현금/투자중/출금가능/수익 + 레벨 배지) */}
+      <MyAssetSummary />
+
+      {/* 2. KYC 상태 */}
       <section className="px-4">
+        <h2 className="text-[14px] font-extrabold text-[var(--toss-text)] mb-2">인증 상태</h2>
+        <KycStatusCard status={kycStatus} reason={kycReason} />
+        {kycStatus !== 'APPROVED' && (
+          <Link
+            href="/kyc"
+            className="mt-2 block text-center py-2.5 rounded-xl text-[13px] font-semibold text-white bg-[var(--royal-blue)] hover:opacity-90 transition"
+          >
+            KYC 인증하기
+          </Link>
+        )}
+      </section>
+
+      {/* 3. 관심 콘텐츠 (팬심) */}
+      <section className="px-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[14px] font-extrabold text-[var(--toss-text)]">관심 콘텐츠</span>
+          <Link
+            href="/onboarding"
+            className="px-3 py-1.5 rounded-xl text-[12px] font-semibold text-white bg-[var(--royal-blue)] hover:opacity-90 transition"
+          >
+            취향 등록
+          </Link>
+        </div>
         <div
           className="rounded-2xl px-4 py-3 border"
           style={{
@@ -79,9 +103,32 @@ export default function MyPage() {
           </div>
         </div>
       </section>
-      <MyAssetSummary />
+
+      {/* 4. 투자 중인 작품 */}
       <MyInvestList />
+
+      {/* 5. 주문/거래/정산/입출금 진입 */}
       <RecordsList />
+
+      {/* 6. 계정/인증 추가 진입 */}
+      <section className="px-4">
+        <div className="rounded-2xl overflow-hidden border border-black/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+          <Link
+            href="/settings"
+            className="flex items-center justify-between px-4 py-3 border-b border-black/10 active:scale-[0.99]"
+          >
+            <span className="text-[14px] font-semibold text-gray-900">계정 설정</span>
+            <span className="text-gray-400 text-[13px]">›</span>
+          </Link>
+          <Link
+            href="/kyc"
+            className="flex items-center justify-between px-4 py-3 last:border-0 active:scale-[0.99]"
+          >
+            <span className="text-[14px] font-semibold text-gray-900">본인인증 (KYC)</span>
+            <span className="text-gray-400 text-[13px]">›</span>
+          </Link>
+        </div>
+      </section>
     </MyPageLayout>
   );
 }

@@ -1,18 +1,18 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { requireActiveUser } from '@/lib/auth/requireActiveUser';
-import { requireKycApproved } from '@/lib/kyc/requireKycApproved';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * 자산 조회: 로그인만 필요. KYC는 거래/판매/출금 액션에만 적용.
+ */
 export async function GET() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
   }
-  const kycCheck = await requireKycApproved(supabase, user.id);
-  if (!kycCheck.approved) return kycCheck.response;
 
   try {
     await requireActiveUser(user.id);
@@ -67,6 +67,7 @@ export async function GET() {
   }
 
   const totalAssets = cashBalance + holdingsValue;
+  const profit = Math.round(totalAssets - totalDeposited);
   const profitRate = totalDeposited > 0 ? ((totalAssets - totalDeposited) / totalDeposited) * 100 : 0;
 
   const { data: dividendEntries } = await (supabase as any)
@@ -85,6 +86,8 @@ export async function GET() {
     cashBalance,
     holdingsValue,
     totalAssets,
+    totalDeposited,
+    profit,
     assetCount: assetIds.length,
     profitRate,
     totalDividend,
