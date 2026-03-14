@@ -7,10 +7,19 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-function sanitizeRedirect(redirectParam?: string | null): string {
+/**
+ * redirect 파라미터 검증: 내부 경로만 허용, 외부 URL 차단
+ * - 비어있거나 잘못되면 /
+ * - http://, https://, // 로 시작하면 차단
+ */
+export function sanitizeRedirect(redirectParam?: string | null): string {
   const fallback = '/';
-  const redirect = redirectParam?.trim() || fallback;
-  return redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : fallback;
+  const redirect = (redirectParam ?? '').trim() || fallback;
+  if (!redirect || redirect === fallback) return fallback;
+  if (redirect.startsWith('//') || redirect.startsWith('http://') || redirect.startsWith('https://')) {
+    return fallback;
+  }
+  return redirect.startsWith('/') ? redirect : fallback;
 }
 
 export async function getPostLoginRoute(

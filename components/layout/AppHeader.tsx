@@ -34,7 +34,7 @@ export default function AppHeader() {
               베타
             </span>
           </Link>
-          <HeaderAuthSlot />
+          <HeaderAuthSlot variant="light" />
         </div>
       </header>
     );
@@ -66,7 +66,7 @@ export default function AppHeader() {
           </span>
         </Link>
         <div className="flex items-center gap-2">
-          <HeaderAuthSlot />
+          <HeaderAuthSlot variant="light" />
         </div>
       </div>
     </header>

@@ -4,7 +4,8 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import styles from './login-modal.module.css';
 import { getBrowserSupabase } from '@/utils/supabase/client';
-import { getPostLoginRoute } from '@/lib/auth/getPostLoginRoute';
+import { getPostLoginRoute, sanitizeRedirect } from '@/lib/auth/getPostLoginRoute';
+import { toUserFriendlyAuthError } from '@/lib/auth/authErrorMessages';
 
 type Tab = 'investor' | 'creator';
 
@@ -14,7 +15,7 @@ export default function LoginModal(props: any) {
   const supabase = useMemo(() => getBrowserSupabase(), []);
 
   // ---- tolerant props (call sites differ) ----
-  const redirectParam = props?.redirect ?? pathname;
+  const redirectParam = sanitizeRedirect(props?.redirect ?? pathname);
   const open: boolean = !!(props?.open ?? props?.isOpen ?? props?.visible);
   const onOpenChange =
     props?.onOpenChange ??
@@ -28,6 +29,7 @@ export default function LoginModal(props: any) {
   const refreshSession = props?.refreshSession;
 
   const [tab, setTab] = useState<Tab>('investor');
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [busy, setBusy] = useState<boolean>(false);
@@ -62,7 +64,7 @@ export default function LoginModal(props: any) {
       if (error) throw error;
       // redirect handled by supabase
     } catch (e: any) {
-      setError(e?.message || 'OAuth 로그인에 실패했습니다.');
+      setError(toUserFriendlyAuthError(e?.message, 'OAuth 로그인에 실패했습니다.'));
       setBusy(false);
     }
   }
@@ -84,7 +86,7 @@ export default function LoginModal(props: any) {
       onOpenChange?.(false);
       router.push(path);
     } catch (e: any) {
-      setError(e?.message || '지갑 연결에 실패했습니다.');
+      setError(toUserFriendlyAuthError(e?.message, '지갑 연결에 실패했습니다.'));
       setBusy(false);
     }
   }
@@ -103,12 +105,13 @@ export default function LoginModal(props: any) {
       onOpenChange?.(false);
       router.push(path);
     } catch (e: any) {
-      setError(e?.message || '이메일 로그인에 실패했습니다.');
+      setError(toUserFriendlyAuthError(e?.message, '이메일 로그인에 실패했습니다.'));
       setBusy(false);
     }
   }
 
-  async function signUpEmail() {
+  async function signUpEmail(e?: React.FormEvent) {
+    e?.preventDefault();
     if (!email.trim() || !password || password.length < 6) {
       setError('이메일과 비밀번호(6자 이상)를 입력해 주세요.');
       return;
@@ -134,7 +137,7 @@ export default function LoginModal(props: any) {
       }
       setError('가입 메일을 확인해 주세요.');
     } catch (e: any) {
-      setError(e?.message || '회원가입에 실패했습니다.');
+      setError(toUserFriendlyAuthError(e?.message, '회원가입에 실패했습니다.'));
     } finally {
       setBusy(false);
     }
@@ -194,7 +197,26 @@ export default function LoginModal(props: any) {
           <div className={styles.dividerLine} />
         </div>
 
-        <form onSubmit={signInEmail} className={styles.form}>
+        <div className={styles.tabRow} style={{ marginBottom: '12px' }}>
+          <button
+            type="button"
+            className={`${styles.tab} ${mode === 'login' ? styles.tabActive : ''}`}
+            onClick={() => { setMode('login'); setError(null); }}
+            disabled={busy}
+          >
+            로그인
+          </button>
+          <button
+            type="button"
+            className={`${styles.tab} ${mode === 'signup' ? styles.tabActive : ''}`}
+            onClick={() => { setMode('signup'); setError(null); }}
+            disabled={busy}
+          >
+            회원가입
+          </button>
+        </div>
+
+        <form onSubmit={mode === 'signup' ? signUpEmail : signInEmail} className={styles.form}>
           <input
             className={styles.input}
             placeholder="이메일"
@@ -205,7 +227,7 @@ export default function LoginModal(props: any) {
           />
           <input
             className={styles.input}
-            placeholder="비밀번호"
+            placeholder="비밀번호 (6자 이상)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={busy}
@@ -214,16 +236,21 @@ export default function LoginModal(props: any) {
           />
 
           <button className={styles.emailLoginBtn} type="submit" disabled={busy}>
-            이메일로 로그인
+            {busy ? '처리 중…' : mode === 'signup' ? '회원가입하기' : '이메일로 로그인'}
           </button>
         </form>
 
         {error ? <div className={styles.error}>{error}</div> : null}
 
         <div className={styles.links}>
-          <span className={styles.muted}>계정이 없으신가요?</span>
-          <button type="button" className={styles.linkBtn} onClick={signUpEmail} disabled={busy}>
-            회원가입
+          <button
+            type="button"
+            className={styles.linkBtn}
+            onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(null); }}
+            disabled={busy}
+            style={{ color: '#2563EB' }}
+          >
+            {mode === 'login' ? '회원가입' : '로그인'}
           </button>
         </div>
 

@@ -68,7 +68,7 @@ export default function MarketDetailV3({ marketId }: Props) {
 
   const handleBuyClick = useCallback(() => {
     if (!hasSession) {
-      window.location.href = '/login';
+      window.location.href = loginHref;
       return;
     }
     if (!isApproved) {

@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 import ConditionalTabPanel from '@/components/common/ConditionalTabPanel';
 import MarketCandleChart from '@/components/charts/MarketCandleChart';
 import LiveTradesLite from '@/components/market/LiveTradesLite';
@@ -188,10 +189,28 @@ function resolveList(...candidates: unknown[]): string[] {
 
 export default function MarketDetailPage() {
   const params = useParams<{ id: string }>();
+  const pathname = usePathname() ?? '/';
   const id = params?.id ?? '';
   const item = useMemo(() => marketItems.find((x) => x.id === id), [id]);
+  const [hasSession, setHasSession] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    getBrowserSupabase()
+      .auth.getSession()
+      .then((res: { data: { session?: { user?: unknown } } }) => {
+        if (alive) setHasSession(!!res.data.session?.user);
+      })
+      .catch(() => {
+        if (alive) setHasSession(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const [tab, setTab] = useState<Tab>('decide');
+  const loginRedirect = encodeURIComponent(pathname);
 
   const title = item?.title ?? `알 수 없는 종목 (${id})`;
   const category = item?.category ?? '카테고리';
@@ -427,6 +446,22 @@ export default function MarketDetailPage() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            {hasSession === false ? (
+              <>
+                <Link
+                  href={`/login?redirect=${loginRedirect}`}
+                  className="px-3 py-2 rounded-xl bg-white hover:bg-black/5 border border-black/10 text-xs font-bold transition"
+                >
+                  로그인
+                </Link>
+                <Link
+                  href={`/login?mode=signup&redirect=${loginRedirect}`}
+                  className="px-3 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold transition"
+                >
+                  회원가입
+                </Link>
+              </>
+            ) : null}
             <Link
               href="/market"
               className="px-3 py-2 rounded-xl bg-white hover:bg-black/5 border border-black/10 text-xs font-bold transition"

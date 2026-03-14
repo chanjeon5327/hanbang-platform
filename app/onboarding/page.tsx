@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ChannelCard, { type Channel, type RatingType } from '@/components/onboarding/ChannelCard';
+import { sanitizeRedirect } from '@/lib/auth/getPostLoginRoute';
 import OnboardingSummary from '@/components/onboarding/OnboardingSummary';
 import { getYtThumb } from '@/lib/thumbnails';
 
@@ -78,7 +79,7 @@ function OnboardingContent() {
   const [completedSkipped, setCompletedSkipped] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectParam = searchParams.get('redirect') || '/';
+  const redirectParam = sanitizeRedirect(searchParams.get('redirect') || '/');
 
   const displayChannels = useMemo(() => {
     const need = Math.max(0, 50 - channels.length);
@@ -155,7 +156,7 @@ function OnboardingContent() {
       <div className="min-h-screen pb-24" style={{ backgroundColor: 'var(--bg)' }}>
         <OnboardingSummary ratedCount={ratedCount} skipped={completedSkipped} />
         <p className="text-center caption" style={{ color: 'var(--text-secondary)' }}>
-          홈으로 이동합니다…
+          {redirectParam === '/' ? '홈으로 이동합니다…' : '이동합니다…'}
         </p>
       </div>
     );

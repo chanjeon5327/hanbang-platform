@@ -1,8 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { formatKRW } from '@/lib/mock/marketItems';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 import { hashSeed, mulberry32 } from '@/lib/mock/series';
 import OrderBookMiniUpbit from '@/components/market/OrderBookMiniUpbit';
 
@@ -81,7 +83,24 @@ export default function TradePanelUpbit({
   assetId: string;
   basePrice: number;
 }) {
+  const pathname = usePathname() ?? '/';
+  const [hasSession, setHasSession] = useState<boolean | null>(null);
   const [sub, setSub] = useState<Sub>('buy');
+
+  useEffect(() => {
+    let alive = true;
+    getBrowserSupabase()
+      .auth.getSession()
+      .then((res: { data: { session?: { user?: unknown } } }) => {
+        if (alive) setHasSession(!!res.data.session?.user);
+      })
+      .catch(() => {
+        if (alive) setHasSession(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
   const [orderType, setOrderType] = useState<OrderType>('limit');
   const [price, setPrice] = useState<string>(String(basePrice));
   const [qty, setQty] = useState<string>('1');
@@ -280,13 +299,19 @@ export default function TradePanelUpbit({
             {/* 주문 CTA */}
             <button
               type="button"
+              onClick={() => {
+                if (hasSession === false) {
+                  window.location.href = `/login?redirect=${encodeURIComponent(pathname)}`;
+                  return;
+                }
+              }}
               className={`mt-4 w-full py-3.5 rounded-xl text-[14px] font-extrabold transition active:scale-[0.98] ${
                 sub === 'buy'
                   ? 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-[0_6px_16px_rgba(37,99,235,0.38)]'
                   : 'bg-red-600 hover:bg-red-700 text-white shadow-[0_6px_16px_rgba(220,38,38,0.32)]'
               }`}
             >
-              {sub === 'buy' ? '구매하기' : '판매하기'}
+              {hasSession === false ? '로그인 후 거래하기' : sub === 'buy' ? '구매하기' : '판매하기'}
             </button>
           </>
         )}

@@ -4,7 +4,8 @@ import { Suspense, useMemo, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './login.module.css';
 import { getBrowserSupabase } from '@/utils/supabase/client';
-import { getPostLoginRoute } from '@/lib/auth/getPostLoginRoute';
+import { getPostLoginRoute, sanitizeRedirect } from '@/lib/auth/getPostLoginRoute';
+import { toUserFriendlyAuthError } from '@/lib/auth/authErrorMessages';
 
 type Tab = 'investor' | 'creator';
 type AuthMode = 'login' | 'signup';
@@ -22,11 +23,15 @@ function LoginContent() {
   const [error, setError] = useState<string | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
 
-  const redirectParam = searchParams.get('redirect') || searchParams.get('redirectTo') || searchParams.get('next') || '/';
+  const redirectParam = sanitizeRedirect(
+    searchParams.get('redirect') || searchParams.get('redirectTo') || searchParams.get('next') || '/'
+  );
 
   useEffect(() => {
     const m = (searchParams.get('mode') === 'signup' ? 'signup' : 'login') as AuthMode;
     setMode(m);
+    const err = searchParams.get('error');
+    if (err === 'oauth_failed') setError('소셜 로그인에 실패했습니다. 다시 시도해 주세요.');
   }, [searchParams]);
 
   useEffect(() => {
@@ -58,7 +63,7 @@ function LoginContent() {
       });
       if (err) throw err;
     } catch (e: any) {
-      setError(e?.message || `${provider === 'google' ? '구글' : '카카오'} 로그인에 실패했습니다.`);
+      setError(toUserFriendlyAuthError(e?.message, `${provider === 'google' ? '구글' : '카카오'} 로그인에 실패했습니다.`));
       setBusy(false);
     }
   }
@@ -77,7 +82,7 @@ function LoginContent() {
       const path = await getPostLoginRoute(supabase, redirectParam);
       router.push(path);
     } catch (e: any) {
-      setError(e?.message || '지갑 연결에 실패했습니다.');
+      setError(toUserFriendlyAuthError(e?.message, '지갑 연결에 실패했습니다.'));
       setBusy(false);
     }
   }
@@ -99,7 +104,7 @@ function LoginContent() {
       const path = await getPostLoginRoute(supabase, redirectParam);
       router.replace(path);
     } catch (e: any) {
-      setError(e?.message || '이메일 로그인에 실패했습니다.');
+      setError(toUserFriendlyAuthError(e?.message, '이메일 로그인에 실패했습니다.'));
       setBusy(false);
     }
   }
@@ -128,7 +133,7 @@ function LoginContent() {
       }
       setError('가입 메일을 확인해 주세요.');
     } catch (e: any) {
-      setError(e?.message || '회원가입에 실패했습니다.');
+      setError(toUserFriendlyAuthError(e?.message, '회원가입에 실패했습니다.'));
     } finally {
       setBusy(false);
     }
@@ -242,7 +247,7 @@ function LoginContent() {
             />
 
             <button className={styles.emailLoginBtn} type="submit" disabled={busy}>
-              {mode === 'signup' ? '회원가입하기' : '이메일로 로그인'}
+              {busy ? '처리 중…' : mode === 'signup' ? '회원가입하기' : '이메일로 로그인'}
             </button>
           </form>
 

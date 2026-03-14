@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useUnifiedAuthState } from '@/hooks/useUnifiedAuthState';
-import { getSupabaseBrowserClient } from '@/lib/supabase/browser';
+import { signOutAndCleanup } from '@/lib/auth/signOut';
 
 type HeaderAuthSlotProps = {
   /** light: 밝은 배경(어두운 텍스트), dark: 어두운 배경(밝은 텍스트, 기본값) */
@@ -11,15 +11,12 @@ type HeaderAuthSlotProps = {
 };
 
 export default function HeaderAuthSlot({ variant = 'dark' }: HeaderAuthSlotProps) {
-  const router = useRouter();
   const pathname = usePathname() ?? '/';
   const { loading, isAuthenticated, displayName } = useUnifiedAuthState();
   const redirect = encodeURIComponent(pathname);
 
   async function handleLogout() {
-    const supabase = getSupabaseBrowserClient();
-    await supabase.auth.signOut();
-    router.refresh();
+    await signOutAndCleanup('/');
   }
 
   const isLight = variant === 'light';
@@ -56,6 +53,9 @@ export default function HeaderAuthSlot({ variant = 'dark' }: HeaderAuthSlotProps
 
   return (
     <div className="flex items-center gap-2">
+      <Link href="/mypage" className={linkBase}>
+        마이페이지
+      </Link>
       <span className={`max-w-[120px] truncate text-sm ${displayText}`}>
         {displayName ?? '회원'}
       </span>
