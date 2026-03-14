@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 const NEWS = [
   {
     source: '뉴시스',
@@ -36,12 +38,12 @@ export default function NewsSection() {
             투자 판단에 도움이 되는 소식을 짧게 정리했습니다.
           </p>
         </div>
-        <button
-          type="button"
+        <Link
+          href="/notice"
           className="text-sm text-black/55 hover:text-black transition shrink-0"
         >
           더보기 →
-        </button>
+        </Link>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4 sm:gap-5">

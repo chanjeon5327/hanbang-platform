@@ -2,8 +2,9 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { formatKRW } from '@/lib/mock/marketItems';
+import { useToast } from '@/context/ToastContext';
 import { getBrowserSupabase } from '@/utils/supabase/client';
 import { hashSeed, mulberry32 } from '@/lib/mock/series';
 import OrderBookMiniUpbit from '@/components/market/OrderBookMiniUpbit';
@@ -84,6 +85,8 @@ export default function TradePanelUpbit({
   basePrice: number;
 }) {
   const pathname = usePathname() ?? '/';
+  const router = useRouter();
+  const { toast } = useToast();
   const [hasSession, setHasSession] = useState<boolean | null>(null);
   const [sub, setSub] = useState<Sub>('buy');
 
@@ -304,6 +307,12 @@ export default function TradePanelUpbit({
                   window.location.href = `/login?redirect=${encodeURIComponent(pathname)}`;
                   return;
                 }
+                if (needKyc) {
+                  toast('KYC 완료 후 이용할 수 있어요.');
+                  router.push('/kyc');
+                  return;
+                }
+                toast('거래 기능 준비 중입니다.');
               }}
               className={`mt-4 w-full py-3.5 rounded-xl text-[14px] font-extrabold transition active:scale-[0.98] ${
                 sub === 'buy'
