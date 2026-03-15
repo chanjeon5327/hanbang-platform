@@ -74,6 +74,7 @@ export async function POST(req: Request) {
     email: data.user.email ?? null,
     role: parsedRole,
     status: 'NEW',
+    signup_method: 'email',
     created_at: new Date().toISOString(),
   };
 

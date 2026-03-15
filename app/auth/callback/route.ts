@@ -18,7 +18,7 @@ export async function GET(req: Request) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
     console.error('[auth/callback] exchangeCodeForSession error:', error);
@@ -26,6 +26,21 @@ export async function GET(req: Request) {
     loginUrl.searchParams.set('redirect', redirectParam);
     loginUrl.searchParams.set('error', 'oauth_failed');
     return NextResponse.redirect(loginUrl);
+  }
+
+  // 가입 방식(signup_method) 저장
+  const user = data?.user;
+  if (user) {
+    const provider = (user.app_metadata?.provider as string) ?? user.identities?.[0]?.provider ?? 'email';
+    const signupMethod = ['google', 'kakao', 'email'].includes(provider) ? provider : 'email';
+    try {
+      await (supabase as any)
+        .from('profiles')
+        .update({ signup_method: signupMethod, updated_at: new Date().toISOString() })
+        .eq('id', user.id);
+    } catch {
+      // signup_method 컬럼 없으면 무시
+    }
   }
 
   const path = await getPostLoginRouteServer(supabase, redirectParam);

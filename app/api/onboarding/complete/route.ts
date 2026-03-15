@@ -18,8 +18,9 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({}));
     const skipped = Boolean(body.skipped);
+    const summary = body.summary && typeof body.summary === 'object' ? body.summary : {};
 
-    // user_onboarding_status upsert
+    // user_onboarding_status upsert (선호 카테고리/선택 결과 포함)
     const { error: statusError } = await (supabase as any)
       .from('user_onboarding_status')
       .upsert(
@@ -27,6 +28,7 @@ export async function POST(req: NextRequest) {
           user_id: user.id,
           completed_at: new Date().toISOString(),
           skipped,
+          preference_summary: summary,
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' }

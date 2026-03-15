@@ -86,7 +86,7 @@ export default function OrderPanel({
         });
         const json = await res.json();
         if (res.status === 403 && (json?.code === 'KYC_REQUIRED' || json?.error === 'KYC_REQUIRED')) {
-          showToast('KYC 인증이 필요합니다.');
+          showToast('인증이 필요해요.');
           router.push('/kyc');
           return;
         }
@@ -111,7 +111,7 @@ export default function OrderPanel({
         });
         const json = await res.json();
         if (res.status === 403 && (json?.code === 'KYC_REQUIRED' || json?.error === 'KYC_REQUIRED')) {
-          showToast('KYC 인증이 필요합니다.');
+          showToast('인증이 필요해요.');
           router.push('/kyc');
           return;
         }
@@ -137,7 +137,7 @@ export default function OrderPanel({
         });
         const json = await res.json();
         if (res.status === 403 && (json?.code === 'KYC_REQUIRED' || json?.error === 'KYC_REQUIRED')) {
-          showToast('KYC 인증이 필요합니다.');
+          showToast('인증이 필요해요.');
           router.push('/kyc');
           return;
         }

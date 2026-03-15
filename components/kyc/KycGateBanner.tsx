@@ -18,17 +18,17 @@ export default function KycGateBanner({ compact }: Props) {
         return (
           <>
             <p className="font-semibold" style={{ color: 'var(--text)', fontSize: compact ? 14 : 15 }}>
-              KYC 인증이 필요합니다
+              인증이 필요해요
             </p>
             <p className="mt-0.5 body-sm" style={{ color: 'var(--text-secondary)' }}>
-              출금 및 거래를 위해 본인인증을 완료해주세요.
+              출금과 거래를 위해 간단한 인증을 완료해주세요. 금방 끝나요.
             </p>
             <Link
               href="/kyc"
               className="inline-block mt-3 px-4 py-2 rounded-xl font-semibold body-sm"
               style={{ backgroundColor: 'var(--royal-blue)', color: '#fff' }}
             >
-              KYC 하러가기
+              인증하기
             </Link>
           </>
         );
@@ -36,10 +36,10 @@ export default function KycGateBanner({ compact }: Props) {
         return (
           <>
             <p className="font-semibold" style={{ color: 'var(--text)', fontSize: compact ? 14 : 15 }}>
-              심사 중입니다
+              확인 중이에요
             </p>
             <p className="mt-0.5 body-sm" style={{ color: 'var(--text-secondary)' }}>
-              1~2 영업일 내 심사가 완료됩니다. 완료 시 출금·거래가 가능합니다.
+              1~2 영업일 내에 확인해 드릴게요. 완료되면 출금·거래가 가능해요.
             </p>
           </>
         );
@@ -47,7 +47,7 @@ export default function KycGateBanner({ compact }: Props) {
         return (
           <>
             <p className="font-semibold" style={{ color: 'var(--text)', fontSize: compact ? 14 : 15 }}>
-              반려되었습니다
+              보완이 필요해요
             </p>
             {reason?.trim() && (
               <p className="mt-0.5 body-sm" style={{ color: 'var(--accent-loss)' }}>
@@ -59,7 +59,7 @@ export default function KycGateBanner({ compact }: Props) {
               className="inline-block mt-3 px-4 py-2 rounded-xl font-semibold body-sm"
               style={{ backgroundColor: 'var(--royal-blue)', color: '#fff' }}
             >
-              다시 제출
+              다시 제출하기
             </Link>
           </>
         );

@@ -20,7 +20,7 @@ export default function WithdrawPage() {
 
   const handleWithdrawClick = () => {
     if (!isApproved) {
-      setToast('KYC 인증이 필요합니다. KYC 페이지로 이동합니다.');
+      setToast('인증이 필요해요. 인증 페이지로 이동할게요.');
       setTimeout(() => router.push('/kyc'), 500);
       return;
     }

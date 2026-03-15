@@ -74,15 +74,21 @@ function LoginContent() {
     try {
       const eth = (window as any).ethereum;
       if (!eth) {
-        setError('MetaMask 확장프로그램이 필요합니다.');
+        setError('MetaMask 확장프로그램이 필요합니다. 브라우저 확장을 설치해 주세요.');
         setBusy(false);
         return;
       }
       await eth.request({ method: 'eth_requestAccounts' });
-      const path = await getPostLoginRoute(supabase, redirectParam);
-      router.push(path);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const path = await getPostLoginRoute(supabase, redirectParam);
+        router.push(path);
+      } else {
+        setError('지갑이 연결되었습니다. 서비스 이용을 위해 이메일 또는 소셜 로그인으로 계정을 만들어 주세요.');
+        setBusy(false);
+      }
     } catch (e: any) {
-      setError(toUserFriendlyAuthError(e?.message, '지갑 연결에 실패했습니다.'));
+      setError(toUserFriendlyAuthError(e?.message, '지갑 연결에 실패했습니다. MetaMask가 잠금 해제되어 있는지 확인해 주세요.'));
       setBusy(false);
     }
   }

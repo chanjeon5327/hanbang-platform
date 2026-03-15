@@ -153,9 +153,9 @@ export default function TradePanelUpbit({
 
         {needKyc && (
           <div className="mt-3 rounded-xl border border-amber-300/50 bg-amber-50 px-3.5 py-2.5 text-amber-900 text-xs leading-5">
-            판매·주문수정은 KYC 인증 후 이용 가능합니다.{' '}
+            판매·주문수정은 인증 후 이용 가능해요.{' '}
             <Link href="/kyc" className="underline font-bold">
-              KYC 인증하기 →
+              인증하기 →
             </Link>
           </div>
         )}

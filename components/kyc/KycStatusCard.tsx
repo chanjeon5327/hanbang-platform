@@ -3,17 +3,17 @@
 export type KycStatus = 'NOT_STARTED' | 'PENDING' | 'APPROVED' | 'REJECTED';
 
 const LABELS: Record<KycStatus, string> = {
-  NOT_STARTED: '심사 전',
-  PENDING: '심사 중',
-  APPROVED: '승인',
-  REJECTED: '반려',
+  NOT_STARTED: '시작 전',
+  PENDING: '확인 중',
+  APPROVED: '완료',
+  REJECTED: '보완 필요',
 };
 
 const DESCRIPTIONS: Record<KycStatus, string> = {
-  NOT_STARTED: '본인인증 정보를 입력하고 제출해주세요.',
-  PENDING: '제출이 완료되었습니다. 1~2 영업일 내 심사가 완료됩니다.',
-  APPROVED: '본인인증이 완료되었습니다. 출금 및 고액거래가 가능합니다.',
-  REJECTED: '심사 결과 반려되었습니다. 아래 사유를 확인 후 재제출해주세요.',
+  NOT_STARTED: '아래 정보를 입력하고 제출해주세요. 금방 끝나요.',
+  PENDING: '제출이 완료되었어요. 1~2 영업일 내에 확인해 드릴게요.',
+  APPROVED: '인증이 완료되었어요. 출금과 고액거래가 가능해요.',
+  REJECTED: '아래 내용을 확인한 뒤 다시 제출해주세요.',
 };
 
 type Props = {
@@ -51,7 +51,7 @@ export default function KycStatusCard({ status, reason }: Props) {
         </p>
         {isRejected && (
           <p className="body-sm mt-1" style={{ color: 'var(--accent-loss)' }}>
-            {reason?.trim() || '제출된 정보를 확인할 수 없습니다. 다시 시도해주세요.'}
+            {reason?.trim() || '제출된 정보를 확인할 수 없어요. 다시 시도해주세요.'}
           </p>
         )}
       </div>

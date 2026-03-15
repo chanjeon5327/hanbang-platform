@@ -72,7 +72,7 @@ export default function MarketDetailV3({ marketId }: Props) {
       return;
     }
     if (!isApproved) {
-      setToastMessage('KYC 인증이 필요합니다. KYC 페이지로 이동합니다.');
+      setToastMessage('인증이 필요해요. 인증 페이지로 이동할게요.');
       setToastVisible(true);
       setTimeout(() => router.push('/kyc'), 500);
       return;
@@ -87,7 +87,7 @@ export default function MarketDetailV3({ marketId }: Props) {
       return;
     }
     if (!isApproved) {
-      setToastMessage('KYC 인증이 필요합니다. KYC 페이지로 이동합니다.');
+      setToastMessage('인증이 필요해요. 인증 페이지로 이동할게요.');
       setToastVisible(true);
       setTimeout(() => router.push('/kyc'), 500);
       return;

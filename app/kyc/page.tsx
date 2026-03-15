@@ -43,10 +43,27 @@ function parseKycStatus(data: Record<string, unknown> | null): { status: KycStat
 }
 
 const STEPS = [
-  '1) 본인 정보 입력',
-  '2) 제출',
-  '3) 심사 완료',
+  { label: '기본 정보', short: '기본' },
+  { label: '신분 확인', short: '신분' },
+  { label: '연락 정보', short: '연락' },
+  { label: '완료', short: '완료' },
 ];
+
+function StepIndicator({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
+  return (
+    <div className="flex items-center gap-1">
+      {Array.from({ length: totalSteps }).map((_, i) => (
+        <div
+          key={i}
+          className="h-1.5 flex-1 rounded-full transition-colors"
+          style={{
+            backgroundColor: i < currentStep ? 'var(--royal-blue)' : 'var(--border)',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function KycPage() {
   const [status, setStatus] = useState<KycStatus>('NOT_STARTED');
@@ -69,8 +86,11 @@ export default function KycPage() {
     setStatus('PENDING');
   };
 
+  const progressStep =
+    status === 'APPROVED' ? 4 : status === 'PENDING' ? 4 : status === 'REJECTED' ? 1 : 1;
+
   return (
-    <div className="pb-16" style={{ backgroundColor: 'var(--bg)' }}>
+    <div className="pb-16 min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
       <header
         className="sticky top-0 z-50 border-b px-4 py-3"
         style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
@@ -80,50 +100,62 @@ export default function KycPage() {
             ‹ 마이페이지
           </Link>
           <h1 className="body-lg font-bold" style={{ color: 'var(--text)' }}>
-            KYC 인증
+            인증하기
           </h1>
           <span className="w-14" />
         </div>
       </header>
 
-      <div className="px-4 pt-4 pb-4 mx-auto max-w-[480px] space-y-4">
+      <div className="px-4 pt-4 pb-4 mx-auto max-w-[480px] space-y-5">
+        {/* 첫 화면: 부드러운 진입 안내 (NOT_STARTED 또는 REJECTED일 때) */}
+        {(status === 'NOT_STARTED' || status === 'REJECTED') && !loading && (
+          <div
+            className="rounded-2xl p-5"
+            style={{
+              backgroundColor: 'var(--card)',
+              border: '1px solid var(--border)',
+            }}
+          >
+            <p className="font-semibold mb-1" style={{ fontSize: 17, color: 'var(--text)' }}>
+              안전한 거래를 위해 간단한 인증이 필요해요
+            </p>
+            <p className="body-sm" style={{ color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              몇 단계만 거치면 바로 이용할 수 있어요. 금방 끝나요 ✨
+            </p>
+          </div>
+        )}
+
         {loading ? (
           <div
-            className="rounded-2xl p-4 h-16 animate-pulse"
+            className="rounded-2xl p-4 h-20 animate-pulse"
             style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
           />
         ) : (
           <KycStatusCard status={status} reason={reason} />
         )}
 
-        {/* 진행 단계: 인라인 pill 형태로 compact */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {STEPS.map((s, i) => (
-            <span
-              key={s}
-              className="inline-flex items-center gap-1 rounded-full px-3 py-1 caption font-medium"
-              style={{
-                backgroundColor: 'var(--card)',
-                border: '1px solid var(--border)',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              <span
-                className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                style={{ backgroundColor: 'var(--royal-blue)' }}
-              >
-                {i + 1}
+        {/* 진행률 표시 */}
+        {status !== 'APPROVED' && !loading && (
+          <div className="space-y-2">
+            <div className="flex justify-between caption" style={{ color: 'var(--text-secondary)' }}>
+              <span>
+                {status === 'PENDING' ? '제출 완료!' : `${STEPS[progressStep - 1]?.label ?? ''} 단계`}
               </span>
-              {s.replace(/^\d+\)\s*/, '')}
-            </span>
-          ))}
-        </div>
+              <span>
+                {status === 'PENDING' ? '확인 중이에요' : `${progressStep}/${STEPS.length}`}
+              </span>
+            </div>
+            <StepIndicator currentStep={progressStep} totalSteps={STEPS.length} />
+          </div>
+        )}
 
         {status !== 'APPROVED' && !loading && <KycForm onSubmitted={handleSubmitted} />}
 
-        <p className="caption text-center" style={{ color: 'var(--text-secondary)' }}>
-          승인 후 출금/고액거래 한도 상향
-        </p>
+        {status !== 'APPROVED' && !loading && (
+          <p className="caption text-center" style={{ color: 'var(--text-secondary)' }}>
+            인증 완료 후 출금·고액거래가 가능해요
+          </p>
+        )}
       </div>
     </div>
   );

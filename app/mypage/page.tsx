@@ -43,16 +43,16 @@ export default function MyPage() {
       {/* 1. 자산 요약 (총자산/상품/현금/투자중/출금가능/수익 + 레벨 배지) */}
       <MyAssetSummary />
 
-      {/* 2. KYC 상태 */}
+      {/* 2. 인증 상태 */}
       <section className="px-4">
-        <h2 className="text-[14px] font-extrabold text-[var(--toss-text)] mb-2">인증 상태</h2>
+        <h2 className="text-[14px] font-extrabold text-[var(--toss-text)] mb-2">인증하기</h2>
         <KycStatusCard status={kycStatus} reason={kycReason} />
         {kycStatus !== 'APPROVED' && (
           <Link
             href="/kyc"
             className="mt-2 block text-center py-2.5 rounded-xl text-[13px] font-semibold text-white bg-[var(--royal-blue)] hover:opacity-90 transition"
           >
-            KYC 인증하기
+            인증 시작하기
           </Link>
         )}
       </section>
@@ -124,7 +124,7 @@ export default function MyPage() {
             href="/kyc"
             className="flex items-center justify-between px-4 py-3 last:border-0 active:scale-[0.99]"
           >
-            <span className="text-[14px] font-semibold text-gray-900">본인인증 (KYC)</span>
+            <span className="text-[14px] font-semibold text-gray-900">인증하기</span>
             <span className="text-gray-400 text-[13px]">›</span>
           </Link>
         </div>

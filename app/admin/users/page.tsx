@@ -9,14 +9,23 @@ interface User {
   id: string;
   name: string;
   email: string;
-  phone: string;
-  walletBalance: number;
-  investmentTotal: number;
+  phone?: string;
+  walletBalance?: number;
+  investmentTotal?: number;
   joinDate: string;
   privateNote?: string;
   dailyInvestLimit?: number;
   monthlyInvestLimit?: number;
   kycLevel?: number;
+  signup_method?: string;
+  onboarding_completed?: boolean;
+  onboarding?: {
+    completed_at: string | null;
+    skipped: boolean;
+    preferred_categories: string[];
+    round_completed: number;
+    rated_count: number;
+  };
 }
 
 interface UserDetailModalProps {
@@ -149,6 +158,14 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
         <div style={{ marginBottom: "24px", padding: "20px", backgroundColor: "var(--bg-secondary)", borderRadius: "12px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
             <div>
+              <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>가입 방식</p>
+              <p style={{ fontSize: "14px", color: "var(--text-primary)" }}>{SIGNUP_METHOD_LABEL[user.signup_method ?? 'email'] ?? user.signup_method ?? '이메일'}</p>
+            </div>
+            <div>
+              <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>온보딩 완료</p>
+              <p style={{ fontSize: "14px", color: "var(--text-primary)" }}>{user.onboarding_completed ? '완료' : '미완료'}</p>
+            </div>
+            <div>
               <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>이메일</p>
               <p style={{ fontSize: "14px", color: "var(--text-primary)" }}>{user.email}</p>
               <button
@@ -171,7 +188,7 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
             </div>
             <div>
               <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>연락처</p>
-              <p style={{ fontSize: "14px", color: "var(--text-primary)" }}>{user.phone}</p>
+              <p style={{ fontSize: "14px", color: "var(--text-primary)" }}>{user.phone ?? '-'}</p>
             </div>
             <div>
               <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>가입일</p>
@@ -180,9 +197,17 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
             <div>
               <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>총 투자액</p>
               <p style={{ fontSize: "14px", color: "var(--text-primary)", fontWeight: "bold" }}>
-                {user.investmentTotal.toLocaleString()}원
+                {(user.investmentTotal ?? 0).toLocaleString()}원
               </p>
             </div>
+            {(user.onboarding?.preferred_categories ?? []).length > 0 && (
+            <div style={{ gridColumn: "1 / -1" }}>
+              <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>선호 카테고리</p>
+              <p style={{ fontSize: "14px", color: "var(--text-primary)" }}>
+                {(user.onboarding?.preferred_categories ?? []).join(', ')}
+              </p>
+            </div>
+            )}
           </div>
         </div>
 
@@ -308,9 +333,9 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
               <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--text-primary)", marginBottom: "16px" }}>
                 지갑 잔액
               </h3>
-              <div
-                style={{
-                  padding: "24px",
+          <div
+            style={{
+              padding: "24px",
                   backgroundColor: "var(--bg-secondary)",
                   borderRadius: "12px",
                   textAlign: "center",
@@ -318,7 +343,7 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
               >
                 <p style={{ fontSize: "14px", color: "var(--text-muted)", marginBottom: "8px" }}>보유 현금</p>
                 <p style={{ fontSize: "32px", fontWeight: "bold", color: "var(--text-primary)" }}>
-                  {user.walletBalance.toLocaleString()}원
+                  {(user.walletBalance ?? 0).toLocaleString()}원
                 </p>
               </div>
             </div>
@@ -453,55 +478,46 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
   );
 }
 
-export default function AdminUsers() {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: "1",
-      name: "김투자자",
-      email: "investor1@example.com",
-      phone: "010-1234-5678",
-      walletBalance: 5000000,
-      investmentTotal: 1800000,
-      joinDate: "2024-01-01",
-      dailyInvestLimit: 1000000,
-      monthlyInvestLimit: 10000000,
-      kycLevel: 1,
-    },
-    {
-      id: "2",
-      name: "이창작자",
-      email: "creator1@example.com",
-      phone: "010-2345-6789",
-      walletBalance: 0,
-      investmentTotal: 0,
-      joinDate: "2024-01-05",
-      privateNote: "이 유저는 악성 민원인입니다. 주의 필요.",
-      dailyInvestLimit: 1000000,
-      monthlyInvestLimit: 10000000,
-      kycLevel: 1,
-    },
-    {
-      id: "3",
-      name: "박고객",
-      email: "customer1@example.com",
-      phone: "010-3456-7890",
-      walletBalance: 2000000,
-      investmentTotal: 500000,
-      joinDate: "2024-01-10",
-      dailyInvestLimit: 1000000,
-      monthlyInvestLimit: 10000000,
-      kycLevel: 1,
-    },
-  ]);
+const SIGNUP_METHOD_LABEL: Record<string, string> = {
+  email: '이메일',
+  google: '구글',
+  kakao: '카카오',
+  metamask: 'MetaMask',
+};
 
+export default function AdminUsers() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    fetch('/api/admin/users/list?limit=100', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((data) => {
+        const list = (data.users ?? []).map((u: { id: string; email: string; name: string; status: string; signup_method?: string; onboarding_completed?: boolean; created_at?: string; onboarding?: { preferred_categories?: string[] } }) => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          phone: '-',
+          walletBalance: 0,
+          investmentTotal: 0,
+          joinDate: u.created_at ? new Date(u.created_at).toLocaleDateString('ko-KR') : '-',
+          signup_method: u.signup_method,
+          onboarding_completed: u.onboarding_completed,
+          onboarding: u.onboarding,
+        }));
+        setUsers(list);
+      })
+      .catch(() => setUsers([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.phone.includes(searchQuery)
+      (user.phone ?? '').includes(searchQuery)
   );
 
   const handleUpdateNote = (userId: string, note: string) => {
@@ -593,6 +609,9 @@ export default function AdminUsers() {
           overflow: "hidden",
         }}
       >
+        {loading ? (
+          <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>로딩 중…</div>
+        ) : (
         <div style={{ display: "flex", flexDirection: "column" }}>
           {filteredUsers.map((user) => (
             <div
@@ -615,8 +634,16 @@ export default function AdminUsers() {
               }}
             >
               <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px", flexWrap: "wrap" }}>
                   <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--text-primary)" }}>{user.name}</h3>
+                  <span style={{ padding: "2px 8px", borderRadius: "4px", backgroundColor: "var(--bg-secondary)", color: "var(--text-secondary)", fontSize: "11px" }}>
+                    {SIGNUP_METHOD_LABEL[user.signup_method ?? 'email'] ?? user.signup_method ?? '이메일'}
+                  </span>
+                  {user.onboarding_completed ? (
+                    <span style={{ padding: "2px 8px", borderRadius: "4px", backgroundColor: "rgba(34, 197, 94, 0.15)", color: "rgb(34, 197, 94)", fontSize: "10px" }}>온보딩 완료</span>
+                  ) : (
+                    <span style={{ padding: "2px 8px", borderRadius: "4px", backgroundColor: "rgba(234, 179, 8, 0.15)", color: "rgb(234, 179, 8)", fontSize: "10px" }}>온보딩 미완료</span>
+                  )}
                   {user.privateNote && (
                     <span
                       style={{
@@ -644,14 +671,19 @@ export default function AdminUsers() {
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "4px" }}>총 투자액</p>
-                <p style={{ fontSize: "18px", fontWeight: "bold", color: "var(--text-primary)" }}>
-                  {user.investmentTotal.toLocaleString()}원
+                <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>
+                  {(user.onboarding?.preferred_categories ?? []).length > 0
+                    ? `선호: ${(user.onboarding?.preferred_categories ?? []).slice(0, 3).join(', ')}${(user.onboarding?.preferred_categories ?? []).length > 3 ? '…' : ''}`
+                    : '선호 카테고리 없음'}
+                </p>
+                <p style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
+                  {(user.investmentTotal ?? 0).toLocaleString()}원
                 </p>
               </div>
             </div>
           ))}
         </div>
+        )}
       </div>
 
       <UserDetailModal
