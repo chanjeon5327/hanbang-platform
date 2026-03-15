@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: '사용자 생성에 실패했습니다.' }, { status: 500 });
   }
 
-  await   await resetLoginRateLimit(req);
+  await resetLoginRateLimit(req);
 
   // profiles upsert: role, created_at, creator_status
   // 1) USER: creator_status = null

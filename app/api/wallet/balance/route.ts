@@ -25,10 +25,15 @@ export async function GET() {
     .select('*')
     .eq('user_id', user.id);
 
+  // Available cash = credits - debits - active holds + released holds
+  // CASH_HOLD: funds locked for a pending order (reduce available balance)
+  // CASH_RELEASE: hold reversed on cancel (restore available balance)
   const cashBalance =
     (data ?? []).reduce((a, r) => {
-      if (r.entry_type === 'CASH_CREDIT') return a + Number(r.amount ?? 0);
-      if (r.entry_type === 'CASH_DEBIT') return a - Math.abs(Number(r.amount ?? 0));
+      if (r.entry_type === 'CASH_CREDIT')  return a + Number(r.amount ?? 0);
+      if (r.entry_type === 'CASH_DEBIT')   return a - Math.abs(Number(r.amount ?? 0));
+      if (r.entry_type === 'CASH_HOLD')    return a - Math.abs(Number(r.amount ?? 0));
+      if (r.entry_type === 'CASH_RELEASE') return a + Math.abs(Number(r.amount ?? 0));
       return a;
     }, 0);
 

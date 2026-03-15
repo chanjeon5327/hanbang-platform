@@ -1,5 +1,6 @@
 'use client';
 
+// 모바일 상품 상세 페이지 컴포넌트
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
