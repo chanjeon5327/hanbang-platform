@@ -1,6 +1,6 @@
 'use client';
 
-import { FileCheck, Shield } from 'lucide-react';
+import { FileCheck } from 'lucide-react';
 import KycReviewTable from '@/components/admin/kyc/KycReviewTable';
 
 export default function AdminKycPage() {
@@ -11,11 +11,7 @@ export default function AdminKycPage() {
         KYC 관리
       </h1>
 
-      <section className="mb-8">
-        <h2 className="font-semibold mb-4 flex items-center gap-2" style={{ fontSize: 16, color: 'var(--text)' }}>
-          <Shield size={20} />
-          KYC 심사
-        </h2>
+      <section>
         <KycReviewTable />
       </section>
     </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { TrendingUp, AlertTriangle, BarChart3, RotateCcw } from 'lucide-react';
+import { TrendingUp, AlertTriangle, BarChart3, RotateCcw, Users, CheckCircle, Shield, Clock } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 
 const STYLE = {
@@ -12,6 +12,13 @@ const STYLE = {
   warningBg: '#330000',
   warningBorder: '#dc2626',
 } as const;
+
+type Summary = {
+  total_members: number;
+  onboarding_completed: number;
+  kyc_pending: number;
+  kyc_approved: number;
+};
 
 type DailySummary = {
   date: string;
@@ -47,6 +54,7 @@ type DashboardData = {
   daily: DailySummary;
   suspicious: SuspiciousItem[];
   topContent: TopContentItem[];
+  summary?: Summary;
 };
 
 export default function AdminDashboardPage() {
@@ -121,6 +129,7 @@ export default function AdminDashboardPage() {
   const daily = data?.daily;
   const suspicious = data?.suspicious ?? [];
   const topContent = data?.topContent ?? [];
+  const summary = data?.summary ?? { total_members: 0, onboarding_completed: 0, kyc_pending: 0, kyc_approved: 0 };
 
   return (
     <div className="min-h-screen p-6" style={{ backgroundColor: STYLE.bg, color: STYLE.text }}>
@@ -134,6 +143,57 @@ export default function AdminDashboardPage() {
           <p className="py-8">로딩 중...</p>
         ) : (
           <>
+            {/* 요약 카드: 회원 / 온보딩 / KYC */}
+            <section className="mb-8">
+              <h2 className="text-sm font-semibold mb-4 opacity-80">운영 요약</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <Link
+                  href="/admin/users"
+                  className="p-4 rounded border flex flex-col gap-1 hover:opacity-90 transition"
+                  style={{ borderColor: STYLE.text }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Users size={18} className="opacity-70" />
+                    <span className="caption opacity-70">전체 회원</span>
+                  </div>
+                  <div className="text-xl font-bold tabular-nums">{summary.total_members}명</div>
+                </Link>
+                <Link
+                  href="/admin/users"
+                  className="p-4 rounded border flex flex-col gap-1 hover:opacity-90 transition"
+                  style={{ borderColor: STYLE.text }}
+                >
+                  <div className="flex items-center gap-2">
+                    <CheckCircle size={18} className="opacity-70" />
+                    <span className="caption opacity-70">온보딩 완료</span>
+                  </div>
+                  <div className="text-xl font-bold tabular-nums">{summary.onboarding_completed}명</div>
+                </Link>
+                <Link
+                  href="/admin/kyc"
+                  className="p-4 rounded border flex flex-col gap-1 hover:opacity-90 transition"
+                  style={{ borderColor: STYLE.text }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Clock size={18} className="opacity-70" />
+                    <span className="caption opacity-70">KYC 확인 중</span>
+                  </div>
+                  <div className="text-xl font-bold tabular-nums">{summary.kyc_pending}명</div>
+                </Link>
+                <Link
+                  href="/admin/kyc"
+                  className="p-4 rounded border flex flex-col gap-1 hover:opacity-90 transition"
+                  style={{ borderColor: STYLE.text }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Shield size={18} className="opacity-70" />
+                    <span className="caption opacity-70">KYC 완료</span>
+                  </div>
+                  <div className="text-xl font-bold tabular-nums">{summary.kyc_approved}명</div>
+                </Link>
+              </div>
+            </section>
+
             {/* 섹션1: 오늘 매출 요약 */}
             <section className="mb-8">
               <h2 className="text-sm font-semibold mb-4 opacity-80">오늘 매출 요약</h2>

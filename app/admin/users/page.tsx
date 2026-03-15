@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Phone, Mail, Wallet, MessageSquare, FileText, Shield } from "lucide-react";
+import Link from "next/link";
+import { Search, Mail, Wallet, MessageSquare, FileText, Shield } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 import { getBrowserSupabase } from "@/utils/supabase/client";
+
+type KycStatus = 'NOT_STARTED' | 'PENDING' | 'APPROVED' | 'REJECTED';
 
 interface User {
   id: string;
@@ -19,6 +22,8 @@ interface User {
   kycLevel?: number;
   signup_method?: string;
   onboarding_completed?: boolean;
+  kyc_status?: KycStatus;
+  kyc_reason?: string;
   onboarding?: {
     completed_at: string | null;
     skipped: boolean;
@@ -159,15 +164,32 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
             <div>
               <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>가입 방식</p>
-              <p style={{ fontSize: "14px", color: "var(--text-primary)" }}>{SIGNUP_METHOD_LABEL[user.signup_method ?? 'email'] ?? user.signup_method ?? '이메일'}</p>
+              <Badge variant="default">{SIGNUP_METHOD_LABEL[user.signup_method ?? 'email'] ?? user.signup_method ?? '이메일'}</Badge>
             </div>
             <div>
-              <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>온보딩 완료</p>
-              <p style={{ fontSize: "14px", color: "var(--text-primary)" }}>{user.onboarding_completed ? '완료' : '미완료'}</p>
+              <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>온보딩</p>
+              <Badge variant={user.onboarding_completed ? 'success' : 'warning'}>{user.onboarding_completed ? '완료' : '미완료'}</Badge>
+            </div>
+            <div>
+              <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>KYC 상태</p>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <Badge
+                  variant={
+                    user.kyc_status === 'APPROVED' ? 'success' :
+                    user.kyc_status === 'REJECTED' ? 'error' :
+                    user.kyc_status === 'PENDING' ? 'warning' : 'default'
+                  }
+                >
+                  {KYC_STATUS_LABEL[user.kyc_status ?? 'NOT_STARTED']}
+                </Badge>
+                {(user.kyc_status === 'PENDING' || user.kyc_status === 'REJECTED') && (
+                  <Link href="/admin/kyc" style={{ fontSize: "12px", color: "var(--royal-blue)" }}>KYC 관리 →</Link>
+                )}
+              </div>
             </div>
             <div>
               <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>이메일</p>
-              <p style={{ fontSize: "14px", color: "var(--text-primary)" }}>{user.email}</p>
+              <p style={{ fontSize: "14px", color: "var(--text-primary)" }}>{user.email || '-'}</p>
               <button
                 type="button"
                 onClick={handleSendPasswordReset}
@@ -200,14 +222,10 @@ function UserDetailModal({ user, onClose, onUpdateNote, onUpdateLimits }: UserDe
                 {(user.investmentTotal ?? 0).toLocaleString()}원
               </p>
             </div>
-            {(user.onboarding?.preferred_categories ?? []).length > 0 && (
             <div style={{ gridColumn: "1 / -1" }}>
-              <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>선호 카테고리</p>
-              <p style={{ fontSize: "14px", color: "var(--text-primary)" }}>
-                {(user.onboarding?.preferred_categories ?? []).join(', ')}
-              </p>
+              <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>선호 카테고리</p>
+              <CategoryTags categories={user.onboarding?.preferred_categories ?? []} />
             </div>
-            )}
           </div>
         </div>
 
@@ -485,6 +503,52 @@ const SIGNUP_METHOD_LABEL: Record<string, string> = {
   metamask: 'MetaMask',
 };
 
+const KYC_STATUS_LABEL: Record<KycStatus, string> = {
+  NOT_STARTED: '시작 전',
+  PENDING: '확인 중',
+  APPROVED: '완료',
+  REJECTED: '보완 필요',
+};
+
+function Badge({ children, variant }: { children: React.ReactNode; variant: 'default' | 'success' | 'warning' | 'error' }) {
+  const styles: Record<string, React.CSSProperties> = {
+    default: { backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' },
+    success: { backgroundColor: 'rgba(34, 197, 94, 0.15)', color: 'rgb(34, 197, 94)' },
+    warning: { backgroundColor: 'rgba(234, 179, 8, 0.15)', color: 'rgb(234, 179, 8)' },
+    error: { backgroundColor: 'rgba(239, 68, 68, 0.15)', color: 'rgb(239, 68, 68)' },
+  };
+  return (
+    <span style={{ padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, ...styles[variant] }}>
+      {children}
+    </span>
+  );
+}
+
+function CategoryTags({ categories }: { categories: string[] }) {
+  if (!categories?.length) return <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>없음</span>;
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+      {categories.slice(0, 5).map((c) => (
+        <span
+          key={c}
+          style={{
+            padding: '2px 6px',
+            borderRadius: '4px',
+            fontSize: '11px',
+            backgroundColor: 'var(--bg-secondary)',
+            color: 'var(--text-secondary)',
+          }}
+        >
+          {c}
+        </span>
+      ))}
+      {categories.length > 5 && (
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>+{categories.length - 5}</span>
+      )}
+    </div>
+  );
+}
+
 export default function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -495,7 +559,12 @@ export default function AdminUsers() {
     fetch('/api/admin/users/list?limit=100', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
-        const list = (data.users ?? []).map((u: { id: string; email: string; name: string; status: string; signup_method?: string; onboarding_completed?: boolean; created_at?: string; onboarding?: { preferred_categories?: string[] } }) => ({
+        const list = (data.users ?? []).map((u: {
+          id: string; email: string; name: string; status: string;
+          signup_method?: string; onboarding_completed?: boolean; created_at?: string;
+          kyc_status?: KycStatus; kyc_reason?: string;
+          onboarding?: { preferred_categories?: string[] };
+        }) => ({
           id: u.id,
           name: u.name,
           email: u.email,
@@ -505,6 +574,8 @@ export default function AdminUsers() {
           joinDate: u.created_at ? new Date(u.created_at).toLocaleDateString('ko-KR') : '-',
           signup_method: u.signup_method,
           onboarding_completed: u.onboarding_completed,
+          kyc_status: u.kyc_status ?? 'NOT_STARTED',
+          kyc_reason: u.kyc_reason,
           onboarding: u.onboarding,
         }));
         setUsers(list);
@@ -633,50 +704,42 @@ export default function AdminUsers() {
                 e.currentTarget.style.backgroundColor = "transparent";
               }}
             >
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px", flexWrap: "wrap" }}>
-                  <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--text-primary)" }}>{user.name}</h3>
-                  <span style={{ padding: "2px 8px", borderRadius: "4px", backgroundColor: "var(--bg-secondary)", color: "var(--text-secondary)", fontSize: "11px" }}>
-                    {SIGNUP_METHOD_LABEL[user.signup_method ?? 'email'] ?? user.signup_method ?? '이메일'}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)" }}>
+                    {user.email || user.name || user.id.slice(0, 8)}
                   </span>
-                  {user.onboarding_completed ? (
-                    <span style={{ padding: "2px 8px", borderRadius: "4px", backgroundColor: "rgba(34, 197, 94, 0.15)", color: "rgb(34, 197, 94)", fontSize: "10px" }}>온보딩 완료</span>
-                  ) : (
-                    <span style={{ padding: "2px 8px", borderRadius: "4px", backgroundColor: "rgba(234, 179, 8, 0.15)", color: "rgb(234, 179, 8)", fontSize: "10px" }}>온보딩 미완료</span>
-                  )}
+                  <Badge variant="default">
+                    {SIGNUP_METHOD_LABEL[user.signup_method ?? 'email'] ?? user.signup_method ?? '이메일'}
+                  </Badge>
+                  <Badge variant={user.onboarding_completed ? 'success' : 'warning'}>
+                    {user.onboarding_completed ? '온보딩 완료' : '온보딩 미완료'}
+                  </Badge>
+                  <Badge
+                    variant={
+                      user.kyc_status === 'APPROVED' ? 'success' :
+                      user.kyc_status === 'REJECTED' ? 'error' :
+                      user.kyc_status === 'PENDING' ? 'warning' : 'default'
+                    }
+                  >
+                    {KYC_STATUS_LABEL[user.kyc_status ?? 'NOT_STARTED']}
+                  </Badge>
                   {user.privateNote && (
-                    <span
-                      style={{
-                        padding: "2px 8px",
-                        borderRadius: "4px",
-                        backgroundColor: "rgba(234, 179, 8, 0.2)",
-                        color: "rgb(234, 179, 8)",
-                        fontSize: "10px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      메모 있음
-                    </span>
+                    <Badge variant="warning">메모</Badge>
                   )}
                 </div>
-                <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "var(--text-muted)" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                    <Mail size={14} />
-                    {user.email}
-                  </span>
-                  <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                    <Phone size={14} />
-                    {user.phone}
-                  </span>
+                <div style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>
+                  {user.name !== '-' && <span style={{ marginRight: "12px" }}>{user.name}</span>}
+                  {user.email && <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}><Mail size={12} />{user.email}</span>}
+                </div>
+                <div style={{ marginTop: "6px" }}>
+                  <span style={{ fontSize: "11px", color: "var(--text-muted)", marginRight: "6px" }}>선호:</span>
+                  <CategoryTags categories={user.onboarding?.preferred_categories ?? []} />
                 </div>
               </div>
-              <div style={{ textAlign: "right" }}>
-                <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>
-                  {(user.onboarding?.preferred_categories ?? []).length > 0
-                    ? `선호: ${(user.onboarding?.preferred_categories ?? []).slice(0, 3).join(', ')}${(user.onboarding?.preferred_categories ?? []).length > 3 ? '…' : ''}`
-                    : '선호 카테고리 없음'}
-                </p>
-                <p style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
+              <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "16px" }}>
+                <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>{user.joinDate}</p>
+                <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)" }}>
                   {(user.investmentTotal ?? 0).toLocaleString()}원
                 </p>
               </div>

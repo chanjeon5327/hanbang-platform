@@ -46,10 +46,46 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // investor_profiles + kyc_verifications 조회 (KYC 상태)
+    const kycMap: Record<string, { inv_status?: string; verification_status?: string; rejection_reason?: string }> = {};
+    if (userIds.length > 0) {
+      const { data: invProfiles } = await (admin as any)
+        .from('investor_profiles')
+        .select('user_id, kyc_status')
+        .in('user_id', userIds);
+      const { data: kycVerifications } = await (admin as any)
+        .from('kyc_verifications')
+        .select('user_id, status, rejection_reason')
+        .in('user_id', userIds);
+
+      (invProfiles ?? []).forEach((ip: { user_id: string; kyc_status?: string }) => {
+        kycMap[ip.user_id] = { ...kycMap[ip.user_id], inv_status: ip.kyc_status ?? 'PENDING' };
+      });
+      (kycVerifications ?? []).forEach((kv: { user_id: string; status?: string; rejection_reason?: string }) => {
+        kycMap[kv.user_id] = {
+          ...kycMap[kv.user_id],
+          verification_status: kv.status ?? '',
+          rejection_reason: kv.rejection_reason ?? kycMap[kv.user_id]?.rejection_reason,
+        };
+      });
+    }
+
+    function parseKycStatus(invStatus: string, verificationStatus: string, profileStatus: string): string {
+      const inv = String(invStatus ?? '').toLowerCase();
+      const ver = String(verificationStatus ?? '').toLowerCase();
+      const ps = String(profileStatus ?? '').toUpperCase();
+      if (inv.includes('approved')) return 'APPROVED';
+      if (inv.includes('reject') || inv.includes('denied') || ver.includes('reject') || ver.includes('denied')) return 'REJECTED';
+      if (inv.includes('pending') || ver.includes('submitted') || ver.includes('in_review') || ps === 'KYC_SUBMITTED') return 'PENDING';
+      return 'NOT_STARTED';
+    }
+
     const items = list
       .map((p: { id: string; email?: string; display_name?: string; nickname?: string; status?: string; signup_method?: string; onboarding_completed?: boolean; created_at?: string }) => {
         const ob = onboardingMap[p.id] ?? {};
         const pref = (ob.preference_summary ?? {}) as { preferred_categories?: string[]; round_completed?: number; rated_count?: number };
+        const kyc = kycMap[p.id] ?? {};
+        const kycStatus = parseKycStatus(kyc.inv_status ?? '', kyc.verification_status ?? '', p.status ?? '');
         return {
           id: p.id,
           email: p.email ?? '',
@@ -58,6 +94,8 @@ export async function GET(req: NextRequest) {
           signup_method: p.signup_method ?? 'email',
           onboarding_completed: p.onboarding_completed === true,
           created_at: p.created_at,
+          kyc_status: kycStatus,
+          kyc_reason: kyc.rejection_reason ?? undefined,
           onboarding: {
             completed_at: ob.completed_at ?? null,
             skipped: ob.skipped ?? false,
