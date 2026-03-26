@@ -1,6 +1,6 @@
 'use client';
 
-import HeroCinematic from '@/components/HeroCinematic';
+import HeroCinematic from '@/components/home/HeroCinematic';
 import OverlayRecoCard from '@/components/home/OverlayRecoCard';
 import MarketTickerBar from '@/components/home/MarketTickerBar';
 import MarketTrendSection from '@/components/home/MarketTrendSection';
@@ -13,14 +13,7 @@ export default function HomeV5() {
   return (
     <div className="min-h-screen bg-[#0B1120] text-white">
       {/* 1) Cinematic Hero */}
-      <section className="px-5 sm:px-6 pt-6 pb-4 max-w-7xl mx-auto">
-        <HeroCinematic
-          headline={'내가 좋아하는 콘텐츠 사고 팔고.\n매달 수익을 받습니다.'}
-          sublineTop="내가 좋아하는 크리에이터와 동업자가 됩니다."
-          primaryCta={{ label: '지금 투자 시작', href: '/invest/start' }}
-          secondaryCta={{ label: '마켓 둘러보기', href: '/market' }}
-        />
-      </section>
+      <HeroCinematic />
 
       {/* 2) 실시간 마켓 티커 바 (업비트형 느낌) */}
       <MarketTickerBar />
