@@ -304,7 +304,7 @@ export default function TradePanelUpbit({
               type="button"
               onClick={() => {
                 if (hasSession === false) {
-                  window.location.href = `/login?redirect=${encodeURIComponent(pathname)}`;
+                  router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
                   return;
                 }
                 if (needKyc) {

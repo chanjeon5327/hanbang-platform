@@ -68,7 +68,7 @@ export default function MarketDetailV3({ marketId }: Props) {
 
   const handleBuyClick = useCallback(() => {
     if (!hasSession) {
-      window.location.href = loginHref;
+      router.push(loginHref);
       return;
     }
     if (!isApproved) {
@@ -83,7 +83,7 @@ export default function MarketDetailV3({ marketId }: Props) {
 
   const handleSellClick = useCallback(() => {
     if (!hasSession) {
-      window.location.href = loginHref;
+      router.push(loginHref);
       return;
     }
     if (!isApproved) {

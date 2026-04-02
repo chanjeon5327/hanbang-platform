@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -22,16 +23,17 @@ interface ProjectCardProps {
 export function ProjectCard({ project }: ProjectCardProps) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const supabase = getBrowserSupabase()
+  const router = useRouter()
 
   const handleInvestClick = async (e: React.MouseEvent) => {
     e.preventDefault()
-    const { data: { session }, error } = await supabase.auth.getSession()
+    const { data: { session } } = await supabase.auth.getSession()
     const user = session?.user ?? null
 
     if (!user) {
       setIsLoginModalOpen(true)
     } else {
-      window.location.href = `/projects/${project.id}`
+      router.push(`/projects/${project.id}`)
     }
   }
   const progressPercentage = project.target_amount && project.target_amount > 0
