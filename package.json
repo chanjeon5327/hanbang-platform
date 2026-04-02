@@ -21,7 +21,8 @@
     "release:exchange-v2:auto": "powershell -ExecutionPolicy Bypass -File scripts/run-release-exchange-v2.ps1",
     "ops:reset-test-accounts": "node scripts/ops/reset-test-accounts.mjs",
     "seed:channels": "node scripts/seed-youtube-channels.mjs",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:click": "playwright test e2e/full-click.spec.ts --headed"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",

@@ -1,9 +1,16 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Noto_Sans_KR } from 'next/font/google';
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+});
+
+const notoSansKR = Noto_Sans_KR({
+  subsets: ['latin'],
+  weight: ['400', '500', '700', '800', '900'],
+  variable: '--font-noto-sans-kr',
   display: 'swap',
 });
 import BuildStamp from '@/components/dev/BuildStamp';
@@ -61,7 +68,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" data-theme="apple" suppressHydrationWarning>
-      <body className={inter.variable}>
+      <body className={`${inter.variable} ${notoSansKR.variable}`}>
         <Providers>
           <LegacyWrapper>
             <div className="min-h-screen flex flex-col">
