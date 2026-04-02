@@ -37,11 +37,12 @@ function LoginContent() {
   useEffect(() => {
     let cancelled = false;
     const check = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      // getUser() 대신 getSession() 사용 - 세션 없을 때 AuthSessionMissingError 방지
+      const { data: { session } } = await supabase.auth.getSession();
       if (cancelled) return;
-      const hasUser = !!user;
+      const hasUser = !!session?.user;
       if (process.env.NODE_ENV === 'development') {
-        console.info('[LOGIN-REDIRECT-SOURCE] app/login/page.tsx', { pathname: '/login', user: hasUser, session: !!user, isAuthed: hasUser });
+        console.info('[LOGIN-REDIRECT-SOURCE] app/login/page.tsx', { pathname: '/login', user: hasUser, session: hasUser, isAuthed: hasUser });
       }
       setSessionChecked(true);
       // /login 에서 자동 redirect 완전 차단 - 이미 로그인된 경우에도 페이지 유지
@@ -79,8 +80,8 @@ function LoginContent() {
         return;
       }
       await eth.request({ method: 'eth_requestAccounts' });
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
         const path = await getPostLoginRoute(supabase, redirectParam);
         router.push(path);
       } else {

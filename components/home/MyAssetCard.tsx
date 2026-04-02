@@ -58,7 +58,7 @@ export default function MyAssetCard() {
   const loggedIn = !!email;
 
   return (
-    <section className="px-5 sm:px-6 py-10 sm:py-12 max-w-7xl mx-auto">
+    <section className="relative px-5 sm:px-6 py-10 sm:py-12 max-w-7xl mx-auto">
       <div className={`rounded-2xl border border-black/10 bg-white shadow-[0_6px_20px_rgba(0,0,0,0.05)] ${loggedIn ? 'px-5 sm:px-6 py-4 sm:py-5' : 'p-5 sm:p-6'}`}>
         {!loggedIn ? (
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -147,8 +147,14 @@ export default function MyAssetCard() {
                 </div>
               )}
               <Link
+                href="/market"
+                className="relative z-10 px-4 py-2 rounded-lg text-[13px] font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition"
+              >
+                투자 시작
+              </Link>
+              <Link
                 href="/wallet"
-                className="px-4 py-2 rounded-lg text-[13px] font-semibold text-[#2563EB] hover:bg-[#2563EB]/10 border border-[#2563EB]/30 transition"
+                className="relative z-10 px-4 py-2 rounded-lg text-[13px] font-semibold text-[#2563EB] hover:bg-[#2563EB]/10 border border-[#2563EB]/30 transition"
               >
                 지갑 보기
               </Link>

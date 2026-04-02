@@ -7,11 +7,11 @@ export default function HeroCinematic() {
     <section className="relative h-screen w-full overflow-hidden">
       {/* coin.mp4 미포함 — 시네마틱 그라데이션 배경 */}
       <div
-        className="absolute inset-0 bg-gradient-to-br from-[#0f172a] via-[#0B1224] to-[#1e1b4b]"
+        className="absolute inset-0 bg-gradient-to-br from-[#0f172a] via-[#0B1224] to-[#1e1b4b] pointer-events-none"
         aria-hidden
       />
 
-      <div className="absolute inset-0 bg-black/50" aria-hidden />
+      <div className="absolute inset-0 bg-black/50 pointer-events-none" aria-hidden />
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 pt-20 text-center translate-y-16 md:translate-y-20">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center text-center">

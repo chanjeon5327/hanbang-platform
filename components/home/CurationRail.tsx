@@ -47,15 +47,15 @@ export default function CurationRail() {
             >
               {/* 썸네일 배경 */}
               <div
-                className="absolute inset-0 bg-cover bg-center group-hover:scale-[1.05] transition duration-500"
+                className="absolute inset-0 bg-cover bg-center group-hover:scale-[1.05] transition duration-500 pointer-events-none"
                 style={{ backgroundImage: `url('${it.thumbnail}')` }}
               />
 
               {/* 오버레이 — from-black/90 → /78, via-black/22 → /10 */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/10 to-black/0" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/10 to-black/0 pointer-events-none" />
 
               {/* 하단 텍스트 보호층 */}
-              <div className="absolute bottom-0 left-0 right-0 h-[100px] bg-gradient-to-t from-black/50 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 h-[100px] bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
 
               {/* 상단 배지 — bg/border 밝기 보정 */}
               <div className="absolute top-3 left-3 right-3 flex items-start justify-between">

@@ -1,10 +1,9 @@
-'use client';
+﻿'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import LoginModal from './LoginModal';
-import { clearAuthStorage } from '@/lib/auth/clearStorage';
 import { signOutAndCleanup } from '@/lib/auth/signOut';
 import { getBrowserSupabase } from '@/utils/supabase/client';
 
@@ -33,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (pathname === '/login' && process.env.NODE_ENV === 'development') {
-      console.info('[LOGIN-REDIRECT-SOURCE] AuthProvider', { pathname: '/login', user: !!user, session: !!user, isAuthed: !!user });
+      console.info('[LOGIN-REDIRECT-SOURCE] AuthProvider', { pathname: '/login', user: !!user, isAuthed: !!user });
     }
   }, [pathname, user]);
 
@@ -47,31 +46,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         return;
       }
+
+      // getSession() ?쇰줈 濡쒖뺄 ?좏겙 ?뺤씤 (?ㅽ듃?뚰겕 遺덊븘?? AuthSessionMissingError ?놁쓬)
       const { data: { session }, error } = await supabase.auth.getSession();
       if (!mountedRef.current) return;
+
       if (error) {
-        setUser(null);
+        // ?좏겙 ?ㅻ쪟(refresh_token_not_found ?? ???곹깭 珥덇린??        setUser(null);
         setProfile(null);
-        clearAuthStorage();
         return;
       }
+
       const u = session?.user ?? null;
       setUser(u);
+
       if (!u) {
         setProfile(null);
-        clearAuthStorage();
         return;
       }
-      const res = await fetch('/api/auth/session', { cache: 'no-store' });
-      const json = await res.json();
-      if (!mountedRef.current) return;
-      if (json.profile?.status === 'SUSPENDED' || !json.user) {
-        setUser(null);
-        setProfile(null);
-        clearAuthStorage();
-      } else {
+
+      // ?쒕쾭?먯꽌 ?꾨줈??+ ?뺤? ?щ? ?뺤씤
+      try {
+        const res = await fetch('/api/auth/session', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`session API ${res.status}`);
+        const json = await res.json();
+        if (!mountedRef.current) return;
+
+        if (json.profile?.status === 'SUSPENDED' || !json.user) {
+          // ?뺤? 怨꾩젙 ???꾩쟾 濡쒓렇?꾩썐
+          await signOutAndCleanup('/login?reason=suspended');
+          return;
+        }
         setUser(json.user);
         setProfile(json.profile ?? null);
+      } catch {
+        // API ?ㅻ쪟 ??getSession 湲곕컲 user???좎? (?좏겙? 嫄대뱶由ъ? ?딆쓬)
+        if (mountedRef.current) setProfile(null);
       }
     } catch {
       if (mountedRef.current) {
@@ -96,12 +106,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [initSession]);
 
+  // onAuthStateChange: 濡쒓렇??濡쒓렇?꾩썐 ?대깽?몃? 利됱떆 UI??諛섏쁺
   useEffect(() => {
     const supabase = getBrowserSupabase();
     if (!supabase?.auth) return;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      initSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
+      if (!mountedRef.current) return;
+
+      if (event === 'SIGNED_OUT' || !session) {
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        // ?곹깭媛 諛붾뚯뿀?쇰?濡??쒕쾭 ?몄뀡 ?ы솗??        initSession();
+      }
     });
+
     return () => subscription.unsubscribe();
   }, [initSession]);
 

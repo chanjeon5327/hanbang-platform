@@ -14,15 +14,15 @@ export default function OverlayRecoCard({ item }: { item: MarketItem }) {
     >
       {/* 썸네일 배경 */}
       <div
-        className="absolute inset-0 bg-cover bg-center scale-[1.03] group-hover:scale-[1.08] transition duration-500"
+        className="absolute inset-0 bg-cover bg-center scale-[1.03] group-hover:scale-[1.08] transition duration-500 pointer-events-none"
         style={{ backgroundImage: `url('${item.thumbnail}')` }}
       />
 
       {/* 그라디언트 오버레이 — 하단 opacity 완화: /90 → /78, via /25 → /15 */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/15 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/15 to-transparent pointer-events-none" />
 
       {/* 하단 텍스트 보호층 — 글자 직상위에만 얇은 스크림 추가 */}
-      <div className="absolute bottom-0 left-0 right-0 h-[110px] bg-gradient-to-t from-black/55 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-[110px] bg-gradient-to-t from-black/55 to-transparent pointer-events-none" />
 
       {/* 상단: 태그 배지들 — bg/border 밝기 보정 */}
       <div className="absolute top-3 left-3 right-3 flex items-start justify-between">

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
-import { getSupabaseBrowserClient } from '@/lib/supabase/browser';
+import { getBrowserSupabase } from '@/utils/supabase/client';
 
 type UnifiedAuthState = {
   loading: boolean;
@@ -36,7 +36,7 @@ export function useUnifiedAuthState(): UnifiedAuthState {
 
   useEffect(() => {
     let mounted = true;
-    const supabase = getSupabaseBrowserClient();
+    const supabase = getBrowserSupabase();
 
     async function bootstrap() {
       try {
@@ -64,7 +64,7 @@ export function useUnifiedAuthState(): UnifiedAuthState {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((_event: any, nextSession: any) => {
       if (!mounted) return;
       setSession(nextSession ?? null);
       setUser(nextSession?.user ?? null);
