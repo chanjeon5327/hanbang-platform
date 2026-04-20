@@ -1,33 +1,21 @@
 /**
  * Next.js Middleware - 인증 및 세션 관리
- * 
+ *
  * 역할:
  * - Supabase 세션 자동 갱신
- * - 보호 라우트에 대한 로그인 강제
- * - 미로그인 사용자를 /login으로 리다이렉트 (원래 경로는 ?next=... 로 보존)
+ * - 보호 라우트에 대한 로그인 강제 (lib/supabase/middleware.updateSession 위임)
+ *
+ * 주의:
+ *   updateSession()이 이미 /login 으로 리다이렉트할 때 ?redirect=원래경로 를 부여한다.
+ *   여기서 별도로 ?next= 를 또 붙이면 쿼리가 중복(?redirect=...&next=...)되어
+ *   QA 보고서 M1 이슈가 발생한다. 단일 출처 정책: redirect 쿼리만 사용.
  */
 
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
-  // lib/supabase/middleware의 updateSession을 호출하여
-  // 세션 갱신 및 인증 리다이렉트 처리
-  const response = await updateSession(request);
-
-  // updateSession이 리다이렉트를 반환하면 그대로 전달
-  if (response.status === 307 || response.status === 308) {
-    // 리다이렉트 응답이면 원래 경로를 ?next= 쿼리로 추가
-    const redirectUrl = new URL(response.headers.get('location') || '/login', request.url);
-    
-    // 이미 /login으로 가는 리다이렉트이고, 원래 경로가 있으면 ?next 추가
-    if (redirectUrl.pathname === '/login' && request.nextUrl.pathname !== '/login') {
-      redirectUrl.searchParams.set('next', request.nextUrl.pathname + request.nextUrl.search);
-      return NextResponse.redirect(redirectUrl);
-    }
-  }
-
-  return response;
+  return updateSession(request);
 }
 
 /**

@@ -16,10 +16,16 @@ export default function KakaoLogin() {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // QA L2 대응: localhost 하드코딩 제거. 현재 origin 기준으로 콜백을 구성한다.
+    const redirectTo =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}/auth/callback`
+        : '/auth/callback';
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'kakao',
       options: {
-        redirectTo: 'http://localhost:3000/auth/callback',
+        redirectTo,
       },
     });
 

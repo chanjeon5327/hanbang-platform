@@ -39,7 +39,7 @@ export default function ForgotPasswordPage() {
             {email}로 비밀번호 재설정 링크를 보냈습니다.
           </p>
           <Link
-            href="/admin/login"
+            href="/login"
             className="block w-full py-2 rounded-lg bg-black text-white text-center"
           >
             로그인으로 돌아가기
@@ -82,7 +82,7 @@ export default function ForgotPasswordPage() {
         </button>
 
         <Link
-          href="/admin/login"
+          href="/login"
           className="block text-center text-sm text-gray-500 hover:text-gray-700"
         >
           로그인으로 돌아가기

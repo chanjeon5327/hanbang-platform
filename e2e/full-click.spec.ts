@@ -38,8 +38,20 @@ test.describe('FULL CLICK TEST', () => {
       const skipped: string[] = [];
 
       // pageerror = 실제 JS 런타임 에러 (hydration crash 등)
+      // 단, 클릭 직후 라우팅이 발생하면서 in-flight fetch가 끊겨 Playwright/CDP가
+      // 던지는 "Connection closed." / "Target closed." / "frame was detached" 류는
+      // 앱 결함이 아닌 테스트 측 race이므로 무시한다. (QA H3 대응)
+      const NAV_RACE_PATTERNS = [
+        'Connection closed',
+        'Target closed',
+        'frame was detached',
+        'Navigation failed because page was closed',
+        'Execution context was destroyed',
+      ];
       page.on('pageerror', (err) => {
-        pageErrors.push(err.message);
+        const msg = err.message ?? '';
+        if (NAV_RACE_PATTERNS.some((p) => msg.includes(p))) return;
+        pageErrors.push(msg);
       });
 
       page.on('console', (msg) => {

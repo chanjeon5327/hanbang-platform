@@ -59,14 +59,12 @@ export function useMarketItem(id: string | undefined) {
     if (!id) return;
     setLoading(true);
     const url = `/api/market/item/${id}`;
-    console.log("API:", url);
     fetch(url, { cache: 'no-store' })
       .then((res) => {
         if (!res.ok) throw new Error('Not found');
         return res.json();
       })
       .then((j: MarketItemResponse) => {
-        console.log("ITEM FROM API:", j);
         setItem(j?.item ?? null);
       })
       .catch((e) => setError(e.message))
@@ -82,14 +80,12 @@ export function useMarketItem(id: string | undefined) {
     setLoading(true);
     setError(null);
     const url = `/api/market/item/${id}`;
-    console.log("API:", url);
     fetch(url, { cache: 'no-store' })
       .then((res) => {
         if (!res.ok) throw new Error('Not found');
         return res.json();
       })
       .then((j: MarketItemResponse) => {
-        console.log("ITEM FROM API:", j);
         setItem(j?.item ?? null);
       })
       .catch((e) => setError(e.message))
