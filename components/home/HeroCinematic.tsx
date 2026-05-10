@@ -1,17 +1,48 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function HeroCinematic() {
+  const [videoFailed, setVideoFailed] = useState(false);
+
   return (
     <section className="relative h-screen w-full overflow-hidden">
-      {/* coin.mp4 미포함 — 시네마틱 그라데이션 배경 */}
+      {/* 데스크탑: 압축 히어로 영상 (실패·모바일은 그라데이션만) */}
+      {!videoFailed ? (
+        <video
+          className="absolute inset-0 z-0 hidden h-full w-full object-cover md:block pointer-events-none"
+          src="/hero-desktop.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden
+          onError={() => setVideoFailed(true)}
+        />
+      ) : null}
+
+      {/* 모바일: 항상 기존 시네마틱 그라데이션 */}
       <div
-        className="absolute inset-0 bg-gradient-to-br from-[#0f172a] via-[#0B1224] to-[#1e1b4b] pointer-events-none"
+        className="absolute inset-0 z-[1] bg-gradient-to-br from-[#0f172a] via-[#0B1224] to-[#1e1b4b] pointer-events-none md:hidden"
         aria-hidden
       />
 
-      <div className="absolute inset-0 bg-black/50 pointer-events-none" aria-hidden />
+      {/* 데스크탑: 영상 실패 시 기존 그라데이션 / 성공 시 가독용 얕은 스크림 */}
+      {videoFailed ? (
+        <div
+          className="absolute inset-0 z-[1] hidden bg-gradient-to-br from-[#0f172a] via-[#0B1224] to-[#1e1b4b] md:block pointer-events-none"
+          aria-hidden
+        />
+      ) : (
+        <div
+          className="absolute inset-0 z-[1] hidden bg-gradient-to-b from-black/50 via-black/25 to-black/55 md:block pointer-events-none"
+          aria-hidden
+        />
+      )}
+
+      <div className="absolute inset-0 z-[1] bg-black/50 pointer-events-none md:bg-black/35" aria-hidden />
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 pt-20 text-center translate-y-16 md:translate-y-20">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center text-center">
