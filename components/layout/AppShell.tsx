@@ -38,6 +38,22 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // 홈 전용 레이아웃: 히어로 100svh 가 viewport 전체를 차지하도록
+  // nested-scroll(main flex-1 overflow-y-auto) 대신 document scroll 사용.
+  if (isHome) {
+    return (
+      <div style={{ backgroundColor: 'var(--hb-bg, var(--bg))' }}>
+        <AppHeader />
+        <main className="main-with-bottom-nav" style={{ paddingTop: 0 }}>
+          {SHOW_DEMO_BAR && <DemoRouteBar />}
+          <AppContainer>{children}</AppContainer>
+        </main>
+        <AppFooter />
+        <BottomNav />
+      </div>
+    );
+  }
+
   return (
     <div
       className="min-h-screen flex flex-col pb-20 md:pb-8"

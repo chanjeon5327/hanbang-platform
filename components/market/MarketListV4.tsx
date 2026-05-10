@@ -60,7 +60,8 @@ function safeNumOpt(v: unknown): number | undefined {
 
 function ytThumb(id?: string) {
   if (!id) return '';
-  return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+  // mqdefault: 16:9 (검은 띠 없음). hqdefault(4:3 letterbox)는 위/아래 검은 바 박혀 사용 금지.
+  return `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
 }
 
 function normalizeItem(raw: Record<string, unknown>): MarketItem | null {

@@ -13,12 +13,14 @@ export default function HeroCinematic() {
                  h-[100svh] min-h-[100svh] [@supports(height:100dvh)]:h-[100dvh]
                  md:h-screen md:min-h-0"
     >
-      {/* 모바일: 세로 히어로 — 코인 전체가 보이도록 contain + 약간 축소 */}
+      {/* 모바일: 세로 히어로 — 코인 전체가 보이도록 contain + 약간 축소 + 살짝 위로 보정 */}
       {!mobileVideoFailed ? (
         <video
           className="absolute inset-0 z-0 block h-full w-full max-h-full max-w-full
-                     object-contain object-center pointer-events-none scale-[0.95]
-                     md:hidden [filter:brightness(1.32)_contrast(1.06)_saturate(1.1)]"
+                     object-contain object-center pointer-events-none
+                     scale-[0.92] -translate-y-2
+                     md:hidden md:translate-y-0 md:scale-100
+                     [filter:brightness(1.32)_contrast(1.06)_saturate(1.1)]"
           src="/hero-mobile.mp4"
           autoPlay
           muted

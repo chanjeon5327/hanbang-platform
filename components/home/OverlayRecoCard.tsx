@@ -12,17 +12,17 @@ export default function OverlayRecoCard({ item }: { item: MarketItem }) {
       href={`/market/${item.id}`}
       className="group relative block aspect-[3/4] overflow-hidden rounded-2xl border border-black/10 bg-neutral-200 shadow-[0_6px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.14)] hover:border-[#2563EB]/30 transition duration-300"
     >
-      {/* 썸네일 — 원본에 박힌 위/아래 검은 띠를 가리도록 scale + object-cover */}
+      {/* 썸네일 — mqdefault(16:9, 검은 띠 없음). 카드 비율(3:4)에 cover로 좌우 crop */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={item.thumbnail}
         alt=""
-        className="absolute inset-0 h-full w-full object-cover object-center transition duration-500 scale-[1.12] group-hover:scale-[1.18] pointer-events-none"
+        className="absolute inset-0 h-full w-full object-cover object-center transition duration-500 scale-[1.06] group-hover:scale-[1.12] pointer-events-none"
         loading="lazy"
       />
 
-      {/* 하단에만 가독용 그라데이션 — 위쪽 검은 띠 금지 */}
-      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/65 via-black/25 to-transparent pointer-events-none" />
+      {/* 하단에만 가독용 그라데이션 — 위쪽 영역은 절대 어둡게 하지 않음 */}
+      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/65 via-black/20 to-transparent pointer-events-none" />
 
       {/* 상단: 태그 배지들 — bg/border 밝기 보정 */}
       <div className="absolute top-3 left-3 right-3 flex items-start justify-between">

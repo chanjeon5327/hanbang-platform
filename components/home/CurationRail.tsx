@@ -45,17 +45,17 @@ export default function CurationRail() {
               href={`/market/${it.id}`}
               className="group relative min-w-[280px] sm:min-w-[340px] h-[220px] sm:h-[250px] overflow-hidden rounded-2xl hover:border-[#2563EB]/25 bg-neutral-200 shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.14)] transition duration-300"
             >
-              {/* 썸네일 — 원본의 위/아래 검은 띠를 가리도록 scale 적용 */}
+              {/* 썸네일 — mqdefault(16:9, 검은 띠 없음). 가로형 카드는 cover로 자연스럽게 채움 */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={it.thumbnail}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover object-center transition duration-500 scale-[1.12] group-hover:scale-[1.18] pointer-events-none"
+                className="absolute inset-0 h-full w-full object-cover object-center transition duration-500 scale-[1.05] group-hover:scale-[1.1] pointer-events-none"
                 loading="lazy"
               />
 
-              {/* 하단에만 가독용 그라데이션 — 위쪽 검은 띠 금지 */}
-              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/65 via-black/25 to-transparent pointer-events-none" />
+              {/* 하단에만 가독용 그라데이션 — 위쪽 영역은 절대 어둡게 하지 않음 */}
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/65 via-black/20 to-transparent pointer-events-none" />
 
               {/* 상단 배지 — bg/border 밝기 보정 */}
               <div className="absolute top-3 left-3 right-3 flex items-start justify-between">

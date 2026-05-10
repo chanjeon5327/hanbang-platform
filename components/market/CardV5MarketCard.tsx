@@ -43,7 +43,7 @@ export default function CardV5MarketCard({
   const { isInterested, toggle, loading } = useInterestToggle(item.id, initialInterested);
   const thumbSrc =
     item.thumbnail_url ??
-    (item.youtube_id ? `https://i.ytimg.com/vi/${item.youtube_id}/hqdefault.jpg` : FALLBACK_PREVIEW_IMAGE);
+    (item.youtube_id ? `https://i.ytimg.com/vi/${item.youtube_id}/mqdefault.jpg` : FALLBACK_PREVIEW_IMAGE);
   const dday = getDday(item.event_date);
   const youtubeId = item.youtube_id ?? null;
   const showPreview = activePreviewId === item.id && youtubeId;

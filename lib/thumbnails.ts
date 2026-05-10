@@ -22,5 +22,6 @@ export const YT_THUMBS = [
 ];
 
 export function getYtThumb(index: number) {
-  return `https://i.ytimg.com/vi/${YT_THUMBS[Math.abs(index) % YT_THUMBS.length]}/hqdefault.jpg`;
+  // mqdefault: 16:9 (검은 띠 없음). hqdefault(4:3, 레터박스 박힘) 사용 금지.
+  return `https://i.ytimg.com/vi/${YT_THUMBS[Math.abs(index) % YT_THUMBS.length]}/mqdefault.jpg`;
 }

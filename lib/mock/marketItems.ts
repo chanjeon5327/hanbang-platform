@@ -22,11 +22,12 @@ export type MarketItem = {
 
 /**
  * 유튜브 영상 썸네일 URL 헬퍼
- * maxresdefault 가 없는 영상도 있으므로 hqdefault 를 기본으로 사용.
+ * mqdefault: 320x180 16:9 (검은 띠 없음). hqdefault(480x360 4:3)는 위/아래 검은 레터박스가
+ * 박혀있어 카드 썸네일에서 검은 띠가 보이는 원인이라 사용 금지.
  * 추후 실제 이미지 에셋으로 교체 시 이 함수를 제거하면 됨.
  */
 function ytThumb(videoId: string) {
-  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  return `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
 }
 
 /**

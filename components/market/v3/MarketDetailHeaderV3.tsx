@@ -105,7 +105,7 @@ export default function MarketDetailHeaderV3({
   const ytId = youtubeId ?? 'HosW0gulISQ';
   const thumbSrc =
     thumbnailUrl ??
-    (youtubeId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : FALLBACK_PREVIEW_IMAGE);
+    (youtubeId ? `https://i.ytimg.com/vi/${ytId}/mqdefault.jpg` : FALLBACK_PREVIEW_IMAGE);
 
   if (isApple) {
     const rateStr = changeRate != null && changeRate !== 0 ? `${isUp ? '+' : ''}${formatRate(changeRate)}` : '';

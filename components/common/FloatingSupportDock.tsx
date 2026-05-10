@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 
@@ -24,8 +24,31 @@ export default function FloatingSupportDock({
   }, [pathname]);
 
   const isLoginPage = pathname === '/login';
+  const isHome = pathname === '/';
+
+  // 홈 첫 진입 히어로 구간에서는 플로팅 도크 숨김
+  const [hideForHero, setHideForHero] = useState(isHome);
+
+  useEffect(() => {
+    if (!isHome) {
+      setHideForHero(false);
+      return;
+    }
+    const update = () => {
+      const threshold = window.innerHeight * 0.85;
+      setHideForHero(window.scrollY < threshold);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [isHome]);
 
   if (isLoginPage) return null;
+  if (hideForHero) return null;
 
   const containerClass = isMarketDetail
     ? 'right-2 bottom-28 sm:right-5 sm:bottom-32'

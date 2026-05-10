@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Home, TrendingUp, Play, MessageCircle, ShoppingBag, User } from 'lucide-react';
 
@@ -15,6 +16,29 @@ const NAV_ITEMS = [
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const isHome = pathname === '/';
+  const [hideForHero, setHideForHero] = useState(isHome);
+
+  useEffect(() => {
+    if (!isHome) {
+      setHideForHero(false);
+      return;
+    }
+    const update = () => {
+      // 첫 진입 시 히어로 구간(뷰포트 85% 미만 스크롤)에서는 숨김
+      const threshold = window.innerHeight * 0.85;
+      setHideForHero(window.scrollY < threshold);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [isHome]);
+
+  if (hideForHero) return null;
 
   return (
     <nav

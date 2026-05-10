@@ -36,7 +36,7 @@ function MarketCard({ it, view }: { it: MarketItem; view: 'grid' | 'list' }) {
           <img
             src={it.thumbnail}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover object-center scale-[1.12] transition group-hover:scale-[1.18]"
+            className="absolute inset-0 h-full w-full object-cover object-center scale-[1.04] transition group-hover:scale-[1.08]"
             loading="lazy"
           />
         </div>
@@ -46,7 +46,7 @@ function MarketCard({ it, view }: { it: MarketItem; view: 'grid' | 'list' }) {
           <img
             src={it.thumbnail}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover object-center scale-[1.1] transition group-hover:scale-[1.15]"
+            className="absolute inset-0 h-full w-full object-cover object-center scale-[1.04] transition group-hover:scale-[1.08]"
             loading="lazy"
           />
         </div>
