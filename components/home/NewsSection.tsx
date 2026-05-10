@@ -56,7 +56,7 @@ export default function NewsSection() {
             className="block rounded-2xl border border-black/10 bg-white overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] transition cursor-pointer group"
           >
             {/* 썸네일 — 로컬 이미지 16:9 */}
-            <div className="h-[140px] sm:h-[160px] relative overflow-hidden bg-black/5">
+            <div className="h-[140px] sm:h-[160px] relative overflow-hidden bg-neutral-100">
               <img
                 src={n.thumbnail}
                 alt=""

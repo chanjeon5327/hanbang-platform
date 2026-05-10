@@ -30,12 +30,27 @@ function MarketCard({ it, view }: { it: MarketItem; view: 'grid' | 'list' }) {
   const up = it.chgPct >= 0;
   const cardContent = (
     <>
-      <div
-        className={`bg-cover bg-center transition group-hover:scale-[1.03] ${
-          view === 'grid' ? 'h-[140px]' : 'h-[100px] w-[140px] shrink-0'
-        }`}
-        style={{ backgroundImage: `url('${it.thumbnail}')` }}
-      />
+      {view === 'grid' ? (
+        <div className="relative h-[140px] w-full shrink-0 overflow-hidden bg-neutral-100">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={it.thumbnail}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover transition group-hover:scale-[1.03]"
+            loading="lazy"
+          />
+        </div>
+      ) : (
+        <div className="relative h-[100px] w-[140px] shrink-0 overflow-hidden bg-neutral-100">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={it.thumbnail}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover transition group-hover:scale-[1.03]"
+            loading="lazy"
+          />
+        </div>
+      )}
         <div className={view === 'grid' ? 'p-4' : 'p-3 flex-1 min-w-0'}>
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <span className="text-[11px] px-2 py-1 rounded-full bg-black/5 border border-black/10 shrink-0">

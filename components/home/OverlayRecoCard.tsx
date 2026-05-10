@@ -12,10 +12,13 @@ export default function OverlayRecoCard({ item }: { item: MarketItem }) {
       href={`/market/${item.id}`}
       className="group relative block aspect-[3/4] overflow-hidden rounded-2xl border border-black/10 bg-[#0B1224] shadow-[0_6px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.14)] hover:border-[#2563EB]/30 transition duration-300"
     >
-      {/* 썸네일 배경 */}
-      <div
-        className="absolute inset-0 bg-cover bg-center scale-[1.03] group-hover:scale-[1.08] transition duration-500 pointer-events-none"
-        style={{ backgroundImage: `url('${item.thumbnail}')` }}
+      {/* 썸네일 — img+object-cover로 레터박스 방지 */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={item.thumbnail}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover transition duration-500 scale-[1.03] group-hover:scale-[1.08] pointer-events-none"
+        loading="lazy"
       />
 
       {/* 그라디언트 오버레이 — 하단 opacity 완화: /90 → /78, via /25 → /15 */}

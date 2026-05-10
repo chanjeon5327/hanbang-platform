@@ -40,9 +40,12 @@ export default function DeadlineRail() {
             href={`/market/${it.id}`}
             className="group relative min-w-[240px] h-[190px] overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_6px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_26px_rgba(0,0,0,0.10)] hover:border-black/20 transition"
           >
-            <div
-              className="absolute inset-0 bg-cover bg-center group-hover:scale-[1.05] transition duration-500"
-              style={{ backgroundImage: `url('${it.thumbnail}')` }}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={it.thumbnail}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.05]"
+              loading="lazy"
             />
 
             {/* 오버레이 — via-black/40 → /25, from-black/90 → /78 */}
