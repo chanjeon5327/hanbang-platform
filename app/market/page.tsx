@@ -31,22 +31,22 @@ function MarketCard({ it, view }: { it: MarketItem; view: 'grid' | 'list' }) {
   const cardContent = (
     <>
       {view === 'grid' ? (
-        <div className="relative h-[140px] w-full shrink-0 overflow-hidden bg-neutral-100">
+        <div className="relative h-[140px] w-full shrink-0 overflow-hidden bg-neutral-200">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={it.thumbnail}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover transition group-hover:scale-[1.03]"
+            className="absolute inset-0 h-full w-full object-cover object-center scale-[1.12] transition group-hover:scale-[1.18]"
             loading="lazy"
           />
         </div>
       ) : (
-        <div className="relative h-[100px] w-[140px] shrink-0 overflow-hidden bg-neutral-100">
+        <div className="relative h-[100px] w-[140px] shrink-0 overflow-hidden bg-neutral-200">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={it.thumbnail}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover transition group-hover:scale-[1.03]"
+            className="absolute inset-0 h-full w-full object-cover object-center scale-[1.1] transition group-hover:scale-[1.15]"
             loading="lazy"
           />
         </div>

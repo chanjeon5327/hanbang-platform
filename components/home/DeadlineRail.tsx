@@ -38,21 +38,19 @@ export default function DeadlineRail() {
           <Link
             key={it.id}
             href={`/market/${it.id}`}
-            className="group relative min-w-[240px] h-[190px] overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_6px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_26px_rgba(0,0,0,0.10)] hover:border-black/20 transition"
+            className="group relative min-w-[240px] h-[190px] overflow-hidden rounded-2xl border border-black/10 bg-neutral-200 shadow-[0_6px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_26px_rgba(0,0,0,0.10)] hover:border-black/20 transition"
           >
+            {/* 썸네일 — 원본의 위/아래 검은 띠를 가리도록 scale 적용 */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={it.thumbnail}
               alt=""
-              className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.05]"
+              className="absolute inset-0 h-full w-full object-cover object-center transition duration-500 scale-[1.12] group-hover:scale-[1.18]"
               loading="lazy"
             />
 
-            {/* 오버레이 — via-black/40 → /25, from-black/90 → /78 */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/25 to-black/0" />
-
-            {/* 텍스트 보호층 */}
-            <div className="absolute bottom-0 left-0 right-0 h-[90px] bg-gradient-to-t from-black/50 to-transparent" />
+            {/* 하단에만 가독용 그라데이션 — 위쪽 검은 띠 금지 */}
+            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/65 via-black/25 to-transparent" />
 
             {/* 마감 임박 배지 — 밝기 보정 */}
             <div className="absolute top-3 left-3">
