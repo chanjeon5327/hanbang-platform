@@ -59,7 +59,9 @@ __dump__/
 
 # 로컬 대용량 원본 영상(커밋 금지)
 /hero.mp4
+/hero_mobile.mp4
 
 # mp4 기본 무시 — public 배포용 압축본만 예외
 *.mp4
 !public/hero-desktop.mp4
+!public/hero-mobile.mp4
