@@ -2,13 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, TrendingUp, Wallet, User } from 'lucide-react';
+import { Home, TrendingUp, Play, MessageCircle, ShoppingBag, User } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Home', Icon: Home },
-  { href: '/market', label: 'Market', Icon: TrendingUp },
-  { href: '/wallet', label: 'Wallet', Icon: Wallet },
-  { href: '/mypage', label: 'My', Icon: User },
+  { href: '/',        label: '홈',      Icon: Home },
+  { href: '/market',  label: '마켓',    Icon: TrendingUp },
+  { href: '/content', label: '콘텐츠',  Icon: Play },
+  { href: '/lounge',  label: '라운지',  Icon: MessageCircle },
+  { href: '/goods',   label: '굿즈',    Icon: ShoppingBag },
+  { href: '/mypage',  label: '마이',    Icon: User },
 ];
 
 export default function BottomNav() {
@@ -25,7 +27,10 @@ export default function BottomNav() {
       aria-label="주 메뉴"
     >
       {NAV_ITEMS.map(({ href, label, Icon }) => {
-        const isActive = pathname === href || (href === '/' && pathname === '/');
+        const isActive =
+          href === '/'
+            ? pathname === '/'
+            : pathname === href || pathname.startsWith(href + '/');
         return (
           <Link
             key={href}

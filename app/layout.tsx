@@ -1,9 +1,16 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Noto_Sans_KR } from 'next/font/google';
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+});
+
+const notoSansKR = Noto_Sans_KR({
+  subsets: ['latin'],
+  weight: ['400', '500', '700', '800', '900'],
+  variable: '--font-noto-sans-kr',
   display: 'swap',
 });
 import BuildStamp from '@/components/dev/BuildStamp';
@@ -14,7 +21,10 @@ import LegacyWrapper from '@/components/layout/LegacyWrapper';
 import Providers from './providers';
 import './globals.css';
 
-const METADATA_BASE = 'https://hanbang-platform.vercel.app';
+// QA H2 대응: 운영 도메인 기준으로 metadataBase / OG / 트위터 절대 URL을 정렬한다.
+// NEXT_PUBLIC_SITE_URL 가 설정돼 있으면 그것을 우선 사용 (스테이징/프리뷰 대응),
+// 없으면 운영 기본값 https://hanbang.io 을 사용한다.
+const METADATA_BASE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://hanbang.io').replace(/\/$/, '');
 
 export const metadata: Metadata = {
   metadataBase: new URL(METADATA_BASE),
@@ -61,7 +71,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" data-theme="apple" suppressHydrationWarning>
-      <body className={inter.variable}>
+      <body className={`${inter.variable} ${notoSansKR.variable}`}>
         <Providers>
           <LegacyWrapper>
             <div className="min-h-screen flex flex-col">

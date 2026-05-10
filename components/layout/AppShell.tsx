@@ -14,6 +14,7 @@ const SHOW_DEMO_BAR = process.env.NEXT_PUBLIC_DEMO_BAR === 'true';
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const hideLayout = HIDE_LAYOUT_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));
+  const isHome = pathname === '/';
 
   useEffect(() => {
     if (pathname === '/login' && process.env.NODE_ENV === 'development') {
@@ -25,7 +26,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return (
       <>
         <AppHeader />
-        <main className="flex-1 overflow-y-auto main-with-bottom-nav" style={{ paddingTop: 64 }}>
+        <main
+          className="main-with-bottom-nav flex-1 overflow-y-auto"
+          style={{ paddingTop: isHome ? 0 : 64 }}
+        >
           {SHOW_DEMO_BAR && <DemoRouteBar />}
           {children}
         </main>
@@ -41,9 +45,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     >
       <AppHeader />
       <main
-        className="flex-1 overflow-y-auto main-with-bottom-nav"
+        className="main-with-bottom-nav flex-1 overflow-y-auto"
         style={{
-          paddingTop: 64,
+          paddingTop: isHome ? 0 : 64,
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}
       >

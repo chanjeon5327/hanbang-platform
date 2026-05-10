@@ -21,7 +21,6 @@ function LoginContent() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sessionChecked, setSessionChecked] = useState(false);
 
   const redirectParam = sanitizeRedirect(
     searchParams.get('redirect') || searchParams.get('redirectTo') || searchParams.get('next') || '/'
@@ -34,22 +33,11 @@ function LoginContent() {
     if (err === 'oauth_failed') setError('소셜 로그인에 실패했습니다. 다시 시도해 주세요.');
   }, [searchParams]);
 
-  useEffect(() => {
-    let cancelled = false;
-    const check = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (cancelled) return;
-      const hasUser = !!user;
-      if (process.env.NODE_ENV === 'development') {
-        console.info('[LOGIN-REDIRECT-SOURCE] app/login/page.tsx', { pathname: '/login', user: hasUser, session: !!user, isAuthed: hasUser });
-      }
-      setSessionChecked(true);
-      // /login 에서 자동 redirect 완전 차단 - 이미 로그인된 경우에도 페이지 유지
-      // 로그인 성공 시에만 signInEmail/signInOAuth/connectWallet 내부에서 router.push
-    };
-    check();
-    return () => { cancelled = true; };
-  }, [supabase]);
+  // /login 에서는 자동 redirect를 수행하지 않는다.
+  // (이미 로그인된 사용자도 페이지에 머무를 수 있게 두고, 로그인 성공 시에만
+  //  signInEmail/signInOAuth/connectWallet 내부에서 router.push 한다.)
+  // 과거에는 getSession() 결과를 기다리며 sessionChecked 게이트로 폼을 가렸으나,
+  // 프로덕션에서 getSession() 응답 지연/실패 시 빈 화면(스켈레톤 고착)이 발생해 제거함.
 
   async function signInOAuth(provider: 'kakao' | 'google') {
     setBusy(true);
@@ -79,8 +67,8 @@ function LoginContent() {
         return;
       }
       await eth.request({ method: 'eth_requestAccounts' });
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
         const path = await getPostLoginRoute(supabase, redirectParam);
         router.push(path);
       } else {
@@ -143,17 +131,6 @@ function LoginContent() {
     } finally {
       setBusy(false);
     }
-  }
-
-  if (!sessionChecked) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.wrap}>
-          <div className={styles.title}>투자를 시작하세요</div>
-          <div className="animate-pulse h-64 rounded-xl mt-4" style={{ backgroundColor: 'var(--legacy-border)' }} />
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -236,6 +213,8 @@ function LoginContent() {
           <form onSubmit={mode === 'signup' ? signUpEmail : signInEmail} className={styles.form}>
             <input
               className={styles.input}
+              type="email"
+              inputMode="email"
               placeholder="이메일"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -265,7 +244,7 @@ function LoginContent() {
                 <button
                   type="button"
                   className={styles.linkBtn}
-                  onClick={() => router.push('/login')}
+                  onClick={() => router.push('/forgot-password')}
                   disabled={busy}
                 >
                   비밀번호 찾기
@@ -295,7 +274,15 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className={styles.page}><div className={styles.wrap}><div className={styles.title}>투자를 시작하세요</div><div className="animate-pulse h-64 rounded-xl bg-[var(--legacy-border)]" /></div></div>}>
+    <Suspense
+      fallback={
+        <div className={styles.page}>
+          <div className={styles.wrap}>
+            <div className={styles.title}>투자를 시작하세요</div>
+          </div>
+        </div>
+      }
+    >
       <LoginContent />
     </Suspense>
   );
